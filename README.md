@@ -1,4 +1,4 @@
-## こちらはSKNewRolesv3.0.0.0です。
+## こちらはSKNewRolesv3.0.0.1です。
 ### ソースコードはReleasesのLatestをダウンロードしてね。
 <br>
 <h3>
