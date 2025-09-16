@@ -1,0 +1,177 @@
+{
+    "providers": [
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/countdown/countdown_1.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE001"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/countdown/countdown_2.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE002"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/countdown/countdown_3.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE003"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/announce/victory_villager.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE101"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/announce/victory_wolf.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE102"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/announce/victory_fox.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE103"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/announce/victory_reaper.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE104"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/announce/victory_cupid.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE105"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/announce/victory_kyoujin.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE106"]
+	    },
+        {
+	        "type": "bitmap",
+                "file": "minecraft:font/announce/victory_jackal.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE107"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/announce/meeting.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE200"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/announce/blind_1.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE201"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/announce/blind_2.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE202"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/announce/blind_3.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE203"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/announce/same_1.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE204"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/announce/same_2.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE205"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/announce/glowing_1.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE206"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/announce/quest_start_villager.png",
+                "ascent": 23.0,
+                "height": 23.0,
+                "chars": [
+                    "abcdefg",
+                    "\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+                    "\u0000\u0000\u0000\u0000\u0000\u0000\u0000"
+                ]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/announce/quest_start_wolf.png",
+                "ascent": 23.0,
+                "height": 23.0,
+                "chars": [
+                    "hijklmn",
+                    "\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+                    "\u0000\u0000\u0000\u0000\u0000\u0000\u0000"
+                ]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/announce/quest_clear.png",
+                "ascent": 23.0,
+                "height": 23.0,
+                "chars": [
+                    "\uE300\uE301\uE302\uE303\uE304\uE305\uE306",
+                    "\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+                    "\u0000\u0000\u0000\u0000\u0000\u0000\u0000"
+                ]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/announce/quest_failed.png",
+                "ascent": 23.0,
+                "height": 23.0,
+                "chars": [
+                    "\uE307\uE308\uE309\uE30A\uE30B\uE30C\uE30D",
+                    "\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+                    "\u0000\u0000\u0000\u0000\u0000\u0000\u0000"
+                ]
+	    },
+            {
+                "type": "space",
+                    "advances": {
+                        "-": -1.46,
+                        "=": -61.39,
+                        "1": -2,
+                        "2": 2,
+                        "\uF811": -24.5
+                }
+            }
+    ]
+}

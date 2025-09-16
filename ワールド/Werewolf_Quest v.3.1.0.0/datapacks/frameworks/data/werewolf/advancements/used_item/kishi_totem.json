@@ -1,0 +1,15 @@
+{
+  "criteria": {
+    "requirement": {
+      "trigger": "minecraft:used_totem",
+      "conditions": {
+        "item": {
+          "nbt": "{Tags:[\"kishi_totem\"]}"
+        }
+      }
+    }
+  },
+  "rewards": {
+    "function": "werewolf:.system/player_attacked/used_kishi_totem"
+  }
+}

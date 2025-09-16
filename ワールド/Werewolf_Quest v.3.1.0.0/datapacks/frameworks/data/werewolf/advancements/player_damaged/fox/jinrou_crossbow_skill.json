@@ -1,0 +1,28 @@
+{
+  "criteria": {
+    "requirement": {
+      "trigger": "minecraft:entity_hurt_player",
+      "conditions": {
+        "player": [
+          {
+            "condition": "minecraft:entity_properties",
+            "entity": "this",
+            "predicate": {
+              "team": "Youko"
+            }
+          }
+        ],
+        "damage": {
+          "type": {
+            "direct_entity": {
+              "nbt": "{Tags:[\"no_jinrou_strongest_arrow\"]}"
+            }
+          }
+        }
+      }
+    }
+  },
+  "rewards": {
+    "function": "werewolf:.system/player_attacked/fox/jinrou_crossbow_skill"
+  }
+}

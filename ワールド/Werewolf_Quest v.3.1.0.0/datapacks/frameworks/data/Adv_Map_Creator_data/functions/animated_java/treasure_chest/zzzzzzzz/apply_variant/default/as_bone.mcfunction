@@ -1,0 +1,2 @@
+execute if entity @s[tag=aj.treasure_chest.bone.up] run data modify entity @s item.tag.CustomModelData set value 2
+execute if entity @s[tag=aj.treasure_chest.bone.down] run data modify entity @s item.tag.CustomModelData set value 3

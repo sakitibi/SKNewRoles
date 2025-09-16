@@ -1,0 +1,1 @@
+execute on passengers run function Adv_Map_Creator_data:animated_java/treasure_chest/zzzzzzzz/apply_variant/default/as_bone
