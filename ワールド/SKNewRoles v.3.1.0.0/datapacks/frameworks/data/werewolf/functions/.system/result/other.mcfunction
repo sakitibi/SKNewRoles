@@ -1,0 +1,5 @@
+execute if entity @a[tag=team_youko] run tellraw @a [{"text":"<妖狐>  ","color":"aqua"},{"selector":"@a[tag=team_youko]","color":"aqua"}]
+#execute if entity @a[tag=team_haitoku] run tellraw @a [{"text":"<背徳者>  ","color":"aqua"},{"selector":"@a[tag=team_haitoku]","color":"aqua"}]
+execute if entity @a[tag=team_shinigami] run tellraw @a [{"text":"<死神>  ","color":"aqua"},{"selector":"@a[tag=team_shinigami]","color":"aqua"}]
+execute if entity @a[tag=team_cupid] run tellraw @a [{"text":"<キューピット>  ","color":"aqua"},{"selector":"@a[tag=team_cupid]","color":"aqua"}]
+execute if entity @a[tag=team_jackal] run tellraw @a [{"text":"<ジャッカル>  ","color":"aqua"},{"selector":"@a[tag=team_jackal]","color":"aqua"}]

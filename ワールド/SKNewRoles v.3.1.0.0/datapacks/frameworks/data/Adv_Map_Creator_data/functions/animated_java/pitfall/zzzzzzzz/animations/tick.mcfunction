@@ -1,0 +1,1 @@
+execute if entity @s[tag=aj.pitfall.animation.genarate] run function Adv_Map_Creator_data:animated_java/pitfall/zzzzzzzz/animations/genarate/tick

@@ -1,0 +1,64 @@
+{
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:carrot_on_a_stick"
+        }
+      ],
+      "functions": [
+        {
+          "function": "minecraft:set_attributes",
+          "modifiers": [
+            {
+              "attribute": "minecraft:generic.attack_damage",
+              "name": "",
+              "amount": -0.1,
+              "operation": "multiply_base",
+              "slot": "mainhand"
+            }
+          ]
+        },
+        {
+          "function": "minecraft:set_name",
+          "entity": "this",
+          "name":[{"text":"シェリフスキル - 正義執行","color":"white","italic":false}]
+        },
+        {
+          "function": "minecraft:set_lore",
+          "entity": "this",
+          "lore": [
+            {
+              "text": "[スキル説明]",
+              "color": "gray",
+              "italic": false
+            },
+            {
+              "text": "眼前のプレイヤーが狼陣営であれば一撃でキルできる",
+              "color": "gray",
+              "italic": false
+            },
+            {
+              "text": "狼陣営以外にスキルを使用すると自滅する",
+              "color": "gray",
+              "italic": false
+            }
+          ]
+        },
+	{
+          "function": "minecraft:set_nbt",
+          "tag": "{CustomModelData:10010,HideFlags:63,Tags:[\"hoankan_skill\",\"role_skill\",\"no_drop\"]}"
+        },
+	{
+          "function": "minecraft:set_enchantments",
+          "enchantments": {
+            "minecraft:vanishing_curse": 1,
+            "minecraft:smite": 5
+          }
+        }
+      ]
+    }
+  ]
+}

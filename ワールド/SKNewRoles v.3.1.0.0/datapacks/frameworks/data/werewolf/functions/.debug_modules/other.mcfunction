@@ -1,0 +1,6 @@
+tellraw @s [{"text":"  妖狐          ","color":"white"},{"text":"<変更>","color":"aqua","clickEvent":{"action":"run_command","value":"/function werewolf:.settings/.debug/change_role/change_youko"}}]
+tellraw @s [{"text":"  背徳者        ","color":"white"},{"text":"<変更>","color":"aqua","clickEvent":{"action":"run_command","value":"/function werewolf:.settings/.debug/change_role/change_haitoku"}}]
+tellraw @s [{"text":"  ジャッカル          ","color":"white"},{"text":"<変更>","color":"aqua","clickEvent":{"action":"run_command","value":"/function werewolf:.settings/.debug/change_role/change_jackal"}}]
+tellraw @s [{"text":"  サイドキック        ","color":"white"},{"text":"<変更>","color":"aqua","clickEvent":{"action":"run_command","value":"/function werewolf:.settings/.debug/change_role/change_sidekick"}}]
+tellraw @s [{"text":"  死神          ","color":"white"},{"text":"<変更>","color":"aqua","clickEvent":{"action":"run_command","value":"/function werewolf:.settings/.debug/change_role/change_shinigami"}}]
+tellraw @s [{"text":"  キューピット  ","color":"white"},{"text":"<変更>","color":"aqua","clickEvent":{"action":"run_command","value":"/function werewolf:.settings/.debug/change_role/change_cupid"}}]

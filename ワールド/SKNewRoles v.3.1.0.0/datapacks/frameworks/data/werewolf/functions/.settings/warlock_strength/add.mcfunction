@@ -1,0 +1,2 @@
+scoreboard players add GameManager warlock_curse_strength 1
+function werewolf:.settings/view_settings_others

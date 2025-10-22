@@ -1,0 +1,14 @@
+scoreboard players operation GameManager Role_count += 人狼 Role_count
+scoreboard players operation GameManager Role_count += アサシン Role_count
+scoreboard players operation GameManager Role_count += Witch Role_count
+scoreboard players operation GameManager Role_count += リモコン Role_count
+scoreboard players operation GameManager Role_count += ダブルキラー Role_count
+scoreboard players operation GameManager Role_count += 狂人 Role_count
+scoreboard players operation GameManager Role_count += 狂信者 Role_count
+scoreboard players operation GameManager Role_count += 罠師 Role_count
+scoreboard players operation GameManager Role_count += イビルゲッサー Role_count
+scoreboard players operation GameManager Role_count += スナイパー Role_count
+scoreboard players operation GameManager Role_count += マッドシーア Role_count
+scoreboard players operation GameManager Role_count += イビルシーア Role_count
+scoreboard players operation GameManager Role_count += コミュナー Role_count
+scoreboard players operation GameManager Role_count += シリアルキラー Role_count

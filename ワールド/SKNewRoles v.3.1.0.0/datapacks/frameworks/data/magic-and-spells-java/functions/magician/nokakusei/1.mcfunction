@@ -1,0 +1,2 @@
+execute as @e[tag=!kakusei,scores={magic1=1}] at @s run item replace entity @s weapon.mainhand.0 with minecraft:echo_shard
+execute at @e[tag=!kakusei,scores={magic1=1}] run effect give @e[type=!witch,distance=..30] darkness 30 255 true

@@ -1,0 +1,1 @@
+function werewolf:.reset

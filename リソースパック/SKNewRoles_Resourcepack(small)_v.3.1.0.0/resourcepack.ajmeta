@@ -1,0 +1,79 @@
+{
+    "version": "0.4.6",
+    "projects": {
+        "undefined": {
+            "project_name": "treasure_chest",
+            "file_list": [
+                "assets\\animated_java\\models\\item\\fake_wall\\1.json",
+                "assets\\animated_java\\models\\item\\fake_wall\\2.json",
+                "assets\\animated_java\\models\\item\\fake_wall\\3.json",
+                "assets\\animated_java\\models\\item\\fake_wall\\4.json",
+                "assets\\animated_java\\models\\item\\fake_wall\\5.json",
+                "assets\\animated_java\\models\\item\\fake_wall\\6.json",
+                "assets\\animated_java\\textures\\item\\fake_wall\\fake_wall.png",
+                "assets\\minecraft\\models\\item\\animated_java_empty.json"
+            ]
+        },
+        "de0d36a1-b712-feb9-d73b-8b70322a3214": {
+            "project_name": "windmill",
+            "file_list": [
+                "assets\\animated_java\\models\\item\\windmill\\main.json",
+                "assets\\animated_java\\models\\item\\windmill\\wools.json",
+                "assets\\animated_java\\models\\item\\windmill\\fences.json",
+                "assets\\animated_java\\models\\item\\windmill\\boxs.json",
+                "assets\\animated_java\\models\\item\\windmill\\bone.json",
+                "assets\\animated_java\\models\\item\\windmill\\bone2.json",
+                "assets\\animated_java\\models\\item\\windmill\\bone3.json",
+                "assets\\animated_java\\models\\item\\windmill\\bone4.json",
+                "assets\\animated_java\\models\\item\\windmill\\bone5.json",
+                "assets\\animated_java\\models\\item\\windmill\\bone6.json",
+                "assets\\animated_java\\models\\item\\windmill\\bone7.json",
+                "assets\\animated_java\\models\\item\\windmill\\wools2.json",
+                "assets\\animated_java\\models\\item\\windmill\\fences2.json",
+                "assets\\animated_java\\models\\item\\windmill\\boxs2.json",
+                "assets\\animated_java\\models\\item\\windmill\\bone8.json",
+                "assets\\animated_java\\models\\item\\windmill\\bone9.json",
+                "assets\\animated_java\\models\\item\\windmill\\bone10.json",
+                "assets\\animated_java\\models\\item\\windmill\\bone11.json",
+                "assets\\animated_java\\models\\item\\windmill\\bone12.json",
+                "assets\\animated_java\\models\\item\\windmill\\bone13.json",
+                "assets\\animated_java\\models\\item\\windmill\\bone14.json",
+                "assets\\animated_java\\models\\item\\windmill\\wools3.json",
+                "assets\\animated_java\\models\\item\\windmill\\fences3.json",
+                "assets\\animated_java\\models\\item\\windmill\\boxs3.json",
+                "assets\\animated_java\\models\\item\\windmill\\bone15.json",
+                "assets\\animated_java\\models\\item\\windmill\\bone16.json",
+                "assets\\animated_java\\models\\item\\windmill\\bone17.json",
+                "assets\\animated_java\\models\\item\\windmill\\bone18.json",
+                "assets\\animated_java\\models\\item\\windmill\\bone19.json",
+                "assets\\animated_java\\models\\item\\windmill\\bone20.json",
+                "assets\\animated_java\\models\\item\\windmill\\bone21.json",
+                "assets\\animated_java\\models\\item\\windmill\\wools4.json",
+                "assets\\animated_java\\models\\item\\windmill\\fences4.json",
+                "assets\\animated_java\\models\\item\\windmill\\boxs4.json",
+                "assets\\animated_java\\models\\item\\windmill\\bone22.json",
+                "assets\\animated_java\\models\\item\\windmill\\bone23.json",
+                "assets\\animated_java\\models\\item\\windmill\\bone24.json",
+                "assets\\animated_java\\models\\item\\windmill\\bone25.json",
+                "assets\\animated_java\\models\\item\\windmill\\bone26.json",
+                "assets\\animated_java\\models\\item\\windmill\\bone27.json",
+                "assets\\animated_java\\models\\item\\windmill\\bone28.json",
+                "assets\\animated_java\\textures\\item\\windmill\\wing_wool.png",
+                "assets\\animated_java\\textures\\item\\windmill\\wing_boxs.png",
+                "assets\\animated_java\\textures\\item\\windmill\\wing__stairs.png",
+                "assets\\animated_java\\textures\\item\\windmill\\wing_main.png",
+                "assets\\animated_java\\textures\\item\\windmill\\wing_fence.png",
+                "assets\\minecraft\\models\\item\\animated_java_empty.json"
+            ]
+        },
+        "8f3f5291-6c9a-2069-022d-ebcc31ac2fe2": {
+            "project_name": "pitfall",
+            "file_list": [
+                "assets\\animated_java\\models\\item\\pitfall\\bone.json",
+                "assets\\animated_java\\models\\item\\pitfall\\bone2.json",
+                "assets\\animated_java\\textures\\item\\pitfall\\pitfall.png",
+                "assets\\minecraft\\models\\item\\animated_java_empty.json"
+            ]
+        }
+    }
+}

@@ -1,0 +1,9 @@
+#ベント設定
+        tellraw @s {"text":" [ベント作成]"}
+        tellraw @s {"text":"  以下のベントを作成します。"}
+        tellraw @s [{"text":"   "},{"text":" 赤ベント","color":"red","hoverEvent":{"action":"show_text","contents":[{"text":"ベントを作成"}]},"clickEvent":{"action":"run_command","value":"/function werewolf:.system/vent/create_vent_1"}},{"text":" 青ベント","color":"blue","hoverEvent":{"action":"show_text","contents":[{"text":"ベントを作成"}]},"clickEvent":{"action":"run_command","value":"/function werewolf:.system/vent/create_vent_2"}},{"text":" 緑ベント","color":"green","hoverEvent":{"action":"show_text","contents":[{"text":"ベントを作成"}]},"clickEvent":{"action":"run_command","value":"/function werewolf:.system/vent/create_vent_3"}},{"text":" 黄ベント","color":"yellow","hoverEvent":{"action":"show_text","contents":[{"text":"ベントを作成"}]},"clickEvent":{"action":"run_command","value":"/function werewolf:.system/vent/create_vent_4"}},{"text":" 黒ベント","color":"white","hoverEvent":{"action":"show_text","contents":[{"text":"ベントを作成"}]},"clickEvent":{"action":"run_command","value":"/function werewolf:.system/vent/create_vent_5"}}]
+        tellraw @s {"text":" [ベントの削除]"}
+        tellraw @s [{"text":"   "},{"text":" 足元のベントを削除","color":"white","hoverEvent":{"action":"show_text","contents":[{"text":"ベントを削除"}]},"clickEvent":{"action":"run_command","value":"/kill @e[tag=vent,distance=..1,limit=2,sort=nearest]"}},{"text":"   "},{"text":" 全てのベントを削除","color":"white","hoverEvent":{"action":"show_text","contents":[{"text":"ベントを削除"}]},"clickEvent":{"action":"run_command","value":"/kill @e[tag=vent]"}}]
+
+
+        #execute align xyz positioned ~0.1 ~ ~0.1 run summon block_display ~ ~ ~ {block_state:{Name:"minecraft:soul_fire"},Tags:["obj"],transformation:{translation:[0,0,0],left_rotation:[0,0,0,1],right_rotation:[0,0,0,1],scale:[0.8f,0.8f,0.8f]}}

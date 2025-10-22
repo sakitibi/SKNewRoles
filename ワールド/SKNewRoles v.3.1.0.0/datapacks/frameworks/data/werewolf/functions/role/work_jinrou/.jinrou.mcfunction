@@ -1,0 +1,8 @@
+playsound minecraft:ui.button.click master @s ~ ~100 ~ 1 1 0.3
+
+execute if entity @a[tag=be_written_jinrou,distance=0.01..] run tellraw @s[tag=!isFined] [{"text":"今回の人狼は… "},{"selector":"@s"},{"text":", ","color":"gray"},{"selector":"@a[tag=be_written_jinrou,distance=0.01..]"},{"text":" のようだ。"}]
+execute if entity @a[tag=be_written_jinrou,distance=0.01..] run execute if entity @a[tag=be_written_comuner,distance=0.01..] run tellraw @s[tag=isFined] [{"text":"今回の人狼と狂人は… "},{"selector":"@s"},{"text":", ","color":"gray"},{"selector":"@a[tag=be_written_jinrou,distance=0.01..]"},{"selector":"@a[tag=be_written_comuner,distance=0.01..]"}{"text":" のようだ。"}]
+execute unless entity @a[tag=be_written_comuner,distance=0.01..] run tellraw @s[tag=isFined] [{"text":"今回の人狼は… "},{"selector":"@s"},{"text":", ","color":"gray"},{"selector":"@a[tag=be_written_jinrou,distance=0.01..]"},{"text":" のようだ。"}]
+execute unless entity @a[tag=be_written_jinrou,distance=0.01..] run tellraw @s[tag=!isFined] [{"text":"あなた以外に人狼は居ないようだ…"}]
+execute if entity @a[tag=be_written_comuner,distance=0.01..] unless entity @a[tag=be_written_jinrou,distance=0.01..] run tellraw @s[tag=isFined] [{"text":"今回の狂人は… "},{"selector":"@s"},{"text":", ","color":"gray"},{"selector":"@a[tag=be_written_comuner,distance=0.01..]"},{"text":" のようだ。"}]
+execute if entity @a[tag=be_written_comuner,distance=0.01..] unless entity @a[tag=be_written_jinrou,distance=0.01..] run tellraw @s[tag=isFined] [{"text":"あなた以外に人狼は居ないようだ…"}]

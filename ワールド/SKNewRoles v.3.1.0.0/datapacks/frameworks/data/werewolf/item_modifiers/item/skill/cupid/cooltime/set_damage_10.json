@@ -1,0 +1,26 @@
+[
+  {
+    "function": "minecraft:set_damage",
+    "damage": 1
+  },
+  {
+    "function": "minecraft:set_name",
+    "entity": "this",
+    "name": [
+      {
+        "text": "クールタイム終了まで - ",
+        "color": "white",
+        "italic": false,
+        "extra": [
+          {
+            "score": {
+              "name": "@s",
+              "objective": "skill_cupid_cooltime"
+            },
+            "italic": false
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,78 @@
+{
+  "pools": [
+    {
+      "rolls": 3,
+      "bonus_rolls": 0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:emerald",
+          "functions": [
+            {
+              "function": "minecraft:set_count",
+              "count": {
+                "min": 3,
+                "max": 5
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:potion",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{CustomModelData:1,CustomPotionColor:15987699,HideFlags:32,CustomPotionEffects:[{Id:14,Amplifier:0,Duration:200}],display:{Name:'{\"text\":\"透明化のポーション\",\"italic\":\"false\"}',Lore:['{\"text\":\"[アイテム説明]\",\"italic\":\"false\",\"color\":\"gray\"}','{\"text\":\"飲むと10秒間透明になる\",\"color\":\"gray\",\"italic\":false}']}}"
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:potion",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{CustomModelData:2,CustomPotionColor:3336444,HideFlags:32,CustomPotionEffects:[{Id:1,Amplifier:0,Duration:200}],display:{Name:'{\"text\":\"俊敏のポーション\",\"italic\":\"false\"}',Lore:['{\"text\":\"[アイテム説明]\",\"italic\":\"false\",\"color\":\"gray\"}','{\"text\":\"飲むと10秒間移動速度が上昇する\",\"color\":\"gray\",\"italic\":false}']}}"
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:splash_potion",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{CustomModelData:1,CustomPotionColor:8757602,HideFlags:32,CustomPotionEffects:[{Id:19,Amplifier:3,Duration:200}],display:{Name:'{\"text\":\"毒のスプラッシュポーション\",\"italic\":\"false\"}',Lore:['{\"text\":\"[アイテム説明]\",\"italic\":\"false\",\"color\":\"gray\"}','{\"text\":\"当たると10秒間毒状態になる\",\"color\":\"gray\",\"italic\":false}']}}"
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:splash_potion",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{CustomModelData:2,CustomPotionColor:9022941,HideFlags:32,CustomPotionEffects:[{Id:2,Amplifier:2,Duration:200}],display:{Name:'{\"text\":\"鈍化のスプラッシュポーション\",\"italic\":\"false\"}',Lore:['{\"text\":\"[アイテム説明]\",\"italic\":\"false\",\"color\":\"gray\"}','{\"text\":\"当たると10秒間移動速度が低下する\",\"color\":\"gray\",\"italic\":false}']}}"
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:splash_potion",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{CustomModelData:3,CustomPotionColor:13327273,HideFlags:32,CustomPotionEffects:[{Id:10,Amplifier:2,Duration:200}],display:{Name:'{\"text\":\"再生のスプラッシュポーション\",\"italic\":\"false\"}',Lore:['{\"text\":\"[アイテム説明]\",\"italic\":\"false\",\"color\":\"gray\"}','{\"text\":\"当たると10秒間再生能力が向上する\",\"color\":\"gray\",\"italic\":false}']}}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

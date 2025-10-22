@@ -1,0 +1,13 @@
+minecraft:carrot_on_a_stick
+"{CustomModelData:1}"= uranai_tool
+"{CustomModelData:2}"= reinou_tool
+
+"{CustomModelData:5}"= kishi_tool
+
+minecraft:diamond_sword
+"{CustomModelData:1}"= strongest_sword
+"{CustomModelData:2}"= strongest_sword_cooltime
+
+minecraft:crossbow
+"{CustomModelData:1}"= strongest_crossbow
+"{CustomModelData:2}"= strongest_crossbow_cooltime

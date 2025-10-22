@@ -1,0 +1,2 @@
+execute at @e[type=minecraft:marker,tag=gate] positioned ~ ~3 ~ run summon minecraft:block_display ~ ~ ~ {block_state:{Name:"minecraft:iron_bars",Properties:{north:"true",south:"true",east:"false",west:"false"}},Tags:["gate_3","gate"]}
+execute at @e[type=minecraft:marker,tag=gate] positioned ~ ~3 ~ run playsound minecraft:block.chain.break master @a

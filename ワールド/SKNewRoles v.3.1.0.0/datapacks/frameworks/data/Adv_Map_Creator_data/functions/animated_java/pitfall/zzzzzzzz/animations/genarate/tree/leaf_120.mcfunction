@@ -1,0 +1,2 @@
+execute on passengers run function Adv_Map_Creator_data:animated_java/pitfall/zzzzzzzz/animations/genarate/tree/leaf_120_as_bone
+execute unless entity @s[tag=aj.pitfall.disable_command_keyframes] at @s run function Adv_Map_Creator_data:animated_java/pitfall/zzzzzzzz/animations/genarate/tree/leaf_120_effects_0

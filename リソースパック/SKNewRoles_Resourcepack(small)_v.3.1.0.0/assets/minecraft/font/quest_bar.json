@@ -1,0 +1,309 @@
+{
+    "providers": [
+        {
+            "type": "ttf",
+            "file": "minecraft:pixelmplus12_bold.ttf",
+            "shift": [-108.8, 39.5],
+            "size": 6.6,
+            "oversample": 10.0
+        },
+        {
+            "type": "space",
+                "advances":{
+                    " ": 4,
+                    "\u200c": 0,
+                    "\uF821": 1,
+                    "\uF822": 2,
+                    "\uF823": 3,
+                    "\uF824": 4,
+                    "\uF825": 5,
+                    "\uF826": 6,
+                    "\uF827": 7,
+                    "\uF828": 8,
+                    "\uF829": 16,
+                    "\uF82A": 32,
+                    "\uF82B": 64,
+                    "\uF82C": 128,
+                    "\uF82D": 256,
+                    "\uF82E": 512,
+                    "\uF82F": 1024,
+                    "\uF801": -1,
+                    "\uF802": -2,
+                    "\uF803": -3,
+                    "\uF804": -4,
+                    "\uF805": -5,
+                    "\uF806": -6,
+                    "\uF807": -7,
+                    "\uF808": -8,
+                    "\uF809": -16,
+                    "\uF80A": -32,
+                    "\uF80B": -64,
+                    "\uF80C": -128,
+                    "\uF80D": -256,
+                    "\uF80E": -512,
+                    "\uF80F": -1024,
+                    "\uF810": 142,
+                    "\uF811": -198
+                }
+        },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_max.png",
+                "ascent": -78,
+                "height": 7.0,
+                "chars": ["\uE001"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_1.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE002"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_2.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE003"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_3.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE004"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_4.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE005"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_5.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE006"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_6.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE007"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_7.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE008"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_8.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE009"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_9.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE00a"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_10.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE00b"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_11.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE00c"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_12.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE00d"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_13.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE00e"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_14.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE00f"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_15.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE010"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_16.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE011"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_17.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE012"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_18.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE013"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_19.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE014"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_20.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE015"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_21.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE016"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_22.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE017"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_23.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE018"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_24.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE019"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_25.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE01a"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_26.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE01b"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_27.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE01c"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_28.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE01d"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_29.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE01e"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_30.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE01f"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_31.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE020"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_32.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE021"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_33.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE022"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_34.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE023"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_35.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE024"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/quest_bar/bar_36.png",
+                "ascent": -78.0,
+                "height": 7.0,
+                "chars": ["\uE025"]
+	    }					
+    ]
+}
