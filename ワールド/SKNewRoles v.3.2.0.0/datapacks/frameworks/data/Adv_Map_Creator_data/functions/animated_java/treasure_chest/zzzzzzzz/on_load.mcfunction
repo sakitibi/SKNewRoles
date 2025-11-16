@@ -1,0 +1,2 @@
+scoreboard players set @s aj.treasure_chest.rig_loaded 1
+execute unless score @s aj.treasure_chest.export_version = aj.treasure_chest.export_version aj.i at @s run function Adv_Map_Creator_data:animated_java/treasure_chest/zzzzzzzz/mark_outdated_rig

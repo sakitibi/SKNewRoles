@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/carrot_on_a_stick/inventory_menu/root",
+  "textures": {
+    "layer0": "item/carrot_on_a_stick/inventory_menu/inventory_ui"
+  }
+}

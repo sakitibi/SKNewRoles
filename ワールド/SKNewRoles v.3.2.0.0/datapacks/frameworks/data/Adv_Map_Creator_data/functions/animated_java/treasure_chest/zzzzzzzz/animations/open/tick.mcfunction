@@ -1,0 +1,2 @@
+execute if score @s aj.tween_time matches 1.. run function Adv_Map_Creator_data:animated_java/treasure_chest/zzzzzzzz/animations/open/tick_tween
+execute unless score @s aj.tween_time matches 1.. run function Adv_Map_Creator_data:animated_java/treasure_chest/zzzzzzzz/animations/open/tick_animation

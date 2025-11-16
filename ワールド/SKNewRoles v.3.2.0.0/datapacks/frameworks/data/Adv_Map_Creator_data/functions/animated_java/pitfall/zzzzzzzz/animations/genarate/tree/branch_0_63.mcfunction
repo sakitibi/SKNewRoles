@@ -1,0 +1,2 @@
+execute if score @s aj.anim_time matches 0..7 run function Adv_Map_Creator_data:animated_java/pitfall/zzzzzzzz/animations/genarate/tree/branch_0_7
+execute if score @s aj.anim_time matches 56..63 run function Adv_Map_Creator_data:animated_java/pitfall/zzzzzzzz/animations/genarate/tree/branch_56_63

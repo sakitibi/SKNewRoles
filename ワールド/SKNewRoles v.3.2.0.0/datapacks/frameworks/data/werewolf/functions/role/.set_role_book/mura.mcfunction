@@ -1,0 +1,44 @@
+#村人
+#execute if entity @s[team=Mura] run item replace entity @s hotbar.7 with written_book{CustomModelData:1,Tags:["no_drop","role_book"],pages:['[{"text":"あなたの役職は…\\n\\n \\u0020"},{"text":"村人","bold":true,"color":"green"},{"text":" \\u0020です。"}]'],title:"役職が記された本",author:""}
+execute if entity @s[team=Mura] run item replace entity @s hotbar.7 with written_book{CustomModelData:1,resolved:0b,Tags:["no_drop","role_book"],pages:['[[{"text":"\\uF830\\uE100\\uF826\\uE107\\uF832","color":"white","font":"role_book"}],[{"text":"\\uE108\\uF833","color":"white","font":"role_book"}]]'],title:"役職が記された本",author:"",HideFlags:32}
+#占い師
+#execute if entity @s[team=Uranai] run item replace entity @s hotbar.7 with written_book{CustomModelData:1,Tags:["no_drop","role_book"],pages:['[{"text":"あなたの役職は…\\n\\n \\u0020"},{"text":"占い師","bold":true,"color":"green"},{"text":" \\u0020です。"}]'],title:"役職が記された本",author:""}
+execute if entity @s[team=Uranai] run item replace entity @s hotbar.7 with written_book{CustomModelData:1,resolved:0b,Tags:["no_drop","role_book"],pages:['[[{"text":"\\uF830\\uE100\\uF826\\uE109\\uF832","color":"white","font":"role_book"}],[{"text":"\\uE10A\\uF833","color":"white","font":"role_book"}]]'],title:"役職が記された本",author:"",HideFlags:32}
+#霊能者
+#execute if entity @s[team=Reinou] run item replace entity @s hotbar.7 with written_book{CustomModelData:1,Tags:["no_drop","role_book"],pages:['[{"text":"あなたの役職は…\\n\\n \\u0020"},{"text":"霊能者","bold":true,"color":"green"},{"text":" \\u0020です。"}]'],title:"役職が記された本",author:""}
+execute if entity @s[team=Reinou] run item replace entity @s hotbar.7 with written_book{CustomModelData:1,resolved:0b,Tags:["no_drop","role_book"],pages:['[[{"text":"\\uF830\\uE100\\uF826\\uE10B\\uF832","color":"white","font":"role_book"}],[{"text":"\\uE10C\\uF833","color":"white","font":"role_book"}]]'],title:"役職が記された本",author:"",HideFlags:32}
+#騎士
+#execute if entity @s[team=Kishi] run item replace entity @s hotbar.7 with written_book{CustomModelData:1,Tags:["no_drop","role_book"],pages:['[{"text":"あなたの役職は…\\n\\n \\u0020"},{"text":"騎士","bold":true,"color":"green"},{"text":" \\u0020です。"}]'],title:"役職が記された本",author:""}
+execute if entity @s[team=Kishi] run item replace entity @s hotbar.7 with written_book{CustomModelData:1,resolved:0b,Tags:["no_drop","role_book"],pages:['[[{"text":"\\uF830\\uE100\\uF826\\uE10D\\uF832","color":"white","font":"role_book"}],[{"text":"\\uE10E\\uF833","color":"white","font":"role_book"}]]'],title:"役職が記された本",author:"",HideFlags:32}
+#共有者
+execute if entity @s[team=Kyouyuu] run item replace entity @s hotbar.7 with written_book{CustomModelData:1,resolved:0b,Tags:["no_drop","role_book"],pages:['[[{"text":"\\uF830\\uE100\\uF826\\uE11F\\uF832","color":"white","font":"role_book"}],[{"text":"\\uE120\\uF833","color":"white","font":"role_book"}],[{"text":"\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n","font":"role_book"}],[{"text":"　","font":"role_book"}],[{"text":"　　　　　　　　　　　　","clickEvent":{"action":"run_command","value":"/function werewolf:role/work_kyouyuu/.kyouyuu"},"font":"role_book"}]]'],title:"役職が記された本",author:"",HideFlags:32}
+#シェリフ
+#execute if entity @s[team=Hoankan] run item replace entity @s hotbar.7 with written_book{CustomModelData:1,Tags:["no_drop","role_book"],pages:['[{"text":"あなたの役職は…\\n\\n \\u0020"},{"text":"シェリフ","bold":true,"color":"green"},{"text":" \\u0020です。"}]'],title:"役職が記された本",author:""}
+execute if entity @s[team=Hoankan] run item replace entity @s hotbar.7 with written_book{CustomModelData:1,resolved:0b,Tags:["no_drop","role_book"],pages:['[[{"text":"\\uF830\\uE100\\uF826\\uE10F\\uF832","color":"white","font":"role_book"}],[{"text":"\\uE110\\uF833","color":"white","font":"role_book"}]]'],title:"役職が記された本",author:"",HideFlags:32}
+#パン屋
+execute if entity @s[team=Panya] run item replace entity @s hotbar.7 with written_book{CustomModelData:1,resolved:0b,Tags:["no_drop","role_book"],pages:['[[{"text":"\\uF830\\uE100\\uF826\\uE119\\uF832","color":"white","font":"role_book"}],[{"text":"\\uE11A\\uF833","color":"white","font":"role_book"}]]'],title:"役職が記された本",author:"",HideFlags:32}
+#オポチュニスト
+execute if entity @s[team=Ojousama] run item replace entity @s hotbar.7 with written_book{CustomModelData:1,resolved:0b,Tags:["no_drop","role_book"],pages:['[[{"text":"\\uF830\\uE100\\uF826\\uE123\\uF832","color":"white","font":"role_book"}],[{"text":"\\uE124\\uF833","color":"white","font":"role_book"}]]'],title:"役職が記された本",author:"",HideFlags:32}
+#裁判官
+execute if entity @s[team=Saibankan] run item replace entity @s hotbar.7 with written_book{CustomModelData:1,resolved:0b,Tags:["no_drop","role_book"],pages:['[[{"text":"\\uF830\\uE100\\uF826\\uE125\\uF832","color":"white","font":"role_book"}],[{"text":"\\uE126\\uF833","color":"white","font":"role_book"}]]'],title:"役職が記された本",author:"",HideFlags:32}
+#ナイステレポーター
+execute if entity @s[team=Niceteleporter] run item replace entity @s hotbar.7 with written_book{CustomModelData:1,resolved:0b,Tags:["no_drop","role_book"],pages:['[[{"text":"\\uF830\\uE100\\uF826\\uE129\\uF832","color":"white","font":"role_book"}],[{"text":"\\uE12A\\uF833","color":"white","font":"role_book"}]]'],title:"役職が記された本",author:"",HideFlags:32}
+#ナイスゲッサー
+execute if entity @s[team=Niceguesser] run item replace entity @s hotbar.7 with written_book{CustomModelData:1,resolved:0b,Tags:["no_drop","role_book"],pages:['[[{"text":"\\uF830\\uE100\\uF826\\uE133\\uF832","color":"white","font":"role_book"}],[{"text":"\\uE134\\uF833","color":"white","font":"role_book"}]]'],title:"役職が記された本",author:"",HideFlags:32}
+#社長
+execute if entity @s[team=Syachou] run item replace entity @s hotbar.7 with written_book{CustomModelData:1,resolved:0b,Tags:["no_drop","role_book"],pages:['[[{"text":"\\uF830\\uE100\\uF826\\uE137\\uF832","color":"white","font":"role_book"}],[{"text":"\\uE138\\uF833","color":"white","font":"role_book"}]]'],title:"役職が記された本",author:"",HideFlags:32}
+#さつまといも_c
+execute if entity @s[team=Satsumatoimo,scores={satsumatoimo_role=0}] run item replace entity @s hotbar.7 with written_book{CustomModelData:1,resolved:0b,Tags:["no_drop","role_book"],pages:['[[{"text":"\\uF830\\uE100\\uF826\\uE139\\uF832","color":"white","font":"role_book"}],[{"text":"\\uE13A\\uF833","color":"white","font":"role_book"}]]'],title:"役職が記された本",author:"",HideFlags:32}
+#シーア
+execute if entity @s[team=Seer] run item replace entity @s hotbar.7 with written_book{CustomModelData:1,resolved:0b,Tags:["no_drop","role_book"],pages:['[[{"text":"\\uF830\\uE100\\uF826\\uE13D\\uF832","color":"white","font":"role_book"}],[{"text":"\\uE13E\\uF833","color":"white","font":"role_book"}]]'],title:"役職が記された本",author:"",HideFlags:32}
+#さけのみこと
+execute if entity @s[team=Sakenomikoto] run item replace entity @s hotbar.7 with written_book{CustomModelData:1,resolved:0b,Tags:["no_drop","role_book"],pages:['[[{"text":"\\uF830\\uE100\\uF826\\uE147\\uF832","color":"white","font":"role_book"}],[{"text":"\\uE148\\uF833","color":"white","font":"role_book"}]]'],title:"役職が記された本",author:"",HideFlags:32}
+#花園の女の子
+#execute if entity @s[team=Hanazonogirl] run item replace entity @s hotbar.7 with written_book{CustomModelData:1,Tags:["no_drop","role_book"],pages:['[{"text":"あなたの役職は…\n\n \u0020"},{"text":"花園の女の子","bold":true,"color":"green"},{"text":" \u0020です。"}]'],title:"役職が記された本",author:""}
+execute if entity @s[team=Hanazonogirl] run item replace entity @s hotbar.7 with written_book{CustomModelData:1,resolved:0b,Tags:["no_drop","role_book"],pages:['[[{"text":"\uF830\uE100\uF826\uE149\uF832","color":"white","font":"role_book"}],[{"text":"\uE14A\uF833","color":"white","font":"role_book"}]]'],title:"役職が記された本",author:"",HideFlags:32}
+#しろくま
+#execute if entity @s[team=Polerbear] run item replace entity @s hotbar.7 with written_book{CustomModelData:1,Tags:["no_drop","role_book"],pages:['[{"text":"あなたの役職は…\n\n \u0020"},{"text":"しろくま","bold":true,"color":"green"},{"text":" \u0020です。"}]'],title:"役職が記された本",author:""}
+execute if entity @s[team=Polerbear] run item replace entity @s hotbar.7 with written_book{CustomModelData:1,resolved:0b,Tags:["no_drop","role_book"],pages:['[[{"text":"\uF830\uE100\uF826\uE14B\uF832","color":"white","font":"role_book"}],[{"text":"\uE14C\uF833","color":"white","font":"role_book"}]]'],title:"役職が記された本",author:"",HideFlags:32}
+#森
+#execute if entity @s[team=Forest] run item replace entity @s hotbar.7 with written_book{CustomModelData:1,Tags:["no_drop","role_book"],pages:['[{"text":"あなたの役職は…\n\n \u0020"},{"text":"森","bold":true,"color":"green"},{"text":" \u0020です。"}]'],title:"役職が記された本",author:""}
+execute if entity @s[team=Forest] run item replace entity @s hotbar.7 with written_book{CustomModelData:1,resolved:0b,Tags:["no_drop","role_book"],pages:['[[{"text":"\uF830\uE100\uF826\uE14D\uF832","color":"white","font":"role_book"}],[{"text":"\uE14E\uF833","color":"white","font":"role_book"}]]'],title:"役職が記された本",author:"",HideFlags:32}

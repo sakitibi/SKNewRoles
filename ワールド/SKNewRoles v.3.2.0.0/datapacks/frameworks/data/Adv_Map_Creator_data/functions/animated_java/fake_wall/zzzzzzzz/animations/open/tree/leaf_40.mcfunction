@@ -1,0 +1,2 @@
+execute on passengers run function Adv_Map_Creator_data:animated_java/fake_wall/zzzzzzzz/animations/open/tree/leaf_40_as_bone
+execute unless entity @s[tag=aj.fake_wall.disable_command_keyframes] at @s run execute as @e[type=marker,tag=fake_wall_place] at @s run particle ash ~ ~ ~ 0.5 2 0.5 0 100 force @a

@@ -1,0 +1,11 @@
+{
+  "condition": "minecraft:inverted",
+  "term": {
+    "condition": "minecraft:location_check",
+    "predicate": {
+      "block": {
+        "nbt": "{\"x\":0,\"y\":0,\"z\":0}"
+      }
+    }
+  }
+}

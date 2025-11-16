@@ -1,0 +1,2 @@
+execute as @e[tag=!kakusei,scores={magic1=13}] run item replace entity @s weapon.mainhand.0 with minecraft:heart_of_the_sea
+execute at @e[tag=!kakusei,scores={magic1=13}] run effect give @e[family=monster,distance=..30] resistance 30 4 true

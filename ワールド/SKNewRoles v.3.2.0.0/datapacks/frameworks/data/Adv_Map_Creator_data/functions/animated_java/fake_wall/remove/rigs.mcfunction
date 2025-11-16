@@ -1,0 +1,1 @@
+execute as @e[type=minecraft:item_display,tag=aj.fake_wall.root] run function Adv_Map_Creator_data:animated_java/fake_wall/zzzzzzzz/remove/as_root

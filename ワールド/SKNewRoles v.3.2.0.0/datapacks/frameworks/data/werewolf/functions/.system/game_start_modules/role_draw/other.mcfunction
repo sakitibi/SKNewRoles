@@ -1,0 +1,14 @@
+# 村人からオポチュニストにシフト
+function werewolf:role/.draw/ojousama
+# 村人から妖狐にシフト
+function werewolf:role/.draw/youko
+# 村人から背徳者にシフト
+function werewolf:role/.draw/haitoku
+# 村人から死神にシフト
+function werewolf:role/.draw/shinigami
+# 村人からキューピットにシフト
+function werewolf:role/.draw/cupid
+# 村人からジャッカルにシフト
+function werewolf:role/.draw/jackal
+# 村人からサイドキックにシフト
+function werewolf:role/.draw/sidekick

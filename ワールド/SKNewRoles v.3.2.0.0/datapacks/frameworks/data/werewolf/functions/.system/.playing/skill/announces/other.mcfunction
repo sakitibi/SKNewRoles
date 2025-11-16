@@ -1,0 +1,4 @@
+execute as @a[predicate=werewolf:look_at/look_at_player/look_at_players,predicate=werewolf:have_skill/jackal_slash_skill,predicate=!werewolf:is_sneaking] run schedule function werewolf:skill/skill_jackal/jackal_slash_skill/.jackal_slash_announce 1t append true
+execute as @a[predicate=werewolf:look_at/look_at_player/look_at_players,predicate=werewolf:have_skill/jackal_sidekick_skill,predicate=!werewolf:is_sneaking] run schedule function werewolf:skill/skill_jackal/jackal_sidekick_skill/.jackal_sidekick_announce 1t append true
+execute as @a[predicate=werewolf:look_at/look_at_player/look_at_players,predicate=werewolf:have_skill/youko_skill] run schedule function werewolf:skill/skill_youko/.youko_announce 1t append true
+execute as @a[predicate=werewolf:look_at/look_at_player/look_at_players,predicate=werewolf:have_skill/shinigami_skill] run schedule function werewolf:skill/skill_shinigami/.shinigami_announce 1t append true

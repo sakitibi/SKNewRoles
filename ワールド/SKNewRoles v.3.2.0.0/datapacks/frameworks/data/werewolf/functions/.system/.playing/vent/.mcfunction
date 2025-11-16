@@ -1,0 +1,6 @@
+#透明化
+execute unless score ポンコツ Role_count matches 1.. as @a[tag=can_use_vent,predicate=werewolf:is_sneaking,predicate=werewolf:have_item/vent_key] at @s if entity @e[distance=..1,tag=vent] run summon area_effect_cloud ~ ~ ~ {Duration:6,Age:4,Effects:[{Id:14,Amplifier:20,Duration:4,ShowParticles:false}]}
+execute if score ポンコツ Role_count matches 1.. if data storage sys: {ponkotsu_mode:1} as @a[tag=can_use_vent,predicate=werewolf:is_sneaking,predicate=werewolf:have_item/vent_key] at @s if entity @e[distance=..1,tag=vent] run summon area_effect_cloud ~ ~ ~ {Duration:6,Age:4,Effects:[{Id:14,Amplifier:20,Duration:4,ShowParticles:false}]}
+#個別のベント移動
+execute unless score ポンコツ Role_count matches 1.. as @a[tag=can_use_vent,scores={is_sneaking=30..},predicate=werewolf:is_sneaking,predicate=werewolf:have_item/vent_key] at @s if entity @e[distance=..1,tag=vent] run function werewolf:.system/vent/.vent
+execute if score ポンコツ Role_count matches 1.. if data storage sys: {ponkotsu_mode:1} as @a[tag=can_use_vent,scores={is_sneaking=30..},predicate=werewolf:is_sneaking,predicate=werewolf:have_item/vent_key] at @s if entity @e[distance=..1,tag=vent] run function werewolf:.system/vent/.vent

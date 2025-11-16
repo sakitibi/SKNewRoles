@@ -1,0 +1,13 @@
+execute if score 人狼 Role_count matches 0 run scoreboard players reset 人狼 Role_count
+execute if score アサシン Role_count matches 0 run scoreboard players reset アサシン Role_count
+execute if score Witch Role_count matches 0 run scoreboard players reset Witch Role_count
+execute if score リモコン Role_count matches 0 run scoreboard players reset リモコン Role_count
+execute if score ダブルキラー Role_count matches 0 run scoreboard players reset ダブルキラー Role_count
+execute if score イビルゲッサー Role_count matches 0 run scoreboard players reset イビルゲッサー Role_count
+execute if score スナイパー Role_count matches 0 run scoreboard players reset スナイパー Role_count
+execute if score イビルシーア Role_count matches 0 run scoreboard players reset イビルシーア Role_count
+execute if score 狂人 Role_count matches 0 run scoreboard players reset 狂人 Role_count
+execute if score 狂信者 Role_count matches 0 run scoreboard players reset 狂信者 Role_count
+execute if score 罠師 Role_count matches 0 run scoreboard players reset 罠師 Role_count
+execute if score マッドシーア Role_count matches 0 run scoreboard players reset マッドシーア Role_count
+execute if score しろいぬ Role_count matches 0 run scoreboard players reset しろいぬ Role_count
