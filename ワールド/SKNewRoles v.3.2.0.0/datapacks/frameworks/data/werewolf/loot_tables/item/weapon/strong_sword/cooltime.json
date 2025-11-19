@@ -1,0 +1,63 @@
+{
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:carrot_on_a_stick"
+        }
+      ],
+      "functions": [
+        {
+          "function": "minecraft:set_attributes",
+          "modifiers": [
+            {
+              "attribute": "minecraft:generic.attack_damage",
+              "name": "",
+              "amount": -0.1,
+              "operation": "multiply_base",
+              "slot": "mainhand"
+            }
+          ]
+        },
+        {
+          "function": "minecraft:set_name",
+          "entity": "this",
+          "name":[{"italic":false,"color":"white","text":"良い剣"}]
+        },
+        {
+          "function": "minecraft:set_lore",
+          "entity": "this",
+          "lore": [
+            {
+              "text": "[アイテム説明]",
+              "color": "gray",
+              "italic": false
+            },
+            {
+              "text": "多くの者が愛用する鋭い剣",
+              "color": "gray",
+              "italic": false
+            },
+            {
+              "text": "壊れることはない",
+              "color": "gray",
+              "italic": false
+            }
+          ]
+        },
+	{
+          "function": "minecraft:set_nbt",
+          "tag": "{CustomModelData:11,HideFlags:63,Tags:[\"strong_sword_cooltime\",\"sword_cooltime\",\"weapon\"]}"
+        },
+	{
+          "function": "minecraft:set_enchantments",
+          "enchantments": {
+            "minecraft:vanishing_curse": 1
+          }
+        }
+      ]
+    }
+  ]
+}

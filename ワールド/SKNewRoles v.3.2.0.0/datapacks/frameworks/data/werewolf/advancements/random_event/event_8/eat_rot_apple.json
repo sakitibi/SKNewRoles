@@ -1,0 +1,18 @@
+{
+  "criteria": {
+    "requirement": {
+      "trigger": "minecraft:consume_item",
+      "conditions": {
+        "item": {
+          "items": [
+            "minecraft:apple"
+          ],
+          "nbt": "{Tags:[\"rot\"]}"
+        }
+      }
+    }
+  },
+  "rewards": {
+    "function": "werewolf:random_event/delivery_apple/eat_rot_apple"
+  }
+}

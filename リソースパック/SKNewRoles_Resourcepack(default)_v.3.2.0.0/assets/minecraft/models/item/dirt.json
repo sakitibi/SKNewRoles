@@ -1,0 +1,13 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "minecraft:block/dirt"
+  },
+
+  "overrides": [
+    {"predicate": {"custom_model_data":1}, "model": "minecraft:item/dirt/figure/skin/odoroku"},
+    {"predicate": {"custom_model_data":2}, "model": "minecraft:item/dirt/figure/skin/odoroku_2"},
+    {"predicate": {"custom_model_data":3}, "model": "minecraft:item/dirt/figure/skin/odoroku_nigu"},
+    {"predicate": {"custom_model_data":4}, "model": "minecraft:item/dirt/bell"}
+  ]
+}

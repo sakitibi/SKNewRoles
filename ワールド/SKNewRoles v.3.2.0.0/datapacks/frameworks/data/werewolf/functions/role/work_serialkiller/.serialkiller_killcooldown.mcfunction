@@ -1,0 +1,1 @@
+scoreboard players remove @s[scores={serialkiller_killcooldown=0..}] serialkiller_killcooldown 1

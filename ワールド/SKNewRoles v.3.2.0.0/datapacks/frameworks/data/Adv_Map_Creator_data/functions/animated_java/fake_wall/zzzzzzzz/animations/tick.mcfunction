@@ -1,0 +1,1 @@
+execute if entity @s[tag=aj.fake_wall.animation.open] run function Adv_Map_Creator_data:animated_java/fake_wall/zzzzzzzz/animations/open/tick

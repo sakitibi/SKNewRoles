@@ -1,0 +1,7 @@
+{
+  "condition": "minecraft:entity_properties",
+  "entity": "this",
+  "predicate": {
+    "nbt": "{Inventory:[{Slot:9b,id:\"minecraft:barrier\"},{Slot:10b,id:\"minecraft:barrier\"},{Slot:11b,id:\"minecraft:barrier\"},{Slot:12b,id:\"minecraft:barrier\"},{Slot:13b,id:\"minecraft:barrier\"},{Slot:14b,id:\"minecraft:barrier\"},{Slot:15b,id:\"minecraft:barrier\"},{Slot:16b,id:\"minecraft:barrier\"},{Slot:17b,id:\"minecraft:barrier\"},{Slot:18b,id:\"minecraft:barrier\"},{Slot:19b,id:\"minecraft:barrier\"},{Slot:20b,id:\"minecraft:barrier\"},{Slot:21b,id:\"minecraft:barrier\"},{Slot:22b,id:\"minecraft:barrier\"},{Slot:23b,id:\"minecraft:barrier\"},{Slot:24b,id:\"minecraft:barrier\"},{Slot:25b,id:\"minecraft:barrier\"},{Slot:26b,id:\"minecraft:barrier\"},{Slot:27b,id:\"minecraft:barrier\"},{Slot:28b,id:\"minecraft:barrier\"},{Slot:29b,id:\"minecraft:barrier\"},{Slot:30b,id:\"minecraft:barrier\"},{Slot:31b,id:\"minecraft:barrier\"},{Slot:32b,id:\"minecraft:barrier\"},{Slot:33b,id:\"minecraft:barrier\"},{Slot:34b,id:\"minecraft:barrier\"},{Slot:35b,id:\"minecraft:barrier\"}]}"
+  }
+}

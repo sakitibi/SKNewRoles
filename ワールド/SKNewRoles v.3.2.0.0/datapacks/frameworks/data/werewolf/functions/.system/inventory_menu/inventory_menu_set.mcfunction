@@ -1,0 +1,1 @@
+scoreboard players set @a inventory_menu 0
