@@ -1,4 +1,5 @@
 version=3.2.0.1
+echo "圧縮開始!"
 sudo chown sakitibi:staff ./
 cd ..
 
@@ -20,10 +21,15 @@ rm -rf "$SRC/開発者用ツール.bundle"
 
 # 3. 元を zip
 zip -r9e "${SRC}.zip" "$SRC"
-7z a -p "${SRC}.7z" "$SRC"
-tar czf "${SRC}.gz" "$SRC"
-tar cjf "${SRC}.bz2" "$SRC"
-tar cJf "${SRC}.xz" "$SRC"
+7z a -mx=9 -p "${SRC}.7z" "$SRC"
+tar -I 'gzip -9' -cf "${SRC}.gz" "$SRC"
+tar -I 'bzip2 -9' -cf "${SRC}.bz2" "$SRC"
+tar -I 'xz -9e' -cf "${SRC}.xz" "$SRC"
+mv ${SRC}.zip ../../
+mv ${SRC}.7z ../../
+mv ${SRC}.gz ../../
+mv ${SRC}.bz2 ../../
+mv ${SRC}.xz ../../
 
 # 4. 元を空にする
 find "$SRC" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
@@ -37,3 +43,4 @@ rm -rf "$BAK"
 sudo chown root:wheel ./
 cd "$SRC"
 sudo chown root:wheel ./
+echo "圧縮完了!"
