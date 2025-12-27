@@ -16,6 +16,7 @@ cp -a "$SRC"/. "$BAK"/
 # 2. zip用に元を掃除
 rm -rf "$SRC/.git"
 rm -rf "$SRC/.github"
+rm "$SRC/.gitignore"
 find "$SRC" -name .vscode -type d -prune -exec rm -rf {} +
 rm -rf "$SRC/開発者用ツール.bundle"
 
