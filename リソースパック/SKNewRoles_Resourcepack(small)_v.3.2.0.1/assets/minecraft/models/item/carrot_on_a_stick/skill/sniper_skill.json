@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "minecraft:item/carrot_on_a_stick/skill/sniper_skill"
+  },
+	"display": {
+		"thirdperson_righthand": {
+			"scale": [0, 0, 0]
+		},
+		"thirdperson_lefthand": {
+			"scale": [0, 0, 0]
+		},
+		"ground": {
+			"scale": [0, 0, 0]
+		},
+                "gui": {
+			"rotation": [0, 0, 0],
+			"translation": [0, 0, 0],
+			"scale": [1, 1, 1]
+		},
+		"firstperson_righthand": {
+			"rotation": [0, 0, 0],
+			"translation": [0, 0, 0],
+			"scale": [0, 0, 0]
+		},
+		"firstperson_lefthand": {
+			"rotation": [0, 0, 0],
+			"translation": [0, 0, 0],
+			"scale": [0, 0, 0]
+		}
+	}
+}

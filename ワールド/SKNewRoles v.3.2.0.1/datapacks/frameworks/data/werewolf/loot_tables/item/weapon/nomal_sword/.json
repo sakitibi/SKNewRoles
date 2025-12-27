@@ -1,0 +1,64 @@
+{
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:carrot_on_a_stick"
+        }
+      ],
+      "functions": [
+        {
+          "function": "minecraft:set_attributes",
+          "modifiers": [
+            {
+              "attribute": "minecraft:generic.attack_damage",
+              "name": "",
+              "amount": -0.1,
+              "operation": "multiply_base",
+              "slot": "mainhand"
+            }
+          ]
+        },
+        {
+          "function": "minecraft:set_name",
+          "entity": "this",
+          "name":[{"italic":false,"color":"white","text":"ボロい剣"}]
+        },
+        {
+          "function": "minecraft:set_lore",
+          "entity": "this",
+          "lore": [
+            {
+              "text": "[アイテム説明]",
+              "color": "gray",
+              "italic": false
+            },
+            {
+              "text": "使い込まれたボロボロの剣",
+              "color": "gray",
+              "italic": false
+            },
+            {
+              "text": "壊れることはない",
+              "color": "gray",
+              "italic": false
+            }
+          ]
+        },
+	{
+          "function": "minecraft:set_nbt",
+          "tag": "{CustomModelData:10,HideFlags:63,Tags:[\"nomal_sword\",\"sword\",\"weapon\"]}"
+        },
+	{
+          "function": "minecraft:set_enchantments",
+          "enchantments": {
+            "minecraft:vanishing_curse": 1,
+            "minecraft:smite": 1
+          }
+        }
+      ]
+    }
+  ]
+}

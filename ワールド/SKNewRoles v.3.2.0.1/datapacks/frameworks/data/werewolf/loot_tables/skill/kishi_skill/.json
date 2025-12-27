@@ -1,0 +1,51 @@
+{
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:carrot_on_a_stick",
+          "functions": [
+            {
+              "function": "minecraft:set_name",
+              "entity": "this",
+              "name":[{"text":"騎士スキル - 守護","color":"white","italic":false}]
+            },
+            {
+              "function": "minecraft:set_lore",
+              "entity": "this",
+              "lore": [
+                {
+                  "text": "[スキル説明]",
+                  "color": "gray",
+                  "italic": false
+                },
+                {
+                  "text": "眼前のプレイヤーを人狼のスキルから1度だけ護ることができる",
+                  "color": "gray",
+                  "italic": false
+                },
+                {
+                  "text": "同じプレイヤーを連続で護ることはできない",
+                  "color": "gray",
+                  "italic": false
+                }
+              ]
+            },
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{CustomModelData:10008,Tags:[\"kishi_skill\",\"role_skill\",\"no_drop\"],HideFlags:63}"
+            },
+	    {
+              "function": "minecraft:set_enchantments",
+              "enchantments": {
+                "minecraft:vanishing_curse": 1
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

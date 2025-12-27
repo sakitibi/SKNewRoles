@@ -1,0 +1,17 @@
+execute if data storage sys: role.shinigami{stole:Jinrou} run function werewolf:skill/skill_shinigami/change_role/change_jinrou
+execute if data storage sys: role.shinigami{stole:Asasine} run function werewolf:skill/skill_shinigami/change_role/change_asasine
+execute if data storage sys: role.shinigami{stole:Witch} run function werewolf:skill/skill_shinigami/change_role/change_witch
+execute if data storage sys: role.shinigami{stole:Rimokon} run function werewolf:skill/skill_shinigami/change_role/change_rimokon
+execute if data storage sys: role.shinigami{stole:Doublekiller} run function werewolf:skill/skill_shinigami/change_role/change_doublekiller
+execute if data storage sys: role.shinigami{stole:Evilguesser} run function werewolf:skill/skill_shinigami/change_role/change_evilguesser
+execute if data storage sys: role.shinigami{stole:Sniper} run function werewolf:skill/skill_shinigami/change_role/change_sniper
+execute if data storage sys: role.shinigami{stole:Evilseer} run function werewolf:skill/skill_shinigami/change_role/change_evilseer
+execute if data storage sys: role.shinigami{stole:Comuner} run function werewolf:skill/skill_shinigami/change_role/change_comuner
+execute if data storage sys: role.shinigami{stole:Serialkiller} run function werewolf:skill/skill_shinigami/change_role/change_serialkiller
+execute if data storage sys: role.shinigami{stole:Kyoujin} run function werewolf:skill/skill_shinigami/change_role/change_kyoujin
+execute if data storage sys: role.shinigami{stole:Kyoushin} run function werewolf:skill/skill_shinigami/change_role/change_kyoushin
+execute if data storage sys: role.shinigami{stole:Wanashi} run function werewolf:skill/skill_shinigami/change_role/change_wanashi
+execute if data storage sys: role.shinigami{stole:Madseer} run function werewolf:skill/skill_shinigami/change_role/change_madseer
+execute if data storage sys: role.shinigami{stole:Shiroinu} run function werewolf:skill/skill_shinigami/change_role/change_shiroinu
+execute if data storage sys: role.shinigami{stole:Kyoujinkusushi} run function werewolf:skill/skill_shinigami/change_role/change_kyoujinkusushi
+execute if data storage sys: role.shinigami{stole:Poisoner} run function werewolf:skill/skill_shinigami/change_role/change_poisoner

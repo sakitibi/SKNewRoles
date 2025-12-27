@@ -1,0 +1,40 @@
+{
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:warped_fungus_on_a_stick",
+          "functions": [
+            {
+              "function": "minecraft:set_name",
+              "entity": "this",
+              "name":[{"text":"[設置] ニンジン","color":"white","italic":false}]
+            },
+            {
+              "function": "minecraft:set_lore",
+              "entity": "this",
+              "lore": [
+                {
+                  "text": "[アイテム説明]",
+                  "color": "gray",
+                  "italic": false
+                },
+                {
+                  "text": "右クリックで足元に耕地とニンジンを設置",
+                  "color": "gray",
+                  "italic": false
+                }
+              ]
+            },
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{CustomModelData:2,Tags:[\"set_carrots\"],HideFlags:63}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

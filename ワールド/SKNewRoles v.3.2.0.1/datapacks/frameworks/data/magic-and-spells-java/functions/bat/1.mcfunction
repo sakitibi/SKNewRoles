@@ -1,0 +1,1 @@
+execute at @e[type=bat,name=bat,scores={magic2=1}] run execute at @e[family=!monster,type=!bat,type=!lightning_bolt,distance=..30] run summon lightning_bolt ~ ~ ~

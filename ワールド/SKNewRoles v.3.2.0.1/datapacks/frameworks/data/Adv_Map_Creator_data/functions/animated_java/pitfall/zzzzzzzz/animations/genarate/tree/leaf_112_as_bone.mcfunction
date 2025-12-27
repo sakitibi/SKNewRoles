@@ -1,0 +1,2 @@
+execute if entity @s[tag=aj.pitfall.bone.bone] run data modify entity @s {} merge value {transformation:[-0.9798400000000009f,0f,1.1999579196765437e-16f,0f,0f,0.9798400000000009f,0f,0f,-1.1999579196765437e-16f,0f,-0.9798400000000009f,0f,0f,0f,0f,1f],start_interpolation:0}
+execute if entity @s[tag=aj.pitfall.bone.bone2] run data modify entity @s {} merge value {transformation:[-1.0396686666666677f,0f,1.2732269048071312e-16f,0f,0f,1.0396686666666677f,0f,0f,-1.2732269048071312e-16f,0f,-1.0396686666666677f,0f,0f,0f,0f,1f],start_interpolation:0}

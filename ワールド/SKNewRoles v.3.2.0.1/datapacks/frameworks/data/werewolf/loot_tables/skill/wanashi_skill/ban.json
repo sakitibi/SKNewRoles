@@ -1,0 +1,51 @@
+{
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:carrot_on_a_stick",
+          "functions": [
+            {
+              "function": "minecraft:set_name",
+              "entity": "this",
+              "name":[{"text":"現在使用不可","color":"white","italic":false}]
+            },
+            {
+              "function": "minecraft:set_lore",
+              "entity": "this",
+              "lore": [
+                {
+                  "text": "[スキル説明]",
+                  "color": "gray",
+                  "italic": false
+                },
+                {
+                  "text": "足元に狼陣営のみ視認できる罠を設置する",
+                  "color": "gray",
+                  "italic": false
+                },
+                {
+                  "text": "罠にかかったプレイヤーは一定時間その場に拘束される",
+                  "color": "gray",
+                  "italic": false
+                }
+              ]
+            },
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{CustomModelData:10017,Tags:[\"wanashi_skill_ban\",\"role_skill\",\"no_drop\"],HideFlags:63}"
+            },
+	    {
+              "function": "minecraft:set_enchantments",
+              "enchantments": {
+                "minecraft:vanishing_curse": 1
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

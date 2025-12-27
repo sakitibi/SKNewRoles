@@ -1,0 +1,1 @@
+schedule function magic-and-spells-java:bat/1 90s append false

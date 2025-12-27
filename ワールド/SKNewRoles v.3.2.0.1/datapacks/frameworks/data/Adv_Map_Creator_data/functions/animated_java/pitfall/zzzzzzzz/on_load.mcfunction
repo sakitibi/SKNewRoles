@@ -1,0 +1,2 @@
+scoreboard players set @s aj.pitfall.rig_loaded 1
+execute unless score @s aj.pitfall.export_version = aj.pitfall.export_version aj.i at @s run function Adv_Map_Creator_data:animated_java/pitfall/zzzzzzzz/mark_outdated_rig

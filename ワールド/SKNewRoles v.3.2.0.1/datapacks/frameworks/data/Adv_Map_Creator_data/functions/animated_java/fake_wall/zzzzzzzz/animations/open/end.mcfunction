@@ -1,0 +1,3 @@
+execute if score @s aj.fake_wall.animation.open.loop_mode = $aj.loop_mode.loop aj.i run function Adv_Map_Creator_data:animated_java/fake_wall/zzzzzzzz/animations/open/end_loop
+execute if score @s aj.fake_wall.animation.open.loop_mode = $aj.loop_mode.once aj.i run function Adv_Map_Creator_data:animated_java/fake_wall/animations/open/stop
+execute if score @s aj.fake_wall.animation.open.loop_mode = $aj.loop_mode.hold aj.i run function Adv_Map_Creator_data:animated_java/fake_wall/animations/open/pause
