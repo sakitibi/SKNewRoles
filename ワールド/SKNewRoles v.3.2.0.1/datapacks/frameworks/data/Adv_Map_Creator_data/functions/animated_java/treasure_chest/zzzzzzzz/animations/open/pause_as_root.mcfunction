@@ -1,0 +1,1 @@
+tag @s remove aj.treasure_chest.animation.open

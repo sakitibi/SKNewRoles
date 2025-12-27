@@ -1,0 +1,12 @@
+message="Merge remote changes"
+if [ $# -ge 1 ]; then
+    for arg in "$@"; do
+        message="$arg"
+    done
+fi
+sudo chown sakitibi:staff ./
+git add .
+git commit -m "$message"
+git push origin main
+find . -name '._*' -type f -ls -delete
+sudo chown root:wheel ./

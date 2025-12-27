@@ -1,0 +1,1 @@
+execute if entity @s[tag=aj.fake_wall.bone.6] run data modify entity @s {} merge value {transformation:[-9.957992501029599e-17f,0f,1f,1.5f,0f,1f,0f,0.28125f,-1f,0f,-9.957992501029599e-17f,0.37312500000000015f,0f,0f,0f,1f],start_interpolation:0}

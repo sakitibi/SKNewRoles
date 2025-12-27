@@ -1,0 +1,94 @@
+{
+	"textures": {
+		"0": "Adv_Map_Creator_data:animated_java/item/treasure_chest/normal"
+	},
+	"elements": [
+		{
+			"from": [
+				3.75,
+				5,
+				3.7499999999999982
+			],
+			"to": [
+				12.25,
+				11,
+				12.250000000000002
+			],
+			"rotation": {
+				"angle": 0,
+				"axis": "y",
+				"origin": [
+					8,
+					8,
+					8
+				]
+			},
+			"faces": {
+				"north": {
+					"uv": [
+						10.5,
+						8.25,
+						14,
+						10.75
+					],
+					"rotation": 180,
+					"texture": "#0"
+				},
+				"east": {
+					"uv": [
+						7,
+						8.25,
+						10.5,
+						10.75
+					],
+					"texture": "#0"
+				},
+				"south": {
+					"uv": [
+						3.5,
+						8.25,
+						7,
+						10.75
+					],
+					"texture": "#0"
+				},
+				"west": {
+					"uv": [
+						0,
+						8.25,
+						3.5,
+						10.75
+					],
+					"texture": "#0"
+				},
+				"up": {
+					"uv": [
+						7,
+						4.75,
+						10.5,
+						8.25
+					],
+					"texture": "#0"
+				},
+				"down": {
+					"uv": [
+						3.5,
+						4.75,
+						7,
+						8.25
+					],
+					"texture": "#0"
+				}
+			}
+		}
+	],
+	"display": {
+		"head": {
+			"rotation": [
+				0,
+				0,
+				0
+			]
+		}
+	}
+}

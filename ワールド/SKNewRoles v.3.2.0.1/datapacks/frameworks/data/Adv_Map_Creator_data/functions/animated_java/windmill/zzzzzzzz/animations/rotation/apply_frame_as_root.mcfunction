@@ -1,0 +1,1 @@
+execute if score @s aj.anim_time matches 0..1280 run function Adv_Map_Creator_data:animated_java/windmill/zzzzzzzz/animations/rotation/tree/branch_0_1280

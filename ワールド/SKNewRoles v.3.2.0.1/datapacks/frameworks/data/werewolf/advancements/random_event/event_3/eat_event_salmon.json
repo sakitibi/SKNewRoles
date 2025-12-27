@@ -1,0 +1,18 @@
+{
+  "criteria": {
+    "requirement": {
+      "trigger": "minecraft:consume_item",
+      "conditions": {
+        "item": {
+          "items": [
+            "minecraft:salmon"
+          ],
+          "nbt": "{Tags:[\"event_salmon_drop\"]}"
+        }
+      }
+    }
+  },
+  "rewards": {
+    "function": "werewolf:random_event/falling_salmon/.eat_event_salmon"
+  }
+}

@@ -1,0 +1,37 @@
+version=3.2.0.1
+cd ..
+
+SRC="SKNewRolesV${version}"
+BAK="SKNewRolesV${version}BAK"
+
+sudo chown sakitibi:staff ./
+
+# 1. 退避
+rm -rf "$BAK"
+mkdir "$BAK"
+cp -a "$SRC"/. "$BAK"/
+
+# 2. zip用に元を掃除
+rm -rf "$SRC/.git"
+rm -rf "$SRC/.github"
+find "$SRC" -name .vscode -type d -prune -exec rm -rf {} +
+rm -rf "$SRC/開発者用ツール.bundle"
+
+# 3. 元を zip
+zip -r9e "${SRC}.zip" "$SRC"
+7z a -p "${SRC}.7z" "$SRC"
+tar czf "${SRC}.gz" "$SRC"
+tar cjf "${SRC}.bz2" "$SRC"
+tar cJf "${SRC}.xz" "$SRC"
+
+# 4. 元を空にする
+find "$SRC" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+
+# 5. 復元
+cp -a "$BAK"/. "$SRC"/
+
+# 6. 後始末
+rm -rf "$BAK"
+
+sudo chown root:wheel ./
+cd "$SRC"

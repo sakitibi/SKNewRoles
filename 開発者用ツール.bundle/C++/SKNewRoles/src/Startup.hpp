@@ -1,0 +1,2 @@
+void logs();
+int StartUp();

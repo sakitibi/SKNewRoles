@@ -1,0 +1,2 @@
+execute if entity @s[tag=aj.treasure_chest.root] run function Adv_Map_Creator_data:animated_java/treasure_chest/zzzzzzzz/animations/open/pause_as_root
+execute if entity @s[tag=!aj.treasure_chest.root] run tellraw @a ["",{"text":"["},{"text":"Animated Java","color":"aqua"},{"text":"] "},{"text":"ERROR ☠","color":"red"},{"text":" > ","color":"gray"},[{"text":"The function","color":"yellow"},{"text":" Adv_Map_Creator_data:animated_java/treasure_chest/animations/open/pause ","color":"blue"},{"text":"must be run"},{"text":" as ","color":"red"},{"text":"the root entity!"}]]

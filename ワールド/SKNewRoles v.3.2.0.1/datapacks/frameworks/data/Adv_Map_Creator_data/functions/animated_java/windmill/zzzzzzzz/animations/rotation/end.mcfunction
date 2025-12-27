@@ -1,0 +1,3 @@
+execute if score @s aj.windmill.animation.rotation.loop_mode = $aj.loop_mode.loop aj.i run function Adv_Map_Creator_data:animated_java/windmill/zzzzzzzz/animations/rotation/end_loop
+execute if score @s aj.windmill.animation.rotation.loop_mode = $aj.loop_mode.once aj.i run function Adv_Map_Creator_data:animated_java/windmill/animations/rotation/stop
+execute if score @s aj.windmill.animation.rotation.loop_mode = $aj.loop_mode.hold aj.i run function Adv_Map_Creator_data:animated_java/windmill/animations/rotation/pause

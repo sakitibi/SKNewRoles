@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>役追加</title>
+    <link rel="stylesheet" href="https://sakitibi.github.io/13nin.com/elibrary/connect_sknewroles.min.css">
+    <style>
+        .options {
+            color: lightgreen;
+        }
+        .or{
+            color: coral;
+        }
+        .completed{
+            text-decoration: line-through;
+        }
+        .passed{
+            text-decoration: line-through;
+            color: grey;
+        }
+        .oomoji{
+            color: darkturquoise;
+        }
+    </style>
+</head>
+<body>
+    <div id="content">
+        <header>
+            <p>追加するところの相対パス(大文字から始まる新役の内部IDの場合は class="oomoji" すること)</p>
+            <p>ワイルドカードは * で指定すること</p>
+            <p>新役制作中の場合、完了したところを class="completed" すること</p>
+            <p>任意の場合は class="options" すること</p>
+            <p>or条件の場合は class="or" すること</p>
+            <p>パスする時は class="passed" すること</p>
+            <p>発案者 さきちび</p>
+        </header>
+        <hr>
+        <main>
+            <p>README.html</p>
+            <div id="datapacks">
+                <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/functions/skill/skill_新役の内部ID/*</p>
+                <div class="or" id="datapacks_1">
+                    <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/predicates/have_skill/新役の内部ID_skill_cooltime.json</p>
+                    <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/predicates/have_skill/新役の内部ID_スキルの内部ID_skill_cooltime.json</p>
+                </div>
+                <div class="or" id="datapacks_2">
+                    <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/predicates/have_skill/新役の内部ID_skill.json</p>
+                    <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/predicates/have_skill/新役の内部ID_スキルの内部ID_skill.json</p>
+                </div>
+                <div class="or" id="datapacks_3">
+                    <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/predicates/set_skill/新役の内部ID_skill_cooltime.json</p>
+                    <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/predicates/set_skill/新役の内部ID_スキルの内部ID_skill_cooltime.json</p>
+                </div>
+                <div class="or" id="datapacks_4">
+                    <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/predicates/set_skill/新役の内部ID_skill.json</p>
+                    <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/predicates/set_skill/新役の内部ID_スキルの内部ID_skill.json</p>
+                </div>
+                <div class="or" id="datapacks_5">
+                    <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/loot_tables/skill/新役の内部ID_skill/.json</p>
+                    <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/loot_tables/skill/新役の内部ID_スキルの内部ID_skill/.json</p>
+                </div>
+                <div class="or" id="datapacks_6">
+                    <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/loot_tables/skill/新役の内部ID_skill/cooltime.json</p>
+                    <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/loot_tables/skill/新役の内部ID_スキルの内部ID_skill/cooltime.json</p>
+                </div>
+                <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/functions/role/.draw/新役の内部ID.cpp</p>
+                <p class="options">ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/item_modifiers/item/skill/新役の内部ID/*</p>
+                <p class="options">ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/functions/role/work_新役の内部ID/*</p>
+                <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/functions/skill/skill_shinigami/change_role/change_新役の内部ID.cpp</p>
+                <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/functions/skill/skill_shinigami/.shinigami_change_role.cpp</p>
+                <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/functions/skill/skill_shinigami/.shinigami_copy_scoreboard.cpp</p>
+                <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/functions/skill/skill_shinigami/.shinigami_store_role.cpp</p>
+                <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/functions/skill/.switch_skill/*</p>
+                <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/functions/skill/.ini.cpp</p>
+                <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/functions/.system/.playing.cpp</p>
+                <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/functions/role/.ini.cpp</p>
+                <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/functions/role/.set_role_book.cpp</p>
+                <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/functions/role/.role_view.cpp</p>
+                <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/functions/role/.role_view-2.cpp</p>
+                <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/functions/role/.role_view-1.cpp</p>
+                <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/functions/role/.role_view 2.cpp</p>
+                <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/functions/.settings/role/count/新役の内部ID/*</p>
+                <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/functions/.settings/role/skill/新役の内部ID/*</p>
+                <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/functions/.settings/view_settings_role_mod/2.cpp</p>
+                <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/functions/.settings/view_settings_skill_mod/2.cpp</p>
+                <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/functions/.settings/save_settings.cpp</p>
+                <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/functions/.settings/.debug/change_role/change_新役の内部ID.cpp</p>
+                <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/functions/.system/time_change/change_day.cpp</p>
+                <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/functions/.system/result.cpp</p>
+                <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/functions/.system/gamestart.cpp</p>
+                <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/functions/.system/gamestart3.cpp</p>
+                <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/functions/.system/.game_end.cpp</p>
+                <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/functions/.system/.game_end_ins.cpp</p>
+                <p>ワールド/SKNewRoles <span class="version"></span>/datapacks/werewolf/data/werewolf/functions/.system/.game_end_only.cpp</p>
+            </div>
+            <hr>
+            <div id="resourcepacks">
+                <p>リソースパック/SKNewRoles_Resourcepack(default)_<span class="version"></span>/assets/minecraft/models/item/carrot_on_a_stick.json</p>
+                <p>リソースパック/SKNewRoles_Resourcepack(small)_<span class="version"></span>/assets/minecraft/models/item/carrot_on_a_stick.json</p>
+                <p>リソースパック/SKNewRoles_Resourcepack(default)_<span class="version"></span>/assets/minecraft/textures/font/role_dex/新役の内部ID_l</p>
+                <p>リソースパック/SKNewRoles_Resourcepack(default)_<span class="version"></span>/assets/minecraft/textures/font/role_dex/新役の内部ID_r</p>
+                <p>リソースパック/SKNewRoles_Resourcepack(small)_<span class="version"></span>/assets/minecraft/textures/font/role_dex/新役の内部ID_l</p>
+                <p>リソースパック/SKNewRoles_Resourcepack(small)_<span class="version"></span>/assets/minecraft/textures/font/role_dex/新役の内部ID_r</p>
+                <p>リソースパック/SKNewRoles_Resourcepack(default)_<span class="version"></span>/assets/minecraft/textures/font/role_dex/data/新役の内部ID</p>
+                <p>リソースパック/SKNewRoles_Resourcepack(small)_<span class="version"></span>/assets/minecraft/textures/font/role_dex/data/新役の内部ID</p>
+                <p>リソースパック/SKNewRoles_Resourcepack(default)_<span class="version"></span>/assets/minecraft/textures/font/role/新役の内部ID</p>
+                <p>リソースパック/SKNewRoles_Resourcepack(small)_<span class="version"></span>/assets/minecraft/textures/font/role/新役の内部ID</p>
+                <div class="or" id="resources_1">
+                    <p>リソースパック/SKNewRoles_Resourcepack(default)_<span class="version"></span>/assets/minecraft/models/item/carrot_on_a_stick/skill/新役の内部ID_skill_cooltime.json</p>
+                    <p>リソースパック/SKNewRoles_Resourcepack(default)_<span class="version"></span>/assets/minecraft/models/item/carrot_on_a_stick/skill/新役の内部ID_スキルの内部ID_skill_cooltime.json</p>
+                </div>
+                <div class="or" id="resources_2">
+                    <p>リソースパック/SKNewRoles_Resourcepack(default)_<span class="version"></span>/assets/minecraft/models/item/carrot_on_a_stick/skill/新役の内部ID_skill.json</p>
+                    <p>リソースパック/SKNewRoles_Resourcepack(default)_<span class="version"></span>/assets/minecraft/models/item/carrot_on_a_stick/skill/新役の内部ID_スキルの内部ID_skill.json</p>
+                </div>
+                <div class="or" id="resources_3">
+                    <p>リソースパック/SKNewRoles_Resourcepack(small)_<span class="version"></span>/assets/minecraft/models/item/carrot_on_a_stick/skill/新役の内部ID_skill_cooltime.json</p>
+                    <p>リソースパック/SKNewRoles_Resourcepack(small)_<span class="version"></span>/assets/minecraft/models/item/carrot_on_a_stick/skill/新役の内部ID_スキルの内部ID_skill_cooltime.json</p>
+                </div>
+                <div class="or" id="resources_4">
+                    <p>リソースパック/SKNewRoles_Resourcepack(small)_<span class="version"></span>/assets/minecraft/models/item/carrot_on_a_stick/skill/新役の内部ID_skill.json</p>
+                    <p>リソースパック/SKNewRoles_Resourcepack(small)_<span class="version"></span>/assets/minecraft/models/item/carrot_on_a_stick/skill/新役の内部ID_スキルの内部ID_skill.json</p>
+                </div>
+                <div class="or" id="resources_5">
+                    <p>リソースパック/SKNewRoles_Resourcepack(default)_<span class="version"></span>/assets/minecraft/textures/item/carrot_on_a_stick/skill/新役の内部ID_skill_cooltime.png</p>
+                    <p>リソースパック/SKNewRoles_Resourcepack(default)_<span class="version"></span>/assets/minecraft/textures/item/carrot_on_a_stick/skill/新役の内部ID_スキルの内部ID_skill_cooltime.png</p>
+                </div>
+                <div class="or" id="resources_6">
+                    <p>リソースパック/SKNewRoles_Resourcepack(small)_<span class="version"></span>/assets/minecraft/textures/item/carrot_on_a_stick/skill/新役の内部ID_skill_cooltime.png</p>
+                    <p>リソースパック/SKNewRoles_Resourcepack(small)_<span class="version"></span>/assets/minecraft/textures/item/carrot_on_a_stick/skill/新役の内部ID_スキルの内部ID_skill_cooltime.png</p>
+                </div>
+                <div class="or" id="resources_7">
+                    <p>リソースパック/SKNewRoles_Resourcepack(default)_<span class="version"></span>/assets/minecraft/textures/item/carrot_on_a_stick/skill/新役の内部ID_skill.png</p>
+                    <p>リソースパック/SKNewRoles_Resourcepack(default)_<span class="version"></span>/assets/minecraft/textures/item/carrot_on_a_stick/skill/新役の内部ID_スキルの内部ID_skill.png</p>
+                </div>
+                <div class="or" id="resources_8">
+                    <p>リソースパック/SKNewRoles_Resourcepack(small)_<span class="version"></span>/assets/minecraft/textures/item/carrot_on_a_stick/skill/新役の内部ID_skill.png</p>
+                    <p>リソースパック/SKNewRoles_Resourcepack(small)_<span class="version"></span>/assets/minecraft/textures/item/carrot_on_a_stick/skill/新役の内部ID_スキルの内部ID_skill.png</p>
+                </div>
+                <p>リソースパック/SKNewRoles_Resourcepack(default)_<span class="version"></span>/assets/minecraft/font/role.json</p>
+                <p>リソースパック/SKNewRoles_Resourcepack(default)_<span class="version"></span>/assets/minecraft/font/role_book.json</p>
+                <p>リソースパック/SKNewRoles_Resourcepack(small)_<span class="version"></span>/assets/minecraft/font/role.json</p>
+                <p>リソースパック/SKNewRoles_Resourcepack(small)_<span class="version"></span>/assets/minecraft/font/role_book.json</p>
+            </div>
+        </main>
+        <hr>
+        <footer style="text-align: center;">
+            <p>Copyright 2023~<span id="copyright">2023</span> 13ninstudio</p>
+        </footer>
+        <script src="https://sakitibi.github.io/13nin.com/elibrary/connect.js"></script>
+        <script>
+            const version = "v.3.2.0.1";
+            const vertext = document.getElementsByClassName("version");
+            for (const item of vertext) {
+                item.innerText = `${version}`;
+            }
+        </script>
+    </div>
+</body>
+</html>

@@ -1,0 +1,31 @@
+version=3.2.0.1
+sudo chown sakitibi:staff ../
+cd ../
+git clone https://github.com/sakitibi/SKNewRoles-Developer-tools.git
+cd ./"SKNewRoles-Developer-tools"
+rm ./.gitignore
+sudo cp "../SKNewRolesV$version/開発者用ツール.bundle/.gitignore_honban" ./.gitignore
+rm -fr ./プラグイン
+rm -fr ./ワールド/SekaDynamicLinkLibrary
+rm -fr ./開発者用ツール.bundle
+rm -fr ./.git
+rm -fr ./ワールド/"SKNewRoles v.$version"/advancements
+rm -fr ./ワールド/"SKNewRoles v.$version"/data
+rm -fr ./ワールド/"SKNewRoles v.$version"/DIM-1
+rm -fr ./ワールド/"SKNewRoles v.$version"/DIM1
+rm -fr ./ワールド/"SKNewRoles v.$version"/entities
+rm -fr ./ワールド/"SKNewRoles v.$version"/playerdata
+rm -fr ./ワールド/"SKNewRoles v.$version"/poi
+rm -fr ./ワールド/"SKNewRoles v.$version"/region
+rm -fr ./ワールド/"SKNewRoles v.$version"/stats
+rm ./ワールド/"SKNewRoles v.$version"/level.dat
+rm ./ワールド/"SKNewRoles v.$version"/session.lock
+git init
+git remote add origin https://github.com/sakitibi/SKNewRoles.git
+git add .
+git commit -m "Force remote changes"
+git push -f origin main
+cd ../
+rm -fr ./"SKNewRoles-Developer-tools"
+sudo chown root:wheel ./
+cd ./SKNewRolesV$version

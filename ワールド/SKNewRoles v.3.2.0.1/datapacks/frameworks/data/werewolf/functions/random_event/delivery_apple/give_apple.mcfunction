@@ -1,0 +1,3 @@
+give @s apple{display:{Name:'{"text":"新鮮なリンゴ","italic":false,"color":"white"}',Lore:['{"text":"[アイテム説明]","italic":false,"color":"gray"}','{"text": "みずみずしい採れたてのリンゴ","color": "gray","italic": false}','{"text": "時間が経つと腐ることがある","color": "gray","italic": false}']}}
+execute as @s at @s run playsound minecraft:block.flowering_azalea.break master @a
+advancement revoke @s only werewolf:random_event/event_8/give_apple

@@ -1,0 +1,51 @@
+{
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:carrot_on_a_stick",
+          "functions": [
+            {
+              "function": "minecraft:set_name",
+              "entity": "this",
+              "name":[{"text":"クールタイム終了まで - ","color":"white","italic":false},{"score":{"name":"@s","objective":"skill_witch_roar_cooltime"}},{"text":" (\uE500+\uE501右クリックでスキル切り替え)"}]
+            },
+            {
+              "function": "minecraft:set_lore",
+              "entity": "this",
+              "lore": [
+                {
+                  "text": "[スキル説明] -夜のみ使用可能-",
+                  "color": "gray",
+                  "italic": false
+                },
+                {
+                  "text": "強烈なビームで自分の直線上を攻撃する",
+                  "color": "gray",
+                  "italic": false
+                },
+                {
+                  "text": "相手を一撃でキルすることができる",
+                  "color": "gray",
+                  "italic": false
+                }
+              ]
+            },
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{CustomModelData:10045,Tags:[\"witch_roar_skill_cooltime\",\"role_skill\",\"no_drop\"],HideFlags:63}"
+            },
+	    {
+              "function": "minecraft:set_enchantments",
+              "enchantments": {
+                "minecraft:vanishing_curse": 1
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+scoreboard players set @s aj.fake_wall.rig_loaded 1
+execute unless score @s aj.fake_wall.export_version = aj.fake_wall.export_version aj.i at @s run function Adv_Map_Creator_data:animated_java/fake_wall/zzzzzzzz/mark_outdated_rig

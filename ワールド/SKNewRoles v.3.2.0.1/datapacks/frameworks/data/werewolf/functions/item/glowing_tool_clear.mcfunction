@@ -1,0 +1,1 @@
+scoreboard players set GameManager glowing_successed 0

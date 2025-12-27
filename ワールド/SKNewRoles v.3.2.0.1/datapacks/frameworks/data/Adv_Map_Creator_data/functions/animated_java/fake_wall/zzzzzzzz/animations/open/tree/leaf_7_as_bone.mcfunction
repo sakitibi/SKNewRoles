@@ -1,0 +1,2 @@
+execute if entity @s[tag=aj.fake_wall.bone.1] run data modify entity @s {} merge value {transformation:[-1.3333333333333333f,0f,1.6328623988631375e-16f,1.8752404111943843e-17f,0f,1.3333333333333333f,0f,0f,-1.6328623988631375e-16f,0f,-1.3333333333333333f,-0.15312499999999998f,0f,0f,0f,1f],start_interpolation:0}
+execute if entity @s[tag=aj.fake_wall.bone.4] run data modify entity @s {} merge value {transformation:[-1f,0f,1.2246467991473532e-16f,6.013890531527179e-18f,0f,1f,0f,0f,-1.2246467991473532e-16f,0f,-1f,-0.04910714285714284f,0f,0f,0f,1f],start_interpolation:0}

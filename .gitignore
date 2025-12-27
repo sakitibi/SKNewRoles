@@ -1,0 +1,5 @@
+.DS_Store
+._*
+ワールド/SekaDynamicLinkLibrary
+.vscode
+開発者用ツール.bundle/C++/*/build

@@ -1,0 +1,854 @@
+{
+    "providers": [
+        {
+            "type": "ttf",
+            "file": "minecraft:pixelmplus10.ttf",
+            "shift": [0.0, 1.0],
+            "size": 8.8,
+            "oversample": 10.0
+        },
+        {
+            "type": "space",
+                "advances":{
+                    " ": 4,
+                    "\u200c": 0,
+                    "\uF821": 1,
+                    "\uF822": 2,
+                    "\uF823": 3,
+                    "\uF824": 4,
+                    "\uF825": 5,
+                    "\uF826": 6,
+                    "\uF827": 7,
+                    "\uF828": 8,
+                    "\uF829": 16,
+                    "\uF82A": 32,
+                    "\uF82B": 64,
+                    "\uF82C": 128,
+                    "\uF82D": 256,
+                    "\uF82E": 512,
+                    "\uF82F": 1024,
+                    "\uF801": -1,
+                    "\uF802": -2,
+                    "\uF803": -3,
+                    "\uF804": -4,
+                    "\uF805": -5,
+                    "\uF806": -6,
+                    "\uF807": -7,
+                    "\uF808": -8,
+                    "\uF809": -16,
+                    "\uF80A": -32,
+                    "\uF80B": -64,
+                    "\uF80C": -128,
+                    "\uF80D": -256,
+                    "\uF80E": -512,
+                    "\uF80F": -1024,
+                    "\uF830": -23,
+                    "\uF831": 6,
+                    "\uF832": -58,
+                    "\uF833": -125
+
+                }
+        },
+	{
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/.void.png",
+            "ascent": -2147483648,
+            "height": -24,
+            "chars": [
+                "\uE100"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/jinrou_l.png",
+            "ascent": 36,
+            "height": 180,
+            "chars": [
+                "\uE101"
+            ]
+        },	
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/jinrou_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE102"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/kyoujin_l.png",
+            "ascent": 36,
+            "height": 180,
+            "chars": [
+                "\uE103"
+            ]
+        },	
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/kyoujin_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE104"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/kyoushin_l.png",
+            "ascent": 36,
+            "height": 180,
+            "chars": [
+                "\uE105"
+            ]
+        },	
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/kyoushin_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE106"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/mura_l.png",
+            "ascent": 36,
+            "height": 180,
+            "chars": [
+                "\uE107"
+            ]
+        },	
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/mura_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE108"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/uranai_l.png",
+            "ascent": 36,
+            "height": 180,
+            "chars": [
+                "\uE109"
+            ]
+        },	
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/uranai_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE10A"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/reinou_l.png",
+            "ascent": 36,
+            "height": 180,
+            "chars": [
+                "\uE10B"
+            ]
+        },	
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/reinou_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE10C"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/kishi_l.png",
+            "ascent": 36,
+            "height": 180,
+            "chars": [
+                "\uE10D"
+            ]
+        },	
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/kishi_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE10E"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/hoankan_l.png",
+            "ascent": 36,
+            "height": 180,
+            "chars": [
+                "\uE10F"
+            ]
+        },	
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/hoankan_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE110"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/youko_l.png",
+            "ascent": 36,
+            "height": 180,
+            "chars": [
+                "\uE111"
+            ]
+        },	
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/youko_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE112"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/haitoku_l.png",
+            "ascent": 36,
+            "height": 180,
+            "chars": [
+                "\uE113"
+            ]
+        },	
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/haitoku_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE114"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/shinigami_l.png",
+            "ascent": 36,
+            "height": 180,
+            "chars": [
+                "\uE115"
+            ]
+        },	
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/shinigami_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE116"
+            ]
+        },	
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/wanashi_l.png",
+            "ascent": 36,
+            "height": 180,
+            "chars": [
+                "\uE117"
+            ]
+        },	
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/wanashi_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE118"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/panya_l.png",
+            "ascent": 36,
+            "height": 180,
+            "chars": [
+                "\uE119"
+            ]
+        },	
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/panya_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE11A"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/panya_l.png",
+            "ascent": 36,
+            "height": 180,
+            "chars": [
+                "\uE119"
+            ]
+        },	
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/panya_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE11A"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/cupid_l.png",
+            "ascent": 36,
+            "height": 180,
+            "chars": [
+                "\uE11B"
+            ]
+        },	
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/cupid_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE11C"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/ponkotsu_l.png",
+            "ascent": 36,
+            "height": 180,
+            "chars": [
+                "\uE11D"
+            ]
+        },	
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/ponkotsu_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE11E"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/kyouyuu_l.png",
+            "ascent": 36,
+            "height": 180,
+            "chars": [
+                "\uE11F"
+            ]
+        },	
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/kyouyuu_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE120"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/asasine_l.png",
+            "ascent": 36,
+            "height": 180,
+            "chars": [
+                "\uE121"
+            ]
+        },	
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/asasine_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE122"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/ojousama_l.png",
+            "ascent": 36,
+            "height": 180,
+            "chars": [
+                "\uE123"
+            ]
+        },	
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/ojousama_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE124"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/saibankan_l.png",
+            "ascent": 36,
+            "height": 180,
+            "chars": [
+                "\uE125"
+            ]
+        },	
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/saibankan_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE126"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/witch_l.png",
+            "ascent": 36,
+            "height": 180,
+            "chars": [
+                "\uE127"
+            ]
+        },	
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/witch_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE128"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/niceteleporter_l.png",
+            "ascent": 36,
+            "height": 180,
+            "chars": [
+                "\uE129"
+            ]
+        },	
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/niceteleporter_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE12A"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/rimokon_l.png",
+            "ascent": 36,
+            "height": 180,
+            "chars": [
+                "\uE12B"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/rimokon_r.png",
+            "ascent": 36,
+            "height": 180,
+            "chars": [
+                "\uE12C"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/doublekiller_l.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE12D"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/doublekiller_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE12E"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/jakcal_l.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE12F"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/jackal_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE130"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/sidekick_l.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE131"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/sidekick_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE132"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/niceguesser_l.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE133"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/niceguesser_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE134"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/evilguesser_l.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE135"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/evilguesser_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE136"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/syachou_l.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE137"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/syachou_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE138"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/satsumatoimo_l.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE139"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/satsumatoimo_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE13A"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/sniper_l.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE13B"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/sniper_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE13C"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/seer_l.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE13D"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/seer_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE13E"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/madseer_l.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE13F"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/madseer_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE140"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/evilseer_l.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE141"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/evilseer_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE142"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/comuner_l.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE143"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/comuner_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE144"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/serialkiller_l.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE145"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/serialkiller_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE146"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/sakenomikoto_l.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE147"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/sakenomikoto_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE148"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/hanazonogirl_l.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE149"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/hanazonogirl_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE14A"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/polerbear_l.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE14B"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/polerbear_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE14C"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/forest_l.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE14D"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/forest_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE14E"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/shiroinu_l.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE14F"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/shiroinu_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE150"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/kyoujinkusushi_l.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE151"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/kyoujinkusushi_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE152"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/poisoner_l.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE153"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/poisoner_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE154"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/marmade_l.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE155"
+            ]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:font/role_dex/marmade_r.png",
+            "ascent": 45,
+            "height": 180,
+            "chars": [
+                "\uE156"
+            ]
+        }
+    ]
+}

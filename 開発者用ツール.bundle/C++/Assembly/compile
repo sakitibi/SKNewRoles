@@ -1,0 +1,9 @@
+#!/bin/bash
+
+cd "/Applications/13ninTv/function/SKNewRolesV3.2.0.1/開発者用ツール.bundle/C++/Assembly/build"
+if [ $? -eq 0 ]; then
+    rm -fr ./*
+    cmake ..
+    make $j8
+    mv -f AssemblyC++.sdll "/Applications/13ninTv/function/SKNewRolesV3.2.0.1/ワールド/SekaDynamicLinkLibrary"
+fi

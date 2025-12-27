@@ -1,2 +1,0 @@
-tellraw @a[name=!water_challenge,name=!NMNGyuri] {"rawtext":[{"text":"§aSumanaiDokkiriAutoを\nダウンロードしていただき、ありがとうございます!"}]}
-tellraw @a[name=!water_challenge,name=!NMNGyuri] {"rawtext":[{"text":"§aSumanaiDokkiriAutoの使い方 /sda:help を実行してね"}]}
