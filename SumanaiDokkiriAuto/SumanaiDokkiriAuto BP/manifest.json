@@ -1,0 +1,75 @@
+{
+	"format_version": 2,
+	"metadata": {
+		"authors": [
+			"bridge."
+		],
+		"generated_with": {
+			"bridge": [
+				"2.7.48"
+			],
+			"dash": [
+				"0.11.7"
+			]
+		}
+	},
+	"header": {
+		"name": "SumanaiDokkiriAuto",
+		"description": "",
+		"min_engine_version": [
+			1,
+			21,
+			70
+		],
+		"uuid": "a7519952-e4ff-46e2-a300-e90fb754e441",
+		"version": [
+			1,
+			0,
+			4
+		]
+	},
+	"modules": [
+		{
+			"type": "data",
+			"uuid": "3a1e052b-6520-44dc-8def-695a57a9ca38",
+			"version": [
+				1,
+				0,
+				0
+			]
+		},
+		{
+			"type": "script",
+			"language": "javascript",
+			"uuid": "1106f740-9960-4a13-8080-2df24ba37de8",
+			"entry": "scripts/main.js",
+			"version": [
+				1,
+				0,
+				0
+			]
+		}
+	],
+	"dependencies": [
+		{
+			"module_name": "@minecraft/server",
+			"version": "2.0.0-beta"
+		},
+		{
+			"module_name": "@minecraft/server-gametest",
+			"version": "2.0.0-beta"
+		},
+		{
+			"module_name": "@minecraft/server-ui",
+			"version": "2.0.0-beta"
+		},
+		{
+			"module_name": "@minecraft/server-admin",
+			"version": "2.0.0-beta"
+		},
+		{
+			"module_name": "@minecraft/server-net",
+			"version": "2.0.0-beta"
+		}
+	]
+}

@@ -1,0 +1,52 @@
+{
+	"format_version": 2,
+	"metadata": {
+		"authors": [
+			"bridge."
+		],
+		"generated_with": {
+			"bridge": [
+				"2.7.48"
+			],
+			"dash": [
+				"0.11.7"
+			]
+		}
+	},
+	"header": {
+		"name": "SumanaiDokkiriAuto",
+		"description": "",
+		"min_engine_version": [
+			1,
+			21,
+			70
+		],
+		"uuid": "d06274bd-c038-4e9f-9ecd-2e6ea871cd6c",
+		"version": [
+			1,
+			0,
+			4
+		]
+	},
+	"modules": [
+		{
+			"type": "resources",
+			"uuid": "be9ca8c5-3ba9-4682-ae47-a8ae2ebad6b8",
+			"version": [
+				1,
+				0,
+				0
+			]
+		}
+	],
+	"dependencies": [
+		{
+			"uuid": "a7519952-e4ff-46e2-a300-e90fb754e441",
+			"version": [
+				1,
+				0,
+				4
+			]
+		}
+	]
+}
