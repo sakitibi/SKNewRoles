@@ -1,4 +1,4 @@
-message="Merge remote changes"
+message="Force remote changes"
 if [ $# -ge 1 ]; then
     for arg in "$@"; do
         message="$arg"
@@ -7,6 +7,6 @@ fi
 sudo chown sakitibi:staff ./
 git add .
 git commit -m "$message"
-git push origin main
+git push -f origin main
 find . -name '._*' -type f -ls -delete
 sudo chown root:wheel ./
