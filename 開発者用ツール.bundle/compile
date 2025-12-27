@@ -22,8 +22,9 @@ rm -rf "$SRC/開発者用ツール.bundle"
 # 3. 元を zip
 zip -r9e "${SRC}.zip" "$SRC"
 7z a -mx=9 -p "${SRC}.7z" "$SRC"
-tar -I 'gzip -9' -cf "${SRC}.gz" "$SRC"
-tar -I 'bzip2 -9' -cf "${SRC}.bz2" "$SRC"
+GZIP=-9 tar czf "${SRC}.tar.gz" "$SRC"
+BZIP2=-9 tar cjf "${SRC}.tar.bz2" "$SRC"
+XZ_OPT=-9e tar cJf "${SRC}.tar.xz" "$SRC"
 tar -I 'xz -9e' -cf "${SRC}.xz" "$SRC"
 mv ${SRC}.zip ../../
 mv ${SRC}.7z ../../
