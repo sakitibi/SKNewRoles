@@ -1,0 +1,2 @@
+execute if score @s aj.tween_time matches 1.. run function Adv_Map_Creator_data:animated_java/windmill/zzzzzzzz/animations/rotation/tick_tween
+execute unless score @s aj.tween_time matches 1.. run function Adv_Map_Creator_data:animated_java/windmill/zzzzzzzz/animations/rotation/tick_animation

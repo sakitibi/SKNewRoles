@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "minecraft:item/carrot_on_a_stick/special_tool/same_look_tool"
+  }
+}

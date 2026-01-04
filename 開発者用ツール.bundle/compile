@@ -1,0 +1,49 @@
+version=3.2.0.1
+echo "圧縮開始!"
+sudo chown sakitibi:staff ./
+cd ..
+
+SRC="SKNewRolesV${version}"
+BAK="SKNewRolesV${version}BAK"
+
+sudo chown sakitibi:staff ./
+
+# 1. 退避
+rm -rf "$BAK"
+mkdir "$BAK"
+cp -a "$SRC"/. "$BAK"/
+
+# 2. zip用に元を掃除
+rm -rf "$SRC/.git"
+rm -rf "$SRC/.github"
+rm "$SRC/.gitignore"
+find "$SRC" -name .vscode -type d -prune -exec rm -rf {} +
+rm -rf "$SRC/開発者用ツール.bundle"
+
+# 3. 元を zip
+zip -r9e "${SRC}.zip" "$SRC"
+7z a -mx=9 -p "${SRC}.7z" "$SRC"
+GZIP=-9 tar czf "${SRC}.gz" "$SRC"
+BZIP2=-9 tar cjf "${SRC}.bz2" "$SRC"
+XZ_OPT=-9e tar cJf "${SRC}.xz" "$SRC"
+mv ${SRC}.zip ../../
+mv ${SRC}.7z ../../
+mv ${SRC}.gz ../../
+mv ${SRC}.bz2 ../../
+mv ${SRC}.xz ../../
+
+# 4. 元を空にする
+find "$SRC" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+rm -rf "$BAK/.git"
+git init
+git remote add origin https://github.com/sakitibi/SKNewRoles.git
+# 5. 復元
+cp -a "$BAK"/. "$SRC"/
+
+# 6. 後始末
+rm -rf "$BAK"
+
+sudo chown root:wheel ./
+cd "$SRC"
+sudo chown root:wheel ./
+echo "圧縮完了!"

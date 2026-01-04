@@ -1,0 +1,51 @@
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=!werewolf:have_skill/reinou_skill,predicate=!werewolf:have_skill/reinou_skill_cooltime,predicate=werewolf:look_at/look_at_player/look_at_player_1] run title @s actionbar [{"selector":"@a[tag=1]"},{"text":"の墓 (\uE500で緊急会議)"}]
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=werewolf:have_skill/reinou_skill_cooltime,predicate=werewolf:look_at/look_at_player/look_at_player_1] run title @s actionbar [{"selector":"@a[tag=1]"},{"text":"の墓"}]
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=werewolf:have_skill/reinou_skill,predicate=werewolf:look_at/look_at_player/look_at_player_1] run title @s actionbar [{"selector":"@a[tag=1]"},{"text":"の墓 (\uE501右クリックで能力を使う)"}]
+
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=!werewolf:have_skill/reinou_skill,predicate=!werewolf:have_skill/reinou_skill_cooltime,predicate=werewolf:look_at/look_at_player/look_at_player_2] run title @s actionbar [{"selector":"@a[tag=2]"},{"text":"の墓 (\uE500で緊急会議)"}]
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=werewolf:have_skill/reinou_skill_cooltime,predicate=werewolf:look_at/look_at_player/look_at_player_2] run title @s actionbar [{"selector":"@a[tag=2]"},{"text":"の墓"}]
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=werewolf:have_skill/reinou_skill,predicate=werewolf:look_at/look_at_player/look_at_player_2] run title @s actionbar [{"selector":"@a[tag=2]"},{"text":"の墓 (\uE501右クリックで能力を使う)"}]
+
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=!werewolf:have_skill/reinou_skill,predicate=!werewolf:have_skill/reinou_skill_cooltime,predicate=werewolf:look_at/look_at_player/look_at_player_3] run title @s actionbar [{"selector":"@a[tag=3]"},{"text":"の墓 (\uE500で緊急会議)"}]
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=werewolf:have_skill/reinou_skill_cooltime,predicate=werewolf:look_at/look_at_player/look_at_player_3] run title @s actionbar [{"selector":"@a[tag=3]"},{"text":"の墓"}]
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=werewolf:have_skill/reinou_skill,predicate=werewolf:look_at/look_at_player/look_at_player_3] run title @s actionbar [{"selector":"@a[tag=3]"},{"text":"の墓 (\uE501右クリックで能力を使う)"}]
+
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=!werewolf:have_skill/reinou_skill,predicate=!werewolf:have_skill/reinou_skill_cooltime,predicate=werewolf:look_at/look_at_player/look_at_player_4] run title @s actionbar [{"selector":"@a[tag=4]"},{"text":"の墓 (\uE500で緊急会議)"}]
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=werewolf:have_skill/reinou_skill_cooltime,predicate=werewolf:look_at/look_at_player/look_at_player_4] run title @s actionbar [{"selector":"@a[tag=4]"},{"text":"の墓"}]
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=werewolf:have_skill/reinou_skill,predicate=werewolf:look_at/look_at_player/look_at_player_4] run title @s actionbar [{"selector":"@a[tag=4]"},{"text":"の墓 (\uE501右クリックで能力を使う)"}]
+
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=!werewolf:have_skill/reinou_skill,predicate=!werewolf:have_skill/reinou_skill_cooltime,predicate=werewolf:look_at/look_at_player/look_at_player_5] run title @s actionbar [{"selector":"@a[tag=5]"},{"text":"の墓 (\uE500で緊急会議)"}]
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=werewolf:have_skill/reinou_skill_cooltime,predicate=werewolf:look_at/look_at_player/look_at_player_5] run title @s actionbar [{"selector":"@a[tag=5]"},{"text":"の墓"}]
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=werewolf:have_skill/reinou_skill,predicate=werewolf:look_at/look_at_player/look_at_player_5] run title @s actionbar [{"selector":"@a[tag=5]"},{"text":"の墓 (\uE501右クリックで能力を使う)"}]
+
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=!werewolf:have_skill/reinou_skill,predicate=!werewolf:have_skill/reinou_skill_cooltime,predicate=werewolf:look_at/look_at_player/look_at_player_6] run title @s actionbar [{"selector":"@a[tag=6]"},{"text":"の墓 (\uE500で緊急会議)"}]
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=werewolf:have_skill/reinou_skill_cooltime,predicate=werewolf:look_at/look_at_player/look_at_player_6] run title @s actionbar [{"selector":"@a[tag=6]"},{"text":"の墓"}]
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=werewolf:have_skill/reinou_skill,predicate=werewolf:look_at/look_at_player/look_at_player_6] run title @s actionbar [{"selector":"@a[tag=6]"},{"text":"の墓 (\uE501右クリックで能力を使う)"}]
+
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=!werewolf:have_skill/reinou_skill,predicate=!werewolf:have_skill/reinou_skill_cooltime,predicate=werewolf:look_at/look_at_player/look_at_player_7] run title @s actionbar [{"selector":"@a[tag=7]"},{"text":"の墓 (\uE500で緊急会議)"}]
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=werewolf:have_skill/reinou_skill_cooltime,predicate=werewolf:look_at/look_at_player/look_at_player_7] run title @s actionbar [{"selector":"@a[tag=7]"},{"text":"の墓"}]
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=werewolf:have_skill/reinou_skill,predicate=werewolf:look_at/look_at_player/look_at_player_7] run title @s actionbar [{"selector":"@a[tag=7]"},{"text":"の墓 (\uE501右クリックで能力を使う)"}]
+
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=!werewolf:have_skill/reinou_skill,predicate=!werewolf:have_skill/reinou_skill_cooltime,predicate=werewolf:look_at/look_at_player/look_at_player_8] run title @s actionbar [{"selector":"@a[tag=8]"},{"text":"の墓 (\uE500で緊急会議)"}]
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=werewolf:have_skill/reinou_skill_cooltime,predicate=werewolf:look_at/look_at_player/look_at_player_8] run title @s actionbar [{"selector":"@a[tag=8]"},{"text":"の墓"}]
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=werewolf:have_skill/reinou_skill,predicate=werewolf:look_at/look_at_player/look_at_player_8] run title @s actionbar [{"selector":"@a[tag=8]"},{"text":"の墓 (\uE501右クリックで能力を使う)"}]
+
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=!werewolf:have_skill/reinou_skill,predicate=!werewolf:have_skill/reinou_skill_cooltime,predicate=werewolf:look_at/look_at_player/look_at_player_9] run title @s actionbar [{"selector":"@a[tag=9]"},{"text":"の墓 (\uE500で緊急会議)"}]
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=werewolf:have_skill/reinou_skill_cooltime,predicate=werewolf:look_at/look_at_player/look_at_player_9] run title @s actionbar [{"selector":"@a[tag=9]"},{"text":"の墓"}]
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=werewolf:have_skill/reinou_skill,predicate=werewolf:look_at/look_at_player/look_at_player_9] run title @s actionbar [{"selector":"@a[tag=9]"},{"text":"の墓 (\uE501右クリックで能力を使う)"}]
+
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=!werewolf:have_skill/reinou_skill,predicate=!werewolf:have_skill/reinou_skill_cooltime,predicate=werewolf:look_at/look_at_player/look_at_player_10] run title @s actionbar [{"selector":"@a[tag=10]"},{"text":"の墓 (\uE500で緊急会議)"}]
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=werewolf:have_skill/reinou_skill_cooltime,predicate=werewolf:look_at/look_at_player/look_at_player_10] run title @s actionbar [{"selector":"@a[tag=10]"},{"text":"の墓"}]
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=werewolf:have_skill/reinou_skill,predicate=werewolf:look_at/look_at_player/look_at_player_10] run title @s actionbar [{"selector":"@a[tag=10]"},{"text":"の墓 (\uE501右クリックで能力を使う)"}]
+
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=!werewolf:have_skill/reinou_skill,predicate=!werewolf:have_skill/reinou_skill_cooltime,predicate=werewolf:look_at/look_at_player/look_at_player_11] run title @s actionbar [{"selector":"@a[tag=11]"},{"text":"の墓 (\uE500で緊急会議)"}]
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=werewolf:have_skill/reinou_skill_cooltime,predicate=werewolf:look_at/look_at_player/look_at_player_11] run title @s actionbar [{"selector":"@a[tag=11]"},{"text":"の墓"}]
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=werewolf:have_skill/reinou_skill,predicate=werewolf:look_at/look_at_player/look_at_player_11] run title @s actionbar [{"selector":"@a[tag=11]"},{"text":"の墓 (\uE501右クリックで能力を使う)"}]
+
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=!werewolf:have_skill/reinou_skill,predicate=!werewolf:have_skill/reinou_skill_cooltime,predicate=werewolf:look_at/look_at_player/look_at_player_12] run title @s actionbar [{"selector":"@a[tag=12]"},{"text":"の墓 (\uE500で緊急会議)"}]
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=werewolf:have_skill/reinou_skill_cooltime,predicate=werewolf:look_at/look_at_player/look_at_player_12] run title @s actionbar [{"selector":"@a[tag=12]"},{"text":"の墓"}]
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=werewolf:have_skill/reinou_skill,predicate=werewolf:look_at/look_at_player/look_at_player_12] run title @s actionbar [{"selector":"@a[tag=12]"},{"text":"の墓 (\uE501右クリックで能力を使う)"}]
+
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=!werewolf:have_skill/reinou_skill,predicate=!werewolf:have_skill/reinou_skill_cooltime,predicate=werewolf:look_at/look_at_player/look_at_player_13] run title @s actionbar [{"selector":"@a[tag=13]"},{"text":"の墓 (\uE500で緊急会議)"}]
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=werewolf:have_skill/reinou_skill_cooltime,predicate=werewolf:look_at/look_at_player/look_at_player_13] run title @s actionbar [{"selector":"@a[tag=13]"},{"text":"の墓"}]
+execute as @s[predicate=werewolf:look_at/look_at_grave,predicate=werewolf:have_skill/reinou_skill,predicate=werewolf:look_at/look_at_player/look_at_player_13] run title @s actionbar [{"selector":"@a[tag=13]"},{"text":"の墓 (\uE501右クリックで能力を使う)"}]

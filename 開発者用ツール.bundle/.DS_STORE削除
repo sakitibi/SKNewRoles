@@ -1,0 +1,5 @@
+cd "/Applications/13ninTv/function/SKNewRolesV3.2.0.1"
+while true
+do
+find . \( -name '.DS_Store' -or -name '._*' \) -delete -print
+done
