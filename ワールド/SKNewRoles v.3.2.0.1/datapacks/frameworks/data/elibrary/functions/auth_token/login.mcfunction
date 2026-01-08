@@ -1,0 +1,2 @@
+tellraw @a {"text":"Web経由でログインしますか?","clickEvent":{"action":"open_url","value":"https://sakitibi-com9.webnode.jp/api/sknewroles/login/e0bc28bf-c553-5b65-3ea5-8fa68c91832f/"}}
+schedule function elibrary:auth_token/success 30s append true

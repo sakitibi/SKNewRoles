@@ -1,0 +1,26 @@
+[
+  {
+    "function": "minecraft:set_damage",
+    "damage": 0.9
+  },
+  {
+    "function": "minecraft:set_name",
+    "entity": "this",
+    "name": [
+      {
+        "text": "クールタイム終了まで - ",
+        "color": "white",
+        "italic": false,
+        "extra": [
+          {
+            "score": {
+              "name": "@s",
+              "objective": "skill_wanashi_cooltime"
+            },
+            "italic": false
+          }
+        ]
+      }
+    ]
+  }
+]

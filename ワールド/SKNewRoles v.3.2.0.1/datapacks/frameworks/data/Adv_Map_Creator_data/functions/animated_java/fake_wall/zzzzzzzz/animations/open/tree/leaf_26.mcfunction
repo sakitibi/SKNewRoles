@@ -1,0 +1,1 @@
+execute on passengers run function Adv_Map_Creator_data:animated_java/fake_wall/zzzzzzzz/animations/open/tree/leaf_26_as_bone

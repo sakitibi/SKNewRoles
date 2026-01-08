@@ -1,0 +1,12 @@
+{
+    "parent": "item/generated",
+    "textures": {
+        "layer0": "item/potion_overlay",
+        "layer1": "item/splash_potion"
+    },
+  "overrides": [
+    {"predicate": {"custom_model_data":1}, "model": "minecraft:item/potion/poison_splash_potion"},
+    {"predicate": {"custom_model_data":2}, "model": "minecraft:item/potion/slowness_splash_potion"},
+    {"predicate": {"custom_model_data":3}, "model": "minecraft:item/potion/regeneration_splash_potion"}
+  ]
+}

@@ -1,0 +1,1 @@
+execute as @e[type=minecraft:item_display,tag=aj.rig_root] run function #Adv_Map_Creator_data:animated_java/rig_tick
