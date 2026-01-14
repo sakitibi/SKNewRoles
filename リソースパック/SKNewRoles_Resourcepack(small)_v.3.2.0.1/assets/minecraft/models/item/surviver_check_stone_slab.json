@@ -1,0 +1,36 @@
+{
+	"credit": "Sekacraft",
+	"parent": "minecraft:block/genarated",
+	"texture_size": [64, 64],
+	"textures": {
+		"0": "minecraft:item/surviver_check_stone_slab"
+	},
+	"elements": [
+		{
+			"from": [1, 0, 1],
+			"to": [15, 1, 14],
+			"faces": {
+				"north": {"uv": [7, 0, 10.5, 0.25], "texture": "#0"},
+				"east": {"uv": [7.25, 0.75, 10.5, 1], "texture": "#0"},
+				"south": {"uv": [7, 0.25, 10.5, 0.5], "texture": "#0"},
+				"west": {"uv": [7.25, 0.5, 10.5, 0.75], "texture": "#0"},
+				"up": {"uv": [3.25, 10, 0, 6.5], "rotation": 270, "texture": "#0"},
+				"down": {"uv": [6.5, 6.5, 3.25, 10], "rotation": 90, "texture": "#0"}
+			}
+		},
+		{
+			"from": [0.991, -5.25, 12],
+			"to": [15.001, 20.75, 13],
+			"rotation": {"angle": -22.5, "axis": "x", "origin": [0, 0, 0]},
+			"faces": {
+				"north": {"uv": [0, 0, 3.5, 6.5], "texture": "#0"},
+				"east": {"uv": [6.75, 6.5, 7, 13], "texture": "#0"},
+				"south": {"uv": [3.5, 0, 7, 6.5], "texture": "#0"},
+				"west": {"uv": [6.5, 6.5, 6.75, 13], "texture": "#0"},
+				"up": {"uv": [7.25, 4, 7, 0.5], "rotation": 270, "texture": "#0"},
+				"down": {"uv": [7.25, 4, 7, 7.5], "rotation": 90, "texture": "#0"}
+			}
+		}
+	],
+	"display": {}
+}

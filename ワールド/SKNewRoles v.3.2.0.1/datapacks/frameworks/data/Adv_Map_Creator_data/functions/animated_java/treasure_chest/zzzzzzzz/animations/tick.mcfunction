@@ -1,0 +1,1 @@
+execute if entity @s[tag=aj.treasure_chest.animation.open] run function Adv_Map_Creator_data:animated_java/treasure_chest/zzzzzzzz/animations/open/tick

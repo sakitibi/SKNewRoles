@@ -1,0 +1,1 @@
+execute if entity @a[tag=player,tag=lovers_1] if entity @a[tag=player,tag=lovers_2] run scoreboard players set GameManager lovers_full 1

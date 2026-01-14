@@ -1,0 +1,1 @@
+execute on passengers run function Adv_Map_Creator_data:animated_java/treasure_chest/zzzzzzzz/animations/open/tree/leaf_4_as_bone
