@@ -1,0 +1,1 @@
+execute unless data storage sys: {lang:ja},{lang:ru} run data modify storage sys: lang set value ja

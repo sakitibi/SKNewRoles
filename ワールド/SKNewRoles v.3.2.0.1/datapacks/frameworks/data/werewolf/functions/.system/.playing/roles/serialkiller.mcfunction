@@ -1,0 +1,2 @@
+execute as @a[team=Serialkiller] run schedule function werewolf:role/work_serialkiller/.serialkiller 1t append false
+execute as @a[team=Serialkiller] run schedule function werewolf:role/work_serialkiller/.serialkiller_killcooldown 1s append false

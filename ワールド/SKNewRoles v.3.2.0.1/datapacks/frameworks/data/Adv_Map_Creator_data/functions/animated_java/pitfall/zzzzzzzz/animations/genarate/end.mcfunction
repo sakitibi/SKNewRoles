@@ -1,0 +1,3 @@
+execute if score @s aj.pitfall.animation.genarate.loop_mode = $aj.loop_mode.loop aj.i run function Adv_Map_Creator_data:animated_java/pitfall/zzzzzzzz/animations/genarate/end_loop
+execute if score @s aj.pitfall.animation.genarate.loop_mode = $aj.loop_mode.once aj.i run function Adv_Map_Creator_data:animated_java/pitfall/animations/genarate/stop
+execute if score @s aj.pitfall.animation.genarate.loop_mode = $aj.loop_mode.hold aj.i run function Adv_Map_Creator_data:animated_java/pitfall/animations/genarate/pause

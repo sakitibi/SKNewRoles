@@ -1,0 +1,5 @@
+execute as @a[predicate=werewolf:look_at/look_at_player/look_at_players,predicate=werewolf:have_skill/uranai_skill] run schedule function werewolf:skill/skill_uranai/.uranai_announce 1t append true
+execute as @a[predicate=werewolf:look_at/look_at_player/look_at_players,predicate=werewolf:have_skill/kishi_skill] run schedule function werewolf:skill/skill_kishi/.kishi_announce 1t append true
+execute as @a[predicate=werewolf:look_at/look_at_player/look_at_players,predicate=werewolf:have_skill/hoankan_skill] run schedule function werewolf:skill/skill_hoankan/.hoankan_announce 1t append true
+execute as @a[predicate=werewolf:look_at/look_at_player/look_at_players,predicate=werewolf:have_skill/hanazonogirl_skill] run schedule function werewolf:skill/skill_hanazonogirl/.hanazonogirl_announce 1t append true
+execute as @a[predicate=werewolf:look_at/look_at_player/look_at_players,predicate=werewolf:have_skill/snowgirl_skill] run schedule function werewolf:skill/skill_snowgirl/.snowgirl_announce 1t append true

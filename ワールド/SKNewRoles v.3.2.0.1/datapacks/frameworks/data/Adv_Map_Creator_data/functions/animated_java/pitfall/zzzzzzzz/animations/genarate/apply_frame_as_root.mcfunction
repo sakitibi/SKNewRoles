@@ -1,0 +1,1 @@
+execute if score @s aj.anim_time matches 0..120 run function Adv_Map_Creator_data:animated_java/pitfall/zzzzzzzz/animations/genarate/tree/branch_0_120

@@ -1,0 +1,3 @@
+execute if score @s aj.anim_time matches 0..511 run function Adv_Map_Creator_data:animated_java/windmill/zzzzzzzz/animations/rotation/tree/branch_0_511
+execute if score @s aj.anim_time matches 512..1023 run function Adv_Map_Creator_data:animated_java/windmill/zzzzzzzz/animations/rotation/tree/branch_512_1023
+execute if score @s aj.anim_time matches 1024..1280 run function Adv_Map_Creator_data:animated_java/windmill/zzzzzzzz/animations/rotation/tree/branch_1024_1280

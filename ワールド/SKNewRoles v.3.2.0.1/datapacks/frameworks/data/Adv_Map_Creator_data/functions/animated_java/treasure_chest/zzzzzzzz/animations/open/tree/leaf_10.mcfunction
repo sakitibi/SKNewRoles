@@ -1,0 +1,2 @@
+execute on passengers run function Adv_Map_Creator_data:animated_java/treasure_chest/zzzzzzzz/animations/open/tree/leaf_10_as_bone
+execute unless entity @s[tag=aj.treasure_chest.disable_command_keyframes] at @s run function werewolf:.system/treasure_chest/kill_treasure_chest

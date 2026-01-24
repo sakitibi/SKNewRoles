@@ -1,0 +1,2 @@
+execute if data storage judge_mode: {judge_mode:0} if entity @e[tag=camp_green,team=!Tenkai] unless entity @e[tag=camp_red,team=!Kyoujin,team=!Kyoushin,team=!Wanashi,team=!Tenkai] unless entity @e[tag=camp_pink,team=!Cupid,team=!Haitoku,team=Jackal,team=Sidekick,team=!Tenkai] run data modify storage sys: game_phase set value 3
+execute if data storage judge_mode: {judge_mode:0} if data storage sys: {game_phase:3} run data modify storage sys: win.cause set value '[{"text":"村陣営が最後まで生き残る"}]'

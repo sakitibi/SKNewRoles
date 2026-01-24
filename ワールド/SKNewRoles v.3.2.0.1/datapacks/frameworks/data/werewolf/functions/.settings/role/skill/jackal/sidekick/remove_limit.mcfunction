@@ -1,0 +1,2 @@
+    execute if score GameManager skill_jackal_sidekick_limit matches 1.. run scoreboard players remove GameManager skill_jackal_sidekick_limit 1
+    function werewolf:.settings/view_settings_skill_mod/2
