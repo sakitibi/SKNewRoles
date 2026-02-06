@@ -1,0 +1,1 @@
+execute at @e[scores={witchtype=2}] run tag @e[family=!monster,distance=..3] add poison

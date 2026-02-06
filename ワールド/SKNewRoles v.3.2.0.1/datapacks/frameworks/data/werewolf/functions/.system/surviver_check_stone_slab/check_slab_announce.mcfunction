@@ -1,0 +1,1 @@
+title @s actionbar [{"text":"プレイヤーの状況を確認する (\uE501右クリック)"}]

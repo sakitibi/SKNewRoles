@@ -1,0 +1,1 @@
+execute if entity @s[tag=aj.windmill.root] run function Adv_Map_Creator_data:animated_java/windmill/zzzzzzzz/tick_as_root

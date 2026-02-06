@@ -1,0 +1,7 @@
+execute as @a[team=Youko] run title @s title [{"text":"\uF811\uE201\uF811","font":"role"}]
+execute as @a[team=Haitoku] run title @s title [{"text":"\uF811\uE202\uF811","font":"role"}]
+execute as @a[team=Shinigami] run title @s title [{"text":"\uF811\uE203\uF811","font":"role"}]
+execute as @a[team=Cupid] run title @s title [{"text":"\uF811\uE204\uF811","font":"role"}]
+execute as @a[team=Jackal] run title @s title [{"text":"\uF811\uE205\uF811","font":"role"}]
+execute as @a[team=Sidekick] run title @s title [{"text":"\uF811\uE206\uF811","font":"role"}]
+execute as @a[team=Araregirl] run title @s title [{"text":"\uF811\uE207\uF811","font":"role"}]

@@ -1,0 +1,1 @@
+tag @s remove aj.pitfall.animation.genarate

@@ -1,0 +1,2 @@
+    execute if score GameManager skill_kyoujinkusushi_health_frequency matches 2.. run scoreboard players remove GameManager skill_kyoujinkusushi_health_frequency 1
+    function werewolf:.settings/view_settings_skill_mod/2

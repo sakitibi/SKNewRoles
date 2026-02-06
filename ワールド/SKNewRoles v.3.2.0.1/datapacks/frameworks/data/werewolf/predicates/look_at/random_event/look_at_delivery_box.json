@@ -1,0 +1,21 @@
+[
+  {
+    "condition": "minecraft:entity_properties",
+    "entity": "this",
+    "predicate": {
+      "type_specific": {
+        "type": "player",
+        "looking_at": {
+          "type": "minecraft:interaction",
+          "nbt": "{Tags:[\"delivery_box\"]}",
+          "distance": {
+            "absolute": {
+              "min": 0,
+              "max": 3
+            }
+          }
+        }
+      }
+    }
+  }
+]

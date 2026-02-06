@@ -1,0 +1,391 @@
+{
+	"parent": "item/generated",
+	"textures": {
+		"layer0": "minecraft:item/white_dye"
+	},
+	"overrides": [
+		{
+			"predicate": {
+				"custom_model_data": 1
+			},
+			"model": "item/animated_java_empty"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 2
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/treasure_chest/up"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 3
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/treasure_chest/down"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 4
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/main"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 5
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/wools"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 6
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/fences"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 7
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/boxs"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 8
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/bone"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 9
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/bone2"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 10
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/bone3"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 11
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/bone4"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 12
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/bone5"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 13
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/bone6"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 14
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/bone7"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 15
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/wools2"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 16
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/fences2"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 17
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/boxs2"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 18
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/bone8"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 19
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/bone9"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 20
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/bone10"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 21
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/bone11"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 22
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/bone12"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 23
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/bone13"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 24
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/bone14"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 25
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/wools3"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 26
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/fences3"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 27
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/boxs3"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 28
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/bone15"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 29
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/bone16"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 30
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/bone17"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 31
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/bone18"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 32
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/bone19"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 33
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/bone20"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 34
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/bone21"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 35
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/wools4"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 36
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/fences4"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 37
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/boxs4"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 38
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/bone22"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 39
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/bone23"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 40
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/bone24"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 41
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/bone25"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 42
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/bone26"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 43
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/bone27"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 44
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/windmill/bone28"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 45
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/fake_wall/1"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 46
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/fake_wall/2"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 47
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/fake_wall/3"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 48
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/fake_wall/4"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 49
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/fake_wall/5"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 50
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/fake_wall/6"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 51
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/pitfall/bone"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 52
+			},
+			"model": "Adv_Map_Creator_data:animated_java/item/pitfall/bone2"
+		}
+	],
+	"animated_java": {
+		"rigs": {
+			"treasure_chest": {
+				"used_ids": [
+					2,
+					3
+				]
+			},
+			"windmill": {
+				"used_ids": [
+					4,
+					5,
+					6,
+					7,
+					8,
+					9,
+					10,
+					11,
+					12,
+					13,
+					14,
+					15,
+					16,
+					17,
+					18,
+					19,
+					20,
+					21,
+					22,
+					23,
+					24,
+					25,
+					26,
+					27,
+					28,
+					29,
+					30,
+					31,
+					32,
+					33,
+					34,
+					35,
+					36,
+					37,
+					38,
+					39,
+					40,
+					41,
+					42,
+					43,
+					44
+				]
+			},
+			"fake_wall": {
+				"used_ids": [
+					45,
+					46,
+					47,
+					48,
+					49,
+					50
+				]
+			},
+			"pitfall": {
+				"used_ids": [
+					51,
+					52
+				]
+			}
+		}
+	}
+}

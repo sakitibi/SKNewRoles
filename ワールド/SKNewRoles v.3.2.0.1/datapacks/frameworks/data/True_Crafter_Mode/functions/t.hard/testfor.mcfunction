@@ -1,0 +1,1 @@
+execute if data storage tcm: {true_crafter_mode:true} run function True_Crafter_Mode:t.hard/main

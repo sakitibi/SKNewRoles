@@ -1,0 +1,1 @@
+function Adv_Map_Creator_data:animated_java/treasure_chest/zzzzzzzz/animations/open/pause_as_root

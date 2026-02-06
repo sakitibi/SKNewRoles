@@ -1,0 +1,2 @@
+execute if entity @a[tag=3] run tellraw @s [{"selector":"@a[tag=3]"},{"text":"を凍結させた"}]
+execute as @a[tag=3] run schedule function werewolf:skill/skill_blacksnowgirl/.blacksnowgirl_main 15s append true

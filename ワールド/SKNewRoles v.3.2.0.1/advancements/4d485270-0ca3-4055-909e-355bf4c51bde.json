@@ -1,0 +1,21 @@
+{
+  "werewolf:test": {
+    "criteria": {
+      "requirement": "2024-01-14 21:54:35 +0900"
+    },
+    "done": true
+  },
+  "werewolf:used_item/nomal_sword": {
+    "criteria": {
+      "requirement": "2024-01-14 22:17:42 +0900"
+    },
+    "done": true
+  },
+  "werewolf:used_item/strong_sword": {
+    "criteria": {
+      "requirement": "2024-01-14 22:28:30 +0900"
+    },
+    "done": true
+  },
+  "DataVersion": 3337
+}

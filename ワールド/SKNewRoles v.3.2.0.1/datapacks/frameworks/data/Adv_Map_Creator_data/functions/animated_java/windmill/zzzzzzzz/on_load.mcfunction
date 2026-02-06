@@ -1,0 +1,2 @@
+scoreboard players set @s aj.windmill.rig_loaded 1
+execute unless score @s aj.windmill.export_version = aj.windmill.export_version aj.i at @s run function Adv_Map_Creator_data:animated_java/windmill/zzzzzzzz/mark_outdated_rig

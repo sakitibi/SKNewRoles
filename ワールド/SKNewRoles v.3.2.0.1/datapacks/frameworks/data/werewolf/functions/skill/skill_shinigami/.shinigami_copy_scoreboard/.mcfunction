@@ -1,0 +1,3 @@
+function werewolf:skill/skill_shinigami/.shinigami_copy_scoreboard/mura
+function werewolf:skill/skill_shinigami/.shinigami_copy_scoreboard/jinrou
+function werewolf:skill/skill_shinigami/.shinigami_copy_scoreboard/other

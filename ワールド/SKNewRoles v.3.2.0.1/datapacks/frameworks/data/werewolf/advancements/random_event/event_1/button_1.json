@@ -1,0 +1,15 @@
+{
+  "criteria": {
+    "requirement": {
+      "trigger": "minecraft:player_interacted_with_entity",
+      "conditions": {
+        "entity": {
+          "nbt": "{Tags:[\"re_button_1\"]}"
+        }
+      }
+    }
+  },
+  "rewards": {
+    "function": "werewolf:random_event/monster_stampede/push_button_1"
+  }
+}

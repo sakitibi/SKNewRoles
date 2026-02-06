@@ -1,0 +1,93 @@
+{
+	"textures": {
+		"0": "Adv_Map_Creator_data:animated_java/item/fake_wall/fake_wall"
+	},
+	"elements": [
+		{
+			"from": [
+				-8,
+				3.5,
+				8
+			],
+			"to": [
+				8,
+				12.5,
+				24
+			],
+			"rotation": {
+				"angle": 0,
+				"axis": "y",
+				"origin": [
+					-8,
+					3.5,
+					15.98
+				]
+			},
+			"faces": {
+				"north": {
+					"uv": [
+						6,
+						2,
+						8,
+						3.125
+					],
+					"texture": "#0"
+				},
+				"east": {
+					"uv": [
+						6,
+						3.125,
+						8,
+						4.25
+					],
+					"texture": "#0"
+				},
+				"south": {
+					"uv": [
+						4,
+						6,
+						6,
+						7.125
+					],
+					"texture": "#0"
+				},
+				"west": {
+					"uv": [
+						6,
+						4.25,
+						8,
+						5.375
+					],
+					"texture": "#0"
+				},
+				"up": {
+					"uv": [
+						4,
+						2,
+						2,
+						0
+					],
+					"texture": "#0"
+				},
+				"down": {
+					"uv": [
+						4,
+						2,
+						2,
+						4
+					],
+					"texture": "#0"
+				}
+			}
+		}
+	],
+	"display": {
+		"head": {
+			"rotation": [
+				0,
+				0,
+				0
+			]
+		}
+	}
+}
