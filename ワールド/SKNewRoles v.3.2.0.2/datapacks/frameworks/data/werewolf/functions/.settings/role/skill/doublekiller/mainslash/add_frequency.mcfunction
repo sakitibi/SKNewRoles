@@ -1,0 +1,2 @@
+    execute unless score GameManager skill_doublekiller_mainslash_frequency matches 3 run scoreboard players add GameManager skill_doublekiller_mainslash_frequency 1
+    function werewolf:.settings/view_settings_skill_mod/1
