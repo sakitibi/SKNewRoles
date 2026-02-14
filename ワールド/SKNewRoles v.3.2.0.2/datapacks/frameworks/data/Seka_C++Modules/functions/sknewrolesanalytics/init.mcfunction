@@ -1,0 +1,1 @@
+execute if data storage analytics: {analytics:true} run schedule function Seka_C++Modules:sknewrolesanalytics/exec 5s append false

@@ -1,0 +1,2 @@
+    execute if score GameManager skill_rimokon_operation_frequency matches 2.. run scoreboard players remove GameManager skill_rimokon_operation_frequency 1
+    function werewolf:.settings/view_settings_skill_mod/1

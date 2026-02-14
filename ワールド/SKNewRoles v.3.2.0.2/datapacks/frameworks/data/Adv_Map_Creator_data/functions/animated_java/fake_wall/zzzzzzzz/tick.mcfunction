@@ -1,0 +1,1 @@
+execute if entity @s[tag=aj.fake_wall.root] run function Adv_Map_Creator_data:animated_java/fake_wall/zzzzzzzz/tick_as_root

@@ -1,0 +1,1 @@
+execute if data storage sys:{monster_stampede:1} run function magic-and-spells-java:monster/monster_stampede

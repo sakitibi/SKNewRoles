@@ -1,0 +1,406 @@
+{
+    "providers": [
+        {
+            "type": "ttf",
+            "file": "minecraft:pixelmplus12_bold.ttf",
+            "shift": [-108.8, 39.5],
+            "size": 6.6,
+            "oversample": 10.0
+        },
+        {
+            "type": "space",
+                "advances":{
+                    " ": 4,
+                    "\u200c": 0,
+                    "\uF821": 1,
+                    "\uF822": 2,
+                    "\uF823": 3,
+                    "\uF824": 4,
+                    "\uF825": 5,
+                    "\uF826": 6,
+                    "\uF827": 7,
+                    "\uF828": 8,
+                    "\uF829": 16,
+                    "\uF82A": 32,
+                    "\uF82B": 64,
+                    "\uF82C": 128,
+                    "\uF82D": 256,
+                    "\uF82E": 512,
+                    "\uF82F": 1024,
+                    "\uF801": -1,
+                    "\uF802": -2,
+                    "\uF803": -3,
+                    "\uF804": -4,
+                    "\uF805": -5,
+                    "\uF806": -6,
+                    "\uF807": -7,
+                    "\uF808": -8,
+                    "\uF809": -16,
+                    "\uF80A": -32,
+                    "\uF80B": -64,
+                    "\uF80C": -128,
+                    "\uF80D": -256,
+                    "\uF80E": -512,
+                    "\uF80F": -1024,
+                    "\uF811": -24.5
+                }
+        },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/viewer.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE000"]
+	    },
+            {
+                "type": "bitmap",
+                "file": "minecraft:font/black.png",
+                "ascent": 640,
+                "height": 1280,
+                "chars": ["\uE001"]
+            },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/mura.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE002"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/uranai.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE003"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/reinou.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE004"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/kishi.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE005"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/kyouyuu.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE006"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/hoankan.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE007"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/panya.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE008"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/ojousama.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE009"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/saibankan.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE00A"]
+	    },
+        {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/niceteleporter.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE00B"]
+	    },
+        {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/niceguesser.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE00C"]
+	    },
+        {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/syachou.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE00D"]
+	    },
+        {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/satsumatoimo.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE00E"]
+	    },
+        {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/seer.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE00F"]
+	    },
+        {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/sakenomikoto.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE010"]
+	    },
+        {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/hanazonogirl.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE011"]
+	    },
+        {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/polerbear.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE012"]
+	    },
+        {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/forest.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE013"]
+	    },
+        {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/marmade.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE014"]
+	    },
+        {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/ryoushi.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE015"]
+	    },
+        {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/snowgirl.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE016"]
+	    },
+        {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/taoruboshi.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE017"]
+	    },
+        {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/yakousei.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE018"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/jinrou.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE101"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/kyoujin.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE102"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/kyoushin.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE103"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/wanashi.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE104"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/asasine.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE105"]
+	    },
+        {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/witch.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE106"]
+	    },
+        {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/rimokon.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE107"]
+	    },
+        {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/doublekiller.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE108"]
+	    },
+        {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/evilguesser.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE109"]
+	    },
+        {
+            "type": "bitmap",
+                "file": "minecraft:font/role/sniper.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE10A"]
+	    },
+        {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/madseer.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE10B"]
+	    },
+        {
+            "type": "bitmap",
+                "file": "minecraft:font/role/evilseer.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE10C"]
+	    },
+        {
+            "type": "bitmap",
+                "file": "minecraft:font/role/comuner.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE10D"]
+	    },
+        {
+            "type": "bitmap",
+                "file": "minecraft:font/role/serialkiller.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE10E"]
+	    },
+        {
+            "type": "bitmap",
+                "file": "minecraft:font/role/shiroinu.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE10F"]
+	    },
+        {
+            "type": "bitmap",
+                "file": "minecraft:font/role/kyoujinkusushi.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE110"]
+        },
+        {
+            "type": "bitmap",
+                "file": "minecraft:font/role/poisoner.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE111"]
+	    },
+        {
+            "type": "bitmap",
+                "file": "minecraft:font/role/blacksnowgirl.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE112"]
+	    },
+        {
+            "type": "bitmap",
+                "file": "minecraft:font/role/jibakuma.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE113"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/youko.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE201"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/haitoku.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE202"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/shinigami.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE203"]
+	    },
+	    {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/cupid.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE204"]
+	    },
+        {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/jackal.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE205"]
+	    },
+        {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/sidekick.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE206"]
+	    },
+        {
+	        "type": "bitmap",
+                "file": "minecraft:font/role/araregirl.png",
+                "ascent": 22.0,
+                "height": 48.0,
+                "chars": ["\uE207"]
+	    }
+    ]
+}

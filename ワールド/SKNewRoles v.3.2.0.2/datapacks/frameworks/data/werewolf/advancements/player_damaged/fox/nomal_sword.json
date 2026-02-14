@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "requirement": {
+      "trigger": "minecraft:entity_hurt_player",
+      "conditions": {
+        "player": [
+          {
+            "condition": "minecraft:entity_properties",
+            "entity": "this",
+            "predicate": {
+              "team": "Youko"
+            }
+          }
+        ],
+        "damage": {
+          "source_entity": {
+            "type": "minecraft:player",
+            "nbt": "{Tags:[\"no_jinrou\"]}",
+            "equipment": {
+              "mainhand": {
+                "nbt": "{Tags:[nomal_sword]}"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "rewards": {
+    "function": "werewolf:.system/player_attacked/fox/nomal_sword"
+  }
+}

@@ -1,0 +1,1 @@
+tellraw @a "広告を解除するにはUltraSKNewRolesを購入して下さい、"

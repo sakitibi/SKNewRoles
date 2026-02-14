@@ -1,0 +1,6 @@
+ #ラバーズ2人生存＋キューピット以外の生存者がいない
+execute if data storage judge_mode: {judge_mode:0} if entity @e[tag=player,tag=lovers_1] if entity @e[tag=player,tag=lovers_2] unless entity @e[tag=player,team=!Cupid,tag=!lovers,tag=!lovers_1,tag=!lovers_2,team=!Ojousama] run data modify storage sys: game_phase set value 6
+execute if data storage judge_mode: {judge_mode:0} if entity @e[tag=player,tag=lovers_1] if entity @e[tag=player,tag=lovers_2] unless entity @e[tag=player,team=!Cupid,tag=!lovers,tag=!lovers_1,tag=!lovers_2,team=!Ojousama] run data modify storage sys: win.cause set value '[{"text":"恋人2人が最後まで生き残る"}]'
+ #1陣営全滅＋ラバーズが生存
+execute if data storage judge_mode: {judge_mode:0} unless data storage sys: {game_phase:1} if entity @e[tag=player,tag=lovers_1] if entity @e[tag=player,tag=lovers_2] run data modify storage sys: game_phase set value 6
+execute if data storage judge_mode: {judge_mode:0} unless data storage sys: {game_phase:1} if entity @e[tag=player,tag=lovers_1] if entity @e[tag=player,tag=lovers_2] run data modify storage sys: win.cause set value '[{"text":"恋人2人が最後まで生き残る"}]'

@@ -1,0 +1,17 @@
+    # インベントリ関連
+        #インベントリメニューアイテムを所持していなければセットする
+            execute as @a unless score @s inventory_menu matches 0 unless score @s inventory_menu matches 1 run function werewolf:.system/inventory_menu/set_inventory_menu
+            execute as @a[scores={time_since_death=..3},nbt=!{Inventory:[{Slot:9b,id:"minecraft:carrot_on_a_stick",tag:{Tags:["join_button"]}}]},nbt=!{Inventory:[{Slot:10b,id:"minecraft:carrot_on_a_stick",tag:{Tags:["settings_button"]}}]},nbt=!{Inventory:[{Slot:11b,id:"minecraft:carrot_on_a_stick",tag:{Tags:["game_start_button"]}}]}] run function werewolf:.system/inventory_menu/set_inventory_menu
+            #execute as @a[nbt=!{Inventory:[{Slot:9b,id:"minecraft:carrot_on_a_stick",tag:{Tags:["join_button"]}}]},nbt=!{Inventory:[{Slot:10b,id:"minecraft:carrot_on_a_stick",tag:{Tags:["settings_button"]}}]},nbt=!{Inventory:[{Slot:11b,id:"minecraft:carrot_on_a_stick",tag:{Tags:["game_start_button"]}}]}] run function werewolf:.system/inventory_menu/set_inventory_menu
+        #インベントリメニュークリック処理
+            execute as @a[scores={inventory_menu=0,time_since_death=4..},nbt=!{Inventory:[{Slot:9b,id:"minecraft:carrot_on_a_stick",tag:{Tags:["join_button"]}}]}] at @s run function werewolf:.system/inventory_menu/inventory_9
+            execute as @a[scores={inventory_menu=0,time_since_death=4..},nbt=!{Inventory:[{Slot:10b,id:"minecraft:carrot_on_a_stick",tag:{Tags:["settings_button"]}}]}] at @s run function werewolf:.system/inventory_menu/inventory_10
+            execute as @a[scores={inventory_menu=0,time_since_death=4..},nbt=!{Inventory:[{Slot:11b,id:"minecraft:carrot_on_a_stick",tag:{Tags:["game_start_button"]}}]}] at @s run function werewolf:.system/inventory_menu/inventory_11
+            #execute as @a[scores={inventory_menu=0,time_since_death=4..},nbt=!{Inventory:[{Slot:9b,id:"minecraft:carrot_on_a_stick",tag:{Tags:["join_button"]}}]},nbt={Inventory:[{Slot:10b,id:"minecraft:carrot_on_a_stick",tag:{Tags:["settings_button"]}},{Slot:11b,id:"minecraft:carrot_on_a_stick",tag:{Tags:["game_start_button"]}}]}] at @s run function werewolf:.system/inventory_menu/inventory_9
+            #execute as @a[scores={inventory_menu=0,time_since_death=4..},nbt=!{Inventory:[{Slot:10b,id:"minecraft:carrot_on_a_stick",tag:{Tags:["settings_button"]}}]},nbt={Inventory:[{Slot:9b,id:"minecraft:carrot_on_a_stick",tag:{Tags:["join_button"]}},{Slot:11b,id:"minecraft:carrot_on_a_stick",tag:{Tags:["game_start_button"]}}]}] at @s run function werewolf:.system/inventory_menu/inventory_10
+            #execute as @a[scores={inventory_menu=0,time_since_death=4..},nbt=!{Inventory:[{Slot:11b,id:"minecraft:carrot_on_a_stick",tag:{Tags:["game_start_button"]}}]},nbt={Inventory:[{Slot:9b,id:"minecraft:carrot_on_a_stick",tag:{Tags:["join_button"]}},{Slot:10b,id:"minecraft:carrot_on_a_stick",tag:{Tags:["settings_button"]}}]}] at @s run function werewolf:.system/inventory_menu/inventory_11
+        #全員準備完了でゲームを開始
+            execute unless data storage sys: {game_start:1} unless entity @a[scores={ready=0}] if entity @a[scores={ready=1}] run function werewolf:.system/countdown/.main
+        #ダメージ/空腹防止
+            execute run effect give @a instant_health infinite 252 true
+            execute run effect give @a saturation infinite 252 true
