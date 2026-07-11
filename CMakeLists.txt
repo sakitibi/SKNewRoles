@@ -19,15 +19,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(godot-cpp)
 
-# 環境変数のマクロ定義
-if(DEFINED SUPABASE_URL)
-    add_compile_definitions(DEFAULT_SUPABASE_URL="${SUPABASE_URL}")
-endif()
-
-if(DEFINED SUPABASE_ANON_KEY)
-    add_compile_definitions(DEFAULT_SUPABASE_ANON_KEY="${SUPABASE_ANON_KEY}")
-endif()
-
 # コンパイル対象となる C++ ソースファイル
 set(SOURCES
     src/register_types.cpp
@@ -43,8 +34,15 @@ set(SOURCES
 # 共有ライブラリとしてビルド
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
+if(SUPABASE_URL AND NOT "${SUPABASE_URL}" STREQUAL "")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE "DEFAULT_SUPABASE_URL=\"${SUPABASE_URL}\"")
+endif()
+
+if(SUPABASE_ANON_KEY AND NOT "${SUPABASE_ANON_KEY}" STREQUAL "")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE "DEFAULT_SUPABASE_ANON_KEY=\"${SUPABASE_ANON_KEY}\"")
+endif()
+
 # godot-cpp とのリンク
 target_link_libraries(${PROJECT_NAME} PRIVATE godot::cpp)
 
-# インクルードパス設定
 target_include_directories(${PROJECT_NAME} PRIVATE src)

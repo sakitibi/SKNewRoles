@@ -3,12 +3,19 @@
 
 using namespace godot;
 
-#ifndef DEFAULT_SUPABASE_URL
-#define DEFAULT_SUPABASE_URL ""
+#define STRINGIFY_DETAIL(x) #x
+#define STRINGIFY(x) STRINGIFY_DETAIL(x)
+
+#ifdef DEFAULT_SUPABASE_URL
+const char* raw_supabase_url = DEFAULT_SUPABASE_URL;
+#else
+const char* raw_supabase_url = "";
 #endif
 
-#ifndef DEFAULT_SUPABASE_ANON_KEY
-#define DEFAULT_SUPABASE_ANON_KEY ""
+#ifdef DEFAULT_SUPABASE_ANON_KEY
+const char* raw_supabase_key = DEFAULT_SUPABASE_ANON_KEY;
+#else
+const char* raw_supabase_key = "";
 #endif
 
 void ConfigManager::_bind_methods() {
@@ -20,12 +27,15 @@ ConfigManager::ConfigManager() {}
 ConfigManager::~ConfigManager() {}
 
 void ConfigManager::_ready() {
-    supabase_url = DEFAULT_SUPABASE_URL;
-    supabase_anon_key = DEFAULT_SUPABASE_ANON_KEY;
+    supabase_url = String(raw_supabase_url);
+    supabase_anon_key = String(raw_supabase_key);
 
     if (supabase_url.is_empty()) {
         UtilityFunctions::printerr("⚠️ [ConfigManager] ビルド時定数 (DEFAULT_SUPABASE_URL) が空です。");
+    } else {
+        UtilityFunctions::print("[ConfigManager] SUPABASE_URL を正常にロードしました。");
     }
+
     if (supabase_anon_key.is_empty()) {
         UtilityFunctions::printerr("⚠️ [ConfigManager] ビルド時定数 (DEFAULT_SUPABASE_ANON_KEY) が空です。");
     }
