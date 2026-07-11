@@ -22,7 +22,7 @@ jobs:
             asset_name: libgodot_player_extension.dylib
             artifact_name: macos-dylib
           - os: windows-latest
-            asset_name: libgodot_player_extension.dll
+            asset_name: godot_player_extension.dll
             artifact_name: windows-dll
 
     runs-on: ${{ matrix.os }}
