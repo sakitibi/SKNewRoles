@@ -1,0 +1,65 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*' # "v1.0.0" などのタグが Push されたときに起動
+
+permissions:
+  contents: write # リリースを作成・編集するために必要
+
+jobs:
+  # --- 1. 各 OS でビルドを実行 ---
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            asset_name: libgodot_player_extension.so
+            artifact_name: linux-so
+          - os: macos-latest
+            asset_name: libgodot_player_extension.dylib
+            artifact_name: macos-dylib
+          - os: windows-latest
+            asset_name: libgodot_player_extension.dll
+            artifact_name: windows-dll
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure CMake
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      # ビルドされたファイル（.dll / .so / .dylib）を一時的に保存
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: build/Release/${{ matrix.asset_name }} # ビルド出力パスに合わせて調整
+
+  # --- 2. ビルド結果を集めて Release を作成 ---
+  create-release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 各 OS の成果物をダウンロード
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      # GitHub Release の作成とファイルの添付
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: artifacts/**/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
