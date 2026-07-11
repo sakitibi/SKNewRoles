@@ -6,12 +6,13 @@ on:
       - 'v*'
 
 permissions:
-  contents: write # リリースを作成・編集するために必要
+  contents: write
 
 jobs:
   # --- 1. 各 OS でビルドを実行 ---
   build:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
@@ -29,25 +30,18 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          submodules: true
 
       - name: Configure CMake
-        run: |
-          cmake -B build \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DSUPABASE_URL="${{ secrets.SUPABASE_URL }}" \
-            -DSUPABASE_ANON_KEY="${{ secrets.SUPABASE_ANON_KEY }}"
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DSUPABASE_URL="${{ secrets.SUPABASE_URL }}" -DSUPABASE_ANON_KEY="${{ secrets.SUPABASE_ANON_KEY }}"
 
       - name: Build
-        run: cmake --build build --config Release
+        run: cmake --build build --config Release --parallel
 
-      # ビルドされたファイル（.dll / .so / .dylib）を一時的に保存
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
-          path: build/Release/${{ matrix.asset_name }} # ビルド出力パスに合わせて調整
+          path: bin/${{ matrix.asset_name }}
 
   # --- 2. ビルド結果を集めて Draft Release を作成 ---
   create-release:
