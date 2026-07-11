@@ -6,7 +6,7 @@ on:
       - 'v*'
 
 permissions:
-  contents: write
+  contents: write # リリースを作成・編集するために必要
 
 jobs:
   # --- 1. 各 OS でビルドを実行 ---
@@ -41,7 +41,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
-          path: bin/${{ matrix.asset_name }}
+          path: bin/**/${{ matrix.asset_name }}
+          if-no-files-found: error # 見つからない場合はエラーで止める
 
   # --- 2. ビルド結果を集めて Draft Release を作成 ---
   create-release:
