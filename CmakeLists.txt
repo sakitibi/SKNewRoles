@@ -16,6 +16,14 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 # 1. 公式バインディング「godot-cpp」をCMakeに組み込む
 add_subdirectory(godot-cpp)
 
+if(DEFINED SUPABASE_URL)
+    add_compile_definitions(DEFAULT_SUPABASE_URL="${SUPABASE_URL}")
+endif()
+
+if(DEFINED SUPABASE_ANON_KEY)
+    add_compile_definitions(DEFAULT_SUPABASE_ANON_KEY="${SUPABASE_ANON_KEY}")
+endif()
+
 # 2. コンパイル対象となる自分のC++ソースファイルを指定
 set(SOURCES
     src/register_types.cpp

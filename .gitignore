@@ -12,6 +12,5 @@ build
 *.command
 Resources/Blocks/*
 Sounds/*
-src/config_manager.h
 bin/libgodot_player_extension.dylib
 Fonts/*
