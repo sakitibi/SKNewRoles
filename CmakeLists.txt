@@ -1,0 +1,38 @@
+cmake_minimum_required(VERSION 3.16)
+
+# プロジェクト名を設定（出力されるファイル名に影響します）
+project(godot_player_extension)
+
+# C++の標準規格をC++17に設定（Godot 4のGDExtensionに必須）
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# 🛠️ 出力先を「bin/」フォルダに強制指定する設定
+# これにより、ビルドされた.dllや.dylibが自動的にbinの中に保存されます
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
+
+# 1. 公式バインディング「godot-cpp」をCMakeに組み込む
+add_subdirectory(godot-cpp)
+
+# 2. コンパイル対象となる自分のC++ソースファイルを指定
+set(SOURCES
+    src/register_types.cpp
+    src/player.cpp
+    src/grass_block.cpp
+    src/lobby_manager.cpp
+    src/RemotePlayer.cpp
+    src/config_manager.cpp
+    src/Game/RoleManager.cpp
+    src/Game/chunk_manager.cpp
+)
+
+# 3. 共有ライブラリ（GDExtension用のバイナリ）としてビルドを定義
+add_library(${PROJECT_NAME} SHARED ${SOURCES})
+
+# 4. あなたのコードと「godot-cpp」ライブラリをリンク（結合）させる
+target_link_libraries(${PROJECT_NAME} PRIVATE godot::cpp)
+
+# 5. インクルードパス（ヘッダーファイルを検索する場所）に「src」フォルダを追加
+target_include_directories(${PROJECT_NAME} PRIVATE src)

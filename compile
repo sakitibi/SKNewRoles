@@ -1,0 +1,4 @@
+cd /Applications/SKNewRoles
+/Applications/Godot_mono.app/Contents/MacOS/Godot --headless --export-release "macOS" ./SKNewRoles.app
+codesign --force --deep --sign - --options runtime --entitlements ./entitlements.plist ./SKNewRoles.app
+xattr -d -r com.apple.quarantine ./SKNewRoles.app 2>/dev/null || true

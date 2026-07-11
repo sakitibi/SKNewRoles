@@ -1,0 +1,67 @@
+[gd_scene format=3 uid="uid://b42xncvhtc3l5"]
+
+[ext_resource type="FontFile" uid="uid://bnpuryk64ipb5" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="1_33lhu"]
+[ext_resource type="FontFile" uid="uid://dh2srjx51onl7" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="1_cgoxs"]
+[ext_resource type="Script" uid="uid://4jkcrngyyawr" path="res://Scripts/System/StartupScene.cs" id="1_csbgd"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3vhs7"]
+bg_color = Color(1, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_v2408"]
+bg_color = Color(0, 0.8, 1, 1)
+
+[node name="StartupScene" type="Control" unique_id=1208099915]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_csbgd")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1063241537]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.06666667, 0.06666667, 0.08627451, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=1750332977]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -700.5
+offset_right = 700.5
+offset_bottom = 141.0
+grow_horizontal = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer" unique_id=1878740267]
+layout_mode = 2
+alignment = 1
+
+[node name="LoadingLabel" type="Label" parent="CenterContainer/VBoxContainer" unique_id=1327628418]
+layout_mode = 2
+offset_transform_enabled = true
+offset_transform_position = Vector2(0, 50)
+theme_override_fonts/font = ExtResource("1_cgoxs")
+theme_override_font_sizes/font_size = 60
+text = "データを読み込み中..."
+
+[node name="StartupProgressBar" type="ProgressBar" parent="CenterContainer/VBoxContainer" unique_id=214030858]
+layout_mode = 2
+offset_transform_enabled = true
+offset_transform_position = Vector2(0, 450)
+theme_override_fonts/font = ExtResource("1_33lhu")
+theme_override_font_sizes/font_size = 60
+theme_override_styles/background = SubResource("StyleBoxFlat_3vhs7")
+theme_override_styles/fill = SubResource("StyleBoxFlat_v2408")
+
+[node name="StatusLabel" type="Label" parent="CenterContainer/VBoxContainer" unique_id=1377314937]
+layout_mode = 2
+offset_transform_enabled = true
+offset_transform_position = Vector2(0, 500)
+theme_override_fonts/font = ExtResource("1_33lhu")
+theme_override_font_sizes/font_size = 60

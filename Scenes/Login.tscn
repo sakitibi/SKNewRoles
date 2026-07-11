@@ -1,0 +1,116 @@
+[gd_scene format=3 uid="uid://c2w7a5c7s2nhi"]
+
+[ext_resource type="Script" uid="uid://35s2io0u5yt0" path="res://Scripts/Login.cs" id="1_8amdc"]
+[ext_resource type="FontFile" uid="uid://dh2srjx51onl7" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="1_uo606"]
+[ext_resource type="FontFile" uid="uid://bnpuryk64ipb5" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="2_8amdc"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6cq21"]
+bg_color = Color(0, 0.6509804, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2yd6x"]
+bg_color = Color(0.003921569, 0.53333336, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wu61n"]
+bg_color = Color(0.36862746, 0.8627451, 0.45490196, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_73daq"]
+bg_color = Color(1, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5f3j4"]
+bg_color = Color(0.64705884, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ch48r"]
+bg_color = Color(1, 0.22352941, 0.22352941, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_l1wf6"]
+bg_color = Color(0.70980394, 0, 0, 1)
+
+[node name="Login" type="Control" unique_id=869126495]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_8amdc")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1351089503]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=2071277578]
+layout_mode = 2
+
+[node name="LoginPanel" type="Panel" parent="MarginContainer/VBoxContainer" unique_id=458584211]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="MarginContainer/VBoxContainer/LoginPanel" unique_id=1804570266]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 9.425
+anchor_right = 19.425001
+offset_top = 4.0
+offset_right = -6.1035156e-05
+offset_bottom = 76.0
+theme_override_fonts/font = ExtResource("1_uo606")
+theme_override_font_sizes/font_size = 50
+text = "認証コードを入力"
+
+[node name="CodeInput" type="LineEdit" parent="MarginContainer/VBoxContainer/LoginPanel" unique_id=1777538683]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 4.65
+anchor_right = 23.85
+anchor_bottom = 2.3720002
+offset_left = -10.0
+offset_top = 122.0
+offset_right = 84.0
+offset_bottom = 280.0
+theme_override_fonts/font = ExtResource("2_8amdc")
+theme_override_font_sizes/font_size = 150
+max_length = 8
+
+[node name="SubmitButton" type="Button" parent="MarginContainer/VBoxContainer/LoginPanel" unique_id=494548120]
+layout_mode = 0
+offset_left = 443.0
+offset_top = 405.0
+offset_right = 707.0
+offset_bottom = 505.0
+offset_transform_enabled = true
+theme_override_fonts/font = ExtResource("1_uo606")
+theme_override_font_sizes/font_size = 70
+theme_override_styles/normal = SubResource("StyleBoxFlat_6cq21")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_2yd6x")
+theme_override_styles/hover = SubResource("StyleBoxFlat_wu61n")
+text = "認証"
+
+[node name="CancelButton" type="Button" parent="MarginContainer/VBoxContainer/LoginPanel" unique_id=1978779990]
+layout_mode = 0
+offset_left = 444.0
+offset_top = 541.0
+offset_right = 711.0
+offset_bottom = 641.0
+offset_transform_enabled = true
+theme_override_fonts/font = ExtResource("1_uo606")
+theme_override_font_sizes/font_size = 50
+theme_override_styles/normal = SubResource("StyleBoxFlat_73daq")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_5f3j4")
+theme_override_styles/hover = SubResource("StyleBoxFlat_ch48r")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_l1wf6")
+text = "キャンセル"
+
+[node name="ErrorMessageLabel" type="Label" parent="MarginContainer/VBoxContainer/LoginPanel" unique_id=146463323]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 9.425
+anchor_right = 19.425001
+offset_left = -375.0
+offset_top = 300.0
+offset_right = 371.99994
+offset_bottom = 372.0
+theme_override_colors/font_color = Color(1, 0, 0, 1)
+theme_override_fonts/font = ExtResource("1_uo606")
+theme_override_font_sizes/font_size = 50
+
+[node name="SupabaseRequest" type="HTTPRequest" parent="." unique_id=1724018643]

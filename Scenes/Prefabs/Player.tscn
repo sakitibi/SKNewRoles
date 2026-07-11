@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://6llaatunfapt"]
+
+[ext_resource type="Texture2D" uid="uid://dug73qf46v87s" path="res://Resources/Charactors/sakitibi.png" id="1_fiu32"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_42ksm"]
+albedo_texture = ExtResource("1_fiu32")
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_0iane"]
+material = SubResource("StandardMaterial3D_42ksm")
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1fclr"]
+
+[node name="Player" type="SNR2Player" unique_id=1646543875]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -230.70352, 0)
+velocity = Vector3(0, 0, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1291165692]
+mesh = SubResource("CapsuleMesh_0iane")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1237376772]
+shape = SubResource("CapsuleShape3D_1fclr")
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=1739803627]
+transform = Transform3D(1, 0, 0, 0, 0.9659258, 0.25881904, 0, -0.25881904, 0.9659258, 0, 0.5, 0)

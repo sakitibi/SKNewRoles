@@ -1,0 +1,57 @@
+[gd_scene format=3 uid="uid://bgybqu4t6omyp"]
+
+[ext_resource type="FontFile" uid="uid://dh2srjx51onl7" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="1_4a5q1"]
+[ext_resource type="FontFile" uid="uid://bnpuryk64ipb5" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="2_d86sw"]
+
+[node name="RoleRevealScene" type="Control" unique_id=1913904660]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="ColorRect" parent="." unique_id=571531754]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="CPUParticles2D" type="CPUParticles2D" parent="." unique_id=1306725811]
+
+[node name="MainContainer" type="CenterContainer" parent="." unique_id=1079180023]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -67.5
+offset_right = 67.5
+offset_bottom = 125.0
+grow_horizontal = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MainContainer" unique_id=495419939]
+layout_mode = 2
+
+[node name="FactionLabel" type="Label" parent="MainContainer/VBoxContainer" unique_id=911609161]
+layout_mode = 2
+offset_transform_enabled = true
+offset_transform_position = Vector2(0, 50)
+theme_override_fonts/font = ExtResource("1_4a5q1")
+theme_override_font_sizes/font_size = 70
+
+[node name="RoleTitleLabel" type="Label" parent="MainContainer/VBoxContainer" unique_id=1103507480]
+layout_mode = 2
+offset_transform_enabled = true
+offset_transform_position = Vector2(0, 250)
+theme_override_fonts/font = ExtResource("2_d86sw")
+theme_override_font_sizes/font_size = 80
+
+[node name="DescriptionLabel" type="Label" parent="MainContainer/VBoxContainer" unique_id=1854083897]
+layout_mode = 2
+offset_transform_enabled = true
+offset_transform_position = Vector2(0, 500)
+theme_override_fonts/font = ExtResource("2_d86sw")
+theme_override_font_sizes/font_size = 50

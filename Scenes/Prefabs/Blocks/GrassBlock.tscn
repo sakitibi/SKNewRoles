@@ -1,0 +1,71 @@
+[gd_scene format=3 uid="uid://m6hx5x2hhw1o"]
+
+[ext_resource type="Texture2D" uid="uid://mvighnle64bb" path="res://Resources/Blocks/grass_block_top.png" id="1_3hkb4"]
+[ext_resource type="Texture2D" uid="uid://bdrodxppacw04" path="res://Resources/Blocks/dirt.png" id="2_hwu5v"]
+[ext_resource type="Texture2D" uid="uid://ch3c8d461jc4h" path="res://Resources/Blocks/grass_block_side.png" id="3_cty71"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_o4wg0"]
+albedo_color = Color(0.2, 0.8, 0.2, 1)
+albedo_texture = ExtResource("1_3hkb4")
+uv1_triplanar = true
+uv1_world_triplanar = true
+texture_filter = 2
+
+[sub_resource type="QuadMesh" id="QuadMesh_0iane"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6nnxi"]
+albedo_color = Color(0.2, 0.8, 0.2, 1)
+albedo_texture = ExtResource("1_3hkb4")
+uv1_triplanar = true
+uv1_world_triplanar = true
+texture_filter = 2
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cty71"]
+albedo_texture = ExtResource("2_hwu5v")
+uv1_triplanar = true
+uv1_world_triplanar = true
+texture_filter = 2
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bsme7"]
+albedo_texture = ExtResource("3_cty71")
+uv1_triplanar = true
+uv1_world_triplanar = true
+texture_filter = 2
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1fclr"]
+
+[node name="GrassBlock" type="SNR2GrassBlock" unique_id=1717427691]
+
+[node name="Top" type="MeshInstance3D" parent="." unique_id=1904126623]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0.5, 0)
+material_override = SubResource("StandardMaterial3D_o4wg0")
+mesh = SubResource("QuadMesh_0iane")
+surface_material_override/0 = SubResource("StandardMaterial3D_6nnxi")
+
+[node name="Bottom" type="MeshInstance3D" parent="." unique_id=1546003871]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, -0.5, 0)
+material_override = SubResource("StandardMaterial3D_cty71")
+mesh = SubResource("QuadMesh_0iane")
+
+[node name="Front" type="MeshInstance3D" parent="." unique_id=1283196184]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.5)
+material_override = SubResource("StandardMaterial3D_bsme7")
+mesh = SubResource("QuadMesh_0iane")
+
+[node name="Back" type="MeshInstance3D" parent="." unique_id=457112839]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0, -0.5)
+material_override = SubResource("StandardMaterial3D_bsme7")
+mesh = SubResource("QuadMesh_0iane")
+
+[node name="Left" type="MeshInstance3D" parent="." unique_id=528814788]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0.5, 0, 0)
+material_override = SubResource("StandardMaterial3D_bsme7")
+mesh = SubResource("QuadMesh_0iane")
+
+[node name="Right" type="MeshInstance3D" parent="." unique_id=1839050622]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, -0.5, 0, 0)
+material_override = SubResource("StandardMaterial3D_bsme7")
+mesh = SubResource("QuadMesh_0iane")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1592779791]
+shape = SubResource("BoxShape3D_1fclr")

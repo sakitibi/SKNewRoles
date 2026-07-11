@@ -1,0 +1,94 @@
+[gd_scene format=3 uid="uid://bp74wyuvkvhjt"]
+
+[ext_resource type="FontFile" uid="uid://dh2srjx51onl7" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="1_4klwk"]
+[ext_resource type="Script" uid="uid://d11pydadtbhm" path="res://Scripts/Lobby/Join/JoinPublicLobby.cs" id="1_gmvms"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4klwk"]
+bg_color = Color(0, 0.64705884, 0.6862745, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gmvms"]
+bg_color = Color(0.08235294, 0.3529412, 0.9098039, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_37hc7"]
+bg_color = Color(0.28235295, 1, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yjsn2"]
+bg_color = Color(1, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7t4nk"]
+bg_color = Color(0.6156863, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7lc51"]
+bg_color = Color(1, 0.31764707, 0.31764707, 1)
+
+[node name="JoinPublicLobby" type="Control" unique_id=748822483]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_gmvms")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=604361494]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="LobbyBasePanel" type="Panel" parent="VBoxContainer" unique_id=2134054829]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="VBoxContainer/LobbyBasePanel" unique_id=2145839881]
+layout_mode = 0
+offset_left = 230.0
+offset_top = 8.0
+offset_right = 650.0
+offset_bottom = 69.0
+theme_override_fonts/font = ExtResource("1_4klwk")
+theme_override_font_sizes/font_size = 60
+text = "公開部屋を探す"
+
+[node name="RefreshButton" type="Button" parent="VBoxContainer/LobbyBasePanel" unique_id=1026958090]
+layout_mode = 0
+offset_left = 839.0
+offset_top = 10.0
+offset_right = 1053.0
+offset_bottom = 71.0
+offset_transform_enabled = true
+theme_override_fonts/font = ExtResource("1_4klwk")
+theme_override_font_sizes/font_size = 60
+theme_override_styles/normal = SubResource("StyleBoxFlat_4klwk")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_gmvms")
+theme_override_styles/hover = SubResource("StyleBoxFlat_37hc7")
+text = "更新"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer/LobbyBasePanel" unique_id=1805888803]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -698.0
+offset_top = 142.0
+offset_right = 703.0
+offset_bottom = 645.0
+grow_horizontal = 2
+
+[node name="LobbyListContainer" type="VBoxContainer" parent="VBoxContainer/LobbyBasePanel/ScrollContainer" unique_id=2083497276]
+layout_mode = 2
+
+[node name="BackButton" type="Button" parent="VBoxContainer/LobbyBasePanel" unique_id=980216756]
+layout_mode = 0
+offset_left = 542.0
+offset_top = 722.0
+offset_right = 842.0
+offset_bottom = 783.0
+offset_transform_enabled = true
+theme_override_fonts/font = ExtResource("1_4klwk")
+theme_override_font_sizes/font_size = 60
+theme_override_styles/normal = SubResource("StyleBoxFlat_yjsn2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_7t4nk")
+theme_override_styles/hover = SubResource("StyleBoxFlat_7lc51")
+text = "キャンセル"

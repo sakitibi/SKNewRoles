@@ -1,0 +1,101 @@
+[gd_scene format=3 uid="uid://i7ulot2x5nia"]
+
+[ext_resource type="Script" uid="uid://b5lug7s21j3n7" path="res://Scripts/Lobby/CreateLobby.cs" id="1_script"]
+[ext_resource type="FontFile" uid="uid://bnpuryk64ipb5" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="2_ql7qh"]
+[ext_resource type="FontFile" uid="uid://dh2srjx51onl7" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="2_sjs2x"]
+
+[node name="CreateLobby" type="Control" unique_id=584594070]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=704403777]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.12, 0.12, 0.14, 1)
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=107962940]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 100
+theme_override_constants/margin_top = 50
+theme_override_constants/margin_right = 100
+theme_override_constants/margin_bottom = 50
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=133254483]
+layout_mode = 2
+alignment = 1
+
+[node name="Title" type="Label" parent="MarginContainer/VBoxContainer" unique_id=1733663188]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_sjs2x")
+theme_override_font_sizes/font_size = 60
+text = "新しい部屋を作成する"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer" unique_id=651348737]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="Panel" type="Panel" parent="MarginContainer/VBoxContainer" unique_id=1033787201]
+custom_minimum_size = Vector2(700, 550)
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/Panel" unique_id=1673046343]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 30
+alignment = 1
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/Panel/VBoxContainer" unique_id=1282348249]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ql7qh")
+theme_override_font_sizes/font_size = 28
+text = "ロビー名を入力してください"
+horizontal_alignment = 1
+
+[node name="LobbyNameInput" type="LineEdit" parent="MarginContainer/VBoxContainer/Panel/VBoxContainer" unique_id=120432381]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ql7qh")
+theme_override_font_sizes/font_size = 24
+placeholder_text = "Lobby Name..."
+alignment = 1
+
+[node name="StatusLabel" type="Label" parent="MarginContainer/VBoxContainer/Panel/VBoxContainer" unique_id=624093346]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.4, 1)
+theme_override_fonts/font = ExtResource("2_ql7qh")
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+
+[node name="ConfirmButton" type="Button" parent="MarginContainer/VBoxContainer/Panel/VBoxContainer" unique_id=1871649431]
+custom_minimum_size = Vector2(0, 65)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ql7qh")
+theme_override_font_sizes/font_size = 26
+text = "ロビーを作成"
+
+[node name="CancelButton" type="Button" parent="MarginContainer/VBoxContainer/Panel/VBoxContainer" unique_id=641800833]
+custom_minimum_size = Vector2(0, 65)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_ql7qh")
+theme_override_font_sizes/font_size = 26
+text = "キャンセル"

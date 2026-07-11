@@ -1,0 +1,103 @@
+[gd_scene format=3 uid="uid://b21euwsjo7nye"]
+
+[ext_resource type="Script" uid="uid://bj1e0r5jr81o4" path="res://Scripts/Lobby/Join/JoinPrivateLobby.cs" id="1_rvuea"]
+[ext_resource type="FontFile" uid="uid://dh2srjx51onl7" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="1_xf6ki"]
+[ext_resource type="FontFile" uid="uid://bnpuryk64ipb5" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="2_a4jbr"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_a4jbr"]
+bg_color = Color(0, 0.6509804, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rvuea"]
+bg_color = Color(0.6862745, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_p5vxj"]
+bg_color = Color(1, 0.30980393, 0.2901961, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t7xwt"]
+bg_color = Color(1, 0, 0, 1)
+
+[node name="JoinPrivateLobby" type="Control" unique_id=1815666183]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_rvuea")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=372772876]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+offset_transform_enabled = true
+offset_transform_scale = Vector2(1.04, 1.04)
+color = Color(0.1882353, 0.19215687, 0.1882353, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="ColorRect" unique_id=901969739]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ColorRect/CenterContainer" unique_id=253606033]
+layout_mode = 2
+
+[node name="Panel" type="Panel" parent="ColorRect/CenterContainer/VBoxContainer" unique_id=1869616430]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="ColorRect/CenterContainer/VBoxContainer/Panel" unique_id=702712461]
+layout_mode = 0
+offset_left = 390.0
+offset_top = -14.0
+offset_right = 915.0
+offset_bottom = 47.0
+theme_override_fonts/font = ExtResource("1_xf6ki")
+theme_override_font_sizes/font_size = 60
+text = "部屋コードを入力.."
+
+[node name="RoomCodeEdit" type="LineEdit" parent="ColorRect/CenterContainer/VBoxContainer/Panel" unique_id=1878924077]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 4.65
+anchor_right = 23.85
+anchor_bottom = 2.3720002
+offset_left = 221.0
+offset_top = 152.0
+offset_right = 1145.0
+offset_bottom = 310.0
+theme_override_fonts/font = ExtResource("2_a4jbr")
+theme_override_font_sizes/font_size = 150
+max_length = 8
+
+[node name="JoinButton" type="Button" parent="ColorRect/CenterContainer/VBoxContainer/Panel" unique_id=941933554]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 421.0
+offset_top = 390.0
+offset_right = 841.0
+offset_bottom = 550.0
+offset_transform_enabled = true
+theme_override_fonts/font = ExtResource("1_xf6ki")
+theme_override_font_sizes/font_size = 60
+theme_override_styles/normal = SubResource("StyleBoxFlat_a4jbr")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_rvuea")
+theme_override_styles/hover = SubResource("StyleBoxFlat_p5vxj")
+text = "部屋に参加する"
+
+[node name="CancelButton" type="Button" parent="ColorRect/CenterContainer/VBoxContainer/Panel" unique_id=986198632]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 423.0
+offset_top = 598.0
+offset_right = 843.0
+offset_bottom = 758.0
+offset_transform_enabled = true
+theme_override_fonts/font = ExtResource("1_xf6ki")
+theme_override_font_sizes/font_size = 60
+theme_override_styles/normal = SubResource("StyleBoxFlat_t7xwt")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_rvuea")
+theme_override_styles/hover = SubResource("StyleBoxFlat_p5vxj")
+text = "キャンセル"

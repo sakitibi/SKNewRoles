@@ -1,0 +1,88 @@
+[gd_scene format=3 uid="uid://x6a0w15otf3e"]
+
+[ext_resource type="Script" uid="uid://fw80cjy6b2bf" path="res://Scripts/Home.cs" id="1_maaha"]
+[ext_resource type="FontFile" uid="uid://dh2srjx51onl7" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="2_hf3nf"]
+[ext_resource type="Texture2D" uid="uid://d2oqkqps0e80m" path="res://Resources/HomeBackground.png" id="2_maaha"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3me4c"]
+bg_color = Color(0, 0.5793735, 0.80830514, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hs5rb"]
+bg_color = Color(0.003921569, 0.43529412, 0.79607844, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0iane"]
+bg_color = Color(0.2901961, 0.8627451, 0.92941177, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cdeat"]
+bg_color = Color(1, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_maaha"]
+bg_color = Color(0.5764706, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hf3nf"]
+bg_color = Color(1, 0.3647059, 0.3764706, 1)
+
+[node name="Home" type="Control" unique_id=1377443266]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 2.0
+offset_bottom = 2.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_maaha")
+
+[node name="TextureRect" type="TextureRect" parent="." unique_id=213168875]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+offset_transform_enabled = true
+offset_transform_scale = Vector2(1.04, 1.04)
+texture = ExtResource("2_maaha")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1692026220]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=440971788]
+layout_mode = 2
+
+[node name="HomePanel" type="Panel" parent="MarginContainer/VBoxContainer" unique_id=266825899]
+layout_mode = 2
+
+[node name="StartButton" type="Button" parent="MarginContainer/VBoxContainer/HomePanel" unique_id=1883100645]
+layout_mode = 0
+offset_left = -322.0
+offset_top = -143.0
+offset_right = -58.0
+offset_bottom = -43.0
+offset_transform_enabled = true
+theme_override_fonts/font = ExtResource("2_hf3nf")
+theme_override_font_sizes/font_size = 40
+theme_override_styles/normal = SubResource("StyleBoxFlat_3me4c")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_hs5rb")
+theme_override_styles/hover = SubResource("StyleBoxFlat_0iane")
+text = "ゲームを開始"
+
+[node name="ExitButton" type="Button" parent="MarginContainer/VBoxContainer/HomePanel" unique_id=1178413019]
+layout_mode = 0
+offset_left = 156.0
+offset_top = -142.0
+offset_right = 416.0
+offset_bottom = -42.0
+theme_override_fonts/font = ExtResource("2_hf3nf")
+theme_override_font_sizes/font_size = 40
+theme_override_styles/normal = SubResource("StyleBoxFlat_cdeat")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_maaha")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hf3nf")
+text = "ゲームを終了"

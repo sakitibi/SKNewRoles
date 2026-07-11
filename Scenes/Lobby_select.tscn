@@ -1,0 +1,174 @@
+[gd_scene format=3 uid="uid://52lmevfxe8hp"]
+
+[ext_resource type="FontFile" uid="uid://dh2srjx51onl7" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="1_4a7xb"]
+[ext_resource type="Script" uid="uid://stwneksbj0l4" path="res://Scripts/Lobby/Lobby_select.cs" id="1_jrcml"]
+[ext_resource type="FontFile" uid="uid://bnpuryk64ipb5" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="3_411oe"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jrcml"]
+bg_color = Color(0, 0.6509804, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_411oe"]
+bg_color = Color(0.003921569, 0.53333336, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lceui"]
+bg_color = Color(0.36862746, 0.8627451, 0.45490196, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0iane"]
+bg_color = Color(1, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1fclr"]
+bg_color = Color(0.64705884, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hs5rb"]
+bg_color = Color(1, 0.22352941, 0.22352941, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_f0tek"]
+bg_color = Color(0.70980394, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1dar7"]
+bg_color = Color(0.54901963, 0, 0.85882354, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3sqh0"]
+bg_color = Color(0.33333334, 0.09803922, 0.67058825, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lbo2f"]
+bg_color = Color(0.8156863, 0.33333334, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qbopc"]
+bg_color = Color(0, 0.6117647, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_oihaf"]
+bg_color = Color(0, 0.38039216, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_d45k3"]
+bg_color = Color(0.43529412, 1, 1, 1)
+
+[node name="LobbySelect" type="Control" unique_id=1271688958]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_jrcml")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=114512461]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=107331920]
+layout_mode = 2
+
+[node name="LobbySelectPanel" type="Panel" parent="MarginContainer/VBoxContainer" unique_id=172375369]
+layout_mode = 2
+
+[node name="LoginButton" type="Button" parent="MarginContainer/VBoxContainer/LobbySelectPanel" unique_id=1614950633]
+layout_mode = 0
+offset_left = 867.0
+offset_top = 34.0
+offset_right = 1131.0
+offset_bottom = 134.0
+offset_transform_enabled = true
+theme_override_fonts/font = ExtResource("1_4a7xb")
+theme_override_font_sizes/font_size = 40
+theme_override_styles/normal = SubResource("StyleBoxFlat_jrcml")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_411oe")
+theme_override_styles/hover = SubResource("StyleBoxFlat_lceui")
+text = "ログイン"
+
+[node name="CreateRoomButton" type="Button" parent="MarginContainer/VBoxContainer/LobbySelectPanel" unique_id=199705501]
+layout_mode = 0
+offset_left = 11.0
+offset_top = 418.0
+offset_right = 431.0
+offset_bottom = 578.0
+offset_transform_enabled = true
+theme_override_fonts/font = ExtResource("1_4a7xb")
+theme_override_font_sizes/font_size = 60
+theme_override_styles/normal = SubResource("StyleBoxFlat_jrcml")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_411oe")
+theme_override_styles/hover = SubResource("StyleBoxFlat_lceui")
+text = "部屋を作成する"
+
+[node name="LogoutButton" type="Button" parent="MarginContainer/VBoxContainer/LobbySelectPanel" unique_id=2139914990]
+layout_mode = 0
+offset_left = 867.0
+offset_top = 164.0
+offset_right = 1131.0
+offset_bottom = 264.0
+offset_transform_enabled = true
+theme_override_fonts/font = ExtResource("1_4a7xb")
+theme_override_font_sizes/font_size = 40
+theme_override_styles/normal = SubResource("StyleBoxFlat_0iane")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_1fclr")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hs5rb")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_f0tek")
+text = "ログアウト
+"
+
+[node name="BackButton" type="Button" parent="MarginContainer/VBoxContainer/LobbySelectPanel" unique_id=768487465]
+layout_mode = 0
+offset_left = 868.0
+offset_top = 296.0
+offset_right = 1228.0
+offset_bottom = 396.0
+offset_transform_enabled = true
+theme_override_fonts/font = ExtResource("1_4a7xb")
+theme_override_font_sizes/font_size = 40
+theme_override_styles/normal = SubResource("StyleBoxFlat_0iane")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_1fclr")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hs5rb")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_f0tek")
+text = "タイトル画面に戻る
+"
+
+[node name="JoinPrivateRoomButton" type="Button" parent="MarginContainer/VBoxContainer/LobbySelectPanel" unique_id=1447077870]
+layout_mode = 0
+offset_left = 548.0
+offset_top = 612.0
+offset_right = 1328.0
+offset_bottom = 772.0
+offset_transform_enabled = true
+theme_override_fonts/font = ExtResource("1_4a7xb")
+theme_override_font_sizes/font_size = 60
+theme_override_styles/normal = SubResource("StyleBoxFlat_1dar7")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3sqh0")
+theme_override_styles/hover = SubResource("StyleBoxFlat_lbo2f")
+text = "プライベート部屋に参加する
+"
+
+[node name="JoinPublicRoomButton" type="Button" parent="MarginContainer/VBoxContainer/LobbySelectPanel" unique_id=1401083034]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 612.0
+offset_right = 434.0
+offset_bottom = 772.0
+offset_transform_enabled = true
+theme_override_fonts/font = ExtResource("1_4a7xb")
+theme_override_font_sizes/font_size = 60
+theme_override_styles/normal = SubResource("StyleBoxFlat_qbopc")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_oihaf")
+theme_override_styles/hover = SubResource("StyleBoxFlat_d45k3")
+text = "部屋に参加する
+"
+
+[node name="EmailLabel" type="Label" parent="MarginContainer/VBoxContainer/LobbySelectPanel" unique_id=1500926645]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 106.0
+offset_right = 840.0
+offset_bottom = 177.0
+theme_override_fonts/font = ExtResource("3_411oe")
+theme_override_font_sizes/font_size = 50
+text = "未ログイン"
+
+[node name="AccountLabel" type="Label" parent="MarginContainer/VBoxContainer/LobbySelectPanel" unique_id=498977897]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 22.0
+offset_right = 842.0
+offset_bottom = 93.0
+theme_override_fonts/font = ExtResource("3_411oe")
+theme_override_font_sizes/font_size = 50
+text = "メールアドレス:"

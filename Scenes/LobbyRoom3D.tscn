@@ -1,0 +1,102 @@
+[gd_scene format=3 uid="uid://cok8g652uaa1t"]
+
+[ext_resource type="Script" uid="uid://di1xouohl2xq" path="res://Scripts/Lobby/LobbyRoom.cs" id="1_me3y1"]
+[ext_resource type="FontFile" uid="uid://bnpuryk64ipb5" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="2_xpaeq"]
+[ext_resource type="PackedScene" uid="uid://da4etnx7lybvw" path="res://Scenes/Prefabs/Blocks/Stone.tscn" id="3_6h38u"]
+[ext_resource type="FontFile" uid="uid://dh2srjx51onl7" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="3_iex2o"]
+[ext_resource type="PackedScene" uid="uid://m6hx5x2hhw1o" path="res://Scenes/Prefabs/Blocks/GrassBlock.tscn" id="3_yf6jr"]
+[ext_resource type="Script" uid="uid://d20clvv62ng41" path="res://Scripts/Lobby/LobbyBridge.cs" id="6_67ex4"]
+[ext_resource type="PackedScene" uid="uid://6llaatunfapt" path="res://Scenes/Prefabs/Player.tscn" id="6_tm6sf"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_3sykc"]
+
+[sub_resource type="Sky" id="Sky_fd3aw"]
+sky_material = SubResource("ProceduralSkyMaterial_3sykc")
+
+[sub_resource type="Environment" id="Environment_0iane"]
+background_mode = 2
+sky = SubResource("Sky_fd3aw")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6h38u"]
+bg_color = Color(0, 0.6666667, 0.5921569, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_iex2o"]
+bg_color = Color(0, 0.5254902, 0.34901962, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_67ex4"]
+bg_color = Color(0, 1, 1, 1)
+
+[node name="LobbyRoom3d" type="Node3D" unique_id=1488161932]
+script = ExtResource("1_me3y1")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1093374520]
+environment = SubResource("Environment_0iane")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=683473926]
+transform = Transform3D(1, 0, 0, 0, 0.7071068, 0.7071068, 0, -0.7071068, 0.7071068, 0, 10, 0)
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=684656785]
+
+[node name="RoomInfoLabel" type="Label" parent="CanvasLayer" unique_id=478270813]
+unique_name_in_owner = true
+offset_left = 12.0
+offset_top = 20.0
+offset_right = 513.0
+offset_bottom = 123.0
+theme_override_fonts/font = ExtResource("2_xpaeq")
+theme_override_font_sizes/font_size = 50
+text = "ルーム名: Loading...
+部屋コード: --------"
+
+[node name="PrivacyToggleButton" type="Button" parent="CanvasLayer" unique_id=673480510]
+unique_name_in_owner = true
+offset_left = 1094.0
+offset_top = 389.0
+offset_right = 1374.0
+offset_bottom = 483.0
+theme_override_fonts/font = ExtResource("2_xpaeq")
+theme_override_font_sizes/font_size = 60
+text = "非公開"
+
+[node name="LeaveButton" type="Button" parent="CanvasLayer" unique_id=1124858826]
+unique_name_in_owner = true
+offset_left = 16.0
+offset_top = 683.0
+offset_right = 296.0
+offset_bottom = 777.0
+theme_override_fonts/font = ExtResource("2_xpaeq")
+theme_override_font_sizes/font_size = 60
+text = "退出する"
+
+[node name="StartGameButton" type="Button" parent="CanvasLayer" unique_id=1197993267]
+unique_name_in_owner = true
+offset_left = 534.0
+offset_top = 640.0
+offset_right = 890.0
+offset_bottom = 776.0
+theme_override_fonts/font = ExtResource("3_iex2o")
+theme_override_font_sizes/font_size = 100
+theme_override_styles/normal = SubResource("StyleBoxFlat_6h38u")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_iex2o")
+theme_override_styles/hover = SubResource("StyleBoxFlat_67ex4")
+text = "開始"
+
+[node name="GrassBlock" parent="." unique_id=1367937757 instance=ExtResource("3_yf6jr")]
+grass_color = Color(0, 0.65882355, 0.24705882, 1)
+transform = Transform3D(8, 0, 0, 0, 1, 0, 0, 0, 8, 0, 0.5, 0)
+
+[node name="Stone" parent="." unique_id=1808181291 instance=ExtResource("3_6h38u")]
+transform = Transform3D(10, 0, 0, 0, 3, 0, 0, 0, 1, 0, 1.5, 4.5)
+
+[node name="Stone2" parent="." unique_id=242464190 instance=ExtResource("3_6h38u")]
+transform = Transform3D(10, 0, 0, 0, 3, 0, 0, 0, 1, 0, 1.5, -4.5)
+
+[node name="Stone3" parent="." unique_id=1943355256 instance=ExtResource("3_6h38u")]
+transform = Transform3D(1, 0, 0, 0, 3, 0, 0, 0, 8, -4.5, 1.5, 0)
+
+[node name="Stone4" parent="." unique_id=150535319 instance=ExtResource("3_6h38u")]
+transform = Transform3D(1, 0, 0, 0, 3, 0, 0, 0, 8, 4.5, 1.5, 0)
+
+[node name="LobbyManager" type="LobbyManager" parent="." unique_id=1950573728]
+other_player_prefab = ExtResource("6_tm6sf")
+script = ExtResource("6_67ex4")

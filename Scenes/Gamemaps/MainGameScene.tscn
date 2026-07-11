@@ -1,0 +1,33 @@
+[gd_scene format=3 uid="uid://cf1k5bv4rvny0"]
+
+[ext_resource type="Script" uid="uid://drrtl1i136xpt" path="res://Scripts/Game/MainGameScene.cs" id="1_cakpg"]
+[ext_resource type="PackedScene" uid="uid://b42xncvhtc3l5" path="res://Scenes/Gamemaps/StartupScene.tscn" id="2_vg2oi"]
+[ext_resource type="PackedScene" uid="uid://bgybqu4t6omyp" path="res://Scenes/Gamemaps/RoleRevealScene.tscn" id="3_pswr4"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_vg2oi"]
+
+[sub_resource type="Sky" id="Sky_fd3aw"]
+sky_material = SubResource("ProceduralSkyMaterial_vg2oi")
+
+[sub_resource type="Environment" id="Environment_pswr4"]
+background_mode = 2
+sky = SubResource("Sky_fd3aw")
+
+[node name="MainGameScene" type="Node3D" unique_id=1746155919]
+script = ExtResource("1_cakpg")
+
+[node name="RoleManager" type="RoleManager" parent="." unique_id=1195971431]
+
+[node name="ChunkManager" type="ChunkManager" parent="." unique_id=707960151]
+
+[node name="UILayer" type="CanvasLayer" parent="." unique_id=217740970]
+
+[node name="LoadingScene" parent="UILayer" unique_id=1208099915 instance=ExtResource("2_vg2oi")]
+
+[node name="RoleRevealScene" parent="UILayer" unique_id=1913904660 instance=ExtResource("3_pswr4")]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=111003577]
+environment = SubResource("Environment_pswr4")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1811700585]
+transform = Transform3D(1, 0, 0, 0, 0.7071068, 0.7071068, 0, -0.7071068, 0.7071068, 0, 10, 0)
