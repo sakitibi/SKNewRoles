@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
 
-# プロジェクト名を設定（出力されるファイル名に影響します）
+# プロジェクト名を設定
 project(godot_player_extension)
 
-# C++の標準規格をC++17に設定（Godot 4のGDExtensionに必須）
+# C++の標準規格をC++17に設定
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -11,9 +11,15 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 
-# 1. 公式バインディング「godot-cpp」をCMakeに組み込む
-add_subdirectory(godot-cpp)
+include(FetchContent)
+FetchContent_Declare(
+    godot-cpp
+    GIT_REPOSITORY https://github.com/godotengine/godot-cpp.git
+    GIT_TAG        godot-4.7-stable
+)
+FetchContent_MakeAvailable(godot-cpp)
 
+# 環境変数のマクロ定義
 if(DEFINED SUPABASE_URL)
     add_compile_definitions(DEFAULT_SUPABASE_URL="${SUPABASE_URL}")
 endif()
@@ -22,7 +28,7 @@ if(DEFINED SUPABASE_ANON_KEY)
     add_compile_definitions(DEFAULT_SUPABASE_ANON_KEY="${SUPABASE_ANON_KEY}")
 endif()
 
-# 2. コンパイル対象となる自分のC++ソースファイルを指定
+# コンパイル対象となる C++ ソースファイル
 set(SOURCES
     src/register_types.cpp
     src/player.cpp
@@ -34,11 +40,11 @@ set(SOURCES
     src/Game/chunk_manager.cpp
 )
 
-# 3. 共有ライブラリ（GDExtension用のバイナリ）としてビルドを定義
+# 共有ライブラリとしてビルド
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
-# 4. あなたのコードと「godot-cpp」ライブラリをリンク（結合）させる
+# godot-cpp とのリンク
 target_link_libraries(${PROJECT_NAME} PRIVATE godot::cpp)
 
-# 5. インクルードパス（ヘッダーファイルを検索する場所）に「src」フォルダを追加
+# インクルードパス設定
 target_include_directories(${PROJECT_NAME} PRIVATE src)
