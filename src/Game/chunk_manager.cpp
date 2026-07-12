@@ -138,7 +138,7 @@ void ChunkManager::load_chunk(const Vector2i &coord) {
 
     // シグナルの発火
     emit_signal("chunk_loaded", coord, chunk_instance);
-    UtilityFunctions::print("🧱 [ChunkManager] Chunkを生成しました [", target_path, "]: (", coord.x, ", ", coord.y, ")");
+    UtilityFunctions::print("🧱 [ChunkManager] Chunk Generated [", target_path, "]: (", coord.x, ", ", coord.y, ")");
 }
 
 void ChunkManager::unload_chunk(const Vector2i &coord) {

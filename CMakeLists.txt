@@ -29,6 +29,7 @@ set(SOURCES
     src/config_manager.cpp
     src/Game/RoleManager.cpp
     src/Game/chunk_manager.cpp
+    src/Game/hud_manager.cpp
 )
 
 # 共有ライブラリとしてビルド

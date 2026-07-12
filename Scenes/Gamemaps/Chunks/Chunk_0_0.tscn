@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://qjhoidm0ky68"]
+
+[ext_resource type="PackedScene" uid="uid://m6hx5x2hhw1o" path="res://Scenes/Prefabs/Blocks/GrassBlock.tscn" id="1_htoty"]
+
+[node name="Chunk00" type="Node3D" unique_id=2016581830]
+
+[node name="GrassBlock" parent="." unique_id=1717427691 instance=ExtResource("1_htoty")]
+grass_color = Color(0, 0.65882355, 0.24705882, 1)
+transform = Transform3D(16, 0, 0, 0, 1, 0, 0, 0, 16, 0, 0.5, 0)
