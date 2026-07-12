@@ -30,24 +30,37 @@ void SNR2Player::_ready() {
 void SNR2Player::_input(const Ref<InputEvent> &event) {
     Input *input = Input::get_singleton();
 
+    // 右クリック中のカメラ・視点操作
     if (input->is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_RIGHT)) {
         
         Ref<InputEventMouseMotion> mouse_motion = event;
         if (mouse_motion.is_valid()) {
             Vector2 delta = mouse_motion->get_relative();
 
-            rotation_y -= delta.x * mouse_sensitivity;
-            rotation_y = Math::clamp(rotation_y, -LIMIT_ANGLE_RAD, LIMIT_ANGLE_RAD);
+            // 1. 上下回転（カメラ単体を回転）
+            camera_rotation_x -= delta.y * mouse_sensitivity;
+            camera_rotation_x = Math::clamp(camera_rotation_x, -LIMIT_ANGLE_X, LIMIT_ANGLE_X);
 
-            rotation_x -= delta.y * mouse_sensitivity;
-            rotation_x = Math::clamp(rotation_x, -LIMIT_ANGLE_RAD, LIMIT_ANGLE_RAD);
+            // 2. 左右回転（プレイヤー相対）
+            camera_rotation_y -= delta.x * mouse_sensitivity;
 
-            set_rotation(Vector3(0, rotation_y, 0));
+            // 限界値（90度）を超えたかチェック
+            if (camera_rotation_y > LIMIT_ANGLE_Y) {
+                // 右側にオーバーした分だけプレイヤー本体を右回転
+                float overflow = camera_rotation_y - LIMIT_ANGLE_Y;
+                rotate_y(-overflow); 
+                camera_rotation_y = LIMIT_ANGLE_Y;
+            } else if (camera_rotation_y < -LIMIT_ANGLE_Y) {
+                // 左側にオーバーした分だけプレイヤー本体を左回転
+                float overflow = camera_rotation_y - (-LIMIT_ANGLE_Y);
+                rotate_y(-overflow);
+                camera_rotation_y = -LIMIT_ANGLE_Y;
+            }
 
+            // 3. カメラの回転を反映
             if (camera != nullptr) {
-                camera->set_rotation(Vector3(rotation_x, 0, 0));
-            } else {
-                set_rotation(Vector3(rotation_x, rotation_y, 0));
+                // X軸(上下) と Y軸(左右) のローカル回転を設定
+                camera->set_rotation(Vector3(camera_rotation_x, camera_rotation_y, 0));
             }
         }
     }
@@ -85,16 +98,15 @@ void SNR2Player::_physics_process(double delta) {
 
     if (input_dir.length_squared() > 0) {
         input_dir = input_dir.normalized();
-    }
 
-    Vector3 direction = get_global_transform().basis.xform(Vector3(input_dir.x, 0, input_dir.y)).normalized();
-
-    if (direction != Vector3(0, 0, 0)) {
+        // プレイヤーの現在の向き（Y軸回転）に基づいて移動方向を計算
+        Vector3 direction = (get_transform().basis.xform(Vector3(input_dir.x, 0, input_dir.y))).normalized();
+        
         velocity.x = direction.x * SPEED;
         velocity.z = direction.z * SPEED;
     } else {
-        velocity.x = UtilityFunctions::move_toward(velocity.x, 0.0f, SPEED);
-        velocity.z = UtilityFunctions::move_toward(velocity.z, 0.0f, SPEED);
+        velocity.x = Math::move_toward(velocity.x, 0.0f, SPEED);
+        velocity.z = Math::move_toward(velocity.z, 0.0f, SPEED);
     }
 
     set_velocity(velocity);

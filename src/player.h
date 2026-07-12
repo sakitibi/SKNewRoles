@@ -5,8 +5,6 @@
 #include <godot_cpp/classes/input_event.hpp>
 
 namespace godot {
-    class Camera3D;
-
     class SNR2Player : public CharacterBody3D {
         GDCLASS(SNR2Player, CharacterBody3D)
 
@@ -17,11 +15,14 @@ namespace godot {
 
         // 視点操作用パラメータ
         float mouse_sensitivity = 0.003f;
-        float rotation_x = 0.0f;
-        float rotation_y = 0.0f;
+        
+        // カメラのローカル回転角度（rad）
+        float camera_rotation_x = 0.0f; // 上下
+        float camera_rotation_y = 0.0f; // 左右（プレイヤー相対）
 
-        // 上下左右 90度の限界値 (ラジアン)
-        const float LIMIT_ANGLE_RAD = 1.57079632679f;
+        // 限界角度（ラジアン）
+        const float LIMIT_ANGLE_X = 1.48f;
+        const float LIMIT_ANGLE_Y = 1.57079632679f;
 
         Camera3D *camera = nullptr;
 
