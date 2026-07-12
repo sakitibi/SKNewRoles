@@ -52,17 +52,20 @@ void SNR2Player::_input(const Ref<InputEvent> &event) {
 void SNR2Player::_physics_process(double delta) {
     Vector3 velocity = get_velocity();
 
+    // 重力適用
     if (!is_on_floor()) {
         velocity.y -= gravity * (float)delta;
     }
 
     Input *input = Input::get_singleton();
 
+    // ジャンプ処理
     bool is_jump_pressed = input->is_key_pressed(KEY_SPACE) || input->is_action_just_pressed("ui_accept");
     if (is_jump_pressed && is_on_floor()) {
         velocity.y = JUMP_VELOCITY;
     }
 
+    // 移動入力の取得
     Vector2 input_dir = Vector2(0, 0);
 
     if (input->is_key_pressed(KEY_D) || input->is_action_pressed("ui_right")) {
@@ -73,21 +76,33 @@ void SNR2Player::_physics_process(double delta) {
     }
 
     if (input->is_key_pressed(KEY_S) || input->is_action_pressed("ui_down")) {
-        input_dir.y += 1.0f;
+        input_dir.y += 1.0f; // 後ろ
     }
     if (input->is_key_pressed(KEY_W) || input->is_action_pressed("ui_up")) {
-        input_dir.y -= 1.0f;
+        input_dir.y -= 1.0f; // 前
     }
 
     if (input_dir.length_squared() > 0) {
         input_dir = input_dir.normalized();
 
-        // プレイヤーの向き（Y軸回転）に基づいて移動方向を計算
-        Vector3 direction = (get_transform().basis.xform(Vector3(input_dir.x, 0, input_dir.y))).normalized();
+        Transform3D global_trans = get_global_transform();
         
+        // ローカルの右方向(X)と前方向(-Z)を取得
+        Vector3 forward = -global_trans.basis.get_column(2); // Front (-Z)
+        Vector3 right   =  global_trans.basis.get_column(0); // Right (+X)
+
+        // Y軸（上下方向）への移動を無視して水平移動のみにする
+        forward.y = 0.0f;
+        right.y = 0.0f;
+        forward.normalize();
+        right.normalize();
+
+        Vector3 direction = (forward * (-input_dir.y) + right * input_dir.x).normalized();
+
         velocity.x = direction.x * SPEED;
         velocity.z = direction.z * SPEED;
     } else {
+        // 慣性で停止
         velocity.x = Math::move_toward(velocity.x, 0.0f, SPEED);
         velocity.z = Math::move_toward(velocity.z, 0.0f, SPEED);
     }
