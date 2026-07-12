@@ -37,28 +37,13 @@ void SNR2Player::_input(const Ref<InputEvent> &event) {
         if (mouse_motion.is_valid()) {
             Vector2 delta = mouse_motion->get_relative();
 
-            // 1. 上下回転（カメラ単体を回転）
+            rotate_y(-delta.x * mouse_sensitivity);
+
             camera_rotation_x -= delta.y * mouse_sensitivity;
             camera_rotation_x = Math::clamp(camera_rotation_x, -LIMIT_ANGLE_X, LIMIT_ANGLE_X);
 
-            // 2. 左右回転（プレイヤー相対）
-            camera_rotation_y -= delta.x * mouse_sensitivity;
-
-            // 限界値（90度）を超えたかチェック
-            if (camera_rotation_y > LIMIT_ANGLE_Y) {
-                float overflow = camera_rotation_y - LIMIT_ANGLE_Y;
-                rotate_y(overflow);
-                camera_rotation_y = LIMIT_ANGLE_Y;
-
-            } else if (camera_rotation_y < -LIMIT_ANGLE_Y) {
-                float overflow = -LIMIT_ANGLE_Y - camera_rotation_y;
-                rotate_y(-overflow);
-                camera_rotation_y = -LIMIT_ANGLE_Y;
-            }
-
-            // 3. カメラのローカル回転を反映
             if (camera != nullptr) {
-                camera->set_rotation(Vector3(camera_rotation_x, camera_rotation_y, 0));
+                camera->set_rotation(Vector3(camera_rotation_x, 0.0f, 0.0f));
             }
         }
     }
@@ -97,7 +82,7 @@ void SNR2Player::_physics_process(double delta) {
     if (input_dir.length_squared() > 0) {
         input_dir = input_dir.normalized();
 
-        // プレイヤーの現在の向き（Y軸回転）に基づいて移動方向を計算
+        // プレイヤーの向き（Y軸回転）に基づいて移動方向を計算
         Vector3 direction = (get_transform().basis.xform(Vector3(input_dir.x, 0, input_dir.y))).normalized();
         
         velocity.x = direction.x * SPEED;
