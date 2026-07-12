@@ -115,14 +115,14 @@ void ChunkManager::load_chunk(const Vector2i &coord) {
     } else if (loader->exists(default_path)) {
         target_path = default_path;
     } else {
-        UtilityFunctions::printerr("❌ [ChunkManager] Chunkプレハブが見つかりません (固有・デフォルト両方なし): ", specific_path);
+        UtilityFunctions::printerr("Error [ChunkManager] Chunkプレハブが見つかりません (固有・デフォルト両方なし): ", specific_path);
         return;
     }
 
     // 3. シーンのロードとインスタンス化
     Ref<PackedScene> chunk_scene = loader->load(target_path);
     if (chunk_scene.is_null()) {
-        UtilityFunctions::printerr("❌ [ChunkManager] シーンのロードに失敗しました: ", target_path);
+        UtilityFunctions::printerr("Error [ChunkManager] シーンのロードに失敗しました: ", target_path);
         return;
     }
 
@@ -138,7 +138,7 @@ void ChunkManager::load_chunk(const Vector2i &coord) {
 
     // シグナルの発火
     emit_signal("chunk_loaded", coord, chunk_instance);
-    UtilityFunctions::print("🧱 [ChunkManager] Chunk Generated [", target_path, "]: (", coord.x, ", ", coord.y, ")");
+    UtilityFunctions::print("Info [ChunkManager] Chunk Generated [", target_path, "]: (", coord.x, ", ", coord.y, ")");
 }
 
 void ChunkManager::unload_chunk(const Vector2i &coord) {

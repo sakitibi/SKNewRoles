@@ -46,20 +46,18 @@ void SNR2Player::_input(const Ref<InputEvent> &event) {
 
             // 限界値（90度）を超えたかチェック
             if (camera_rotation_y > LIMIT_ANGLE_Y) {
-                // 右側にオーバーした分だけプレイヤー本体を右回転
                 float overflow = camera_rotation_y - LIMIT_ANGLE_Y;
-                rotate_y(-overflow); 
+                rotate_y(overflow);
                 camera_rotation_y = LIMIT_ANGLE_Y;
+
             } else if (camera_rotation_y < -LIMIT_ANGLE_Y) {
-                // 左側にオーバーした分だけプレイヤー本体を左回転
-                float overflow = camera_rotation_y - (-LIMIT_ANGLE_Y);
+                float overflow = -LIMIT_ANGLE_Y - camera_rotation_y;
                 rotate_y(-overflow);
                 camera_rotation_y = -LIMIT_ANGLE_Y;
             }
 
-            // 3. カメラの回転を反映
+            // 3. カメラのローカル回転を反映
             if (camera != nullptr) {
-                // X軸(上下) と Y軸(左右) のローカル回転を設定
                 camera->set_rotation(Vector3(camera_rotation_x, camera_rotation_y, 0));
             }
         }
