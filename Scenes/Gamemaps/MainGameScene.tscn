@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://drrtl1i136xpt" path="res://Scripts/Game/MainGameScene.cs" id="1_cakpg"]
 [ext_resource type="PackedScene" uid="uid://b42xncvhtc3l5" path="res://Scenes/Gamemaps/StartupScene.tscn" id="2_vg2oi"]
 [ext_resource type="PackedScene" uid="uid://bgybqu4t6omyp" path="res://Scenes/Gamemaps/RoleRevealScene.tscn" id="3_pswr4"]
+[ext_resource type="FontFile" uid="uid://bnpuryk64ipb5" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="4_pswr4"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_vg2oi"]
 
@@ -31,3 +32,15 @@ environment = SubResource("Environment_pswr4")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1811700585]
 transform = Transform3D(1, 0, 0, 0, 0.7071068, 0.7071068, 0, -0.7071068, 0.7071068, 0, 10, 0)
+
+[node name="HUDManager" type="HUDManager" parent="." unique_id=1884635229]
+label_path = NodePath("PositionLabel")
+
+[node name="PositionLabel" type="Label" parent="HUDManager" unique_id=1435872254]
+offset_right = 40.0
+offset_bottom = 23.0
+offset_transform_enabled = true
+offset_transform_position = Vector2(20, 40)
+theme_override_fonts/font = ExtResource("4_pswr4")
+theme_override_font_sizes/font_size = 50
+text = "位置: 0.0, 0.0, 0.0"

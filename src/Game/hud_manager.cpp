@@ -52,7 +52,7 @@ void HUDManager::_process(double delta) {
         Vector3 pos = player_node->get_global_position();
         
         // 小数点第1位までに整形して表示
-        String pos_text = String("XYZ: ") + 
+        String pos_text = String("位置: ") + 
                           String::num(pos.x, 1) + ", " + 
                           String::num(pos.y, 1) + ", " + 
                           String::num(pos.z, 1);
