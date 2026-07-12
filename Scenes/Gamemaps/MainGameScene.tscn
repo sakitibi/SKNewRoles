@@ -34,13 +34,22 @@ environment = SubResource("Environment_pswr4")
 transform = Transform3D(1, 0, 0, 0, 0.7071068, 0.7071068, 0, -0.7071068, 0.7071068, 0, 10, 0)
 
 [node name="HUDManager" type="HUDManager" parent="." unique_id=1884635229]
-label_path = NodePath("PositionLabel")
+label_path = NodePath("PositionText")
 
-[node name="PositionLabel" type="Label" parent="HUDManager" unique_id=1435872254]
-offset_right = 40.0
-offset_bottom = 23.0
+[node name="PositionLabel" type="Label" parent="HUDManager" unique_id=1597634190]
+offset_right = 441.0
+offset_bottom = 50.0
 offset_transform_enabled = true
 offset_transform_position = Vector2(20, 40)
 theme_override_fonts/font = ExtResource("4_pswr4")
 theme_override_font_sizes/font_size = 50
-text = "位置: 0.0, 0.0, 0.0"
+text = "位置: "
+
+[node name="PositionText" type="Label" parent="HUDManager" unique_id=1435872254]
+offset_right = 40.0
+offset_bottom = 23.0
+offset_transform_enabled = true
+offset_transform_position = Vector2(140, 40)
+theme_override_fonts/font = ExtResource("4_pswr4")
+theme_override_font_sizes/font_size = 50
+text = "0.0, 0.0, 0.0"

@@ -26,7 +26,7 @@ void HUDManager::_ready() {
     if (!label_path.is_empty()) {
         position_label = Object::cast_to<Label>(get_node_or_null(label_path));
     } else {
-        position_label = Object::cast_to<Label>(get_node_or_null("PositionLabel"));
+        position_label = Object::cast_to<Label>(get_node_or_null("PositionText"));
     }
 
     player_node = find_local_player();
@@ -52,7 +52,7 @@ void HUDManager::_process(double delta) {
         Vector3 pos = player_node->get_global_position();
         
         // 小数点第1位までに整形して表示
-        String pos_text = String("位置: ") + 
+        String pos_text = 
                           String::num(pos.x, 1) + ", " + 
                           String::num(pos.y, 1) + ", " + 
                           String::num(pos.z, 1);
