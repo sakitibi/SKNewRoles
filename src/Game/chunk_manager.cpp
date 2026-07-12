@@ -101,10 +101,28 @@ void ChunkManager::update_chunks_around_player() {
 void ChunkManager::load_chunk(const Vector2i &coord) {
     if (loaded_chunks.has(coord)) return;
 
-    // Chunk プレハブのロード
-    Ref<PackedScene> chunk_scene = ResourceLoader::get_singleton()->load("res://Scenes/Gamemaps/Chunks/Chunk_Default.tscn");
+    ResourceLoader *loader = ResourceLoader::get_singleton();
+
+    // 1. 座標固有のシーンパスを動的生成 (例: res://Scenes/Gamemaps/Chunks/Chunk_0_0.tscn)
+    String specific_path = String("res://Scenes/Gamemaps/Chunks/Chunk_") + String::num_int64(coord.x) + "_" + String::num_int64(coord.y) + ".tscn";
+    String default_path = "res://Scenes/Gamemaps/Chunks/Chunk_Default.tscn";
+
+    String target_path;
+
+    // 2. 固有のファイルが存在すれば使用し、無ければデフォルトにフォールバック
+    if (loader->exists(specific_path)) {
+        target_path = specific_path;
+    } else if (loader->exists(default_path)) {
+        target_path = default_path;
+    } else {
+        UtilityFunctions::printerr("❌ [ChunkManager] Chunkプレハブが見つかりません (固有・デフォルト両方なし): ", specific_path);
+        return;
+    }
+
+    // 3. シーンのロードとインスタンス化
+    Ref<PackedScene> chunk_scene = loader->load(target_path);
     if (chunk_scene.is_null()) {
-        UtilityFunctions::printerr("❌ [ChunkManager] Chunkプレハブが見つかりません: res://Scenes/Gamemaps/Chunks/Chunk_Default.tscn");
+        UtilityFunctions::printerr("❌ [ChunkManager] シーンのロードに失敗しました: ", target_path);
         return;
     }
 
@@ -120,7 +138,7 @@ void ChunkManager::load_chunk(const Vector2i &coord) {
 
     // シグナルの発火
     emit_signal("chunk_loaded", coord, chunk_instance);
-    UtilityFunctions::print("🧱 [ChunkManager] Chunkを生成しました: (", coord.x, ", ", coord.y, ")");
+    UtilityFunctions::print("🧱 [ChunkManager] Chunkを生成しました [", target_path, "]: (", coord.x, ", ", coord.y, ")");
 }
 
 void ChunkManager::unload_chunk(const Vector2i &coord) {
