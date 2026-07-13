@@ -2,16 +2,27 @@
 
 [ext_resource type="PackedScene" uid="uid://m6hx5x2hhw1o" path="res://Scenes/Prefabs/Blocks/GrassBlock.tscn" id="1_htoty"]
 [ext_resource type="PackedScene" uid="uid://b7gmnes6nh6p8" path="res://Scenes/Prefabs/Blocks/GoldBlock.tscn" id="2_2ylo7"]
+[ext_resource type="PackedScene" uid="uid://cibcwk6jiyju3" path="res://Scenes/Prefabs/Blocks/StoneBricks.tscn" id="3_32ugi"]
 
 [node name="Chunk00" type="Node3D" unique_id=2016581830]
 
 [node name="GrassBlock" parent="." unique_id=1717427691 instance=ExtResource("1_htoty")]
 grass_color = Color(0, 0.65882355, 0.24705882, 1)
-transform = Transform3D(15, 0, 0, 0, 1, 0, 0, 0, 16, 8.5, 0.5, 8)
+transform = Transform3D(14, 0, 0, 0, 1, 0, 0, 0, 16, 9, 0.5, 8)
 
 [node name="GrassBlock2" parent="." unique_id=2069022027 instance=ExtResource("1_htoty")]
 grass_color = Color(0, 0.65882355, 0.24705882, 1)
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 15, 0.5, 0.5, 8.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 14, 0.5, 0.5, 9)
+
+[node name="GrassBlock3" parent="." unique_id=1256538874 instance=ExtResource("1_htoty")]
+grass_color = Color(0, 0.65882355, 0.24705882, 1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 14, 1.5, 0.5, 9)
 
 [node name="GoldBlock" parent="." unique_id=1967058283 instance=ExtResource("2_2ylo7")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0.5, 0.5)
+
+[node name="StoneBricks" parent="." unique_id=777488877 instance=ExtResource("3_32ugi")]
+transform = Transform3D(2, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0.5, 1.5)
+
+[node name="StoneBricks2" parent="." unique_id=1978389427 instance=ExtResource("3_32ugi")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 0.5, 0.5)
