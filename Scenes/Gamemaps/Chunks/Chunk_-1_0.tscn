@@ -1,9 +1,17 @@
 [gd_scene format=3 uid="uid://d3u7ptc8qagqh"]
 
 [ext_resource type="PackedScene" uid="uid://m6hx5x2hhw1o" path="res://Scenes/Prefabs/Blocks/GrassBlock.tscn" id="1_lsry0"]
+[ext_resource type="PackedScene" uid="uid://cibcwk6jiyju3" path="res://Scenes/Prefabs/Blocks/StoneBricks.tscn" id="2_g6xtd"]
 
 [node name="Chunk00" type="Node3D" unique_id=2016581830]
 
 [node name="GrassBlock" parent="." unique_id=1717427691 instance=ExtResource("1_lsry0")]
 grass_color = Color(0, 0.65882355, 0.24705882, 1)
-transform = Transform3D(16, 0, 0, 0, 1, 0, 0, 0, 16, 8, 0.5, 8)
+transform = Transform3D(15, 0, 0, 0, 1, 0, 0, 0, 16, 7.5, 0.5, 8)
+
+[node name="GrassBlock2" parent="." unique_id=66172653 instance=ExtResource("1_lsry0")]
+grass_color = Color(0, 0.65882355, 0.24705882, 1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 14, 15.5, 0.5, 9)
+
+[node name="StoneBricks" parent="." unique_id=1967058283 instance=ExtResource("2_g6xtd")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 2, 15.5, 0.5, 1)
