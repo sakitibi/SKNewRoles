@@ -48,6 +48,6 @@ namespace godot {
             MCAParser();
             ~MCAParser();
 
-            Dictionary parse_chunk(const String &region_folder_path, int chunk_x, int chunk_z);
+            static Dictionary parse_chunk(const String &region_folder_path, int chunk_x, int chunk_z);
     };
 }
