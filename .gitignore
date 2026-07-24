@@ -15,3 +15,4 @@ bin/libgodot_player_extension.dylib
 bin/libgodot_player_extension.so
 bin/godot_player_extension.dll
 Fonts/*
+regions/*.mca
