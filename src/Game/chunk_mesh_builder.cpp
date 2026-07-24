@@ -32,6 +32,7 @@ int ChunkMeshBuilder::get_palette_index(const PackedInt64Array &data, int palett
     return static_cast<int>((static_cast<uint64_t>(data[long_index]) >> bit_offset) & mask);
 }
 
+// 子ノードからマテリアルを取得
 static Ref<Material> get_node_material(MeshInstance3D *mi, int surface_idx = 0) {
     if (!mi) return Ref<Material>();
 
@@ -50,6 +51,7 @@ static Ref<Material> get_node_material(MeshInstance3D *mi, int surface_idx = 0) 
     return Ref<Material>();
 }
 
+// .tscn 内のQuadMesh(6面)を取り込んで統合Meshを作成
 BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
     static HashMap<String, BlockMeshData> cache;
     if (cache.has(scene_path)) {
@@ -107,12 +109,10 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
                     data.valid = true;
                 }
             }
-
             memdelete(inst);
         }
     }
 
-    // メッシュ未取得時のフォールバック
     if (!data.valid || data.mesh.is_null()) {
         Ref<BoxMesh> box;
         box.instantiate();
@@ -150,8 +150,26 @@ void ChunkMeshBuilder::build_multimesh_for_block(Node3D *parent_node, const Stri
 
     MultiMeshInstance3D *mm_node = memnew(MultiMeshInstance3D);
     mm_node->set_multimesh(multimesh);
-
     parent_node->add_child(mm_node);
+
+    // 全ブロック共通で使い回す 1x1x1 の BoxShape3D
+    Ref<BoxShape3D> box_shape;
+    box_shape.instantiate();
+    box_shape->set_size(Vector3(1.0f, 1.0f, 1.0f));
+
+    for (int i = 0; i < positions.size(); ++i) {
+        StaticBody3D *static_body = memnew(StaticBody3D);
+        CollisionShape3D *col_shape = memnew(CollisionShape3D);
+
+        col_shape->set_shape(box_shape);
+        static_body->add_child(col_shape);
+
+        Transform3D t;
+        t.origin = positions[i];
+        static_body->set_transform(t);
+
+        parent_node->add_child(static_body);
+    }
 }
 
 void ChunkMeshBuilder::build_mesh_and_collision(Node3D *parent_node, const Dictionary &chunk_nbt) {
