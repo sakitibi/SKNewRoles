@@ -1,6 +1,7 @@
 #include "chunk_mesh_builder.h"
 #include <godot_cpp/core/memory.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include <godot_cpp/classes/concave_polygon_shape3d.hpp>
 #include <cmath>
 #include <algorithm>
 
@@ -51,7 +52,7 @@ static Ref<Material> get_node_material(MeshInstance3D *mi, int surface_idx = 0) 
     return Ref<Material>();
 }
 
-// .tscn 内のQuadMesh(6面)を取り込んで統合Meshを作成
+// .tscn 内の QuadMesh を抽出してキャッシュ化
 BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
     static HashMap<String, BlockMeshData> cache;
     if (cache.has(scene_path)) {
@@ -130,6 +131,7 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
     return data;
 }
 
+// MultiMesh (描画用)
 void ChunkMeshBuilder::build_multimesh_for_block(Node3D *parent_node, const String &scene_path, const Vector<Vector3> &positions) {
     if (positions.is_empty() || parent_node == nullptr) return;
 
@@ -151,25 +153,6 @@ void ChunkMeshBuilder::build_multimesh_for_block(Node3D *parent_node, const Stri
     MultiMeshInstance3D *mm_node = memnew(MultiMeshInstance3D);
     mm_node->set_multimesh(multimesh);
     parent_node->add_child(mm_node);
-
-    // 全ブロック共通で使い回す 1x1x1 の BoxShape3D
-    Ref<BoxShape3D> box_shape;
-    box_shape.instantiate();
-    box_shape->set_size(Vector3(1.0f, 1.0f, 1.0f));
-
-    for (int i = 0; i < positions.size(); ++i) {
-        StaticBody3D *static_body = memnew(StaticBody3D);
-        CollisionShape3D *col_shape = memnew(CollisionShape3D);
-
-        col_shape->set_shape(box_shape);
-        static_body->add_child(col_shape);
-
-        Transform3D t;
-        t.origin = positions[i];
-        static_body->set_transform(t);
-
-        parent_node->add_child(static_body);
-    }
 }
 
 void ChunkMeshBuilder::build_mesh_and_collision(Node3D *parent_node, const Dictionary &chunk_nbt) {
@@ -221,5 +204,52 @@ void ChunkMeshBuilder::build_mesh_and_collision(Node3D *parent_node, const Dicti
         if (block_map.has(block_name)) {
             build_multimesh_for_block(parent_node, block_map[block_name], positions);
         }
+    }
+
+    PackedVector3Array collision_faces;
+
+    for (const auto &E : categorized_positions) {
+        String block_name = E.key;
+        const Vector<Vector3> &positions = E.value;
+
+        if (!block_map.has(block_name)) continue;
+
+        BlockMeshData mesh_data = get_block_mesh_data(block_map[block_name]);
+        if (mesh_data.mesh.is_null()) continue;
+
+        for (int s = 0; s < mesh_data.mesh->get_surface_count(); ++s) {
+            Array surf_arrays = mesh_data.mesh->surface_get_arrays(s);
+            PackedVector3Array verts = surf_arrays[Mesh::ARRAY_VERTEX];
+            PackedInt32Array indices = surf_arrays[Mesh::ARRAY_INDEX];
+
+            for (int i = 0; i < positions.size(); ++i) {
+                Vector3 block_pos = positions[i];
+
+                if (indices.size() > 0) {
+                    for (int idx = 0; idx < indices.size(); ++idx) {
+                        collision_faces.append(verts[indices[idx]] + block_pos);
+                    }
+                } else {
+                    for (int v = 0; v < verts.size(); ++v) {
+                        collision_faces.append(verts[v] + block_pos);
+                    }
+                }
+            }
+        }
+    }
+
+    if (collision_faces.size() > 0) {
+        StaticBody3D *static_body = memnew(StaticBody3D);
+        static_body->set_collision_layer(1);
+        static_body->set_collision_mask(1);
+
+        CollisionShape3D *col_shape = memnew(CollisionShape3D);
+        Ref<ConcavePolygonShape3D> concave_shape;
+        concave_shape.instantiate();
+        concave_shape->set_faces(collision_faces);
+
+        col_shape->set_shape(concave_shape);
+        static_body->add_child(col_shape);
+        parent_node->add_child(static_body);
     }
 }

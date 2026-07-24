@@ -106,7 +106,7 @@ namespace SKNewRoles2.Game
             _myPlayerInstance.AddToGroup("LocalPlayer");
 
             AddChild(_myPlayerInstance);
-            _myPlayerInstance.GlobalPosition = new Vector3(0, 70, 0);
+            _myPlayerInstance.GlobalPosition = new Vector3(0, 80, 0);
 
             // ChunkManager に直接プレイヤーノードのパスを設定
             if (_chunkManagerCpp != null)
