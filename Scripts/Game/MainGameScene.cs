@@ -8,6 +8,7 @@ namespace SKNewRoles2.Game
     public partial class MainGameScene : Node3D
     {
         private Node _roleManagerCpp;
+        private Node3D _chunkManagerCpp;
 
         public int MyRole { get; private set; } = -1;
         public int MyFaction { get; private set; } = -1;
@@ -21,7 +22,6 @@ namespace SKNewRoles2.Game
 
         // UIノード参照
         private Control _loadingScene;
-
         private Control _roleRevealScene;
         private Label _factionLabel;
         private Label _roleTitleLabel;
@@ -31,17 +31,35 @@ namespace SKNewRoles2.Game
 
         public override async void _Ready()
         {
-            // 1. UIノードのルート参照を取得
-            _loadingScene = GetNode<Control>("UILayer/LoadingScene");
-            _roleRevealScene = GetNode<Control>("UILayer/RoleRevealScene");
+            // 1. UIノードのルート参照を安全に取得
+            _loadingScene = GetNodeOrNull<Control>("UILayer/LoadingScene");
+            _roleRevealScene = GetNodeOrNull<Control>("UILayer/RoleRevealScene");
 
-            // RoleRevealScene 配下のノード取得
-            _factionLabel = _roleRevealScene.GetNode<Label>("MainContainer/VBoxContainer/FactionLabel");
-            _roleTitleLabel = _roleRevealScene.GetNode<Label>("MainContainer/VBoxContainer/RoleTitleLabel");
-            _descriptionLabel = _roleRevealScene.GetNode<Label>("MainContainer/VBoxContainer/DescriptionLabel");
-            _roleRevealScene.Visible = false;
+            if (_roleRevealScene != null)
+            {
+                _factionLabel = _roleRevealScene.GetNodeOrNull<Label>("MainContainer/VBoxContainer/FactionLabel");
+                _roleTitleLabel = _roleRevealScene.GetNodeOrNull<Label>("MainContainer/VBoxContainer/RoleTitleLabel");
+                _descriptionLabel = _roleRevealScene.GetNodeOrNull<Label>("MainContainer/VBoxContainer/DescriptionLabel");
+                _roleRevealScene.Visible = false;
+            }
 
-            // 2. ネットワークイベントの受信登録
+            // 2. ChunkManager (C++) の参照取得とパラメータ初期化
+            _chunkManagerCpp = GetNodeOrNull<Node3D>("ChunkManager");
+            if (_chunkManagerCpp != null)
+            {
+                _chunkManagerCpp.Set("region_folder_path", "res://regions/");
+                _chunkManagerCpp.Set("render_distance", 2);
+                _chunkManagerCpp.Set("chunk_size", 16.0f);
+            }
+            else
+            {
+                GD.PushWarning("⚠️ [MainGameScene] ChunkManager ノードが見つかりません。");
+            }
+
+            // 3. RoleManager (C++) の参照取得
+            _roleManagerCpp = GetNodeOrNull<Node>("RoleManager");
+
+            // 4. ネットワークイベントの受信登録
             Realtime.OnRoleAssignedReceived += OnRoleAssignedReceived;
             Realtime.OnPlayerTransformReceivedAll += OnPlayerTransformReceivedAll;
 
@@ -51,9 +69,10 @@ namespace SKNewRoles2.Game
                 GD.PrintErr("❌ [MainGameScene] WebSocket接続に失敗しました。");
             }
 
-            _roleManagerCpp = GetNode<Node>("RoleManager");
+            // 5. ローカルプレイヤーの生成
             SpawnMyPlayer();
 
+            // 6. ホスト権限の場合は役職を全員に分配
             if (SessionManager.Instance.IsHost)
             {
                 await Task.Delay(1000);
@@ -70,19 +89,32 @@ namespace SKNewRoles2.Game
         }
 
         /// <summary>
-        /// 自分のプレイヤー実体を生成
+        /// 自分のプレイヤー実体を生成し、ChunkManager 連携とグループ設定を行う
         /// </summary>
         private void SpawnMyPlayer()
         {
-            if (_playerScene == null) return;
+            if (_playerScene == null)
+            {
+                GD.PrintErr("❌ [MainGameScene] Player.tscn プレハブが読み込めませんでした。");
+                return;
+            }
 
             _myPlayerInstance = _playerScene.Instantiate<Node3D>();
             _myPlayerInstance.Name = "MyPlayer";
             
+            // ChunkManager が追従検索できるようにグループ登録
             _myPlayerInstance.AddToGroup("LocalPlayer");
 
             AddChild(_myPlayerInstance);
-            _myPlayerInstance.GlobalPosition = new Vector3(0, 2, 0); 
+            _myPlayerInstance.GlobalPosition = new Vector3(0, 2, 0);
+
+            // ChunkManager に直接プレイヤーノードのパスを設定
+            if (_chunkManagerCpp != null)
+            {
+                _chunkManagerCpp.Set("player_path", _myPlayerInstance.GetPath());
+            }
+
+            GD.Print("👤 [MainGame] ローカルプレイヤーを生成しました。");
         }
 
         /// <summary>
