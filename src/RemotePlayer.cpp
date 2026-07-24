@@ -9,7 +9,7 @@ void RemotePlayer::_bind_methods() {
 }
 
 RemotePlayer::RemotePlayer() {
-    target_position = Vector3(0.0f, 2.0f, 0.0f);
+    target_position = Vector3(0.0f, 70.0f, 0.0f);
     target_rotation = Quaternion();
     lerp_speed = 15.0f; // 補間速度（カクカクを消す強さ）。お好みに合わせて調整してください
 }
