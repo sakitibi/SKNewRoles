@@ -80,13 +80,14 @@ void ChunkManager::load_chunk(const Vector2i &coord) {
 }
 
 void ChunkManager::unload_chunk(const Vector2i &coord) {
-    if (loaded_chunks.has(coord)) {
-        Node3D *node = loaded_chunks[coord];
-        if (node && node->is_inside_tree()) {
-            node->queue_free();
-        }
-        loaded_chunks.erase(coord);
-        emit_signal("chunk_unloaded", coord);
+    if (!loaded_chunks.has(coord)) return;
+
+    Node3D *chunk = loaded_chunks[coord];
+    loaded_chunks.erase(coord);
+
+    if (chunk != nullptr) {
+        remove_child(chunk);
+        memdelete(chunk); 
     }
 }
 

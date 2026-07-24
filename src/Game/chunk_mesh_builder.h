@@ -14,7 +14,6 @@
 #include <godot_cpp/classes/standard_material3d.hpp>
 #include <godot_cpp/classes/box_mesh.hpp>
 #include <godot_cpp/templates/hash_map.hpp>
-#include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/array.hpp>
 #include <godot_cpp/variant/packed_vector3_array.hpp>
 #include <godot_cpp/variant/packed_int64_array.hpp>
@@ -34,6 +33,6 @@ namespace godot {
             static const HashMap<String, String>& get_block_scene_map();
 
         public:
-            static void build_mesh_and_collision(Node3D *parent_node, const Dictionary &chunk_nbt);
+            static void build_mesh_and_collision(Node3D *parent_node, const Array &sections);
     };
 }

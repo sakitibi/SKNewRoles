@@ -2,6 +2,8 @@
 #include <godot_cpp/core/memory.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/classes/concave_polygon_shape3d.hpp>
+#include <godot_cpp/classes/static_body3d.hpp>
+#include <godot_cpp/classes/collision_shape3d.hpp>
 #include <cmath>
 #include <algorithm>
 
@@ -155,17 +157,13 @@ void ChunkMeshBuilder::build_multimesh_for_block(Node3D *parent_node, const Stri
     parent_node->add_child(mm_node);
 }
 
-void ChunkMeshBuilder::build_mesh_and_collision(Node3D *parent_node, const Dictionary &chunk_nbt) {
-    if (parent_node == nullptr || chunk_nbt.is_empty()) return;
+void ChunkMeshBuilder::build_mesh_and_collision(Node3D *parent_node, const Array &sections) {
+    if (!parent_node) return;
 
-    Dictionary root = chunk_nbt.get("", Dictionary());
-    if (!root.has("sections")) return;
-
-    Array sections = root["sections"];
     const HashMap<String, String> &block_map = get_block_scene_map();
-
     HashMap<String, Vector<Vector3>> categorized_positions;
 
+    // 各セクションからブロック座標を抽出
     for (int s = 0; s < sections.size(); ++s) {
         Dictionary section = sections[s];
         if (!section.has("block_states")) continue;
@@ -197,13 +195,11 @@ void ChunkMeshBuilder::build_mesh_and_collision(Node3D *parent_node, const Dicti
         }
     }
 
+    // 描画用の MultiMeshInstance3D を生成（見た目の描画）
     for (const auto &E : categorized_positions) {
         String block_name = E.key;
         const Vector<Vector3> &positions = E.value;
-
-        if (block_map.has(block_name)) {
-            build_multimesh_for_block(parent_node, block_map[block_name], positions);
-        }
+        build_multimesh_for_block(parent_node, block_name, positions);
     }
 
     PackedVector3Array collision_faces;
@@ -212,13 +208,13 @@ void ChunkMeshBuilder::build_mesh_and_collision(Node3D *parent_node, const Dicti
         String block_name = E.key;
         const Vector<Vector3> &positions = E.value;
 
-        if (!block_map.has(block_name)) continue;
-
         BlockMeshData mesh_data = get_block_mesh_data(block_map[block_name]);
         if (mesh_data.mesh.is_null()) continue;
 
         for (int s = 0; s < mesh_data.mesh->get_surface_count(); ++s) {
             Array surf_arrays = mesh_data.mesh->surface_get_arrays(s);
+            if (surf_arrays.size() <= Mesh::ARRAY_VERTEX) continue;
+
             PackedVector3Array verts = surf_arrays[Mesh::ARRAY_VERTEX];
             PackedInt32Array indices = surf_arrays[Mesh::ARRAY_INDEX];
 
@@ -246,10 +242,11 @@ void ChunkMeshBuilder::build_mesh_and_collision(Node3D *parent_node, const Dicti
         CollisionShape3D *col_shape = memnew(CollisionShape3D);
         Ref<ConcavePolygonShape3D> concave_shape;
         concave_shape.instantiate();
-        concave_shape->set_faces(collision_faces);
+        concave_shape->set_faces(collision_faces); // 全頂点を設定
 
         col_shape->set_shape(concave_shape);
         static_body->add_child(col_shape);
+
         parent_node->add_child(static_body);
     }
 }
