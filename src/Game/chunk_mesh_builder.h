@@ -19,20 +19,15 @@
 namespace godot {
     struct BlockMeshData {
         Ref<Mesh> mesh;
-        Vector<Ref<Material>> materials; // 各サーフェスごとのマテリアル
+        Vector<Ref<Material>> materials;
         bool valid = false;
     };
 
     class ChunkMeshBuilder {
         private:
             static int get_palette_index(const PackedInt64Array &data, int palette_size, int x, int y, int z);
-            
             static BlockMeshData get_block_mesh_data(const String &scene_path);
-
-            // MultiMeshInstance3D を生成してノードに追加する関数
             static void build_multimesh_for_block(Node3D *parent_node, const String &scene_path, const Vector<Vector3> &positions);
-
-            // ブロック名とプレハブ (.tscn) の対応表
             static const HashMap<String, String>& get_block_scene_map();
 
         public:
