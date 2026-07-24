@@ -115,18 +115,14 @@ PackedByteArray MCAParser::get_raw_chunk_nbt(const String &path, int rel_x, int 
     file->seek(index * 4);
 
     uint32_t location_raw = file->get_32();
-    #if defined(__LITTLE_ENDIAN__) || defined(__x86_64__) || defined(_M_AMD64) || defined(_M_IX86)
-    location_raw = __builtin_bswap32(location_raw);
-    #endif
+    location_raw = BSWAP32(location_raw);
 
     uint32_t sector_offset = location_raw >> 8;
     if (sector_offset == 0) return PackedByteArray();
 
     file->seek(sector_offset * 4096);
     uint32_t length = file->get_32();
-    #if defined(__LITTLE_ENDIAN__) || defined(__x86_64__) || defined(_M_AMD64) || defined(_M_IX86)
-    length = __builtin_bswap32(length);
-    #endif
+    length = BSWAP32(length);
 
     uint8_t compression_type = file->get_8();
     if (length <= 1) return PackedByteArray();
