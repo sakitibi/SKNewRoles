@@ -9,11 +9,11 @@ using namespace godot;
 const HashMap<String, String>& ChunkMeshBuilder::get_block_scene_map() {
     static HashMap<String, String> map;
     if (map.is_empty()) {
-        map["minecraft:grass_block"]   = "res://GrassBlock.tscn";
-        map["minecraft:stone"]         = "res://Stone.tscn";
-        map["minecraft:stone_bricks"]  = "res://StoneBricks.tscn";
-        map["minecraft:gold_block"]    = "res://GoldBlock.tscn";
-        map["minecraft:dirt"]          = "res://GrassBlock.tscn";
+        map["minecraft:grass_block"]   = "res://Scenes/Prefabs/Blocks/GrassBlock.tscn";
+        map["minecraft:stone"]         = "res://Scenes/Prefabs/Blocks/Stone.tscn";
+        map["minecraft:stone_bricks"]  = "res://Scenes/Prefabs/Blocks/StoneBricks.tscn";
+        map["minecraft:gold_block"]    = "res://Scenes/Prefabs/Blocks/GoldBlock.tscn";
+        map["minecraft:dirt"]          = "res://Scenes/Prefabs/Blocks/GrassBlock.tscn";
     }
     return map;
 }
