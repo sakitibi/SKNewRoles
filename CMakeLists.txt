@@ -29,6 +29,8 @@ set(SOURCES
     src/config_manager.cpp
     src/Game/RoleManager.cpp
     src/Game/chunk_manager.cpp
+    src/Game/chunk_mesh_builder.cpp
+    src/Game/mca_parser.cpp
     src/Game/hud_manager.cpp
 )
 
