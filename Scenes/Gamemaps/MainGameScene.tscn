@@ -19,7 +19,7 @@ script = ExtResource("1_cakpg")
 
 [node name="RoleManager" type="RoleManager" parent="." unique_id=1195971431]
 
-[node name="ChunkManager" type="ChunkManager" parent="." unique_id=707960151]
+[node name="ChunkManager" type="ChunkManager" parent="." unique_id=1572612915]
 
 [node name="UILayer" type="CanvasLayer" parent="." unique_id=217740970]
 
