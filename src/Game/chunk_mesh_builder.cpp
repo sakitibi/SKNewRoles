@@ -1,8 +1,22 @@
 #include "chunk_mesh_builder.h"
+#include <godot_cpp/variant/utility_functions.hpp>
 #include <cmath>
 #include <algorithm>
 
 using namespace godot;
+
+// ブロック名とシーンファイルの対応表
+const HashMap<String, String>& ChunkMeshBuilder::get_block_scene_map() {
+    static HashMap<String, String> map;
+    if (map.is_empty()) {
+        map["minecraft:grass_block"]   = "res://GrassBlock.tscn";
+        map["minecraft:stone"]         = "res://Stone.tscn";
+        map["minecraft:stone_bricks"]  = "res://StoneBricks.tscn";
+        map["minecraft:gold_block"]    = "res://GoldBlock.tscn";
+        map["minecraft:dirt"]          = "res://GrassBlock.tscn";
+    }
+    return map;
+}
 
 int ChunkMeshBuilder::get_palette_index(const PackedInt64Array &data, int palette_size, int x, int y, int z) {
     if (data.is_empty() || palette_size <= 0) return 0;
@@ -17,6 +31,72 @@ int ChunkMeshBuilder::get_palette_index(const PackedInt64Array &data, int palett
     return static_cast<int>((static_cast<uint64_t>(data[long_index]) >> bit_offset) & mask);
 }
 
+// .tscn からメッシュとマテリアルを抽出してキャッシュ
+BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
+    static HashMap<String, BlockMeshData> cache;
+    if (cache.has(scene_path)) {
+        return cache[scene_path];
+    }
+
+    BlockMeshData data;
+    Ref<PackedScene> scene = ResourceLoader::get_singleton()->load(scene_path);
+    if (scene.is_valid()) {
+        Node *inst = scene->instantiate();
+        Node3D *node_3d = Object::cast_to<Node3D>(inst);
+        if (node_3d) {
+            for (int i = 0; i < node_3d->get_child_count(); ++i) {
+                MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(node_3d->get_child(i));
+                if (mi && mi->get_mesh().is_valid()) {
+                    data.mesh = mi->get_mesh();
+                    data.material = mi->get_material_override();
+                    data.valid = true;
+                    break;
+                }
+            }
+        }
+        if (inst) inst->queue_free();
+    }
+
+    // メッシュが取得できなかった場合のフォールバック
+    if (!data.valid) {
+        Ref<BoxMesh> box;
+        box.instantiate();
+        box->set_size(Vector3(1.0f, 1.0f, 1.0f));
+        data.mesh = box;
+        data.valid = true;
+    }
+
+    cache[scene_path] = data;
+    return data;
+}
+
+// 多重描画（MultiMeshInstance3D）ノード生成
+void ChunkMeshBuilder::build_multimesh_for_block(Node3D *parent_node, const String &scene_path, const Vector<Vector3> &positions) {
+    if (positions.is_empty()) return;
+
+    BlockMeshData mesh_data = get_block_mesh_data(scene_path);
+
+    Ref<MultiMesh> multimesh;
+    multimesh.instantiate();
+    multimesh->set_transform_format(MultiMesh::TRANSFORM_3D);
+    multimesh->set_mesh(mesh_data.mesh);
+    multimesh->set_instance_count(positions.size());
+
+    for (int i = 0; i < positions.size(); ++i) {
+        Transform3D t;
+        t.origin = positions[i];
+        multimesh->set_instance_transform(i, t);
+    }
+
+    MultiMeshInstance3D *mm_node = memnew(MultiMeshInstance3D);
+    mm_node->set_multimesh(multimesh);
+    if (mesh_data.material.is_valid()) {
+        mm_node->set_material_override(mesh_data.material);
+    }
+
+    parent_node->add_child(mm_node);
+}
+
 void ChunkMeshBuilder::build_mesh_and_collision(Node3D *parent_node, const Dictionary &chunk_nbt) {
     if (parent_node == nullptr || chunk_nbt.is_empty()) return;
 
@@ -24,102 +104,52 @@ void ChunkMeshBuilder::build_mesh_and_collision(Node3D *parent_node, const Dicti
     if (!root.has("sections")) return;
 
     Array sections = root["sections"];
+    const HashMap<String, String> &block_map = get_block_scene_map();
 
-    PackedVector3Array vertices;
-    PackedVector3Array normals;
-    PackedInt32Array indices;
+    // 各ブロックごとの座標リストを管理するマップ
+    HashMap<String, Vector<Vector3>> categorized_positions;
 
-    int vertex_count = 0;
-
-    // 立方体6面の法線ベクトル
-    const Vector3 face_normals[6] = {
-        Vector3(0, 1, 0),  Vector3(0, -1, 0), Vector3(0, 0, 1),
-        Vector3(0, 0, -1), Vector3(-1, 0, 0), Vector3(1, 0, 0)
-    };
-
-    // 6面それぞれのローカル頂点位置（1x1x1のボクセル）
-    const Vector3 face_vertices[6][4] = {
-        { Vector3(0,1,1), Vector3(1,1,1), Vector3(1,1,0), Vector3(0,1,0) }, // Top (+Y)
-        { Vector3(0,0,0), Vector3(1,0,0), Vector3(1,0,1), Vector3(0,0,1) }, // Bottom (-Y)
-        { Vector3(0,0,1), Vector3(1,0,1), Vector3(1,1,1), Vector3(0,1,1) }, // Front (+Z)
-        { Vector3(1,0,0), Vector3(0,0,0), Vector3(0,1,0), Vector3(1,1,0) }, // Back (-Z)
-        { Vector3(0,0,0), Vector3(0,0,1), Vector3(0,1,1), Vector3(0,1,0) }, // Left (-X)
-        { Vector3(1,0,1), Vector3(1,0,0), Vector3(1,1,0), Vector3(1,1,1) }  // Right (+X)
-    };
-
-    // 各16x16x16セクションをループ処理
     for (int s = 0; s < sections.size(); ++s) {
         Dictionary section = sections[s];
-        if (!section.has("block_states") || !section.has("Y")) continue;
+        if (!section.has("block_states")) continue;
 
-        int section_y = (int)section["Y"];
         Dictionary block_states = section["block_states"];
-        if (!block_states.has("palette") || !block_states.has("data")) continue;
+        if (!block_states.has("palette")) continue;
 
         Array palette = block_states["palette"];
-        PackedInt64Array data = block_states["data"];
-        int palette_size = palette.size();
+        int section_y = section.has("Y") ? (int)section["Y"] : 0;
+        PackedInt64Array data = block_states.has("data") ? (PackedInt64Array)block_states["data"] : PackedInt64Array();
 
-        for (int x = 0; x < 16; ++x) {
-            for (int y = 0; y < 16; ++y) {
-                for (int z = 0; z < 16; ++z) {
-                    int p_idx = get_palette_index(data, palette_size, x, y, z);
-                    if (p_idx < 0 || p_idx >= palette.size()) continue;
+        for (int y = 0; y < 16; ++y) {
+            for (int z = 0; z < 16; ++z) {
+                for (int x = 0; x < 16; ++x) {
+                    int p_index = get_palette_index(data, palette.size(), x, y, z);
+                    if (p_index < 0 || p_index >= palette.size()) continue;
 
-                    Dictionary b_state = palette[p_idx];
-                    String b_name = b_state.get("Name", "minecraft:air");
-                    if (b_name == "minecraft:air") continue; // 空気ブロックは無視
+                    Dictionary block_type = palette[p_index];
+                    String name = block_type.has("Name") ? (String)block_type["Name"] : "";
+
+                    // 空気ブロック、または対応表（block_map）に存在しない未知のブロックは無生成（スキップ）
+                    if (name == "minecraft:air" || name.is_empty() || !block_map.has(name)) {
+                        continue;
+                    }
 
                     Vector3 block_pos(x, section_y * 16 + y, z);
 
-                    // 6面分のポリゴン頂点を結合
-                    for (int f = 0; f < 6; ++f) {
-                        for (int v = 0; v < 4; ++v) {
-                            vertices.append(block_pos + face_vertices[f][v]);
-                            normals.append(face_normals[f]);
-                        }
-
-                        // ポリゴンインデックス（2つの三角形で1面を作る）
-                        indices.append(vertex_count + 0);
-                        indices.append(vertex_count + 1);
-                        indices.append(vertex_count + 2);
-                        indices.append(vertex_count + 0);
-                        indices.append(vertex_count + 2);
-                        indices.append(vertex_count + 3);
-
-                        vertex_count += 4;
-                    }
+                    // 対応表にある登録済みブロックのみ座標を保存
+                    categorized_positions[name].push_back(block_pos);
                 }
             }
         }
     }
 
-    if (vertices.is_empty()) return;
+    // 分類された登録済みブロックごとに MultiMeshInstance3D を生成
+    for (const auto &E : categorized_positions) {
+        String block_name = E.key;
+        const Vector<Vector3> &positions = E.value;
 
-    // 1. メッシュの構築
-    Array mesh_array;
-    mesh_array.resize(Mesh::ARRAY_MAX);
-    mesh_array[Mesh::ARRAY_VERTEX] = vertices;
-    mesh_array[Mesh::ARRAY_NORMAL] = normals;
-    mesh_array[Mesh::ARRAY_INDEX] = indices;
-
-    Ref<ArrayMesh> array_mesh;
-    array_mesh.instantiate();
-    array_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, mesh_array);
-
-    // 描画ノード作成
-    MeshInstance3D *mesh_instance = memnew(MeshInstance3D);
-    mesh_instance->set_mesh(array_mesh);
-    parent_node->add_child(mesh_instance);
-
-    // 2. アタリ判定（コリジョン）の同一メッシュ結合作成
-    StaticBody3D *static_body = memnew(StaticBody3D);
-    CollisionShape3D *col_shape = memnew(CollisionShape3D);
-    Ref<ConcavePolygonShape3D> polygon_shape;
-    polygon_shape.instantiate();
-    polygon_shape->set_faces(array_mesh->get_faces());
-
-    col_shape->set_shape(polygon_shape);
-    static_body->add_child(col_shape);
-    parent_node->add_child(static_body);
+        if (block_map.has(block_name)) {
+            build_multimesh_for_block(parent_node, block_map[block_name], positions);
+        }
+    }
 }
