@@ -4,8 +4,6 @@
 #include <godot_cpp/classes/concave_polygon_shape3d.hpp>
 #include <godot_cpp/classes/static_body3d.hpp>
 #include <godot_cpp/classes/collision_shape3d.hpp>
-#include <godot_cpp/classes/box_shape3d.hpp>
-#include <godot_cpp/classes/geometry_instance3d.hpp>
 #include <cmath>
 #include <algorithm>
 
@@ -32,26 +30,6 @@ void ChunkMeshBuilder::preload_block_meshes() {
     }
 }
 
-int ChunkMeshBuilder::get_palette_index(const PackedInt64Array &data, int palette_size, int x, int y, int z) {
-    if (data.is_empty() || palette_size <= 0) return 0;
-
-    int bits_per_entry = 4;
-    while ((1 << bits_per_entry) < palette_size) {
-        bits_per_entry++;
-    }
-
-    int block_index = y * 256 + z * 16 + x;
-    int entries_per_long = 64 / bits_per_entry;
-    int long_index = block_index / entries_per_long;
-    int bit_offset = (block_index % entries_per_long) * bits_per_entry;
-
-    if (long_index < 0 || long_index >= data.size()) return 0;
-
-    uint64_t long_val = static_cast<uint64_t>(data[long_index]);
-    uint64_t mask = (1ULL << bits_per_entry) - 1ULL;
-    return static_cast<int>((long_val >> bit_offset) & mask);
-}
-
 BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
     static HashMap<String, BlockMeshData> cache;
     if (cache.has(scene_path)) {
@@ -63,10 +41,7 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
     if (scene.is_valid()) {
         Node *inst = scene->instantiate();
         if (inst) {
-            // まずルートノードが MeshInstance3D かチェック
             MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(inst);
-            
-            // ルートが MeshInstance3D でない場合、子ノードから探す
             if (!mi) {
                 Node *child = inst->find_child("*", true, false);
                 if (child) {
@@ -89,40 +64,59 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
     return res;
 }
 
+int ChunkMeshBuilder::get_palette_index(const PackedInt64Array &data, int palette_size, int x, int y, int z) {
+    if (data.is_empty() || palette_size <= 0) return 0;
+
+    int bits_per_entry = 4;
+    while ((1 << bits_per_entry) < palette_size) {
+        bits_per_entry++;
+    }
+
+    int block_index = y * 256 + z * 16 + x;
+    int entries_per_long = 64 / bits_per_entry;
+    int long_index = block_index / entries_per_long;
+    int bit_offset = (block_index % entries_per_long) * bits_per_entry;
+
+    if (long_index < 0 || long_index >= data.size()) return 0;
+
+    uint64_t long_val = static_cast<uint64_t>(data[long_index]);
+    uint64_t mask = (1ULL << bits_per_entry) - 1ULL;
+    return static_cast<int>((long_val >> bit_offset) & mask);
+}
+
 HashMap<String, Vector<Vector3>> ChunkMeshBuilder::extract_block_positions(const Array &sections) {
     HashMap<String, Vector<Vector3>> categorized_positions;
+    const HashMap<String, String> &block_map = get_block_scene_map();
 
-    for (int s = 0; s < sections.size(); ++s) {
-        Dictionary section = sections[s];
-        if (!section.has("block_states")) continue;
+    for (int i = 0; i < sections.size(); ++i) {
+        Dictionary section = sections[i];
+        if (!section.has("block_states") || !section.has("Y")) continue;
 
+        int sec_y = section["Y"];
         Dictionary block_states = section["block_states"];
-        if (!block_states.has("palette")) continue;
 
+        if (!block_states.has("palette")) continue;
         Array palette = block_states["palette"];
-        int palette_size = palette.size();
-        if (palette_size == 0) continue;
 
         PackedInt64Array data;
         if (block_states.has("data")) {
             data = block_states["data"];
         }
 
-        int section_y = 0;
-        if (section.has("Y")) {
-            section_y = static_cast<int>(section["Y"]);
-        }
-
         for (int y = 0; y < 16; ++y) {
             for (int z = 0; z < 16; ++z) {
                 for (int x = 0; x < 16; ++x) {
-                    int p_idx = get_palette_index(data, palette_size, x, y, z);
-                    if (p_idx >= 0 && p_idx < palette_size) {
-                        Dictionary block = palette[p_idx];
-                        String block_name = block.get("Name", "");
+                    int p_idx = 0;
+                    if (palette.size() > 1) {
+                        p_idx = get_palette_index(data, palette.size(), x, y, z);
+                    }
 
-                        if (block_name != "minecraft:air" && block_name != "minecraft:void_air") {
-                            Vector3 pos(x, (section_y * 16) + y, z);
+                    if (p_idx >= 0 && p_idx < palette.size()) {
+                        Dictionary block = palette[p_idx];
+                        String block_name = block.get("Name", "minecraft:air");
+
+                        if (block_map.has(block_name)) {
+                            Vector3 pos(x, sec_y * 16 + y, z);
                             categorized_positions[block_name].push_back(pos);
                         }
                     }
@@ -136,8 +130,6 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::extract_block_positions(const
 
 void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<String, Vector<Vector3>> &categorized_positions) {
     const HashMap<String, String> &block_map = get_block_scene_map();
-
-    // 当たり判定（コリジョン）用の頂点配列
     PackedVector3Array collision_faces;
 
     for (const auto &E : categorized_positions) {
@@ -148,6 +140,7 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
 
         String scene_path = block_map[block_name];
         BlockMeshData mesh_data = get_block_mesh_data(scene_path);
+        
         if (!mesh_data.valid || mesh_data.mesh.is_null()) continue;
 
         MultiMeshInstance3D *mmi = memnew(MultiMeshInstance3D);
@@ -166,7 +159,7 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
 
         mmi->set_multimesh(mm);
 
-        // マテリアル設定
+        // マテリアル適用
         for (int s = 0; s < mesh_data.materials.size(); ++s) {
             if (!mesh_data.materials.is_empty() && mesh_data.materials[0].is_valid()) {
                 mmi->set_material_override(mesh_data.materials[0]);
