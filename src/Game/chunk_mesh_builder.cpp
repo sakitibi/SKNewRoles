@@ -5,11 +5,9 @@
 #include <godot_cpp/classes/static_body3d.hpp>
 #include <godot_cpp/classes/collision_shape3d.hpp>
 #include <cmath>
-#include <algorithm>
 
 using namespace godot;
 
-// ブロック名とシーンプレハブ (.tscn) の対応表
 const HashMap<String, String>& ChunkMeshBuilder::get_block_scene_map() {
     static HashMap<String, String> map;
     if (map.is_empty()) {
@@ -22,8 +20,8 @@ const HashMap<String, String>& ChunkMeshBuilder::get_block_scene_map() {
     return map;
 }
 
-// 起動時のリソース事前ロード
 void ChunkMeshBuilder::preload_block_meshes() {
+    UtilityFunctions::print("[ChunkMeshBuilder] Preloading block meshes...");
     const HashMap<String, String> &map = get_block_scene_map();
     for (const auto &E : map) {
         get_block_mesh_data(E.value);
@@ -36,28 +34,33 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
         return cache[scene_path];
     }
 
+    UtilityFunctions::print("[ChunkMeshBuilder] Loading scene for mesh cache: ", scene_path);
+
     BlockMeshData res;
     Ref<PackedScene> scene = ResourceLoader::get_singleton()->load(scene_path);
     if (scene.is_null()) {
+        UtilityFunctions::printerr("[ChunkMeshBuilder] ERROR: Failed to load scene: ", scene_path);
         cache[scene_path] = res;
         return res;
     }
 
     Node *inst = scene->instantiate();
     if (!inst) {
+        UtilityFunctions::printerr("[ChunkMeshBuilder] ERROR: Failed to instantiate scene: ", scene_path);
         cache[scene_path] = res;
         return res;
     }
 
     TypedArray<Node> children = inst->find_children("*", "MeshInstance3D", true, false);
-    
-    // ルート自体が MeshInstance3D の場合も追加
     MeshInstance3D *root_mi = Object::cast_to<MeshInstance3D>(inst);
     if (root_mi) {
         children.push_back(root_mi);
     }
 
+    UtilityFunctions::print("[ChunkMeshBuilder] Found ", children.size(), " MeshInstance3D nodes in ", scene_path);
+
     if (children.is_empty()) {
+        UtilityFunctions::printerr("[ChunkMeshBuilder] ERROR: No MeshInstance3D found in ", scene_path);
         memdelete(inst);
         cache[scene_path] = res;
         return res;
@@ -68,22 +71,23 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
 
     Node3D *root_3d = Object::cast_to<Node3D>(inst);
 
-    // 各 MeshInstance3D の頂点を Transform 適用して結合
+    int total_vertices_added = 0;
+
     for (int c = 0; c < children.size(); ++c) {
         MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(children[c]);
-        if (!mi || mi->get_mesh().is_null()) continue;
+        if (!mi || mi->get_mesh().is_null()) {
+            UtilityFunctions::print("[ChunkMeshBuilder] Node ", c, " has no mesh. Skipping.");
+            continue;
+        }
 
         Ref<Mesh> src_mesh = mi->get_mesh();
-        
-        // ルートノード基準のローカル Transform を取得
+
         Transform3D xform;
         if (root_3d) {
             xform = root_3d->get_global_transform().affine_inverse() * mi->get_global_transform();
         } else {
             xform = mi->get_transform();
         }
-
-        Basis normal_basis = xform.basis.inverse().transposed();
 
         for (int s = 0; s < src_mesh->get_surface_count(); ++s) {
             Array surf_arrays = src_mesh->surface_get_arrays(s);
@@ -92,7 +96,6 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
             PackedVector3Array src_verts = surf_arrays[Mesh::ARRAY_VERTEX];
             if (src_verts.is_empty()) continue;
 
-            // 頂点座標を各子ノードの Transform で変形
             PackedVector3Array dst_verts;
             dst_verts.resize(src_verts.size());
             for (int v = 0; v < src_verts.size(); ++v) {
@@ -100,10 +103,10 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
             }
             surf_arrays[Mesh::ARRAY_VERTEX] = dst_verts;
 
-            // 法線ベクトルがある場合は法線も回転・変換
             if (surf_arrays.size() > Mesh::ARRAY_NORMAL) {
                 PackedVector3Array src_normals = surf_arrays[Mesh::ARRAY_NORMAL];
                 if (!src_normals.is_empty()) {
+                    Basis normal_basis = xform.basis.inverse().transposed();
                     PackedVector3Array dst_normals;
                     dst_normals.resize(src_normals.size());
                     for (int v = 0; v < src_normals.size(); ++v) {
@@ -113,10 +116,9 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
                 }
             }
 
-            // 結合後の ArrayMesh に面データとして追加
             combined_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surf_arrays);
+            total_vertices_added += dst_verts.size();
 
-            // マテリアルの取得
             Ref<Material> mat = mi->get_surface_override_material(s);
             if (mat.is_null()) {
                 mat = src_mesh->surface_get_material(s);
@@ -130,6 +132,11 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
     if (combined_mesh->get_surface_count() > 0) {
         res.mesh = combined_mesh;
         res.valid = true;
+        UtilityFunctions::print("[ChunkMeshBuilder] Successfully built combined mesh for ", scene_path, 
+                                " (Surfaces: ", combined_mesh->get_surface_count(), 
+                                ", Vertices: ", total_vertices_added, ")");
+    } else {
+        UtilityFunctions::printerr("[ChunkMeshBuilder] ERROR: Combined mesh has 0 surfaces for ", scene_path);
     }
 
     cache[scene_path] = res;
@@ -204,6 +211,8 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
     const HashMap<String, String> &block_map = get_block_scene_map();
     PackedVector3Array collision_faces;
 
+    UtilityFunctions::print("[ChunkMeshBuilder] Starting build_from_positions for node: ", parent_node->get_name());
+
     for (const auto &E : categorized_positions) {
         String block_name = E.key;
         const Vector<Vector3> &positions = E.value;
@@ -212,7 +221,14 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
 
         String scene_path = block_map[block_name];
         BlockMeshData mesh_data = get_block_mesh_data(scene_path);
-        if (!mesh_data.valid || mesh_data.mesh.is_null()) continue;
+
+        if (!mesh_data.valid || mesh_data.mesh.is_null()) {
+            UtilityFunctions::printerr("[ChunkMeshBuilder] Invalid mesh data for block: ", block_name);
+            continue;
+        }
+
+        UtilityFunctions::print("[ChunkMeshBuilder] Generating MultiMesh for block '", block_name, 
+                                "' with ", positions.size(), " instances.");
 
         MultiMeshInstance3D *mmi = memnew(MultiMeshInstance3D);
         Ref<MultiMesh> mm;
@@ -222,33 +238,33 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
         mm->set_mesh(mesh_data.mesh);
         mm->set_instance_count(positions.size());
 
-        AABB custom_aabb;
+        AABB total_aabb;
         bool first_aabb = true;
 
         for (int i = 0; i < positions.size(); ++i) {
             Transform3D t;
             t.basis = Basis();
-            t.origin = positions[i]; // チャンク内ローカル位置
+            t.origin = positions[i];
             mm->set_instance_transform(i, t);
 
-            // インスタンス全体の AABB を手動で計算して包み込む
-            AABB instance_aabb = mesh_data.mesh->get_aabb();
-            instance_aabb.position += positions[i];
+            AABB box = mesh_data.mesh->get_aabb();
+            box.position += positions[i];
             if (first_aabb) {
-                custom_aabb = instance_aabb;
+                total_aabb = box;
                 first_aabb = false;
             } else {
-                custom_aabb = custom_aabb.merge(instance_aabb);
+                total_aabb = total_aabb.merge(box);
             }
         }
 
         mmi->set_multimesh(mm);
-        
+
         if (!first_aabb) {
-            mmi->set_custom_aabb(custom_aabb);
+            mmi->set_custom_aabb(total_aabb);
+            UtilityFunctions::print("  -> MultiMesh AABB Position: ", total_aabb.position, 
+                                    ", Size: ", total_aabb.size);
         }
 
-        // マテリアルの設定
         for (int s = 0; s < mesh_data.materials.size(); ++s) {
             if (!mesh_data.materials.is_empty() && mesh_data.materials[0].is_valid()) {
                 mmi->set_material_override(mesh_data.materials[0]);
@@ -257,6 +273,7 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
 
         parent_node->add_child(mmi);
 
+        // 当たり判定頂点抽出
         for (int s = 0; s < mesh_data.mesh->get_surface_count(); ++s) {
             Array surf_arrays = mesh_data.mesh->surface_get_arrays(s);
             if (surf_arrays.size() <= Mesh::ARRAY_VERTEX) continue;
@@ -281,6 +298,7 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
     }
 
     if (collision_faces.size() > 0) {
+        UtilityFunctions::print("[ChunkMeshBuilder] Creating Collision Shape with ", collision_faces.size(), " faces.");
         StaticBody3D *static_body = memnew(StaticBody3D);
         static_body->set_collision_layer(1);
         static_body->set_collision_mask(1);
