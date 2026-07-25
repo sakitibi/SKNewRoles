@@ -48,7 +48,6 @@ void ChunkManager::_ready() {
 void ChunkManager::_process(double delta) {
     if (Engine::get_singleton()->is_editor_hint()) return;
 
-    // ロード完了したチャンクの生成（メインスレッド処理）
     if (!loaded_queue.is_empty()) {
         ChunkLoadData *data = loaded_queue.front()->get();
         loaded_queue.pop_front();
@@ -61,6 +60,7 @@ void ChunkManager::_process(double delta) {
             chunk_node->set_name("Chunk_" + String::num_int64(coord.x) + "_" + String::num_int64(coord.y));
             chunk_node->set_position(Vector3(coord.x * chunk_size, 0, coord.y * chunk_size));
 
+            // メッシュ＆コリジョン構築
             ChunkMeshBuilder::build_from_positions(chunk_node, data->categorized_positions);
 
             add_child(chunk_node);
@@ -70,7 +70,7 @@ void ChunkManager::_process(double delta) {
         memdelete(data);
     }
 
-    // プレイヤーの検索
+    // プレイヤー追従処理
     if (!player_node) {
         player_node = find_local_player();
     }
@@ -84,14 +84,13 @@ void ChunkManager::_process(double delta) {
         );
     }
 
-    // 初回アップデートまたはプレイヤーのチャンク移動時に更新
     if (first_update || new_chunk_coord != current_chunk_coord) {
         current_chunk_coord = new_chunk_coord;
         first_update = false;
         update_chunks_around_player();
     }
 
-    // 初期チャンク生成完了フラグのチェック
+    // 初期ロード完了チェック
     if (!initial_load_complete) {
         bool all_loaded = true;
         for (int x = -render_distance; x <= render_distance; ++x) {
