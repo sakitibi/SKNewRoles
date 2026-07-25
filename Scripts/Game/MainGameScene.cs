@@ -53,9 +53,11 @@ namespace SKNewRoles2.Game
             Realtime.OnRoleAssignedReceived += OnRoleAssignedReceived;
             Realtime.OnPlayerTransformReceivedAll += OnPlayerTransformReceivedAll;
 
+            // プレイヤーを生成
             if (_myPlayerInstance == null)
             {
                 SpawnMyPlayer();
+                SetPlayerPhysicsEnabled(false);
             }
 
             GD.Print("2️⃣ [_Ready] チャンク読み込み待機開始");
@@ -69,19 +71,14 @@ namespace SKNewRoles2.Game
 
             GD.Print("4️⃣ [_Ready] 役職受諾のループ待機開始");
             int loopCheck = 0;
-            while (!_hasRoleReceived && loopCheck < 50) // 最大5秒待機
+            while (!_hasRoleReceived && loopCheck < 50)
             {
                 await Task.Delay(100);
                 loopCheck++;
-                if (loopCheck % 10 == 0)
-                {
-                    GD.Print($"⚠️ [_Ready] 役職データ未受信のまま待機中... ({loopCheck / 10}秒経過)");
-                }
             }
 
             if (!_hasRoleReceived)
             {
-                GD.PrintErr("⚠️ 役職受諾がタイムアウトしたため、デフォルト役職(村人)を設定します。");
                 MyRole = 0;
                 MyFaction = 0;
                 _hasRoleReceived = true;
@@ -113,6 +110,9 @@ namespace SKNewRoles2.Game
                     GD.Print("8️⃣ [_Ready] 役職画面を非表示にしました (ゲームスタート)");
                 }
             }
+
+            // ★ ゲーム開始時にプレイヤーの物理挙動を有効化
+            SetPlayerPhysicsEnabled(true);
         }
 
         private async Task WaitForInitialChunksLoaded()
@@ -120,7 +120,7 @@ namespace SKNewRoles2.Game
             if (_chunkManagerCpp == null) return;
 
             int timeoutCounter = 0;
-            while (timeoutCounter < 50)
+            while (timeoutCounter < 150)
             {
                 bool isComplete = false;
                 if (_chunkManagerCpp.HasMethod("is_initial_load_complete"))
@@ -138,7 +138,7 @@ namespace SKNewRoles2.Game
                 timeoutCounter++;
             }
 
-            GD.PrintErr("⚠️ チャンク読み込み待機がタイムアウトしました。処理を強制続行します。");
+            GD.PrintErr("⚠️ チャンク読み込み待機がタイムアウト(15秒)しました。強制続行します。");
         }
 
         public override void _Process(double delta)
@@ -156,11 +156,28 @@ namespace SKNewRoles2.Game
             _myPlayerInstance.AddToGroup("LocalPlayer");
 
             AddChild(_myPlayerInstance);
-            _myPlayerInstance.GlobalPosition = new Vector3(0, 90, 0);
+            
+            _myPlayerInstance.GlobalPosition = new Vector3(0, 150, 0);
 
             if (_chunkManagerCpp != null)
             {
                 _chunkManagerCpp.Set("player_path", _myPlayerInstance.GetPath());
+            }
+        }
+
+        /// <summary>
+        /// プレイヤーの物理更新（重力・移動処理）を切り替える
+        /// </summary>
+        private void SetPlayerPhysicsEnabled(bool enabled)
+        {
+            if (_myPlayerInstance == null) return;
+
+            _myPlayerInstance.SetPhysicsProcess(enabled);
+            _myPlayerInstance.SetProcess(enabled);
+
+            if (_myPlayerInstance is CharacterBody3D body)
+            {
+                body.Velocity = Vector3.Zero;
             }
         }
 
