@@ -148,6 +148,33 @@ Node3D *ChunkManager::find_local_player() {
     return (players.size() > 0) ? Object::cast_to<Node3D>(players[0]) : nullptr;
 }
 
+void ChunkManager::update_chunks_around_player() {
+    HashMap<Vector2i, bool> keep;
+    for (int x = -render_distance; x <= render_distance; ++x) {
+        for (int z = -render_distance; z <= render_distance; ++z) {
+            Vector2i target = current_chunk_coord + Vector2i(x, z);
+            keep[target] = true;
+
+            // まだロードされておらず、非同期ロード処理中でもなければロードを開始
+            if (!loaded_chunks.has(target) && !pending_tasks.has(target)) {
+                load_chunk(target);
+            }
+        }
+    }
+
+    Array loaded_coords;
+    for (const auto &E : loaded_chunks) {
+        loaded_coords.append(E.key);
+    }
+
+    for (int i = 0; i < loaded_coords.size(); ++i) {
+        Vector2i coord = loaded_coords[i];
+        if (!keep.has(coord)) {
+            unload_chunk(coord);
+        }
+    }
+}
+
 // Getter / Setter
 void ChunkManager::set_chunk_size(float p_size) { chunk_size = p_size; }
 float ChunkManager::get_chunk_size() const { return chunk_size; }
