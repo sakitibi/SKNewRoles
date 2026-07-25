@@ -45,7 +45,7 @@ String MCAParser::read_string() {
 
 Variant MCAParser::parse_tag_payload(uint8_t type) {
     switch (type) {
-        case TAG_BYTE: return read_u8();
+        case TAG_BYTE: return static_cast<int8_t>(read_u8());
         case TAG_SHORT: return read_i16();
         case TAG_INT: return read_i32();
         case TAG_LONG: return read_i64();
@@ -102,7 +102,6 @@ Dictionary MCAParser::parse_nbt_bytes(const PackedByteArray &bytes) {
     parser.nbt_size = bytes.size();
     parser.nbt_cursor = 0;
 
-    // ルートタグの読み込み（例）
     uint8_t root_type = parser.read_u8();
     if (root_type != TAG_COMPOUND) return Dictionary();
 
@@ -140,7 +139,6 @@ PackedByteArray MCAParser::get_raw_chunk_nbt(const String &path, int rel_x, int 
     return PackedByteArray();
 }
 
-// 3. static 関数
 Dictionary MCAParser::parse_chunk(const String &region_folder_path, int chunk_x, int chunk_z) {
     int rx = static_cast<int>(std::floor(chunk_x / 32.0f));
     int rz = static_cast<int>(std::floor(chunk_z / 32.0f));
@@ -149,7 +147,6 @@ Dictionary MCAParser::parse_chunk(const String &region_folder_path, int chunk_x,
     int rel_x = ((chunk_x % 32) + 32) % 32;
     int rel_z = ((chunk_z % 32) + 32) % 32;
 
-    // static化されたため問題なく呼び出せます
     PackedByteArray raw_nbt = get_raw_chunk_nbt(mca_path, rel_x, rel_z);
     if (raw_nbt.is_empty()) return Dictionary();
 
