@@ -15,6 +15,7 @@
 #include <godot_cpp/classes/box_mesh.hpp>
 #include <godot_cpp/templates/hash_map.hpp>
 #include <godot_cpp/variant/array.hpp>
+#include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/packed_vector3_array.hpp>
 #include <godot_cpp/variant/packed_int64_array.hpp>
 
@@ -34,10 +35,7 @@ namespace godot {
             static const HashMap<String, String>& get_block_scene_map();
             static void preload_block_meshes();
 
-            // 位置抽出
-            static HashMap<String, Vector<Vector3>> extract_block_positions(const Array &sections);
-
-            // メインスレッドでの描画・コリジョン構築
+            static HashMap<String, Vector<Vector3>> parse_chunk_positions(const Dictionary &chunk_data);
             static void build_from_positions(Node3D *parent_node, const HashMap<String, Vector<Vector3>> &categorized_positions);
     };
 }
