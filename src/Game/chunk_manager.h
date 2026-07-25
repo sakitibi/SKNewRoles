@@ -3,18 +3,23 @@
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/templates/hash_map.hpp>
+#include <godot_cpp/templates/list.hpp>
 #include <godot_cpp/variant/vector2i.hpp>
 #include <godot_cpp/variant/node_path.hpp>
 
 namespace godot {
     class ChunkManager;
+
     // 非同期スレッドへ渡すデータ構造体
     struct ChunkLoadData {
         Vector2i coord;
         String region_folder_path;
         float chunk_size = 16.0f;
-        Node3D *built_node = nullptr; // スレッド内で構築する一時ノード
         ChunkManager *manager = nullptr;
+
+        // パース結果を一時保持するデータ構造
+        HashMap<String, Vector<Vector3>> categorized_positions;
+        bool has_data = false;
     };
 
     class ChunkManager : public Node3D {
@@ -30,7 +35,10 @@ namespace godot {
             Vector2i current_chunk_coord = Vector2i(-999999, -999999);
 
             HashMap<Vector2i, Node3D *> loaded_chunks;
-            HashMap<Vector2i, int64_t> pending_tasks; // ロード中のタスクIDを保持
+            HashMap<Vector2i, int64_t> pending_tasks;
+            
+            List<ChunkLoadData *> loaded_queue;
+
             String region_folder_path = "res://regions/";
 
             void update_chunks_around_player();
@@ -38,7 +46,6 @@ namespace godot {
             void unload_chunk(const Vector2i &coord);
             Node3D *find_local_player();
 
-            // 非同期処理用メソッド
             static void _async_load_worker(void *p_userdata);
             void _on_chunk_loaded(Variant p_userdata);
 
