@@ -4,6 +4,8 @@
 #include <godot_cpp/classes/concave_polygon_shape3d.hpp>
 #include <godot_cpp/classes/static_body3d.hpp>
 #include <godot_cpp/classes/collision_shape3d.hpp>
+#include <godot_cpp/classes/box_shape3d.hpp>
+#include <godot_cpp/classes/geometry_instance3d.hpp>
 #include <cmath>
 #include <algorithm>
 
@@ -22,155 +24,74 @@ const HashMap<String, String>& ChunkMeshBuilder::get_block_scene_map() {
     return map;
 }
 
+// 起動時のリソース事前ロード
+void ChunkMeshBuilder::preload_block_meshes() {
+    const HashMap<String, String> &map = get_block_scene_map();
+    for (const auto &E : map) {
+        get_block_mesh_data(E.value);
+    }
+}
+
 int ChunkMeshBuilder::get_palette_index(const PackedInt64Array &data, int palette_size, int x, int y, int z) {
     if (data.is_empty() || palette_size <= 0) return 0;
+
+    int bits_per_entry = 4;
+    while ((1 << bits_per_entry) < palette_size) {
+        bits_per_entry++;
+    }
+
     int block_index = y * 256 + z * 16 + x;
-    int bits_per_block = std::max(4, (int)std::ceil(std::log2(palette_size)));
-    int blocks_per_long = 64 / bits_per_block;
-    int long_index = block_index / blocks_per_long;
-    int bit_offset = (block_index % blocks_per_long) * bits_per_block;
+    int entries_per_long = 64 / bits_per_entry;
+    int long_index = block_index / entries_per_long;
+    int bit_offset = (block_index % entries_per_long) * bits_per_entry;
 
-    if (long_index >= data.size()) return 0;
-    uint64_t mask = (1ULL << bits_per_block) - 1;
-    return static_cast<int>((static_cast<uint64_t>(data[long_index]) >> bit_offset) & mask);
+    if (long_index < 0 || long_index >= data.size()) return 0;
+
+    uint64_t long_val = static_cast<uint64_t>(data[long_index]);
+    uint64_t mask = (1ULL << bits_per_entry) - 1ULL;
+    return static_cast<int>((long_val >> bit_offset) & mask);
 }
 
-// 子ノードからマテリアルを取得
-static Ref<Material> get_node_material(MeshInstance3D *mi, int surface_idx = 0) {
-    if (!mi) return Ref<Material>();
-
-    Ref<Material> mat = mi->get_material_override();
-    if (mat.is_valid()) return mat;
-
-    mat = mi->get_surface_override_material(surface_idx);
-    if (mat.is_valid()) return mat;
-
-    Ref<Mesh> mesh = mi->get_mesh();
-    if (mesh.is_valid() && surface_idx < mesh->get_surface_count()) {
-        mat = mesh->surface_get_material(surface_idx);
-        if (mat.is_valid()) return mat;
-    }
-
-    return Ref<Material>();
-}
-
-void ChunkMeshBuilder::preload_block_meshes() {
-    const HashMap<String, String> &block_map = get_block_scene_map();
-    for (const auto &E : block_map) {
-        get_block_mesh_data(E.value); // 起動時にすべてロード＆インスタンス化してキャッシュに保持
-    }
-}
-
-// .tscn 内の QuadMesh を抽出してキャッシュ化
 BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
     static HashMap<String, BlockMeshData> cache;
     if (cache.has(scene_path)) {
         return cache[scene_path];
     }
 
-    BlockMeshData data;
+    BlockMeshData res;
     Ref<PackedScene> scene = ResourceLoader::get_singleton()->load(scene_path);
-    
     if (scene.is_valid()) {
         Node *inst = scene->instantiate();
         if (inst) {
-            Node3D *node_3d = Object::cast_to<Node3D>(inst);
-            if (node_3d) {
-                Ref<ArrayMesh> combined_mesh;
-                combined_mesh.instantiate();
-
-                for (int i = 0; i < node_3d->get_child_count(); ++i) {
-                    MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(node_3d->get_child(i));
-                    if (!mi) continue;
-
-                    Ref<Mesh> child_mesh = mi->get_mesh();
-                    if (child_mesh.is_null() || child_mesh->get_surface_count() == 0) continue;
-
-                    Ref<Material> mat = get_node_material(mi, 0);
-                    if (mat.is_null()) {
-                        Ref<StandardMaterial3D> default_mat;
-                        default_mat.instantiate();
-                        mat = default_mat;
-                    }
-
-                    Transform3D xform = mi->get_transform();
-                    Array surf_arrays = child_mesh->surface_get_arrays(0);
-                    PackedVector3Array vertices = surf_arrays[Mesh::ARRAY_VERTEX];
-                    PackedVector3Array normals = surf_arrays[Mesh::ARRAY_NORMAL];
-
-                    for (int v = 0; v < vertices.size(); ++v) {
-                        vertices[v] = xform.xform(vertices[v]);
-                        if (v < normals.size()) {
-                            normals[v] = xform.basis.xform(normals[v]).normalized();
-                        }
-                    }
-                    surf_arrays[Mesh::ARRAY_VERTEX] = vertices;
-                    surf_arrays[Mesh::ARRAY_NORMAL] = normals;
-
-                    int new_surf_idx = combined_mesh->get_surface_count();
-                    combined_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surf_arrays);
-                    combined_mesh->surface_set_material(new_surf_idx, mat);
-
-                    data.materials.push_back(mat);
+            // まずルートノードが MeshInstance3D かチェック
+            MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(inst);
+            
+            // ルートが MeshInstance3D でない場合、子ノードから探す
+            if (!mi) {
+                Node *child = inst->find_child("*", true, false);
+                if (child) {
+                    mi = Object::cast_to<MeshInstance3D>(child);
                 }
+            }
 
-                if (combined_mesh->get_surface_count() > 0) {
-                    data.mesh = combined_mesh;
-                    data.valid = true;
+            if (mi && mi->get_mesh().is_valid()) {
+                res.mesh = mi->get_mesh();
+                for (int s = 0; s < res.mesh->get_surface_count(); ++s) {
+                    res.materials.push_back(mi->get_surface_override_material(s));
                 }
+                res.valid = true;
             }
             memdelete(inst);
         }
     }
 
-    if (!data.valid || data.mesh.is_null()) {
-        Ref<BoxMesh> box;
-        box.instantiate();
-        box->set_size(Vector3(1.0f, 1.0f, 1.0f));
-
-        Ref<StandardMaterial3D> fallback_mat;
-        fallback_mat.instantiate();
-
-        data.mesh = box;
-        data.materials.push_back(fallback_mat);
-        data.valid = true;
-    }
-
-    cache[scene_path] = data;
-    return data;
+    cache[scene_path] = res;
+    return res;
 }
 
-// MultiMesh (描画用)
-void ChunkMeshBuilder::build_multimesh_for_block(Node3D *parent_node, const String &scene_path, const Vector<Vector3> &positions) {
-    if (positions.is_empty() || parent_node == nullptr) return;
-
-    BlockMeshData mesh_data = get_block_mesh_data(scene_path);
-    if (mesh_data.mesh.is_null()) return;
-
-    Ref<MultiMesh> multimesh;
-    multimesh.instantiate();
-    multimesh->set_transform_format(MultiMesh::TRANSFORM_3D);
-    multimesh->set_mesh(mesh_data.mesh);
-    multimesh->set_instance_count(positions.size());
-
-    for (int i = 0; i < positions.size(); ++i) {
-        Transform3D t;
-        t.origin = positions[i];
-        multimesh->set_instance_transform(i, t);
-    }
-
-    MultiMeshInstance3D *mm_node = memnew(MultiMeshInstance3D);
-    mm_node->set_multimesh(multimesh);
-    parent_node->add_child(mm_node);
-}
-
-void ChunkMeshBuilder::build_mesh_and_collision(Node3D *parent_node, const Array &sections) {
-    if (!parent_node) return;
-
-    const HashMap<String, String> &block_map = get_block_scene_map();
+HashMap<String, Vector<Vector3>> ChunkMeshBuilder::extract_block_positions(const Array &sections) {
     HashMap<String, Vector<Vector3>> categorized_positions;
 
-    // 各セクションからブロック座標を抽出
     for (int s = 0; s < sections.size(); ++s) {
         Dictionary section = sections[s];
         if (!section.has("block_states")) continue;
@@ -179,84 +100,76 @@ void ChunkMeshBuilder::build_mesh_and_collision(Node3D *parent_node, const Array
         if (!block_states.has("palette")) continue;
 
         Array palette = block_states["palette"];
-        int section_y = section.has("Y") ? (int)section["Y"] : 0;
-        PackedInt64Array data = block_states.has("data") ? (PackedInt64Array)block_states["data"] : PackedInt64Array();
+        int palette_size = palette.size();
+        if (palette_size == 0) continue;
+
+        PackedInt64Array data;
+        if (block_states.has("data")) {
+            data = block_states["data"];
+        }
+
+        int section_y = 0;
+        if (section.has("Y")) {
+            section_y = static_cast<int>(section["Y"]);
+        }
 
         for (int y = 0; y < 16; ++y) {
             for (int z = 0; z < 16; ++z) {
                 for (int x = 0; x < 16; ++x) {
-                    int p_index = get_palette_index(data, palette.size(), x, y, z);
-                    if (p_index < 0 || p_index >= palette.size()) continue;
+                    int p_idx = get_palette_index(data, palette_size, x, y, z);
+                    if (p_idx >= 0 && p_idx < palette_size) {
+                        Dictionary block = palette[p_idx];
+                        String block_name = block.get("Name", "");
 
-                    Dictionary block_type = palette[p_index];
-                    String name = block_type.has("Name") ? (String)block_type["Name"] : "";
-
-                    if (name == "minecraft:air" || name.is_empty() || !block_map.has(name)) {
-                        continue;
-                    }
-
-                    Vector3 block_pos(x, section_y * 16 + y, z);
-                    categorized_positions[name].push_back(block_pos);
-                }
-            }
-        }
-    }
-
-    // 描画用の MultiMeshInstance3D を生成（見た目の描画）
-    for (const auto &E : categorized_positions) {
-        String block_name = E.key;
-        const Vector<Vector3> &positions = E.value;
-        
-        if (block_map.has(block_name)) {
-            build_multimesh_for_block(parent_node, block_map[block_name], positions);
-        }
-    }
-
-    PackedVector3Array collision_faces;
-
-    for (const auto &E : categorized_positions) {
-        String block_name = E.key;
-        const Vector<Vector3> &positions = E.value;
-
-        BlockMeshData mesh_data = get_block_mesh_data(block_map[block_name]);
-        if (mesh_data.mesh.is_null()) continue;
-
-        for (int s = 0; s < mesh_data.mesh->get_surface_count(); ++s) {
-            Array surf_arrays = mesh_data.mesh->surface_get_arrays(s);
-            if (surf_arrays.size() <= Mesh::ARRAY_VERTEX) continue;
-
-            PackedVector3Array verts = surf_arrays[Mesh::ARRAY_VERTEX];
-            PackedInt32Array indices = surf_arrays[Mesh::ARRAY_INDEX];
-
-            for (int i = 0; i < positions.size(); ++i) {
-                Vector3 block_pos = positions[i];
-
-                if (indices.size() > 0) {
-                    for (int idx = 0; idx < indices.size(); ++idx) {
-                        collision_faces.append(verts[indices[idx]] + block_pos);
-                    }
-                } else {
-                    for (int v = 0; v < verts.size(); ++v) {
-                        collision_faces.append(verts[v] + block_pos);
+                        if (block_name != "minecraft:air" && block_name != "minecraft:void_air") {
+                            Vector3 pos(x, (section_y * 16) + y, z);
+                            categorized_positions[block_name].push_back(pos);
+                        }
                     }
                 }
             }
         }
     }
 
-    if (collision_faces.size() > 0) {
-        StaticBody3D *static_body = memnew(StaticBody3D);
-        static_body->set_collision_layer(1);
-        static_body->set_collision_mask(1);
+    return categorized_positions;
+}
 
-        CollisionShape3D *col_shape = memnew(CollisionShape3D);
-        Ref<ConcavePolygonShape3D> concave_shape;
-        concave_shape.instantiate();
-        concave_shape->set_faces(collision_faces); // 全頂点を設定
+void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<String, Vector<Vector3>> &categorized_positions) {
+    const HashMap<String, String> &block_map = get_block_scene_map();
 
-        col_shape->set_shape(concave_shape);
-        static_body->add_child(col_shape);
+    for (const auto &E : categorized_positions) {
+        String block_name = E.key;
+        const Vector<Vector3> &positions = E.value;
 
-        parent_node->add_child(static_body);
+        if (!block_map.has(block_name) || positions.is_empty()) continue;
+
+        String scene_path = block_map[block_name];
+        BlockMeshData mesh_data = get_block_mesh_data(scene_path);
+        if (!mesh_data.valid || mesh_data.mesh.is_null()) continue;
+
+        MultiMeshInstance3D *mmi = memnew(MultiMeshInstance3D);
+        Ref<MultiMesh> mm;
+        mm.instantiate();
+
+        mm->set_transform_format(MultiMesh::TRANSFORM_3D);
+        mm->set_mesh(mesh_data.mesh);
+        mm->set_instance_count(positions.size());
+
+        for (int i = 0; i < positions.size(); ++i) {
+            Transform3D t;
+            t.origin = positions[i];
+            mm->set_instance_transform(i, t);
+        }
+
+        mmi->set_multimesh(mm);
+
+        // マテリアルの設定
+        for (int s = 0; s < mesh_data.materials.size(); ++s) {
+            if (!mesh_data.materials.is_empty() && mesh_data.materials[0].is_valid()) {
+                mmi->set_material_override(mesh_data.materials[0]);
+            }
+        }
+
+        parent_node->add_child(mmi);
     }
 }

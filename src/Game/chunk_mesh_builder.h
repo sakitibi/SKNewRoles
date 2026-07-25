@@ -29,11 +29,15 @@ namespace godot {
         private:
             static int get_palette_index(const PackedInt64Array &data, int palette_size, int x, int y, int z);
             static BlockMeshData get_block_mesh_data(const String &scene_path);
-            static void build_multimesh_for_block(Node3D *parent_node, const String &scene_path, const Vector<Vector3> &positions);
-            static const HashMap<String, String>& get_block_scene_map();
 
         public:
+            static const HashMap<String, String>& get_block_scene_map();
             static void preload_block_meshes();
-            static void build_mesh_and_collision(Node3D *parent_node, const Array &sections);
+
+            // 位置抽出
+            static HashMap<String, Vector<Vector3>> extract_block_positions(const Array &sections);
+
+            // メインスレッドでの描画・コリジョン構築
+            static void build_from_positions(Node3D *parent_node, const HashMap<String, Vector<Vector3>> &categorized_positions);
     };
 }
