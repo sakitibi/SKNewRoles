@@ -31,7 +31,7 @@ namespace SKNewRoles2.Game
 
         public override async void _Ready()
         {
-            // 1. UIノードのルート参照を安全に取得
+            // UIノードの参照取得
             _loadingScene = GetNodeOrNull<Control>("UILayer/LoadingScene");
             _roleRevealScene = GetNodeOrNull<Control>("UILayer/RoleRevealScene");
 
@@ -52,19 +52,26 @@ namespace SKNewRoles2.Game
             _roleManagerCpp = GetNodeOrNull<Node>("RoleManager");
             _chunkManagerCpp = GetNodeOrNull<Node3D>("ChunkManager");
 
+            // WebSocket イベントリスナー登録
             Realtime.OnRoleAssignedReceived += OnRoleAssignedReceived;
             Realtime.OnPlayerTransformReceivedAll += OnPlayerTransformReceivedAll;
+
+            await WaitForInitialChunksLoaded();
 
             if (SessionManager.Instance != null && SessionManager.Instance.IsHost)
             {
                 AssignRolesToAllPlayers();
             }
 
-            await WaitForInitialChunksLoaded();
-
+            int waitTimeoutCounter = 0;
             while (!_hasRoleReceived)
             {
                 await Task.Delay(100);
+                waitTimeoutCounter++;
+                if (waitTimeoutCounter % 30 == 0) // 3秒ごとにログ出力
+                {
+                    GD.Print("⏳ [MainGame] 役職データの受信を待機中...");
+                }
             }
 
             if (_myPlayerInstance == null)
@@ -92,7 +99,6 @@ namespace SKNewRoles2.Game
             }
             else
             {
-                // UIが存在しない場合はそのままロード画面を解除
                 if (_loadingScene != null) _loadingScene.Visible = false;
             }
         }
@@ -102,7 +108,11 @@ namespace SKNewRoles2.Game
         /// </summary>
         private async Task WaitForInitialChunksLoaded()
         {
-            if (_chunkManagerCpp == null) return;
+            if (_chunkManagerCpp == null)
+            {
+                GD.PrintErr("⚠️ ChunkManager が見つかりません。チャンク読み込み待機をスキップします。");
+                return;
+            }
 
             GD.Print("⏳ [MainGame] 初期チャンクの生成完了を待機中...");
 
@@ -125,14 +135,9 @@ namespace SKNewRoles2.Game
         public override void _Process(double delta)
         {
             Realtime.PollRealtimeEvents();
-
-            // 毎フレーム自分の位置情報を同期送信
             SendMyTransform();
         }
 
-        /// <summary>
-        /// 自分のプレイヤー実体を生成し、ChunkManager 連携とグループ設定を行う
-        /// </summary>
         private void SpawnMyPlayer()
         {
             if (_playerScene == null)
@@ -143,8 +148,6 @@ namespace SKNewRoles2.Game
 
             _myPlayerInstance = _playerScene.Instantiate<Node3D>();
             _myPlayerInstance.Name = "MyPlayer";
-            
-            // ChunkManager が追従検索できるようにグループ登録
             _myPlayerInstance.AddToGroup("LocalPlayer");
 
             AddChild(_myPlayerInstance);
@@ -159,30 +162,42 @@ namespace SKNewRoles2.Game
         }
 
         /// <summary>
-        /// 参加者全員にランダムに役職を割り当ててブロードキャスト
+        /// 参加者全員に役職を割り当ててブロードキャスト
         /// </summary>
         private void AssignRolesToAllPlayers()
         {
             List<string> players = SessionManager.Instance.CurrentRoomPlayerIds;
-            if (players == null || players.Count == 0) return;
+            if (players == null || players.Count == 0)
+            {
+                GD.PrintErr("⚠️ プレイヤーリストが空です。");
+                return;
+            }
 
             GD.Print($"🎲 役職配分を開始します。対象人数: {players.Count}");
 
-            // C++ 側に役職配分を計算させる
             if (_roleManagerCpp != null && _roleManagerCpp.HasMethod("assign_roles"))
             {
                 _roleManagerCpp.Call("assign_roles", players.Count);
 
+                string myUserId = GetMyUserId();
+
                 for (int i = 0; i < players.Count; i++)
                 {
                     string targetUserId = players[i];
-
                     int roleId = (int)_roleManagerCpp.Call("get_assigned_role", i);
                     int factionId = (int)_roleManagerCpp.Call("get_assigned_faction", i);
 
                     GD.Print($"📡 [Host] 役職送信 -> Target: {targetUserId}, Role: {roleId}, Faction: {factionId}");
 
-                    Realtime.SendRoleBroadcast(targetUserId, roleId, factionId);
+                    // 自分自身への割り当ての場合は通信を通さず直接処理
+                    if (targetUserId == myUserId)
+                    {
+                        OnRoleAssignedReceived(targetUserId, roleId, factionId);
+                    }
+                    else
+                    {
+                        Realtime.SendRoleBroadcast(targetUserId, roleId, factionId);
+                    }
                 }
             }
             else
@@ -191,26 +206,31 @@ namespace SKNewRoles2.Game
             }
         }
 
-        /// <summary>
-        /// サーバー/ホストから自分宛ての役職通知を受信したときの処理
-        /// </summary>
         private void OnRoleAssignedReceived(string targetUserId, int roleId, int factionId)
+        {
+            string myUserId = GetMyUserId();
+
+            // ログを出力してIDチェック
+            GD.Print($"📩 役職通知受諾確認: Target={targetUserId}, Mine={myUserId}");
+
+            if (targetUserId != myUserId) return;
+            if (_hasRoleReceived) return;
+
+            MyRole = roleId;
+            MyFaction = factionId;
+            _hasRoleReceived = true;
+
+            GD.Print($"🎉 [Client] 自分の役職を適用しました！ Faction: {MyFaction}, Role: {MyRole}");
+        }
+
+        private string GetMyUserId()
         {
             string myUserId = SessionManager.Instance.CurrentSession?.User?.Id;
             if (string.IsNullOrEmpty(myUserId))
             {
                 myUserId = $"Guest_{SessionManager.Instance.CurrentRoomCode}";
             }
-
-            if (targetUserId != myUserId) return;
-
-            if (_hasRoleReceived) return;
-            
-            MyRole = roleId;
-            MyFaction = factionId;
-            _hasRoleReceived = true;
-
-            GD.Print($"🎉 [Client] 自分の役職を受信しました！ Faction: {MyFaction}, Role: {MyRole}");
+            return myUserId;
         }
 
         private string GetFactionName(int factionId)
@@ -244,18 +264,9 @@ namespace SKNewRoles2.Game
             };
         }
 
-        /// <summary>
-        /// 全他プレイヤーの位置情報受信（WebSocketブロードキャスト）
-        /// </summary>
         private void OnPlayerTransformReceivedAll(string senderId, float px, float py, float pz, float rx, float ry, float rz)
         {
-            string myUserId = SessionManager.Instance.CurrentSession?.User?.Id;
-            if (string.IsNullOrEmpty(myUserId))
-            {
-                myUserId = $"Guest_{SessionManager.Instance.CurrentRoomCode}";
-            }
-
-            // 自分の通信データは生成不要
+            string myUserId = GetMyUserId();
             if (senderId == myUserId) return;
 
             if (!_otherPlayers.ContainsKey(senderId))
@@ -269,7 +280,6 @@ namespace SKNewRoles2.Game
                 GD.Print($"👤 [MainGame] リモートプレイヤープレハブを生成しました: {senderId}");
             }
 
-            // 生成された相手プレイヤーの座標・回転を更新
             Node3D targetPlayer = _otherPlayers[senderId];
             if (targetPlayer != null)
             {
@@ -285,9 +295,6 @@ namespace SKNewRoles2.Game
             }
         }
 
-        /// <summary>
-        /// 毎フレーム自分の位置情報を WebSocket 送信
-        /// </summary>
         private void SendMyTransform()
         {
             if (_myPlayerInstance == null) return;
