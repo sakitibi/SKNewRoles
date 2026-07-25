@@ -39,10 +39,10 @@ namespace godot {
 
             // NBT 再帰パース処理
             Variant parse_tag_payload(uint8_t type);
-            Dictionary parse_nbt_bytes(const PackedByteArray &bytes);
+            static Dictionary parse_nbt_bytes(const PackedByteArray &bytes);
 
             // MCA 解凍
-            PackedByteArray get_raw_chunk_nbt(const String &mca_file_path, int rel_x, int rel_z);
+            static PackedByteArray get_raw_chunk_nbt(const String &mca_file_path, int rel_x, int rel_z);
 
         public:
             MCAParser();
