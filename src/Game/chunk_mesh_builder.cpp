@@ -8,7 +8,6 @@
 
 using namespace godot;
 
-// ツリー外のノード群に対して、rootからの相対 Transform を安全に計算するヘルパー関数
 static Transform3D get_relative_transform(Node3D *root, Node3D *target) {
     if (!root || !target) return Transform3D();
     if (root == target) return Transform3D();
@@ -124,9 +123,19 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
                 }
             }
 
+            // マテリアル取得
             Ref<Material> mat = mi->get_surface_override_material(s);
             if (mat.is_null()) mat = mi->get_material_override();
             if (mat.is_null()) mat = mesh->surface_get_material(s);
+
+            if (mat.is_valid()) {
+                Ref<StandardMaterial3D> std_mat = mat->duplicate();
+                if (std_mat.is_valid()) {
+                    std_mat->set_flag(StandardMaterial3D::FLAG_UV1_USE_TRIPLANAR, false);
+                    std_mat->set_flag(StandardMaterial3D::FLAG_UV2_USE_TRIPLANAR, false);
+                    mat = std_mat;
+                }
+            }
 
             // 結合メッシュにサーフェスを追加し、対応するマテリアルを直接紐づける
             int new_surface_index = combined_mesh->get_surface_count();
