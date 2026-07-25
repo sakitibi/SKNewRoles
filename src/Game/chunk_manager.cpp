@@ -55,15 +55,14 @@ void ChunkManager::_process(double delta) {
 }
 
 void ChunkManager::load_chunk(const Vector2i &coord) {
-    // 既に読み込み済み、またはロード中の場合は処理しない
     if (loaded_chunks.has(coord) || pending_tasks.has(coord)) return;
 
     ChunkLoadData *data = memnew(ChunkLoadData);
     data->coord = coord;
     data->region_folder_path = region_folder_path;
     data->chunk_size = chunk_size;
+    data->manager = this; // 自身のポインタを渡す
 
-    // バックグラウンドスレッドで読み込み＆メッシュ構築を実行
     int64_t task_id = WorkerThreadPool::get_singleton()->add_native_task(
         &ChunkManager::_async_load_worker,
         data,
@@ -74,29 +73,28 @@ void ChunkManager::load_chunk(const Vector2i &coord) {
     pending_tasks[coord] = task_id;
 }
 
-// 別スレッド（WorkerThread）側で動作する重い計算処理
 void ChunkManager::_async_load_worker(void *p_userdata) {
     ChunkLoadData *data = static_cast<ChunkLoadData *>(p_userdata);
     if (!data) return;
 
-    // 1. MCAパース
+    // MCAパース
     Dictionary chunk_data = MCAParser::parse_chunk(data->region_folder_path, data->coord.x, data->coord.y);
 
     if (chunk_data.has("sections")) {
         Array sections = chunk_data["sections"];
 
-        // 2. メッシュ・コリジョンの構築準備
+        // メッシュ・コリジョンの構築
         data->built_node = memnew(Node3D);
         data->built_node->set_name("Chunk_" + String::num_int64(data->coord.x) + "_" + String::num_int64(data->coord.y));
         data->built_node->set_position(Vector3(data->coord.x * data->chunk_size, 0, data->coord.y * data->chunk_size));
 
-        // メッシュとコリジョンデータの構築
         ChunkMeshBuilder::build_mesh_and_collision(data->built_node, sections);
     }
 
-    Callable callback(data->built_node ? data->built_node->get_parent() : nullptr, "_on_chunk_loaded");
-    uint64_t ptr_val = reinterpret_cast<uint64_t>(data);
-    data->built_node->call_deferred("call_deferred", "_on_chunk_loaded", ptr_val); 
+    if (data->manager) {
+        uint64_t ptr_val = reinterpret_cast<uint64_t>(data);
+        data->manager->call_deferred("_on_chunk_loaded", ptr_val);
+    }
 }
 
 // メインスレッド側で実行されるノード追加処理

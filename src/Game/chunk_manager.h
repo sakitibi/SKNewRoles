@@ -13,6 +13,7 @@ namespace godot {
         String region_folder_path;
         float chunk_size = 16.0f;
         Node3D *built_node = nullptr; // スレッド内で構築する一時ノード
+        ChunkManager *manager = nullptr;
     };
 
     class ChunkManager : public Node3D {

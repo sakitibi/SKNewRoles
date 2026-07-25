@@ -199,7 +199,10 @@ void ChunkMeshBuilder::build_mesh_and_collision(Node3D *parent_node, const Array
     for (const auto &E : categorized_positions) {
         String block_name = E.key;
         const Vector<Vector3> &positions = E.value;
-        build_multimesh_for_block(parent_node, block_name, positions);
+        
+        if (block_map.has(block_name)) {
+            build_multimesh_for_block(parent_node, block_map[block_name], positions);
+        }
     }
 
     PackedVector3Array collision_faces;
