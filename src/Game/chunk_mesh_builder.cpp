@@ -137,6 +137,9 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::extract_block_positions(const
 void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<String, Vector<Vector3>> &categorized_positions) {
     const HashMap<String, String> &block_map = get_block_scene_map();
 
+    // 当たり判定（コリジョン）用の頂点配列
+    PackedVector3Array collision_faces;
+
     for (const auto &E : categorized_positions) {
         String block_name = E.key;
         const Vector<Vector3> &positions = E.value;
@@ -163,7 +166,7 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
 
         mmi->set_multimesh(mm);
 
-        // マテリアルの設定
+        // マテリアル設定
         for (int s = 0; s < mesh_data.materials.size(); ++s) {
             if (!mesh_data.materials.is_empty() && mesh_data.materials[0].is_valid()) {
                 mmi->set_material_override(mesh_data.materials[0]);
@@ -171,5 +174,43 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
         }
 
         parent_node->add_child(mmi);
+
+        for (int s = 0; s < mesh_data.mesh->get_surface_count(); ++s) {
+            Array surf_arrays = mesh_data.mesh->surface_get_arrays(s);
+            if (surf_arrays.size() <= Mesh::ARRAY_VERTEX) continue;
+
+            PackedVector3Array verts = surf_arrays[Mesh::ARRAY_VERTEX];
+            PackedInt32Array indices = surf_arrays[Mesh::ARRAY_INDEX];
+
+            for (int i = 0; i < positions.size(); ++i) {
+                Vector3 block_pos = positions[i];
+
+                if (indices.size() > 0) {
+                    for (int idx = 0; idx < indices.size(); ++idx) {
+                        collision_faces.append(verts[indices[idx]] + block_pos);
+                    }
+                } else {
+                    for (int v = 0; v < verts.size(); ++v) {
+                        collision_faces.append(verts[v] + block_pos);
+                    }
+                }
+            }
+        }
+    }
+
+    if (collision_faces.size() > 0) {
+        StaticBody3D *static_body = memnew(StaticBody3D);
+        static_body->set_collision_layer(1);
+        static_body->set_collision_mask(1);
+
+        CollisionShape3D *col_shape = memnew(CollisionShape3D);
+        Ref<ConcavePolygonShape3D> concave_shape;
+        concave_shape.instantiate();
+        concave_shape->set_faces(collision_faces);
+
+        col_shape->set_shape(concave_shape);
+        static_body->add_child(col_shape);
+
+        parent_node->add_child(static_body);
     }
 }
