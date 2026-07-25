@@ -38,7 +38,7 @@ ChunkManager::~ChunkManager() {
 void ChunkManager::_ready() {
     if (Engine::get_singleton()->is_editor_hint()) return;
 
-    // ブロックプレハブの事前にロード（初回登録時のカクつきを防止）
+    // ブロックプレハブの事前ロード
     ChunkMeshBuilder::preload_block_meshes();
 }
 
@@ -53,7 +53,6 @@ void ChunkManager::_process(double delta) {
         pending_tasks.erase(coord);
 
         if (!loaded_chunks.has(coord) && data->has_data) {
-            // メインスレッドで安全に Node3D と MultiMesh を生成
             Node3D *chunk_node = memnew(Node3D);
             chunk_node->set_name("Chunk_" + String::num_int64(coord.x) + "_" + String::num_int64(coord.y));
             chunk_node->set_position(Vector3(coord.x * chunk_size, 0, coord.y * chunk_size));
@@ -112,10 +111,11 @@ void ChunkManager::_async_load_worker(void *p_userdata) {
     // MCAパース
     Dictionary chunk_data = MCAParser::parse_chunk(data->region_folder_path, data->coord.x, data->coord.y);
 
-    if (chunk_data.has("sections")) {
-        Array sections = chunk_data["sections"];
-        data->categorized_positions = ChunkMeshBuilder::extract_block_positions(sections);
-        data->has_data = true;
+    if (!chunk_data.is_empty()) {
+        data->categorized_positions = ChunkMeshBuilder::parse_chunk_positions(chunk_data);
+        data->has_data = !data->categorized_positions.is_empty();
+    } else {
+        data->has_data = false;
     }
 
     if (data->manager) {
