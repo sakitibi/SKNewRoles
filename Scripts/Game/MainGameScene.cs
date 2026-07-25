@@ -49,33 +49,51 @@ namespace SKNewRoles2.Game
                 _loadingScene.Visible = true;
             }
 
-            // 2. C++ ノードの参照を取得
             _roleManagerCpp = GetNodeOrNull<Node>("RoleManager");
             _chunkManagerCpp = GetNodeOrNull<Node3D>("ChunkManager");
 
-            // 3. WebSocket ネットワークイベントの受諾準備
             Realtime.OnRoleAssignedReceived += OnRoleAssignedReceived;
             Realtime.OnPlayerTransformReceivedAll += OnPlayerTransformReceivedAll;
 
-            // 4. ホストの場合は全参加者に役職を割り当てて配分
             if (SessionManager.Instance != null && SessionManager.Instance.IsHost)
             {
                 AssignRolesToAllPlayers();
             }
 
-            // 5. 周辺チャンクの初期ロード完了を非同期で待機
             await WaitForInitialChunksLoaded();
 
-            // 6. 役職データを完全に受領するまで待機
             while (!_hasRoleReceived)
             {
                 await Task.Delay(100);
             }
 
-            // 7. プレイヤーを生成
             if (_myPlayerInstance == null)
             {
-                SpawnAndInitializePlayer();
+                SpawnMyPlayer();
+            }
+
+            if (_roleRevealScene != null)
+            {
+                _roleRevealScene.Visible = true;
+                if (_factionLabel != null) _factionLabel.Text = GetFactionName(MyFaction);
+                if (_roleTitleLabel != null) _roleTitleLabel.Text = GetRoleName(MyRole);
+                if (_descriptionLabel != null) _descriptionLabel.Text = GetRoleDescription(MyRole);
+
+                // ロード画面を非表示化
+                if (_loadingScene != null) _loadingScene.Visible = false;
+
+                // 3秒間演出を表示
+                await Task.Delay(3000);
+
+                if (IsInstanceValid(_roleRevealScene))
+                {
+                    _roleRevealScene.Visible = false;
+                }
+            }
+            else
+            {
+                // UIが存在しない場合はそのままロード画面を解除
+                if (_loadingScene != null) _loadingScene.Visible = false;
             }
         }
 
@@ -102,19 +120,6 @@ namespace SKNewRoles2.Game
             }
 
             GD.Print("✅ [MainGame] 初期チャンクの生成が完了しました！");
-        }
-
-        /// <summary>
-        /// チャンク読み込み完了と役職受諾の両方が揃った際のプレイヤー生成とUI制御
-        /// </summary>
-        private void SpawnAndInitializePlayer()
-        {
-            if (_loadingScene != null)
-            {
-                _loadingScene.Visible = false;
-            }
-
-            SpawnMyPlayer();
         }
 
         public override void _Process(double delta)
@@ -145,7 +150,6 @@ namespace SKNewRoles2.Game
             AddChild(_myPlayerInstance);
             _myPlayerInstance.GlobalPosition = new Vector3(0, 90, 0);
 
-            // ChunkManager に直接プレイヤーノードのパスを設定
             if (_chunkManagerCpp != null)
             {
                 _chunkManagerCpp.Set("player_path", _myPlayerInstance.GetPath());
@@ -160,7 +164,7 @@ namespace SKNewRoles2.Game
         private void AssignRolesToAllPlayers()
         {
             List<string> players = SessionManager.Instance.CurrentRoomPlayerIds;
-            if (players.Count == 0) return;
+            if (players == null || players.Count == 0) return;
 
             GD.Print($"🎲 役職配分を開始します。対象人数: {players.Count}");
 
@@ -190,7 +194,7 @@ namespace SKNewRoles2.Game
         /// <summary>
         /// サーバー/ホストから自分宛ての役職通知を受信したときの処理
         /// </summary>
-        private async void OnRoleAssignedReceived(string targetUserId, int roleId, int factionId)
+        private void OnRoleAssignedReceived(string targetUserId, int roleId, int factionId)
         {
             string myUserId = SessionManager.Instance.CurrentSession?.User?.Id;
             if (string.IsNullOrEmpty(myUserId))
@@ -201,26 +205,12 @@ namespace SKNewRoles2.Game
             if (targetUserId != myUserId) return;
 
             if (_hasRoleReceived) return;
-            _hasRoleReceived = true;
-
+            
             MyRole = roleId;
             MyFaction = factionId;
+            _hasRoleReceived = true;
 
             GD.Print($"🎉 [Client] 自分の役職を受信しました！ Faction: {MyFaction}, Role: {MyRole}");
-
-            if (_loadingScene != null) _loadingScene.Visible = false;
-
-            if (_roleRevealScene != null)
-            {
-                _roleRevealScene.Visible = true;
-
-                if (_factionLabel != null) _factionLabel.Text = GetFactionName(factionId);
-                if (_roleTitleLabel != null) _roleTitleLabel.Text = GetRoleName(roleId);
-                if (_descriptionLabel != null) _descriptionLabel.Text = GetRoleDescription(roleId);
-
-                await Task.Delay(3000);
-                _roleRevealScene.Visible = false;
-            }
         }
 
         private string GetFactionName(int factionId)
