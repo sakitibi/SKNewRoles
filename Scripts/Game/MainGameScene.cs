@@ -53,6 +53,11 @@ namespace SKNewRoles2.Game
             Realtime.OnRoleAssignedReceived += OnRoleAssignedReceived;
             Realtime.OnPlayerTransformReceivedAll += OnPlayerTransformReceivedAll;
 
+            if (_myPlayerInstance == null)
+            {
+                SpawnMyPlayer();
+            }
+
             GD.Print("2️⃣ [_Ready] チャンク読み込み待機開始");
             await WaitForInitialChunksLoaded();
 
@@ -64,32 +69,32 @@ namespace SKNewRoles2.Game
 
             GD.Print("4️⃣ [_Ready] 役職受諾のループ待機開始");
             int loopCheck = 0;
-            while (!_hasRoleReceived)
+            while (!_hasRoleReceived && loopCheck < 50) // 最大5秒待機
             {
                 await Task.Delay(100);
                 loopCheck++;
-                if (loopCheck % 30 == 0) // 3秒毎にログ出力
+                if (loopCheck % 10 == 0)
                 {
                     GD.Print($"⚠️ [_Ready] 役職データ未受信のまま待機中... ({loopCheck / 10}秒経過)");
                 }
             }
 
-            GD.Print("5️⃣ [_Ready] 役職データ受信を確認完了！プレイヤー生成に移ります");
-
-            if (_myPlayerInstance == null)
+            if (!_hasRoleReceived)
             {
-                SpawnMyPlayer();
+                GD.PrintErr("⚠️ 役職受諾がタイムアウトしたため、デフォルト役職(村人)を設定します。");
+                MyRole = 0;
+                MyFaction = 0;
+                _hasRoleReceived = true;
             }
 
+            GD.Print("5️⃣ [_Ready] 役職データ確認完了");
             GD.Print("6️⃣ [_Ready] ロード画面を非表示にして役職画面を表示します");
 
-            // ロード画面を確実に消す
             if (_loadingScene != null)
             {
                 _loadingScene.Visible = false;
             }
 
-            // 役職画面を表示
             if (_roleRevealScene != null)
             {
                 if (_factionLabel != null) _factionLabel.Text = GetFactionName(MyFaction);
@@ -97,7 +102,7 @@ namespace SKNewRoles2.Game
                 if (_descriptionLabel != null) _descriptionLabel.Text = GetRoleDescription(MyRole);
 
                 _roleRevealScene.Visible = true;
-                _roleRevealScene.MoveToFront(); // Z順序を最前列に持ってくる
+                _roleRevealScene.MoveToFront();
 
                 GD.Print("7️⃣ [_Ready] 役職画面を表示しました (3秒カウント開始)");
                 await Task.Delay(3000);
@@ -114,7 +119,8 @@ namespace SKNewRoles2.Game
         {
             if (_chunkManagerCpp == null) return;
 
-            while (true)
+            int timeoutCounter = 0;
+            while (timeoutCounter < 50)
             {
                 bool isComplete = false;
                 if (_chunkManagerCpp.HasMethod("is_initial_load_complete"))
@@ -122,10 +128,17 @@ namespace SKNewRoles2.Game
                     isComplete = (bool)_chunkManagerCpp.Call("is_initial_load_complete");
                 }
 
-                if (isComplete) break;
+                if (isComplete)
+                {
+                    GD.Print("✅ 初期チャンク読み込み完了");
+                    return;
+                }
 
                 await Task.Delay(100);
+                timeoutCounter++;
             }
+
+            GD.PrintErr("⚠️ チャンク読み込み待機がタイムアウトしました。処理を強制続行します。");
         }
 
         public override void _Process(double delta)
