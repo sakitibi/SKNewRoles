@@ -22,6 +22,9 @@ void ChunkManager::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_player_path", "p_path"), &ChunkManager::set_player_path);
     ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "player_path"), "set_player_path", "get_player_path");
 
+    // C# 側から呼び出せるようにバインドを追加
+    ClassDB::bind_method(D_METHOD("is_initial_load_complete"), &ChunkManager::is_initial_load_complete);
+
     ClassDB::bind_method(D_METHOD("_on_chunk_loaded", "p_userdata"), &ChunkManager::_on_chunk_loaded);
 }
 
@@ -45,6 +48,7 @@ void ChunkManager::_ready() {
 void ChunkManager::_process(double delta) {
     if (Engine::get_singleton()->is_editor_hint()) return;
 
+    // ロード完了したチャンクの生成（メインスレッド処理）
     if (!loaded_queue.is_empty()) {
         ChunkLoadData *data = loaded_queue.front()->get();
         loaded_queue.pop_front();
@@ -66,8 +70,29 @@ void ChunkManager::_process(double delta) {
         memdelete(data);
     }
 
+    // プレイヤーの検索
+    if (!player_node) {
+        player_node = find_local_player();
+    }
+
+    Vector2i new_chunk_coord(0, 0);
+    if (player_node) {
+        Vector3 player_pos = player_node->get_global_position();
+        new_chunk_coord = Vector2i(
+            static_cast<int>(std::floor(player_pos.x / chunk_size)),
+            static_cast<int>(std::floor(player_pos.z / chunk_size))
+        );
+    }
+
+    // 初回アップデートまたはプレイヤーのチャンク移動時に更新
+    if (first_update || new_chunk_coord != current_chunk_coord) {
+        current_chunk_coord = new_chunk_coord;
+        first_update = false;
+        update_chunks_around_player();
+    }
+
+    // 初期チャンク生成完了フラグのチェック
     if (!initial_load_complete) {
-        // プレイヤー周辺の指定範囲（render_distance）のチャンクがすべてロード完了したか確認
         bool all_loaded = true;
         for (int x = -render_distance; x <= render_distance; ++x) {
             for (int z = -render_distance; z <= render_distance; ++z) {
@@ -84,24 +109,6 @@ void ChunkManager::_process(double delta) {
             initial_load_complete = true;
             UtilityFunctions::print("[ChunkManager] Initial chunks fully loaded!");
         }
-    }
-
-    // プレイヤー追従処理
-    if (!player_node) {
-        player_node = find_local_player();
-        if (!player_node) return;
-    }
-
-    Vector3 player_pos = player_node->get_global_position();
-    Vector2i new_chunk_coord(
-        static_cast<int>(std::floor(player_pos.x / chunk_size)),
-        static_cast<int>(std::floor(player_pos.z / chunk_size))
-    );
-
-    if (first_update || new_chunk_coord != current_chunk_coord) {
-        current_chunk_coord = new_chunk_coord;
-        first_update = false;
-        update_chunks_around_player();
     }
 }
 
@@ -149,7 +156,6 @@ void ChunkManager::_on_chunk_loaded(Variant p_userdata) {
     ChunkLoadData *data = reinterpret_cast<ChunkLoadData *>(ptr_val);
     if (!data) return;
 
-    // 処理待ちキューに追加
     loaded_queue.push_back(data);
 }
 
