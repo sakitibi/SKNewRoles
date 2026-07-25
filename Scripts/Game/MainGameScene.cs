@@ -43,41 +43,78 @@ namespace SKNewRoles2.Game
                 _roleRevealScene.Visible = false;
             }
 
-            // 2. ChunkManager (C++) の参照取得とパラメータ初期化
-            _chunkManagerCpp = GetNodeOrNull<Node3D>("ChunkManager");
-            if (_chunkManagerCpp != null)
+            // ロード画面を表示
+            if (_loadingScene != null)
             {
-                _chunkManagerCpp.Set("region_folder_path", "res://regions/");
-                _chunkManagerCpp.Set("render_distance", 2);
-                _chunkManagerCpp.Set("chunk_size", 16.0f);
-            }
-            else
-            {
-                GD.PushWarning("⚠️ [MainGameScene] ChunkManager ノードが見つかりません。");
+                _loadingScene.Visible = true;
             }
 
-            // 3. RoleManager (C++) の参照取得
+            // 2. C++ ノードの参照を取得
             _roleManagerCpp = GetNodeOrNull<Node>("RoleManager");
+            _chunkManagerCpp = GetNodeOrNull<Node3D>("ChunkManager");
 
-            // 4. ネットワークイベントの受信登録
+            // 3. WebSocket ネットワークイベントの受諾準備
             Realtime.OnRoleAssignedReceived += OnRoleAssignedReceived;
             Realtime.OnPlayerTransformReceivedAll += OnPlayerTransformReceivedAll;
 
-            bool isConnected = await Realtime.EnsureConnectedAsync();
-            if (!isConnected)
+            // 4. ホストの場合は全参加者に役職を割り当てて配分
+            if (SessionManager.Instance != null && SessionManager.Instance.IsHost)
             {
-                GD.PrintErr("❌ [MainGameScene] WebSocket接続に失敗しました。");
-            }
-
-            // 5. ローカルプレイヤーの生成
-            SpawnMyPlayer();
-
-            // 6. ホスト権限の場合は役職を全員に分配
-            if (SessionManager.Instance.IsHost)
-            {
-                await Task.Delay(1000);
                 AssignRolesToAllPlayers();
             }
+
+            // 5. 周辺チャンクの初期ロード完了を非同期で待機
+            await WaitForInitialChunksLoaded();
+
+            // 6. 役職データを完全に受領するまで待機
+            while (!_hasRoleReceived)
+            {
+                await Task.Delay(100);
+            }
+
+            // 7. プレイヤーを生成
+            if (_myPlayerInstance == null)
+            {
+                SpawnAndInitializePlayer();
+            }
+        }
+
+        /// <summary>
+        /// ChunkManager の初期チャンク読み込みが完了するまで待機する
+        /// </summary>
+        private async Task WaitForInitialChunksLoaded()
+        {
+            if (_chunkManagerCpp == null) return;
+
+            GD.Print("⏳ [MainGame] 初期チャンクの生成完了を待機中...");
+
+            while (true)
+            {
+                bool isComplete = false;
+                if (_chunkManagerCpp.HasMethod("is_initial_load_complete"))
+                {
+                    isComplete = (bool)_chunkManagerCpp.Call("is_initial_load_complete");
+                }
+
+                if (isComplete) break;
+
+                await Task.Delay(100);
+            }
+
+            GD.Print("✅ [MainGame] 初期チャンクの生成が完了しました！");
+        }
+
+        /// <summary>
+        /// チャンク読み込み完了と役職受諾の両方が揃った際のプレイヤー生成とUI制御
+        /// </summary>
+        private void SpawnAndInitializePlayer()
+        {
+            if (_loadingScene != null)
+            {
+                _loadingScene.Visible = false;
+            }
+
+            SpawnMyPlayer();
         }
 
         public override void _Process(double delta)

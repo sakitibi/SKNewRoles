@@ -27,6 +27,7 @@ namespace godot {
         private:
             float chunk_size = 16.0f;
             int render_distance = 2;
+            bool initial_load_complete = false;
             bool first_update = true;
             NodePath player_path;
 
@@ -61,6 +62,7 @@ namespace godot {
             // Getter / Setter
             void set_chunk_size(float p_size);
             float get_chunk_size() const;
+            bool is_initial_load_complete() const;
 
             void set_render_distance(int p_dist);
             int get_render_distance() const;

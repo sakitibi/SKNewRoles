@@ -66,6 +66,26 @@ void ChunkManager::_process(double delta) {
         memdelete(data);
     }
 
+    if (!initial_load_complete) {
+        // プレイヤー周辺の指定範囲（render_distance）のチャンクがすべてロード完了したか確認
+        bool all_loaded = true;
+        for (int x = -render_distance; x <= render_distance; ++x) {
+            for (int z = -render_distance; z <= render_distance; ++z) {
+                Vector2i target = current_chunk_coord + Vector2i(x, z);
+                if (!loaded_chunks.has(target)) {
+                    all_loaded = false;
+                    break;
+                }
+            }
+            if (!all_loaded) break;
+        }
+
+        if (all_loaded && pending_tasks.is_empty() && loaded_queue.is_empty()) {
+            initial_load_complete = true;
+            UtilityFunctions::print("[ChunkManager] Initial chunks fully loaded!");
+        }
+    }
+
     // プレイヤー追従処理
     if (!player_node) {
         player_node = find_local_player();
@@ -185,6 +205,8 @@ void ChunkManager::update_chunks_around_player() {
 // Getter / Setter
 void ChunkManager::set_chunk_size(float p_size) { chunk_size = p_size; }
 float ChunkManager::get_chunk_size() const { return chunk_size; }
+
+bool ChunkManager::is_initial_load_complete() const { return initial_load_complete; }
 
 void ChunkManager::set_render_distance(int p_dist) { render_distance = p_dist; }
 int ChunkManager::get_render_distance() const { return render_distance; }
