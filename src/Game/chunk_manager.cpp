@@ -31,6 +31,7 @@ ChunkManager::~ChunkManager() {}
 
 void ChunkManager::_ready() {
     if (Engine::get_singleton()->is_editor_hint()) return;
+    ChunkMeshBuilder::preload_block_meshes();
 }
 
 void ChunkManager::_process(double delta) {

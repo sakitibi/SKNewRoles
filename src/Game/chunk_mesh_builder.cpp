@@ -54,6 +54,13 @@ static Ref<Material> get_node_material(MeshInstance3D *mi, int surface_idx = 0) 
     return Ref<Material>();
 }
 
+void ChunkMeshBuilder::preload_block_meshes() {
+    const HashMap<String, String> &block_map = get_block_scene_map();
+    for (const auto &E : block_map) {
+        get_block_mesh_data(E.value); // 起動時にすべてロード＆インスタンス化してキャッシュに保持
+    }
+}
+
 // .tscn 内の QuadMesh を抽出してキャッシュ化
 BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
     static HashMap<String, BlockMeshData> cache;

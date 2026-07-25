@@ -33,6 +33,7 @@ namespace godot {
             static const HashMap<String, String>& get_block_scene_map();
 
         public:
+            static void preload_block_meshes();
             static void build_mesh_and_collision(Node3D *parent_node, const Array &sections);
     };
 }
