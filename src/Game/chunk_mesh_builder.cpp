@@ -38,26 +38,98 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
 
     BlockMeshData res;
     Ref<PackedScene> scene = ResourceLoader::get_singleton()->load(scene_path);
-    if (scene.is_valid()) {
-        Node *inst = scene->instantiate();
-        if (inst) {
-            MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(inst);
-            if (!mi) {
-                Node *child = inst->find_child("*", true, false);
-                if (child) {
-                    mi = Object::cast_to<MeshInstance3D>(child);
+    if (scene.is_null()) {
+        cache[scene_path] = res;
+        return res;
+    }
+
+    Node *inst = scene->instantiate();
+    if (!inst) {
+        cache[scene_path] = res;
+        return res;
+    }
+
+    TypedArray<Node> children = inst->find_children("*", "MeshInstance3D", true, false);
+    
+    // ルート自体が MeshInstance3D の場合も追加
+    MeshInstance3D *root_mi = Object::cast_to<MeshInstance3D>(inst);
+    if (root_mi) {
+        children.push_back(root_mi);
+    }
+
+    if (children.is_empty()) {
+        memdelete(inst);
+        cache[scene_path] = res;
+        return res;
+    }
+
+    Ref<ArrayMesh> combined_mesh;
+    combined_mesh.instantiate();
+
+    Node3D *root_3d = Object::cast_to<Node3D>(inst);
+
+    // 各 MeshInstance3D の頂点を Transform 適用して結合
+    for (int c = 0; c < children.size(); ++c) {
+        MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(children[c]);
+        if (!mi || mi->get_mesh().is_null()) continue;
+
+        Ref<Mesh> src_mesh = mi->get_mesh();
+        
+        // ルートノード基準のローカル Transform を取得
+        Transform3D xform;
+        if (root_3d) {
+            xform = root_3d->get_global_transform().affine_inverse() * mi->get_global_transform();
+        } else {
+            xform = mi->get_transform();
+        }
+
+        Basis normal_basis = xform.basis.inverse().transposed();
+
+        for (int s = 0; s < src_mesh->get_surface_count(); ++s) {
+            Array surf_arrays = src_mesh->surface_get_arrays(s);
+            if (surf_arrays.size() <= Mesh::ARRAY_VERTEX) continue;
+
+            PackedVector3Array src_verts = surf_arrays[Mesh::ARRAY_VERTEX];
+            if (src_verts.is_empty()) continue;
+
+            // 頂点座標を各子ノードの Transform で変形
+            PackedVector3Array dst_verts;
+            dst_verts.resize(src_verts.size());
+            for (int v = 0; v < src_verts.size(); ++v) {
+                dst_verts.set(v, xform.xform(src_verts[v]));
+            }
+            surf_arrays[Mesh::ARRAY_VERTEX] = dst_verts;
+
+            // 法線ベクトルがある場合は法線も回転・変換
+            if (surf_arrays.size() > Mesh::ARRAY_NORMAL) {
+                PackedVector3Array src_normals = surf_arrays[Mesh::ARRAY_NORMAL];
+                if (!src_normals.is_empty()) {
+                    PackedVector3Array dst_normals;
+                    dst_normals.resize(src_normals.size());
+                    for (int v = 0; v < src_normals.size(); ++v) {
+                        dst_normals.set(v, normal_basis.xform(src_normals[v]).normalized());
+                    }
+                    surf_arrays[Mesh::ARRAY_NORMAL] = dst_normals;
                 }
             }
 
-            if (mi && mi->get_mesh().is_valid()) {
-                res.mesh = mi->get_mesh();
-                for (int s = 0; s < res.mesh->get_surface_count(); ++s) {
-                    res.materials.push_back(mi->get_surface_override_material(s));
-                }
-                res.valid = true;
+            // 結合後の ArrayMesh に面データとして追加
+            combined_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surf_arrays);
+
+            // マテリアルの取得
+            Ref<Material> mat = mi->get_surface_override_material(s);
+            if (mat.is_null()) {
+                mat = src_mesh->surface_get_material(s);
             }
-            memdelete(inst);
+            res.materials.push_back(mat);
         }
+    }
+
+    memdelete(inst);
+
+    if (combined_mesh->get_surface_count() > 0) {
+        res.mesh = combined_mesh;
+        res.valid = true;
     }
 
     cache[scene_path] = res;
@@ -140,7 +212,6 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
 
         String scene_path = block_map[block_name];
         BlockMeshData mesh_data = get_block_mesh_data(scene_path);
-        
         if (!mesh_data.valid || mesh_data.mesh.is_null()) continue;
 
         MultiMeshInstance3D *mmi = memnew(MultiMeshInstance3D);
@@ -151,15 +222,33 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
         mm->set_mesh(mesh_data.mesh);
         mm->set_instance_count(positions.size());
 
+        AABB custom_aabb;
+        bool first_aabb = true;
+
         for (int i = 0; i < positions.size(); ++i) {
             Transform3D t;
-            t.origin = positions[i];
+            t.basis = Basis();
+            t.origin = positions[i]; // チャンク内ローカル位置
             mm->set_instance_transform(i, t);
+
+            // インスタンス全体の AABB を手動で計算して包み込む
+            AABB instance_aabb = mesh_data.mesh->get_aabb();
+            instance_aabb.position += positions[i];
+            if (first_aabb) {
+                custom_aabb = instance_aabb;
+                first_aabb = false;
+            } else {
+                custom_aabb = custom_aabb.merge(instance_aabb);
+            }
         }
 
         mmi->set_multimesh(mm);
+        
+        if (!first_aabb) {
+            mmi->set_custom_aabb(custom_aabb);
+        }
 
-        // マテリアル適用
+        // マテリアルの設定
         for (int s = 0; s < mesh_data.materials.size(); ++s) {
             if (!mesh_data.materials.is_empty() && mesh_data.materials[0].is_valid()) {
                 mmi->set_material_override(mesh_data.materials[0]);
