@@ -10,14 +10,13 @@
 namespace godot {
     class ChunkManager;
 
-    // 非同期スレッドへ渡すデータ構造体
     struct ChunkLoadData {
         Vector2i coord;
         String region_folder_path;
         float chunk_size = 16.0f;
         ChunkManager *manager = nullptr;
 
-        // パース結果を一時保持するデータ構造
+        // パース結果の位置データ
         HashMap<String, Vector<Vector3>> categorized_positions;
         bool has_data = false;
     };
@@ -35,9 +34,8 @@ namespace godot {
             Vector2i current_chunk_coord = Vector2i(-999999, -999999);
 
             HashMap<Vector2i, Node3D *> loaded_chunks;
-            HashMap<Vector2i, int64_t> pending_tasks;
-            
-            List<ChunkLoadData *> loaded_queue;
+            HashMap<Vector2i, int64_t> pending_tasks; // ロード中のタスクIDを保持
+            List<ChunkLoadData *> loaded_queue;        // ロード完了データの待ち行列
 
             String region_folder_path = "res://regions/";
 
@@ -46,6 +44,7 @@ namespace godot {
             void unload_chunk(const Vector2i &coord);
             Node3D *find_local_player();
 
+            // 非同期処理用メソッド
             static void _async_load_worker(void *p_userdata);
             void _on_chunk_loaded(Variant p_userdata);
 

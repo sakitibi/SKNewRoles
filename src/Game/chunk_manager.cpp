@@ -37,75 +37,14 @@ ChunkManager::~ChunkManager() {
 
 void ChunkManager::_ready() {
     if (Engine::get_singleton()->is_editor_hint()) return;
-    
-    // ブロックメッシュの事前ロード（初回ロード時のカクつきを防止）
+
+    // ブロックプレハブの事前にロード（初回登録時のカクつきを防止）
     ChunkMeshBuilder::preload_block_meshes();
-}
-
-void ChunkManager::load_chunk(const Vector2i &coord) {
-    if (loaded_chunks.has(coord) || pending_tasks.has(coord)) return;
-
-    ChunkLoadData *data = memnew(ChunkLoadData);
-    data->coord = coord;
-    data->region_folder_path = region_folder_path;
-    data->chunk_size = chunk_size;
-    data->manager = this;
-
-    int64_t task_id = WorkerThreadPool::get_singleton()->add_native_task(
-        &ChunkManager::_async_load_worker,
-        data,
-        true,
-        "ChunkLoadTask"
-    );
-
-    pending_tasks[coord] = task_id;
-}
-
-void ChunkManager::unload_chunk(const Vector2i &coord) {
-    if (loaded_chunks.has(coord)) {
-        Node3D *chunk_node = loaded_chunks[coord];
-        loaded_chunks.erase(coord);
-        if (chunk_node) {
-            chunk_node->queue_free();
-        }
-    }
-}
-
-// バックグラウンドスレッド（MCAパースとブロック位置の分類のみ行う）
-void ChunkManager::_async_load_worker(void *p_userdata) {
-    ChunkLoadData *data = static_cast<ChunkLoadData *>(p_userdata);
-    if (!data) return;
-
-    // 1. MCAパース (ファイルIO)
-    Dictionary chunk_data = MCAParser::parse_chunk(data->region_folder_path, data->coord.x, data->coord.y);
-
-    if (chunk_data.has("sections")) {
-        Array sections = chunk_data["sections"];
-        // 2. ブロック配置の分類（純粋なCPU計算）
-        data->categorized_positions = ChunkMeshBuilder::extract_block_positions(sections);
-        data->has_data = true;
-    }
-
-    // メインスレッドへコールバック
-    if (data->manager) {
-        uint64_t ptr_val = reinterpret_cast<uint64_t>(data);
-        data->manager->call_deferred("_on_chunk_loaded", ptr_val);
-    }
-}
-
-void ChunkManager::_on_chunk_loaded(Variant p_userdata) {
-    uint64_t ptr_val = p_userdata;
-    ChunkLoadData *data = reinterpret_cast<ChunkLoadData *>(ptr_val);
-    if (!data) return;
-
-    // 即座にシーングラフに追加せず、キューに追加
-    loaded_queue.push_back(data);
 }
 
 void ChunkManager::_process(double delta) {
     if (Engine::get_singleton()->is_editor_hint()) return;
 
-    // --- 1フレームあたり最大1チャンクだけシーンに反映（スパイク防止） ---
     if (!loaded_queue.is_empty()) {
         ChunkLoadData *data = loaded_queue.front()->get();
         loaded_queue.pop_front();
@@ -128,7 +67,7 @@ void ChunkManager::_process(double delta) {
         memdelete(data);
     }
 
-    // プレイヤーの追従ロジック
+    // プレイヤー追従処理
     if (!player_node) {
         player_node = find_local_player();
         if (!player_node) return;
@@ -147,10 +86,67 @@ void ChunkManager::_process(double delta) {
     }
 }
 
+void ChunkManager::load_chunk(const Vector2i &coord) {
+    if (loaded_chunks.has(coord) || pending_tasks.has(coord)) return;
+
+    ChunkLoadData *data = memnew(ChunkLoadData);
+    data->coord = coord;
+    data->region_folder_path = region_folder_path;
+    data->chunk_size = chunk_size;
+    data->manager = this;
+
+    int64_t task_id = WorkerThreadPool::get_singleton()->add_native_task(
+        &ChunkManager::_async_load_worker,
+        data,
+        true,
+        "ChunkLoadTask"
+    );
+
+    pending_tasks[coord] = task_id;
+}
+
+void ChunkManager::_async_load_worker(void *p_userdata) {
+    ChunkLoadData *data = static_cast<ChunkLoadData *>(p_userdata);
+    if (!data) return;
+
+    // MCAパース
+    Dictionary chunk_data = MCAParser::parse_chunk(data->region_folder_path, data->coord.x, data->coord.y);
+
+    if (chunk_data.has("sections")) {
+        Array sections = chunk_data["sections"];
+        data->categorized_positions = ChunkMeshBuilder::extract_block_positions(sections);
+        data->has_data = true;
+    }
+
+    if (data->manager) {
+        uint64_t ptr_val = reinterpret_cast<uint64_t>(data);
+        data->manager->call_deferred("_on_chunk_loaded", ptr_val);
+    }
+}
+
+void ChunkManager::_on_chunk_loaded(Variant p_userdata) {
+    uint64_t ptr_val = p_userdata;
+    ChunkLoadData *data = reinterpret_cast<ChunkLoadData *>(ptr_val);
+    if (!data) return;
+
+    // 処理待ちキューに追加
+    loaded_queue.push_back(data);
+}
+
+void ChunkManager::unload_chunk(const Vector2i &coord) {
+    if (loaded_chunks.has(coord)) {
+        Node3D *chunk_node = loaded_chunks[coord];
+        loaded_chunks.erase(coord);
+        if (chunk_node) {
+            chunk_node->queue_free();
+        }
+    }
+}
+
 Node3D *ChunkManager::find_local_player() {
     if (!player_path.is_empty()) {
         Node *n = get_node_or_null(player_path);
-        if (n) return Object::cast_to<Node3D>(n);
+        if (n != nullptr) return Object::cast_to<Node3D>(n);
     }
 
     SceneTree *tree = get_tree();
