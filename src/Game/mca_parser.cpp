@@ -144,7 +144,7 @@ PackedByteArray MCAParser::get_raw_chunk_nbt(const String &path, int rel_x, int 
 Dictionary MCAParser::parse_chunk(const String &region_folder_path, int chunk_x, int chunk_z) {
     int rx = static_cast<int>(std::floor(chunk_x / 32.0f));
     int rz = static_cast<int>(std::floor(chunk_z / 32.0f));
-    String mca_path = region_folder_path + "r." + String::num_int64(rx) + "." + String::num_int64(rz) + ".mca";
+    String mca_path = region_folder_path + vformat("r.%d.%d.mca", rx, rz);
 
     int rel_x = ((chunk_x % 32) + 32) % 32;
     int rel_z = ((chunk_z % 32) + 32) % 32;
