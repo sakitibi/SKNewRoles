@@ -7,6 +7,7 @@
 #include <godot_cpp/variant/node_path.hpp>
 
 namespace godot {
+    class ChunkManager;
     // 非同期スレッドへ渡すデータ構造体
     struct ChunkLoadData {
         Vector2i coord;
