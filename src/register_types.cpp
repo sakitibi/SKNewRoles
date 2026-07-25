@@ -9,8 +9,6 @@
 #include "config_manager.h"
 #include "Game/RoleManager.h"
 #include "Game/chunk_manager.h"
-#include "Game/chunk_mesh_builder.h"
-#include "Game/mca_parser.h"
 #include "Game/hud_manager.h"
 
 #ifndef GDEXTENSION_API_CC
@@ -30,8 +28,6 @@ void initialize_player_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<RoleManager>();
     ClassDB::register_class<ConfigManager>();
     ClassDB::register_class<ChunkManager>();
-    ClassDB::register_class<ChunkMeshBuilder>();
-    ClassDB::register_class<MCAParser>();
     ClassDB::register_class<HUDManager>();
 }
 
