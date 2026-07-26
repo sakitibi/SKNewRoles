@@ -304,7 +304,6 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
 
                 if (indices.size() > 0) {
                     for (int idx = 0; idx < indices.size(); ++idx) {
-                        // 頂点を中心から少し膨らませることで隣接ブロックとの「隙間」を消去
                         Vector3 inflated_v = verts[indices[idx]] * INFLATE_SCALE;
                         collision_faces.append(inflated_v + block_pos);
                     }
