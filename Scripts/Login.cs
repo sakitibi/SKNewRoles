@@ -149,5 +149,11 @@ public partial class Login : Control
     private void OnCancelButtonPressed()
     {
         QueueFree();
+        // シーンの切り替え
+        Error error = GetTree().ChangeSceneToFile("res://Scenes/Lobby_select.tscn");
+        if (error != Error.Ok)
+        {
+            GD.PrintErr("シーンの切り替えに失敗しました: " + error);
+        }
     }
 }
