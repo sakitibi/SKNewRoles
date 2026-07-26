@@ -1,12 +1,13 @@
 #pragma once
 
-#include "chunk_mesh_builder.h"
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/templates/hash_map.hpp>
 #include <godot_cpp/templates/list.hpp>
 #include <godot_cpp/variant/vector2i.hpp>
 #include <godot_cpp/variant/node_path.hpp>
+
+#include "chunk_mesh_builder.h"
 
 namespace godot {
     class ChunkManager;
@@ -19,8 +20,9 @@ namespace godot {
 
         // パース結果の位置データ
         HashMap<String, Vector<Vector3>> categorized_positions;
-
-        BuiltChunkData built_data;
+        
+        // 非同期で事前ビルドしたメッシュ・コリジョンデータ
+        BuiltChunkData built_data; 
 
         bool has_data = false;
     };
@@ -73,5 +75,8 @@ namespace godot {
 
             void set_player_path(const NodePath &p_path);
             NodePath get_player_path() const;
+
+            void set_region_folder_path(const String &p_path);
+            String get_region_folder_path() const;
     };
 }

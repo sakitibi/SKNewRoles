@@ -23,6 +23,10 @@ void ChunkManager::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_player_path", "p_path"), &ChunkManager::set_player_path);
     ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "player_path"), "set_player_path", "get_player_path");
 
+    ClassDB::bind_method(D_METHOD("get_region_folder_path"), &ChunkManager::get_region_folder_path);
+    ClassDB::bind_method(D_METHOD("set_region_folder_path", "p_path"), &ChunkManager::set_region_folder_path);
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "region_folder_path"), "set_region_folder_path", "get_region_folder_path");
+
     ClassDB::bind_method(D_METHOD("is_initial_load_complete"), &ChunkManager::is_initial_load_complete);
     ClassDB::bind_method(D_METHOD("_on_chunk_loaded", "p_userdata"), &ChunkManager::_on_chunk_loaded);
 }
@@ -33,12 +37,15 @@ ChunkManager::~ChunkManager() {
     while (!loaded_queue.is_empty()) {
         ChunkLoadData *data = loaded_queue.front()->get();
         loaded_queue.pop_front();
-        memdelete(data);
+        delete data;
     }
 }
 
 void ChunkManager::_ready() {
-    if (Engine::get_singleton()->is_editor_hint()) return;
+    if (Engine::get_singleton()->is_editor_hint()) {
+        set_process(false);
+        return;
+    }
 
     ChunkMeshBuilder::preload_block_meshes();
 }
@@ -46,9 +53,14 @@ void ChunkManager::_ready() {
 void ChunkManager::_process(double delta) {
     if (Engine::get_singleton()->is_editor_hint()) return;
 
-    // プレイヤー位置の追跡と周縁チャンク更新
-    if (first_update) {
+    if (!player_node) {
         player_node = find_local_player();
+        if (!player_node && !player_path.is_empty()) {
+            player_node = get_node<Node3D>(player_path);
+        }
+    }
+
+    if (first_update) {
         if (player_node) {
             current_chunk_coord = Vector2i(
                 static_cast<int>(std::floor(player_node->get_global_position().x / chunk_size)),
@@ -68,8 +80,9 @@ void ChunkManager::_process(double delta) {
         }
     }
 
-    // ロード完了キューの消化（メインスレッドでのノード追加）
-    while (!loaded_queue.is_empty()) {
+    // ロード完了キューの消化（カクつき防止のため1フレームに最大2個までメインスレッドへ適用）
+    int processed_this_frame = 0;
+    while (!loaded_queue.is_empty() && processed_this_frame < 2) {
         ChunkLoadData *data = loaded_queue.front()->get();
         loaded_queue.pop_front();
 
@@ -82,6 +95,7 @@ void ChunkManager::_process(double delta) {
             chunk_node->set_position(Vector3(data->coord.x * chunk_size, 0.0f, data->coord.y * chunk_size));
             add_child(chunk_node);
 
+            // サブスレッドでビルド済みのデータをメインスレッドでノードに安全かつ高速にアタッチ
             ChunkMeshBuilder::apply_chunk_data_to_node(chunk_node, data->built_data);
             loaded_chunks[data->coord] = chunk_node;
 
@@ -94,6 +108,7 @@ void ChunkManager::_process(double delta) {
         }
 
         delete data;
+        processed_this_frame++;
     }
 
     if (!initial_load_complete && pending_tasks.is_empty()) {
@@ -104,17 +119,15 @@ void ChunkManager::_process(double delta) {
 void ChunkManager::load_chunk(const Vector2i &coord) {
     if (loaded_chunks.has(coord) || pending_tasks.has(coord)) return;
 
-    ChunkLoadData *data = memnew(ChunkLoadData);
+    ChunkLoadData *data = new ChunkLoadData();
     data->coord = coord;
     data->region_folder_path = region_folder_path;
     data->chunk_size = chunk_size;
     data->manager = this;
 
-    int64_t task_id = WorkerThreadPool::get_singleton()->add_native_task(
-        &ChunkManager::_async_load_worker,
-        data,
-        true,
-        "ChunkLoadTask"
+    int64_t task_id = WorkerThreadPool::get_singleton()->add_task(
+        callable_mp_static(&ChunkManager::_async_load_worker),
+        data
     );
 
     pending_tasks[coord] = task_id;
@@ -137,7 +150,7 @@ void ChunkManager::_async_load_worker(void *p_userdata) {
     }
     uint64_t parse_time = Time::get_singleton()->get_ticks_msec() - start_parse;
 
-    // メッシュ＆コリジョンビルド処理 (データが存在する場合)
+    // メッシュ＆コリジョンビルド処理 (サブスレッドでの非同期実行)
     uint64_t build_time = 0;
     if (data->has_data) {
         uint64_t start_build = Time::get_singleton()->get_ticks_msec();
@@ -147,7 +160,7 @@ void ChunkManager::_async_load_worker(void *p_userdata) {
 
     uint64_t total_time = Time::get_singleton()->get_ticks_msec() - start_total;
 
-    // 非同期スレッドからのログ出力
+    // 非同期スレッドからの処理速度ログ出力
     UtilityFunctions::print(vformat(
         "[ChunkManager Async] Chunk (%d, %d) Loaded in %d ms | Parse NBT: %d ms | Build Mesh/Col: %d ms",
         data->coord.x, data->coord.y, total_time, parse_time, build_time
@@ -155,13 +168,12 @@ void ChunkManager::_async_load_worker(void *p_userdata) {
 
     // メインスレッド処理待ち行列へ安全に送信
     if (data->manager) {
-        data->manager->call_deferred("_on_chunk_loaded", Variant(data));
+        data->manager->call_deferred("_on_chunk_loaded", reinterpret_cast<uint64_t>(data));
     }
 }
 
 void ChunkManager::_on_chunk_loaded(Variant p_userdata) {
-    uint64_t ptr_val = p_userdata;
-    ChunkLoadData *data = reinterpret_cast<ChunkLoadData *>(ptr_val);
+    ChunkLoadData *data = reinterpret_cast<ChunkLoadData *>(static_cast<uint64_t>(p_userdata));
     if (!data) return;
 
     loaded_queue.push_back(data);
@@ -227,3 +239,6 @@ int ChunkManager::get_render_distance() const { return render_distance; }
 
 void ChunkManager::set_player_path(const NodePath &p_path) { player_path = p_path; }
 NodePath ChunkManager::get_player_path() const { return player_path; }
+
+void ChunkManager::set_region_folder_path(const String &p_path) { region_folder_path = p_path; }
+String ChunkManager::get_region_folder_path() const { return region_folder_path; }
