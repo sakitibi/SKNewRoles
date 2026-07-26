@@ -257,18 +257,24 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
     }
 
     static const Vector3 box_verts[36] = {
-        Vector3(0,0,1), Vector3(1,0,1), Vector3(1,1,1),
-        Vector3(0,0,1), Vector3(1,1,1), Vector3(0,1,1),
-        Vector3(1,0,0), Vector3(0,0,0), Vector3(0,1,0),
-        Vector3(1,0,0), Vector3(0,1,0), Vector3(1,1,0),
-        Vector3(0,1,1), Vector3(1,1,1), Vector3(1,1,0),
-        Vector3(0,1,1), Vector3(1,1,0), Vector3(0,1,0),
-        Vector3(0,0,0), Vector3(1,0,0), Vector3(1,0,1),
-        Vector3(0,0,0), Vector3(1,0,1), Vector3(0,0,1),
-        Vector3(1,0,1), Vector3(1,0,0), Vector3(1,1,0),
-        Vector3(1,0,1), Vector3(1,1,0), Vector3(1,1,1),
-        Vector3(0,0,0), Vector3(0,0,1), Vector3(0,1,1),
-        Vector3(0,0,0), Vector3(0,1,1), Vector3(0,1,0)
+        // Front face (Z = +0.5)
+        Vector3(-0.5f, -0.5f,  0.5f), Vector3( 0.5f, -0.5f,  0.5f), Vector3( 0.5f,  0.5f,  0.5f),
+        Vector3(-0.5f, -0.5f,  0.5f), Vector3( 0.5f,  0.5f,  0.5f), Vector3(-0.5f,  0.5f,  0.5f),
+        // Back face (Z = -0.5)
+        Vector3( 0.5f, -0.5f, -0.5f), Vector3(-0.5f, -0.5f, -0.5f), Vector3(-0.5f,  0.5f, -0.5f),
+        Vector3( 0.5f, -0.5f, -0.5f), Vector3(-0.5f,  0.5f, -0.5f), Vector3( 0.5f,  0.5f, -0.5f),
+        // Top face (Y = +0.5)
+        Vector3(-0.5f,  0.5f,  0.5f), Vector3( 0.5f,  0.5f,  0.5f), Vector3( 0.5f,  0.5f, -0.5f),
+        Vector3(-0.5f,  0.5f,  0.5f), Vector3( 0.5f,  0.5f, -0.5f), Vector3(-0.5f,  0.5f, -0.5f),
+        // Bottom face (Y = -0.5)
+        Vector3(-0.5f, -0.5f, -0.5f), Vector3( 0.5f, -0.5f, -0.5f), Vector3( 0.5f, -0.5f,  0.5f),
+        Vector3(-0.5f, -0.5f, -0.5f), Vector3( 0.5f, -0.5f,  0.5f), Vector3(-0.5f, -0.5f,  0.5f),
+        // Right face (X = +0.5)
+        Vector3( 0.5f, -0.5f,  0.5f), Vector3( 0.5f, -0.5f, -0.5f), Vector3( 0.5f,  0.5f, -0.5f),
+        Vector3( 0.5f, -0.5f,  0.5f), Vector3( 0.5f,  0.5f, -0.5f), Vector3( 0.5f,  0.5f,  0.5f),
+        // Left face (X = -0.5)
+        Vector3(-0.5f, -0.5f, -0.5f), Vector3(-0.5f, -0.5f,  0.5f), Vector3(-0.5f,  0.5f,  0.5f),
+        Vector3(-0.5f, -0.5f, -0.5f), Vector3(-0.5f,  0.5f,  0.5f), Vector3(-0.5f,  0.5f, -0.5f)
     };
 
     for (const Vector3i &grid_pos : occupied_blocks) {
@@ -283,9 +289,9 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
         if (is_surrounded) continue;
 
         Vector3 offset(
-            static_cast<float>(grid_pos.x),
-            static_cast<float>(grid_pos.y),
-            static_cast<float>(grid_pos.z)
+            static_cast<float>(grid_pos.x) + 0.5f,
+            static_cast<float>(grid_pos.y) + 0.5f,
+            static_cast<float>(grid_pos.z) + 0.5f
         );
 
         for (int i = 0; i < 36; ++i) {
