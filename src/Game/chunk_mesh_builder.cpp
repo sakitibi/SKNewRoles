@@ -1,9 +1,9 @@
 #include "chunk_mesh_builder.h"
 #include <godot_cpp/core/memory.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
-#include <godot_cpp/classes/concave_polygon_shape3d.hpp>
 #include <godot_cpp/classes/static_body3d.hpp>
 #include <godot_cpp/classes/collision_shape3d.hpp>
+#include <godot_cpp/classes/box_shape3d.hpp>
 #include <godot_cpp/templates/hash_set.hpp>
 #include <godot_cpp/variant/vector3i.hpp>
 #include <cmath>
@@ -228,14 +228,15 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(const D
 void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<String, Vector<Vector3>> &categorized_positions) {
     const HashMap<String, String> &block_map = get_block_scene_map();
 
+    // 1. 全ブロックの絶対位置をハッシュセットに登録（正確な整数格子で保持）
     HashSet<Vector3i> occupied_blocks;
     for (const auto &E : categorized_positions) {
         for (int i = 0; i < E.value.size(); ++i) {
             Vector3 pos = E.value[i];
             Vector3i grid_pos(
-                static_cast<int>(std::round(pos.x + 0.5f)),
-                static_cast<int>(std::round(pos.y + 0.5f)),
-                static_cast<int>(std::round(pos.z + 0.5f))
+                static_cast<int>(std::floor(pos.x + 0.5f)),
+                static_cast<int>(std::floor(pos.y + 0.5f)),
+                static_cast<int>(std::floor(pos.z + 0.5f))
             );
             occupied_blocks.insert(grid_pos);
         }
@@ -254,7 +255,7 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
         BlockMeshData mesh_data = get_block_mesh_data(scene_path);
         if (!mesh_data.valid || mesh_data.mesh.is_null()) continue;
 
-        // 描画用のMultiMesh
+        // 描画用の MultiMeshInstance3D
         MultiMeshInstance3D *mmi = memnew(MultiMeshInstance3D);
         Ref<MultiMesh> mm;
         mm.instantiate();
@@ -272,6 +273,7 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
         mmi->set_multimesh(mm);
         parent_node->add_child(mmi);
 
+        // 2. コリジョン生成（BoxShape3D）
         if (shared_box_shape.is_null()) {
             shared_box_shape.instantiate();
             shared_box_shape->set_size(Vector3(1.0f, 1.0f, 1.0f));
@@ -286,21 +288,21 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
         for (int i = 0; i < positions.size(); ++i) {
             Vector3 block_pos = positions[i];
             Vector3i grid_pos(
-                static_cast<int>(std::round(block_pos.x + 0.5f)),
-                static_cast<int>(std::round(block_pos.y + 0.5f)),
-                static_cast<int>(std::round(block_pos.z + 0.5f))
+                static_cast<int>(std::floor(block_pos.x + 0.5f)),
+                static_cast<int>(std::floor(block_pos.y + 0.5f)),
+                static_cast<int>(std::floor(block_pos.z + 0.5f))
             );
 
-            // 6方向が完全に囲まれているブロックは判定を作らない
-            bool is_surrounded = 
-                occupied_blocks.has(grid_pos + Vector3i(1, 0, 0)) &&
-                occupied_blocks.has(grid_pos + Vector3i(-1, 0, 0)) &&
-                occupied_blocks.has(grid_pos + Vector3i(0, 1, 0)) &&
-                occupied_blocks.has(grid_pos + Vector3i(0, -1, 0)) &&
-                occupied_blocks.has(grid_pos + Vector3i(0, 0, 1)) &&
-                occupied_blocks.has(grid_pos + Vector3i(0, 0, -1));
+            bool is_completely_covered = 
+                occupied_blocks.has(grid_pos + Vector3i(0, 1, 0)) &&  // 上
+                occupied_blocks.has(grid_pos + Vector3i(0, -1, 0)) && // 下
+                occupied_blocks.has(grid_pos + Vector3i(1, 0, 0)) &&  // 東
+                occupied_blocks.has(grid_pos + Vector3i(-1, 0, 0)) && // 西
+                occupied_blocks.has(grid_pos + Vector3i(0, 0, 1)) &&  // 南
+                occupied_blocks.has(grid_pos + Vector3i(0, 0, -1));   // 北
 
-            if (is_surrounded) continue;
+            // 完全に埋まっている地中ブロックのみスキップ
+            if (is_completely_covered) continue;
 
             CollisionShape3D *col_shape = memnew(CollisionShape3D);
             col_shape->set_shape(shared_box_shape);
