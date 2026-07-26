@@ -37,8 +37,6 @@ const HashMap<String, String>& ChunkMeshBuilder::get_block_scene_map() {
         map["minecraft:grass_block"]   = "res://Scenes/Prefabs/Blocks/GrassBlock.tscn";
         map["minecraft:stone"]         = "res://Scenes/Prefabs/Blocks/Stone.tscn";
         map["minecraft:stone_bricks"]  = "res://Scenes/Prefabs/Blocks/StoneBricks.tscn";
-        map["minecraft:dirt"]          = "res://Scenes/Prefabs/Blocks/Dirt.tscn";
-        map["minecraft:cobblestone"]   = "res://Scenes/Prefabs/Blocks/Cobblestone.tscn";
     }
     return map;
 }
@@ -57,6 +55,12 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
     }
 
     BlockMeshData data;
+
+    if (!scene_path.begins_with("res://")) {
+        cache[scene_path] = data;
+        return data;
+    }
+
     Ref<PackedScene> scene = ResourceLoader::get_singleton()->load(scene_path);
     if (scene.is_null()) {
         cache[scene_path] = data;
@@ -156,17 +160,16 @@ int ChunkMeshBuilder::get_palette_index(const PackedInt64Array &data, int palett
 }
 
 HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
-    const Dictionary &chunk_data, 
-    int min_section_y, 
+    const Dictionary &chunk_data,
+    int min_section_y,
     int max_section_y
 ) {
     HashMap<String, Vector<Vector3>> categorized_positions;
-
     if (!chunk_data.has("sections")) return categorized_positions;
 
     const HashMap<String, String> &block_map = get_block_scene_map();
-
     Array sections = chunk_data["sections"];
+
     for (int i = 0; i < sections.size(); ++i) {
         Dictionary section = sections[i];
         if (!section.has("block_states") || !section.has("Y")) continue;
@@ -175,38 +178,34 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
         if (section_y < min_section_y || section_y > max_section_y) continue;
 
         Dictionary block_states = section["block_states"];
-
         if (!block_states.has("palette")) continue;
-        Array palette = block_states["palette"];
-        if (palette.is_empty()) continue;
 
-        PackedInt64Array data;
+        Array palette = block_states["palette"];
+        PackedInt64Array data_array;
         if (block_states.has("data")) {
-            data = block_states["data"];
+            data_array = block_states["data"];
         }
 
         for (int y = 0; y < 16; ++y) {
             for (int z = 0; z < 16; ++z) {
                 for (int x = 0; x < 16; ++x) {
-                    int palette_idx = 0;
-                    if (palette.size() > 1) {
-                        palette_idx = get_palette_index(data, palette.size(), x, y, z);
+                    int p_idx = 0;
+                    if (!data_array.is_empty()) {
+                        p_idx = get_palette_index(data_array, palette.size(), x, y, z);
                     }
 
-                    if (palette_idx >= 0 && palette_idx < palette.size()) {
-                        Dictionary block = palette[palette_idx];
-                        if (block.has("Name")) {
-                            String block_name = block["Name"];
-                            
-                            if (block_name != "minecraft:air" && block_map.has(block_name)) {
-                                Vector3 pos(
-                                    static_cast<float>(x),
-                                    static_cast<float>((section_y * 16) + y),
-                                    static_cast<float>(z)
-                                );
-                                categorized_positions[block_name].append(pos);
-                            }
+                    if (p_idx >= 0 && p_idx < palette.size()) {
+                        Dictionary b_entry = palette[p_idx];
+                        String block_name = b_entry.get("Name", "minecraft:air");
+
+                        if (block_name == "minecraft:air" || !block_map.has(block_name)) {
+                            continue;
                         }
+
+                        // マッピングに存在するブロックのみ登録
+                        String scene_path = block_map[block_name];
+                        Vector3 pos(x, section_y * 16 + y, z);
+                        categorized_positions[scene_path].append(pos);
                     }
                 }
             }
@@ -221,13 +220,11 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
 ) {
     BuiltChunkData result;
 
-    // 全ブロックの位置を Hash_Set に登録
     HashSet<Vector3i> occupied_blocks;
     for (const auto &E : categorized_positions) {
         const Vector<Vector3> &vec = E.value;
         for (int i = 0; i < vec.size(); ++i) {
             Vector3 pos = vec[i];
-            // 整数座標に丸めて誤差を排除
             occupied_blocks.insert(Vector3i(
                 static_cast<int>(std::round(pos.x)),
                 static_cast<int>(std::round(pos.y)),
@@ -236,29 +233,7 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
         }
     }
 
-    // 1ブロック(立方体)の標準頂点定義
-    static const Vector3 box_verts[36] = {
-        // Front
-        Vector3(0,0,1), Vector3(1,0,1), Vector3(1,1,1),
-        Vector3(0,0,1), Vector3(1,1,1), Vector3(0,1,1),
-        // Back
-        Vector3(1,0,0), Vector3(0,0,0), Vector3(0,1,0),
-        Vector3(1,0,0), Vector3(0,1,0), Vector3(1,1,0),
-        // Top (Y+)
-        Vector3(0,1,1), Vector3(1,1,1), Vector3(1,1,0),
-        Vector3(0,1,1), Vector3(1,1,0), Vector3(0,1,0),
-        // Bottom (Y-)
-        Vector3(0,0,0), Vector3(1,0,0), Vector3(1,0,1),
-        Vector3(0,0,0), Vector3(1,0,1), Vector3(0,0,1),
-        // Right
-        Vector3(1,0,1), Vector3(1,0,0), Vector3(1,1,0),
-        Vector3(1,0,1), Vector3(1,1,0), Vector3(1,1,1),
-        // Left
-        Vector3(0,0,0), Vector3(0,0,1), Vector3(0,1,1),
-        Vector3(0,0,0), Vector3(0,1,1), Vector3(0,1,0)
-    };
-
-    // MultiMeshの作成
+    // MultiMesh の生成
     for (const auto &E : categorized_positions) {
         String scene_path = E.key;
         const Vector<Vector3> &positions = E.value;
@@ -283,10 +258,31 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
         result.multimeshes[scene_path] = multimesh;
     }
 
+    // 立方体ポリゴンの標準頂点
+    static const Vector3 box_verts[36] = {
+        // Front
+        Vector3(0,0,1), Vector3(1,0,1), Vector3(1,1,1),
+        Vector3(0,0,1), Vector3(1,1,1), Vector3(0,1,1),
+        // Back
+        Vector3(1,0,0), Vector3(0,0,0), Vector3(0,1,0),
+        Vector3(1,0,0), Vector3(0,1,0), Vector3(1,1,0),
+        // Top (Y+)
+        Vector3(0,1,1), Vector3(1,1,1), Vector3(1,1,0),
+        Vector3(0,1,1), Vector3(1,1,0), Vector3(0,1,0),
+        // Bottom (Y-)
+        Vector3(0,0,0), Vector3(1,0,0), Vector3(1,0,1),
+        Vector3(0,0,0), Vector3(1,0,1), Vector3(0,0,1),
+        // Right
+        Vector3(1,0,1), Vector3(1,0,0), Vector3(1,1,0),
+        Vector3(1,0,1), Vector3(1,1,0), Vector3(1,1,1),
+        // Left
+        Vector3(0,0,0), Vector3(0,0,1), Vector3(0,1,1),
+        Vector3(0,0,0), Vector3(0,1,1), Vector3(0,1,0)
+    };
+
     // コリジョン頂点の生成
     for (const Vector3i &grid_pos : occupied_blocks) {
-        // 上下左右前後がすべてブロックで囲まれている場合はコリジョン生成をスキップ
-        bool is_surrounded = 
+        bool is_surrounded =
             occupied_blocks.has(grid_pos + Vector3i(1, 0, 0)) &&
             occupied_blocks.has(grid_pos + Vector3i(-1, 0, 0)) &&
             occupied_blocks.has(grid_pos + Vector3i(0, 1, 0)) &&
@@ -296,7 +292,6 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
 
         if (is_surrounded) continue;
 
-        // 整数座標から正確な Vector3 オフセットを生成
         Vector3 offset(
             static_cast<float>(grid_pos.x),
             static_cast<float>(grid_pos.y),
@@ -314,7 +309,6 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
 void ChunkMeshBuilder::apply_chunk_data_to_node(Node3D *parent_node, const BuiltChunkData &built_data) {
     if (!parent_node) return;
 
-    // メッシュの配置
     for (const auto &E : built_data.multimeshes) {
         MultiMeshInstance3D *mmi = memnew(MultiMeshInstance3D);
         mmi->set_multimesh(E.value);
@@ -323,16 +317,12 @@ void ChunkMeshBuilder::apply_chunk_data_to_node(Node3D *parent_node, const Built
 
     if (built_data.collision_faces.size() > 0) {
         StaticBody3D *static_body = memnew(StaticBody3D);
-        static_body->set_collision_layer(1);
-        static_body->set_collision_mask(1);
-
-        CollisionShape3D *col_shape = memnew(CollisionShape3D);
-        Ref<ConcavePolygonShape3D> polygon_shape;
-        polygon_shape.instantiate();
-        polygon_shape->set_faces(built_data.collision_faces);
-
-        col_shape->set_shape(polygon_shape);
-        static_body->add_child(col_shape);
+        CollisionShape3D *collision_shape = memnew(CollisionShape3D);
+        Ref<ConcavePolygonShape3D> shape;
+        shape.instantiate();
+        shape->set_faces(built_data.collision_faces);
+        collision_shape->set_shape(shape);
+        static_body->add_child(collision_shape);
         parent_node->add_child(static_body);
     }
 }
