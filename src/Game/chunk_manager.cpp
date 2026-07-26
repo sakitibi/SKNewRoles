@@ -60,7 +60,7 @@ void ChunkManager::_process(double delta) {
             if (node) {
                 player_node = Object::cast_to<Node3D>(node);
                 if (player_node) {
-                    UtilityFunctions::print("[ChunkManager] ✅ player_path からプレイヤーを手動取得しました: ", player_path);
+                    UtilityFunctions::print("[ChunkManager] Player obtained manually from player_path: ", player_path);
                 }
             }
         }
@@ -75,7 +75,7 @@ void ChunkManager::_process(double delta) {
             );
             
             UtilityFunctions::print(vformat(
-                "[ChunkManager] 🚀 初回プレイヤー位置検出: Pos(%.1f, %.1f, %.1f) -> チャンク座標(%d, %d)", 
+                "[ChunkManager] Initial player position detected: Pos(%.1f, %.1f, %.1f) -> ChunkCoord(%d, %d)", 
                 p_pos.x, p_pos.y, p_pos.z, current_chunk_coord.x, current_chunk_coord.y
             ));
 
@@ -93,7 +93,6 @@ void ChunkManager::_process(double delta) {
         }
     }
 
-    // ロード完了キューの消化（カクつき防止のため1フレームに最大2個までメインスレッドへ適用）
     int processed_this_frame = 0;
     while (!loaded_queue.is_empty() && processed_this_frame < 2) {
         ChunkLoadData *data = loaded_queue.front()->get();
@@ -108,19 +107,18 @@ void ChunkManager::_process(double delta) {
             chunk_node->set_position(Vector3(data->coord.x * chunk_size, 0.0f, data->coord.y * chunk_size));
             add_child(chunk_node);
 
-            // サブスレッドでビルド済みのデータをメインスレッドでノードに安全かつ高速にアタッチ
             ChunkMeshBuilder::apply_chunk_data_to_node(chunk_node, data->built_data);
             loaded_chunks[data->coord] = chunk_node;
 
             uint64_t apply_time = Time::get_singleton()->get_ticks_msec() - start_apply;
 
             UtilityFunctions::print(vformat(
-                "[ChunkManager Main] 🟢 チャンク (%d, %d) Applied to SceneTree in %d ms",
+                "[ChunkManager Main] Chunk (%d, %d) Applied to SceneTree in %d ms",
                 data->coord.x, data->coord.y, apply_time
             ));
         } else {
             UtilityFunctions::print(vformat(
-                "[ChunkManager Main] ⚠️ チャンク (%d, %d) に有効なデータ (has_data=false) がありませんでした。",
+                "[ChunkManager Main] Chunk (%d, %d) Has No Data (has_data=false)",
                 data->coord.x, data->coord.y
             ));
         }
@@ -135,19 +133,23 @@ void ChunkManager::_process(double delta) {
 }
 
 void ChunkManager::load_chunk(const Vector2i &coord) {
+    if (pending_tasks.has(coord) || loaded_chunks.has(coord)) return;
+
     ChunkLoadData *data = memnew(ChunkLoadData);
     data->coord = coord;
     data->region_folder_path = region_folder_path;
     data->chunk_size = chunk_size;
     data->manager = this;
 
-    Callable worker_callable = Callable(this, "_async_load_worker");
+    uint64_t ptr_val = reinterpret_cast<uint64_t>(data);
+
     int64_t task_id = WorkerThreadPool::get_singleton()->add_task(
-        Callable(this, "_async_load_worker").bind(Variant(data))
+        callable_mp(this, &ChunkManager::_async_load_worker).bind(Variant(ptr_val)),
+        false,
+        vformat("ChunkLoad_%d_%d", coord.x, coord.y)
     );
-    
+
     pending_tasks[coord] = task_id;
-    UtilityFunctions::print("[ChunkManager] 🧵 非同期タスク登録完了 (TaskID: ", task_id, ") チャンク: X=", coord.x, ", Z=", coord.y);
 }
 
 void ChunkManager::_async_load_worker(Variant p_userdata) {
@@ -162,7 +164,6 @@ void ChunkManager::_async_load_worker(Variant p_userdata) {
         data->categorized_positions = ChunkMeshBuilder::parse_chunk_positions(chunk_nbt);
         data->has_data = !data->categorized_positions.is_empty();
 
-        // バックグラウンドスレッドでメッシュ・コリジョンを事前ビルド
         if (data->has_data) {
             data->built_data = ChunkMeshBuilder::build_chunk_data_async(data->categorized_positions);
         }
@@ -178,28 +179,25 @@ void ChunkManager::_on_chunk_loaded(Variant p_userdata) {
     ChunkLoadData *data = reinterpret_cast<ChunkLoadData *>(ptr_val);
     if (!data) return;
 
-    // 保留タスクから削除
     pending_tasks.erase(data->coord);
 
     if (data->has_data) {
-        // チャンク用の空ノード（またはNode3D）を生成
         Node3D *chunk_node = memnew(Node3D);
-        
-        // 座標をワールド位置に変換して配置
-        Vector3 world_pos(data->coord.x * data->chunk_size, 0, data->coord.y * data->chunk_size);
+        Vector3 world_pos(data->coord.x * data->chunk_size, 0.0f, data->coord.y * data->chunk_size);
         chunk_node->set_position(world_pos);
 
         ChunkMeshBuilder::apply_chunk_data_to_node(chunk_node, data->built_data);
 
-        // シーンツリーに追加
         add_child(chunk_node);
         loaded_chunks[data->coord] = chunk_node;
+
+        UtilityFunctions::print(vformat("[ChunkManager Main] Chunk (%d, %d) Loaded Successfully", data->coord.x, data->coord.y));
+    } else {
+        UtilityFunctions::print(vformat("[ChunkManager Main] Chunk (%d, %d) Has No Data", data->coord.x, data->coord.y));
     }
 
-    // 動的に確保したデータを解放
     delete data;
 
-    // 初回ロード完了判定
     if (!initial_load_complete && pending_tasks.is_empty()) {
         initial_load_complete = true;
     }
@@ -230,15 +228,15 @@ Node3D *ChunkManager::find_local_player() {
 
 void ChunkManager::update_chunks_around_player() {
     HashMap<Vector2i, bool> keep;
-    UtilityFunctions::print("[ChunkManager] 🔄 周囲のチャンクをスキャン中 (RenderDistance: ", render_distance, ")");
-    
+    UtilityFunctions::print(vformat("[ChunkManager] Scanning chunks around player (RenderDistance: %d)", render_distance));
+
     for (int x = -render_distance; x <= render_distance; ++x) {
         for (int z = -render_distance; z <= render_distance; ++z) {
             Vector2i target = current_chunk_coord + Vector2i(x, z);
             keep[target] = true;
 
             if (!loaded_chunks.has(target) && !pending_tasks.has(target)) {
-                UtilityFunctions::print("[ChunkManager] 📥 新規チャンクのロードを要求: X=", target.x, ", Z=", target.y);
+                UtilityFunctions::print(vformat("[ChunkManager] Requesting load for chunk: X=%d, Z=%d", target.x, target.y));
                 load_chunk(target);
             }
         }
