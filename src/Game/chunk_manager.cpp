@@ -125,6 +125,7 @@ void ChunkManager::load_chunk(const Vector2i &coord) {
     data->chunk_size = chunk_size;
     data->manager = this;
 
+    // 非同期タスクをプールに登録
     int64_t task_id = WorkerThreadPool::get_singleton()->add_task(
         callable_mp_static(&ChunkManager::_async_load_worker),
         reinterpret_cast<uint64_t>(data)
@@ -138,45 +139,54 @@ void ChunkManager::_async_load_worker(Variant p_userdata) {
     ChunkLoadData *data = reinterpret_cast<ChunkLoadData *>(ptr_val);
     if (!data) return;
 
-    uint64_t start_total = Time::get_singleton()->get_ticks_msec();
-
-    // MCAパース処理
-    uint64_t start_parse = Time::get_singleton()->get_ticks_msec();
     MCAParser parser;
     Dictionary chunk_nbt = parser.parse_chunk(data->region_folder_path, data->coord.x, data->coord.y);
     
     if (!chunk_nbt.is_empty()) {
         data->categorized_positions = ChunkMeshBuilder::parse_chunk_positions(chunk_nbt);
         data->has_data = !data->categorized_positions.is_empty();
-    }
-    uint64_t parse_time = Time::get_singleton()->get_ticks_msec() - start_parse;
 
-    // メッシュ＆コリジョンビルド処理 (サブスレッドでの非同期実行)
-    uint64_t build_time = 0;
-    if (data->has_data) {
-        uint64_t start_build = Time::get_singleton()->get_ticks_msec();
-        data->built_data = ChunkMeshBuilder::build_chunk_data_async(data->categorized_positions);
-        build_time = Time::get_singleton()->get_ticks_msec() - start_build;
+        // バックグラウンドスレッドでメッシュ・コリジョンを事前ビルド
+        if (data->has_data) {
+            data->built_data = ChunkMeshBuilder::build_chunk_data_async(data->categorized_positions);
+        }
     }
 
-    uint64_t total_time = Time::get_singleton()->get_ticks_msec() - start_total;
-
-    UtilityFunctions::print(vformat(
-        "[ChunkManager Async] Chunk (%d, %d) Loaded in %d ms | Parse NBT: %d ms | Build Mesh/Col: %d ms",
-        data->coord.x, data->coord.y, total_time, parse_time, build_time
-    ));
-
-    // メインスレッドへ渡す
     if (data->manager) {
         data->manager->call_deferred("_on_chunk_loaded", ptr_val);
     }
 }
 
 void ChunkManager::_on_chunk_loaded(Variant p_userdata) {
-    ChunkLoadData *data = reinterpret_cast<ChunkLoadData *>(static_cast<uint64_t>(p_userdata));
+    uint64_t ptr_val = static_cast<uint64_t>(p_userdata);
+    ChunkLoadData *data = reinterpret_cast<ChunkLoadData *>(ptr_val);
     if (!data) return;
 
-    loaded_queue.push_back(data);
+    // 保留タスクから削除
+    pending_tasks.erase(data->coord);
+
+    if (data->has_data) {
+        // チャンク用の空ノード（またはNode3D）を生成
+        Node3D *chunk_node = memnew(Node3D);
+        
+        // 座標をワールド位置に変換して配置
+        Vector3 world_pos(data->coord.x * data->chunk_size, 0, data->coord.y * data->chunk_size);
+        chunk_node->set_position(world_pos);
+
+        ChunkMeshBuilder::apply_chunk_data_to_node(chunk_node, data->built_data);
+
+        // シーンツリーに追加
+        add_child(chunk_node);
+        loaded_chunks[data->coord] = chunk_node;
+    }
+
+    // 動的に確保したデータを解放
+    delete data;
+
+    // 初回ロード完了判定
+    if (!initial_load_complete && pending_tasks.is_empty()) {
+        initial_load_complete = true;
+    }
 }
 
 void ChunkManager::unload_chunk(const Vector2i &coord) {
