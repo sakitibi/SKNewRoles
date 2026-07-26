@@ -1,6 +1,12 @@
 #include "chunk_mesh_builder.h"
 #include <godot_cpp/core/memory.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include <godot_cpp/classes/static_body3d.hpp>
+#include <godot_cpp/classes/collision_shape3d.hpp>
+#include <godot_cpp/classes/box_shape3d.hpp>
+#include <godot_cpp/classes/packed_scene.hpp>
+#include <godot_cpp/classes/resource_loader.hpp>
+#include <godot_cpp/templates/hash_set.hpp>
 #include <godot_cpp/variant/vector3i.hpp>
 #include <cmath>
 
@@ -30,14 +36,15 @@ const HashMap<String, String>& ChunkMeshBuilder::get_block_scene_map() {
         map["minecraft:grass_block"]   = "res://Scenes/Prefabs/Blocks/GrassBlock.tscn";
         map["minecraft:stone"]         = "res://Scenes/Prefabs/Blocks/Stone.tscn";
         map["minecraft:stone_bricks"]  = "res://Scenes/Prefabs/Blocks/StoneBricks.tscn";
-        map["minecraft:dirt"]          = "res://Scenes/Prefabs/Blocks/GrassBlock.tscn";
+        map["minecraft:dirt"]          = "res://Scenes/Prefabs/Blocks/Dirt.tscn";
+        map["minecraft:cobblestone"]   = "res://Scenes/Prefabs/Blocks/Cobblestone.tscn";
     }
     return map;
 }
 
 void ChunkMeshBuilder::preload_block_meshes() {
-    const HashMap<String, String>& block_map = get_block_scene_map();
-    for (const auto &E : block_map) {
+    const HashMap<String, String> &map = get_block_scene_map();
+    for (const auto &E : map) {
         get_block_mesh_data(E.value);
     }
 }
@@ -63,13 +70,11 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
         return data;
     }
 
-    // シーン内のすべての MeshInstance3D (Top, Bottom, Front, Back, Left, Right) を取得
     TypedArray<Node> nodes = root_3d->find_children("*", "MeshInstance3D", true, false);
     if (nodes.size() > 0) {
         Ref<ArrayMesh> combined_mesh;
         combined_mesh.instantiate();
 
-        // すべての MeshInstance3D 子ノードを走査する
         for (int i = 0; i < nodes.size(); ++i) {
             MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(nodes[i]);
             if (!mi || mi->get_mesh().is_null()) continue;
@@ -82,14 +87,12 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
                 Array surf_arrays = original_mesh->surface_get_arrays(s);
                 if (surf_arrays.size() <= Mesh::ARRAY_VERTEX) continue;
 
-                // 頂点座標の変換
                 PackedVector3Array verts = surf_arrays[Mesh::ARRAY_VERTEX];
                 for (int v = 0; v < verts.size(); ++v) {
                     verts[v] = rel_transform.xform(verts[v]);
                 }
                 surf_arrays[Mesh::ARRAY_VERTEX] = verts;
 
-                // 法線ベクトルの変換
                 if (surf_arrays.size() > Mesh::ARRAY_NORMAL && surf_arrays[Mesh::ARRAY_NORMAL].get_type() == Variant::PACKED_VECTOR3_ARRAY) {
                     PackedVector3Array normals = surf_arrays[Mesh::ARRAY_NORMAL];
                     Basis normal_basis = rel_transform.basis.inverse().transposed();
@@ -99,7 +102,6 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
                     surf_arrays[Mesh::ARRAY_NORMAL] = normals;
                 }
 
-                // 結合用メッシュにサーフェスを追加
                 combined_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surf_arrays);
 
                 Ref<Material> mat = mi->get_material_override();
@@ -132,72 +134,78 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
 }
 
 int ChunkMeshBuilder::get_palette_index(const PackedInt64Array &data, int palette_size, int x, int y, int z) {
-    if (palette_size <= 1) return 0;
+    if (data.is_empty() || palette_size <= 1) return 0;
 
     int bits_per_entry = 4;
     while ((1 << bits_per_entry) < palette_size) {
         bits_per_entry++;
     }
 
-    int block_index = (y * 16 + z) * 16 + x;
+    int block_index = y * 256 + z * 16 + x;
     int entries_per_long = 64 / bits_per_entry;
-
     int long_index = block_index / entries_per_long;
-    int bit_offset = (block_index % entries_per_long) * bits_per_entry;
 
     if (long_index >= data.size()) return 0;
 
-    uint64_t long_val = static_cast<uint64_t>(data[long_index]);
-    uint64_t mask = (1ULL << bits_per_entry) - 1ULL;
+    int bit_offset = (block_index % entries_per_long) * bits_per_entry;
+    int64_t mask = (1LL << bits_per_entry) - 1;
+    int64_t val = data[long_index];
 
-    return static_cast<int>((long_val >> bit_offset) & mask);
+    return static_cast<int>((val >> bit_offset) & mask);
 }
 
-HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(const Dictionary &chunk_data, int min_section_y, int max_section_y) {
-    HashMap<String, Vector<Vector3>> result;
+HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
+    const Dictionary &chunk_data, 
+    int min_section_y, 
+    int max_section_y
+) {
+    HashMap<String, Vector<Vector3>> categorized_positions;
 
-    if (!chunk_data.has("sections")) return result;
+    if (!chunk_data.has("sections")) return categorized_positions;
+
+    const HashMap<String, String> &block_map = get_block_scene_map();
 
     Array sections = chunk_data["sections"];
     for (int i = 0; i < sections.size(); ++i) {
-        Dictionary sec = sections[i];
-        if (!sec.has("Y") || !sec.has("block_states")) continue;
+        Dictionary section = sections[i];
+        if (!section.has("block_states") || !section.has("Y")) continue;
 
-        int sec_y = sec["Y"];
-        if (sec_y < min_section_y || sec_y > max_section_y) continue;
+        int section_y = section["Y"];
+        if (section_y < min_section_y || section_y > max_section_y) continue;
 
-        Dictionary block_states = sec["block_states"];
+        Dictionary block_states = section["block_states"];
+
         if (!block_states.has("palette")) continue;
-
         Array palette = block_states["palette"];
-        if (palette.size() == 0) continue;
+        if (palette.is_empty()) continue;
 
-        if (!block_states.has("data")) {
-            Dictionary b = palette[0];
-            String name = b.get("Name", "");
-            if (name != "minecraft:air") {
-                Vector<Vector3> &vec = result[name];
-                for (int y = 0; y < 16; ++y) {
-                    for (int z = 0; z < 16; ++z) {
-                        for (int x = 0; x < 16; ++x) {
-                            vec.append(Vector3(x, sec_y * 16 + y, z));
-                        }
-                    }
-                }
-            }
-            continue;
+        PackedInt64Array data;
+        if (block_states.has("data")) {
+            data = block_states["data"];
         }
 
-        PackedInt64Array data_array = block_states["data"];
         for (int y = 0; y < 16; ++y) {
             for (int z = 0; z < 16; ++z) {
                 for (int x = 0; x < 16; ++x) {
-                    int p_idx = get_palette_index(data_array, palette.size(), x, y, z);
-                    if (p_idx >= 0 && p_idx < palette.size()) {
-                        Dictionary b = palette[p_idx];
-                        String name = b.get("Name", "");
-                        if (name != "minecraft:air") {
-                            result[name].append(Vector3(x, sec_y * 16 + y, z));
+                    int palette_idx = 0;
+                    if (palette.size() > 1) {
+                        palette_idx = get_palette_index(data, palette.size(), x, y, z);
+                    }
+
+                    if (palette_idx >= 0 && palette_idx < palette.size()) {
+                        Dictionary block = palette[palette_idx];
+                        if (block.has("Name")) {
+                            String block_name = block["Name"];
+                            
+                            // 空気以外、かつ登録済みブロックのみ位置データに追加
+                            if (block_name != "minecraft:air" && block_map.has(block_name)) {
+                                Vector3 pos(
+                                    static_cast<float>(x),
+                                    static_cast<float>((section_y * 16) + y),
+                                    static_cast<float>(z)
+                                );
+                                categorized_positions[block_name].append(pos);
+                            }
                         }
                     }
                 }
@@ -205,112 +213,32 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(const D
         }
     }
 
-    return result;
+    return categorized_positions;
 }
 
-static void create_merged_box_collisions(
-    StaticBody3D *static_body,
-    const HashSet<Vector3i> &occupied_blocks,
-    int section_y
-) {
-    int start_y = section_y * 16;
-    bool grid[16][16][16] = {};
+void ChunkMeshBuilder::build_chunk_mesh(Node3D *parent_node, const HashMap<String, Vector<Vector3>> &categorized_positions) {
+    if (!parent_node) return;
 
-    for (int y = 0; y < 16; ++y) {
-        int world_y = start_y + y;
-        for (int z = 0; z < 16; ++z) {
-            for (int x = 0; x < 16; ++x) {
-                Vector3i g_pos(x, world_y, z);
-
-                if (!occupied_blocks.has(g_pos)) continue;
-
-                bool is_surrounded = 
-                    occupied_blocks.has(g_pos + Vector3i(1, 0, 0)) &&
-                    occupied_blocks.has(g_pos + Vector3i(-1, 0, 0)) &&
-                    occupied_blocks.has(g_pos + Vector3i(0, 1, 0)) &&
-                    occupied_blocks.has(g_pos + Vector3i(0, -1, 0)) &&
-                    occupied_blocks.has(g_pos + Vector3i(0, 0, 1)) &&
-                    occupied_blocks.has(g_pos + Vector3i(0, 0, -1));
-
-                if (!is_surrounded) {
-                    grid[y][z][x] = true;
-                }
-            }
-        }
-    }
-
-    for (int y = 0; y < 16; ++y) {
-        int world_y = start_y + y;
-        bool visited[16][16] = {};
-
-        for (int z = 0; z < 16; ++z) {
-            for (int x = 0; x < 16; ++x) {
-                if (!grid[y][z][x] || visited[z][x]) continue;
-
-                int width_x = 1;
-                while (x + width_x < 16 && grid[y][z][x + width_x] && !visited[z][x + width_x]) {
-                    width_x++;
-                }
-
-                int depth_z = 1;
-                while (z + depth_z < 16) {
-                    bool can_extend = true;
-                    for (int k = 0; k < width_x; ++k) {
-                        if (!grid[y][z + depth_z][x + k] || visited[z + depth_z][x + k]) {
-                            can_extend = false;
-                            break;
-                        }
-                    }
-                    if (!can_extend) break;
-                    depth_z++;
-                }
-
-                for (int dz = 0; dz < depth_z; dz++) {
-                    for (int dx = 0; dx < width_x; dx++) {
-                        visited[z + dz][x + dx] = true;
-                    }
-                }
-
-                float size_x = (float)width_x;
-                float size_y = 1.0f;
-                float size_z = (float)depth_z;
-
-                float center_x = x + (size_x - 1.0f) * 0.5f;
-                float center_y = (float)world_y;
-                float center_z = z + (size_z - 1.0f) * 0.5f;
-
-                Ref<BoxShape3D> box_shape;
-                box_shape.instantiate();
-                box_shape->set_size(Vector3(size_x, size_y, size_z));
-
-                CollisionShape3D *col_shape = memnew(CollisionShape3D);
-                col_shape->set_shape(box_shape);
-                col_shape->set_position(Vector3(center_x, center_y, center_z));
-
-                static_body->add_child(col_shape);
-            }
-        }
-    }
-}
-
-void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<String, Vector<Vector3>> &categorized_positions) {
     const HashMap<String, String> &block_map = get_block_scene_map();
 
+    // メッシュデータが存在する有効なブロックのみの座標を抽出
     HashSet<Vector3i> occupied_blocks;
-    HashSet<int> active_section_ys;
-
     for (const auto &E : categorized_positions) {
-        for (int i = 0; i < E.value.size(); ++i) {
-            Vector3 pos = E.value[i];
+        String block_name = E.key;
+        if (!block_map.has(block_name)) continue;
+
+        BlockMeshData mesh_data = get_block_mesh_data(block_map[block_name]);
+        if (!mesh_data.valid) continue;
+
+        const Vector<Vector3> &positions = E.value;
+        for (int i = 0; i < positions.size(); ++i) {
+            Vector3 pos = positions[i];
             Vector3i grid_pos(
                 static_cast<int>(std::floor(pos.x + 0.5f)),
                 static_cast<int>(std::floor(pos.y + 0.5f)),
                 static_cast<int>(std::floor(pos.z + 0.5f))
             );
             occupied_blocks.insert(grid_pos);
-
-            int sec_y = static_cast<int>(std::floor((float)grid_pos.y / 16.0f));
-            active_section_ys.insert(sec_y);
         }
     }
 
@@ -325,13 +253,12 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
         BlockMeshData mesh_data = get_block_mesh_data(scene_path);
         if (!mesh_data.valid || mesh_data.mesh.is_null()) continue;
 
-        // MultiMeshInstance3D の生成
         MultiMeshInstance3D *mmi = memnew(MultiMeshInstance3D);
         Ref<MultiMesh> mm;
         mm.instantiate();
 
         mm->set_transform_format(MultiMesh::TRANSFORM_3D);
-        mm->set_mesh(mesh_data.mesh); // 各サーフェスとマテリアルが含まれたメッシュ
+        mm->set_mesh(mesh_data.mesh);
         mm->set_instance_count(positions.size());
 
         for (int i = 0; i < positions.size(); ++i) {
@@ -344,13 +271,31 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
         parent_node->add_child(mmi);
     }
 
-    // 結合コリジョンの生成
     StaticBody3D *static_body = memnew(StaticBody3D);
     static_body->set_collision_layer(1);
     static_body->set_collision_mask(1);
 
-    for (const int sec_y : active_section_ys) {
-        create_merged_box_collisions(static_body, occupied_blocks, sec_y);
+    for (const Vector3i &grid_pos : occupied_blocks) {
+        // 周囲6方向すべてがブロックで埋まっているものは地中とみなして物理形状スキップ
+        bool is_surrounded = 
+            occupied_blocks.has(grid_pos + Vector3i(1, 0, 0)) &&
+            occupied_blocks.has(grid_pos + Vector3i(-1, 0, 0)) &&
+            occupied_blocks.has(grid_pos + Vector3i(0, 1, 0)) &&
+            occupied_blocks.has(grid_pos + Vector3i(0, -1, 0)) &&
+            occupied_blocks.has(grid_pos + Vector3i(0, 0, 1)) &&
+            occupied_blocks.has(grid_pos + Vector3i(0, 0, -1));
+
+        if (is_surrounded) continue;
+
+        CollisionShape3D *col_shape = memnew(CollisionShape3D);
+        Ref<BoxShape3D> box_shape;
+        box_shape.instantiate();
+        box_shape->set_size(Vector3(1.0f, 1.0f, 1.0f));
+
+        col_shape->set_shape(box_shape);
+        col_shape->set_position(Vector3(grid_pos.x, grid_pos.y, grid_pos.z));
+
+        static_body->add_child(col_shape);
     }
 
     if (static_body->get_child_count() > 0) {

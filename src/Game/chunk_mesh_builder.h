@@ -41,7 +41,7 @@ namespace godot {
                 int max_section_y = 19
             );
 
-            static void build_from_positions(
+            static void build_chunk_mesh(
                 Node3D *parent_node, 
                 const HashMap<String, Vector<Vector3>> &categorized_positions
             );
