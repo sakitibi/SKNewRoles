@@ -1,9 +1,9 @@
 #include "chunk_mesh_builder.h"
 #include <godot_cpp/core/memory.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include <godot_cpp/classes/concave_polygon_shape3d.hpp>
 #include <godot_cpp/classes/static_body3d.hpp>
 #include <godot_cpp/classes/collision_shape3d.hpp>
-#include <godot_cpp/classes/concave_polygon_shape3d.hpp>
 #include <godot_cpp/templates/hash_set.hpp>
 #include <godot_cpp/variant/vector3i.hpp>
 #include <cmath>
@@ -228,21 +228,22 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(const D
 void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<String, Vector<Vector3>> &categorized_positions) {
     const HashMap<String, String> &block_map = get_block_scene_map();
 
-    // 全ブロックの絶対位置をハッシュセットに集約
+    // 全ブロック位置のグリッドマップ構築
     HashSet<Vector3i> occupied_blocks;
     for (const auto &E : categorized_positions) {
         for (int i = 0; i < E.value.size(); ++i) {
             Vector3 pos = E.value[i];
             Vector3i grid_pos(
-                static_cast<int>(std::floor(pos.x + 0.5f)),
-                static_cast<int>(std::floor(pos.y + 0.5f)),
-                static_cast<int>(std::floor(pos.z + 0.5f))
+                static_cast<int>(std::round(pos.x + 0.5f)),
+                static_cast<int>(std::round(pos.y + 0.5f)),
+                static_cast<int>(std::round(pos.z + 0.5f))
             );
             occupied_blocks.insert(grid_pos);
         }
     }
 
-    // 描画用 MultiMeshInstance3D の作成
+    PackedVector3Array collision_faces;
+
     for (const auto &E : categorized_positions) {
         String block_name = E.key;
         const Vector<Vector3> &positions = E.value;
@@ -253,6 +254,7 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
         BlockMeshData mesh_data = get_block_mesh_data(scene_path);
         if (!mesh_data.valid || mesh_data.mesh.is_null()) continue;
 
+        // 描画用 MultiMeshInstance3D
         MultiMeshInstance3D *mmi = memnew(MultiMeshInstance3D);
         Ref<MultiMesh> mm;
         mm.instantiate();
@@ -269,72 +271,60 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
 
         mmi->set_multimesh(mm);
         parent_node->add_child(mmi);
-    }
 
-    PackedVector3Array collision_faces;
+        for (int s = 0; s < mesh_data.mesh->get_surface_count(); ++s) {
+            Array surf_arrays = mesh_data.mesh->surface_get_arrays(s);
+            if (surf_arrays.size() <= Mesh::ARRAY_VERTEX) continue;
 
-    // 1ブロック（1x1x1）の6面の頂点定義（中心オフセット -0.5〜0.5）
-    static const Vector3 face_verts[6][4] = {
-        // 上面 (Y+)
-        { Vector3(-0.5, 0.5, -0.5), Vector3(-0.5, 0.5, 0.5), Vector3(0.5, 0.5, 0.5), Vector3(0.5, 0.5, -0.5) },
-        // 下面 (Y-)
-        { Vector3(-0.5, -0.5, 0.5), Vector3(-0.5, -0.5, -0.5), Vector3(0.5, -0.5, -0.5), Vector3(0.5, -0.5, 0.5) },
-        // 東面 (X+)
-        { Vector3(0.5, -0.5, -0.5), Vector3(0.5, 0.5, -0.5), Vector3(0.5, 0.5, 0.5), Vector3(0.5, -0.5, 0.5) },
-        // 西面 (X-)
-        { Vector3(-0.5, -0.5, 0.5), Vector3(-0.5, 0.5, 0.5), Vector3(-0.5, 0.5, -0.5), Vector3(-0.5, -0.5, -0.5) },
-        // 南面 (Z+)
-        { Vector3(0.5, -0.5, 0.5), Vector3(0.5, 0.5, 0.5), Vector3(-0.5, 0.5, 0.5), Vector3(-0.5, -0.5, 0.5) },
-        // 北面 (Z-)
-        { Vector3(-0.5, -0.5, -0.5), Vector3(-0.5, 0.5, -0.5), Vector3(0.5, 0.5, -0.5), Vector3(0.5, -0.5, -0.5) }
-    };
+            PackedVector3Array verts = surf_arrays[Mesh::ARRAY_VERTEX];
+            PackedInt32Array indices = surf_arrays[Mesh::ARRAY_INDEX];
 
-    static const Vector3i face_dirs[6] = {
-        Vector3i(0, 1, 0),   // 上
-        Vector3i(0, -1, 0),  // 下
-        Vector3i(1, 0, 0),   // 東
-        Vector3i(-1, 0, 0),  // 西
-        Vector3i(0, 0, 1),   // 南
-        Vector3i(0, 0, -1)   // 北
-    };
+            for (int i = 0; i < positions.size(); ++i) {
+                Vector3 block_pos = positions[i];
+                Vector3i grid_pos(
+                    static_cast<int>(std::round(block_pos.x + 0.5f)),
+                    static_cast<int>(std::round(block_pos.y + 0.5f)),
+                    static_cast<int>(std::round(block_pos.z + 0.5f))
+                );
 
-    for (const Vector3i &grid_pos : occupied_blocks) {
-        Vector3 block_pos(grid_pos.x, grid_pos.y, grid_pos.z);
+                // 上下前後左右の6方向がすべて埋まっている「地中」はスキップしてポリゴン削減
+                bool is_surrounded = 
+                    occupied_blocks.has(grid_pos + Vector3i(1, 0, 0)) &&
+                    occupied_blocks.has(grid_pos + Vector3i(-1, 0, 0)) &&
+                    occupied_blocks.has(grid_pos + Vector3i(0, 1, 0)) &&
+                    occupied_blocks.has(grid_pos + Vector3i(0, -1, 0)) &&
+                    occupied_blocks.has(grid_pos + Vector3i(0, 0, 1)) &&
+                    occupied_blocks.has(grid_pos + Vector3i(0, 0, -1));
 
-        for (int f = 0; f < 6; ++f) {
-            Vector3i neighbor_pos = grid_pos + face_dirs[f];
+                if (is_surrounded) continue;
 
-            if (!occupied_blocks.has(neighbor_pos)) {
-                Vector3 v0 = block_pos + face_verts[f][0];
-                Vector3 v1 = block_pos + face_verts[f][1];
-                Vector3 v2 = block_pos + face_verts[f][2];
-                Vector3 v3 = block_pos + face_verts[f][3];
-
-                // 三角形1
-                collision_faces.append(v0);
-                collision_faces.append(v1);
-                collision_faces.append(v2);
-
-                // 三角形2
-                collision_faces.append(v0);
-                collision_faces.append(v2);
-                collision_faces.append(v3);
+                if (indices.size() > 0) {
+                    for (int idx = 0; idx < indices.size(); ++idx) {
+                        collision_faces.append(verts[indices[idx]] + block_pos);
+                    }
+                } else {
+                    for (int v = 0; v < verts.size(); ++v) {
+                        collision_faces.append(verts[v] + block_pos);
+                    }
+                }
             }
         }
     }
 
+    // 集約した全頂点から ConcavePolygonShape3D を生成
     if (collision_faces.size() > 0) {
+        UtilityFunctions::print("[ChunkMeshBuilder] Collision Shape created with ", collision_faces.size(), " faces.");
         StaticBody3D *static_body = memnew(StaticBody3D);
         static_body->set_collision_layer(1);
         static_body->set_collision_mask(1);
 
-        CollisionShape3D *col_shape_node = memnew(CollisionShape3D);
+        CollisionShape3D *col_shape = memnew(CollisionShape3D);
         Ref<ConcavePolygonShape3D> concave_shape;
         concave_shape.instantiate();
         concave_shape->set_faces(collision_faces);
 
-        col_shape_node->set_shape(concave_shape);
-        static_body->add_child(col_shape_node);
+        col_shape->set_shape(concave_shape);
+        static_body->add_child(col_shape);
         parent_node->add_child(static_body);
     }
 }
