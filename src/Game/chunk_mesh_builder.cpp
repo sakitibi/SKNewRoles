@@ -37,8 +37,6 @@ const HashMap<String, String>& ChunkMeshBuilder::get_block_scene_map() {
         map["minecraft:grass_block"]   = "res://Scenes/Prefabs/Blocks/GrassBlock.tscn";
         map["minecraft:stone"]         = "res://Scenes/Prefabs/Blocks/Stone.tscn";
         map["minecraft:stone_bricks"]  = "res://Scenes/Prefabs/Blocks/StoneBricks.tscn";
-        map["minecraft:dirt"]          = "res://Scenes/Prefabs/Blocks/Dirt.tscn";
-        map["minecraft:cobblestone"]   = "res://Scenes/Prefabs/Blocks/Cobblestone.tscn";
     }
     return map;
 }
@@ -230,7 +228,6 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
         }
     }
 
-    // MultiMeshのインスタンス化
     for (const auto &E : categorized_positions) {
         String scene_path = E.key;
         const Vector<Vector3> &positions = E.value;
@@ -248,7 +245,6 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
 
         for (int i = 0; i < instance_count; ++i) {
             Transform3D t;
-            // .tscnモデルが(0,0,0)中心で作られているため、グリッド中心(+0.5f)に配置
             t.origin = positions[i] + Vector3(0.5f, 0.5f, 0.5f);
             multimesh->set_instance_transform(i, t);
         }
@@ -257,24 +253,24 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
     }
 
     static const Vector3 box_verts[36] = {
-        // Front face (+Z)
-        Vector3(-0.5f, -0.5f,  0.5f), Vector3( 0.5f, -0.5f,  0.5f), Vector3( 0.5f,  0.5f,  0.5f),
-        Vector3(-0.5f, -0.5f,  0.5f), Vector3( 0.5f,  0.5f,  0.5f), Vector3(-0.5f,  0.5f,  0.5f),
-        // Back face (-Z)
-        Vector3( 0.5f, -0.5f, -0.5f), Vector3(-0.5f, -0.5f, -0.5f), Vector3(-0.5f,  0.5f, -0.5f),
-        Vector3( 0.5f, -0.5f, -0.5f), Vector3(-0.5f,  0.5f, -0.5f), Vector3( 0.5f,  0.5f, -0.5f),
-        // Top face (+Y)
-        Vector3(-0.5f,  0.5f,  0.5f), Vector3( 0.5f,  0.5f,  0.5f), Vector3( 0.5f,  0.5f, -0.5f),
-        Vector3(-0.5f,  0.5f,  0.5f), Vector3( 0.5f,  0.5f, -0.5f), Vector3(-0.5f,  0.5f, -0.5f),
-        // Bottom face (-Y)
-        Vector3(-0.5f, -0.5f, -0.5f), Vector3( 0.5f, -0.5f, -0.5f), Vector3( 0.5f, -0.5f,  0.5f),
-        Vector3(-0.5f, -0.5f, -0.5f), Vector3( 0.5f, -0.5f,  0.5f), Vector3(-0.5f, -0.5f,  0.5f),
-        // Right face (+X)
-        Vector3( 0.5f, -0.5f,  0.5f), Vector3( 0.5f, -0.5f, -0.5f), Vector3( 0.5f,  0.5f, -0.5f),
-        Vector3( 0.5f, -0.5f,  0.5f), Vector3( 0.5f,  0.5f, -0.5f), Vector3( 0.5f,  0.5f,  0.5f),
-        // Left face (-X)
-        Vector3(-0.5f, -0.5f, -0.5f), Vector3(-0.5f, -0.5f,  0.5f), Vector3(-0.5f,  0.5f,  0.5f),
-        Vector3(-0.5f, -0.5f, -0.5f), Vector3(-0.5f,  0.5f,  0.5f), Vector3(-0.5f,  0.5f, -0.5f)
+        // Top (+Y)
+        Vector3(0, 1, 1), Vector3(1, 1, 1), Vector3(1, 1, 0),
+        Vector3(0, 1, 1), Vector3(1, 1, 0), Vector3(0, 1, 0),
+        // Bottom (-Y)
+        Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(1, 0, 1),
+        Vector3(0, 0, 0), Vector3(1, 0, 1), Vector3(0, 0, 1),
+        // Left (-X)
+        Vector3(0, 0, 0), Vector3(0, 0, 1), Vector3(0, 1, 1),
+        Vector3(0, 0, 0), Vector3(0, 1, 1), Vector3(0, 1, 0),
+        // Right (+X)
+        Vector3(1, 0, 1), Vector3(1, 0, 0), Vector3(1, 1, 0),
+        Vector3(1, 0, 1), Vector3(1, 1, 0), Vector3(1, 1, 1),
+        // Front (+Z)
+        Vector3(0, 0, 1), Vector3(1, 0, 1), Vector3(1, 1, 1),
+        Vector3(0, 0, 1), Vector3(1, 1, 1), Vector3(0, 1, 1),
+        // Back (-Z)
+        Vector3(1, 0, 0), Vector3(0, 0, 0), Vector3(0, 1, 0),
+        Vector3(1, 0, 0), Vector3(0, 1, 0), Vector3(1, 1, 0)
     };
 
     for (const Vector3i &grid_pos : occupied_blocks) {
@@ -289,9 +285,9 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
         if (is_surrounded) continue;
 
         Vector3 offset(
-            static_cast<float>(grid_pos.x) + 0.5f,
-            static_cast<float>(grid_pos.y) + 0.5f,
-            static_cast<float>(grid_pos.z) + 0.5f
+            static_cast<float>(grid_pos.x),
+            static_cast<float>(grid_pos.y),
+            static_cast<float>(grid_pos.z)
         );
 
         for (int i = 0; i < 36; ++i) {
