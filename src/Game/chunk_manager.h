@@ -52,7 +52,7 @@ namespace godot {
             Node3D *find_local_player();
 
             // 非同期処理用メソッド
-            static void _async_load_worker(void *p_userdata);
+            static void _async_load_worker(Variant p_userdata);
             void _on_chunk_loaded(Variant p_userdata);
 
         protected:

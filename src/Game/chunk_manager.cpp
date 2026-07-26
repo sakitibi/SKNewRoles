@@ -127,14 +127,15 @@ void ChunkManager::load_chunk(const Vector2i &coord) {
 
     int64_t task_id = WorkerThreadPool::get_singleton()->add_task(
         callable_mp_static(&ChunkManager::_async_load_worker),
-        data
+        reinterpret_cast<uint64_t>(data)
     );
 
     pending_tasks[coord] = task_id;
 }
 
-void ChunkManager::_async_load_worker(void *p_userdata) {
-    ChunkLoadData *data = static_cast<ChunkLoadData *>(p_userdata);
+void ChunkManager::_async_load_worker(Variant p_userdata) {
+    uint64_t ptr_val = static_cast<uint64_t>(p_userdata);
+    ChunkLoadData *data = reinterpret_cast<ChunkLoadData *>(ptr_val);
     if (!data) return;
 
     uint64_t start_total = Time::get_singleton()->get_ticks_msec();
@@ -160,15 +161,14 @@ void ChunkManager::_async_load_worker(void *p_userdata) {
 
     uint64_t total_time = Time::get_singleton()->get_ticks_msec() - start_total;
 
-    // 非同期スレッドからの処理速度ログ出力
     UtilityFunctions::print(vformat(
         "[ChunkManager Async] Chunk (%d, %d) Loaded in %d ms | Parse NBT: %d ms | Build Mesh/Col: %d ms",
         data->coord.x, data->coord.y, total_time, parse_time, build_time
     ));
 
-    // メインスレッド処理待ち行列へ安全に送信
+    // メインスレッドへ渡す
     if (data->manager) {
-        data->manager->call_deferred("_on_chunk_loaded", reinterpret_cast<uint64_t>(data));
+        data->manager->call_deferred("_on_chunk_loaded", ptr_val);
     }
 }
 
