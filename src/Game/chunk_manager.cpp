@@ -5,6 +5,7 @@
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/worker_thread_pool.hpp>
+#include <godot_cpp/classes/time.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -22,9 +23,7 @@ void ChunkManager::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_player_path", "p_path"), &ChunkManager::set_player_path);
     ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "player_path"), "set_player_path", "get_player_path");
 
-    // C# 側から呼び出せるようにバインドを追加
     ClassDB::bind_method(D_METHOD("is_initial_load_complete"), &ChunkManager::is_initial_load_complete);
-
     ClassDB::bind_method(D_METHOD("_on_chunk_loaded", "p_userdata"), &ChunkManager::_on_chunk_loaded);
 }
 
@@ -41,14 +40,16 @@ ChunkManager::~ChunkManager() {
 void ChunkManager::_ready() {
     if (Engine::get_singleton()->is_editor_hint()) return;
 
-    // ブロックプレハブの事前ロード
     ChunkMeshBuilder::preload_block_meshes();
 }
 
 void ChunkManager::_process(double delta) {
     if (Engine::get_singleton()->is_editor_hint()) return;
 
-    if (!loaded_queue.is_empty()) {
+    uint64_t max_frame_budget_us = 3000;
+    uint64_t start_ticks = Time::get_singleton()->get_ticks_usec();
+
+    while (!loaded_queue.is_empty()) {
         ChunkLoadData *data = loaded_queue.front()->get();
         loaded_queue.pop_front();
 
@@ -68,6 +69,11 @@ void ChunkManager::_process(double delta) {
         }
 
         memdelete(data);
+
+        // 3ms 以上経過した場合は次のフレームへ処理を回す
+        if (Time::get_singleton()->get_ticks_usec() - start_ticks > max_frame_budget_us) {
+            break;
+        }
     }
 
     // プレイヤー追従処理
