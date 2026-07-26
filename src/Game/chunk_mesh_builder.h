@@ -8,6 +8,7 @@
 #include <godot_cpp/classes/static_body3d.hpp>
 #include <godot_cpp/classes/collision_shape3d.hpp>
 #include <godot_cpp/classes/box_shape3d.hpp>
+#include <godot_cpp/classes/concave_polygon_shape3d.hpp>
 #include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/material.hpp>
@@ -26,6 +27,14 @@ namespace godot {
         bool valid = false;
     };
 
+    // チャンク全体の構築用データ（サブスレッドで生成）
+    struct BuiltChunkData {
+        // ブロック種類ごとの MultiMesh
+        HashMap<String, Ref<MultiMesh>> multimeshes;
+        // チャンク全体のコリジョン用ポリゴン頂点
+        PackedVector3Array collision_faces;
+    };
+
     class ChunkMeshBuilder {
         private:
             static int get_palette_index(const PackedInt64Array &data, int palette_size, int x, int y, int z);
@@ -41,9 +50,15 @@ namespace godot {
                 int max_section_y = 19
             );
 
-            static void build_chunk_mesh(
-                Node3D *parent_node, 
+            // サブスレッドで実行可能：MultiMeshのリソースデータとコリジョン頂点を事前にビルド
+            static BuiltChunkData build_chunk_data_async(
                 const HashMap<String, Vector<Vector3>> &categorized_positions
+            );
+
+            // メインスレッドで実行：作成済みのデータからノードを生成して追加
+            static void apply_chunk_data_to_node(
+                Node3D *parent_node, 
+                const BuiltChunkData &built_data
             );
     };
 }

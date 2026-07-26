@@ -4,6 +4,7 @@
 #include <godot_cpp/classes/static_body3d.hpp>
 #include <godot_cpp/classes/collision_shape3d.hpp>
 #include <godot_cpp/classes/box_shape3d.hpp>
+#include <godot_cpp/classes/concave_polygon_shape3d.hpp>
 #include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/templates/hash_set.hpp>
@@ -197,7 +198,6 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
                         if (block.has("Name")) {
                             String block_name = block["Name"];
                             
-                            // 空気以外、かつ登録済みブロックのみ位置データに追加
                             if (block_name != "minecraft:air" && block_map.has(block_name)) {
                                 Vector3 pos(
                                     static_cast<float>(x),
@@ -216,33 +216,13 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
     return categorized_positions;
 }
 
-void ChunkMeshBuilder::build_chunk_mesh(Node3D *parent_node, const HashMap<String, Vector<Vector3>> &categorized_positions) {
-    if (!parent_node) return;
-
+BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(const HashMap<String, Vector<Vector3>> &categorized_positions) {
+    BuiltChunkData result;
     const HashMap<String, String> &block_map = get_block_scene_map();
 
-    // メッシュデータが存在する有効なブロックのみの座標を抽出
     HashSet<Vector3i> occupied_blocks;
-    for (const auto &E : categorized_positions) {
-        String block_name = E.key;
-        if (!block_map.has(block_name)) continue;
 
-        BlockMeshData mesh_data = get_block_mesh_data(block_map[block_name]);
-        if (!mesh_data.valid) continue;
-
-        const Vector<Vector3> &positions = E.value;
-        for (int i = 0; i < positions.size(); ++i) {
-            Vector3 pos = positions[i];
-            Vector3i grid_pos(
-                static_cast<int>(std::floor(pos.x + 0.5f)),
-                static_cast<int>(std::floor(pos.y + 0.5f)),
-                static_cast<int>(std::floor(pos.z + 0.5f))
-            );
-            occupied_blocks.insert(grid_pos);
-        }
-    }
-
-    // 描画用 MultiMeshInstance3D の生成
+    // 各ブロックのインスタンス計算 & MultiMesh リソース生成
     for (const auto &E : categorized_positions) {
         String block_name = E.key;
         const Vector<Vector3> &positions = E.value;
@@ -253,30 +233,52 @@ void ChunkMeshBuilder::build_chunk_mesh(Node3D *parent_node, const HashMap<Strin
         BlockMeshData mesh_data = get_block_mesh_data(scene_path);
         if (!mesh_data.valid || mesh_data.mesh.is_null()) continue;
 
-        MultiMeshInstance3D *mmi = memnew(MultiMeshInstance3D);
         Ref<MultiMesh> mm;
         mm.instantiate();
-
         mm->set_transform_format(MultiMesh::TRANSFORM_3D);
         mm->set_mesh(mesh_data.mesh);
         mm->set_instance_count(positions.size());
 
         for (int i = 0; i < positions.size(); ++i) {
+            Vector3 pos = positions[i];
             Transform3D t;
-            t.origin = positions[i];
+            t.origin = pos;
             mm->set_instance_transform(i, t);
+
+            Vector3i grid_pos(
+                static_cast<int>(std::floor(pos.x + 0.5f)),
+                static_cast<int>(std::floor(pos.y + 0.5f)),
+                static_cast<int>(std::floor(pos.z + 0.5f))
+            );
+            occupied_blocks.insert(grid_pos);
         }
 
-        mmi->set_multimesh(mm);
-        parent_node->add_child(mmi);
+        result.multimeshes[block_name] = mm;
     }
 
-    StaticBody3D *static_body = memnew(StaticBody3D);
-    static_body->set_collision_layer(1);
-    static_body->set_collision_mask(1);
+    // コリジョン用ポリゴン頂点データの事前計算（1つのBoxデータ）
+    static const Vector3 box_verts[36] = {
+        // Front
+        {-0.5f,-0.5f, 0.5f}, { 0.5f,-0.5f, 0.5f}, { 0.5f, 0.5f, 0.5f},
+        {-0.5f,-0.5f, 0.5f}, { 0.5f, 0.5f, 0.5f}, {-0.5f, 0.5f, 0.5f},
+        // Back
+        { 0.5f,-0.5f,-0.5f}, {-0.5f,-0.5f,-0.5f}, {-0.5f, 0.5f,-0.5f},
+        { 0.5f,-0.5f,-0.5f}, {-0.5f, 0.5f,-0.5f}, { 0.5f, 0.5f,-0.5f},
+        // Top
+        {-0.5f, 0.5f, 0.5f}, { 0.5f, 0.5f, 0.5f}, { 0.5f, 0.5f,-0.5f},
+        {-0.5f, 0.5f, 0.5f}, { 0.5f, 0.5f,-0.5f}, {-0.5f, 0.5f,-0.5f},
+        // Bottom
+        {-0.5f,-0.5f,-0.5f}, { 0.5f,-0.5f,-0.5f}, { 0.5f,-0.5f, 0.5f},
+        {-0.5f,-0.5f,-0.5f}, { 0.5f,-0.5f, 0.5f}, {-0.5f,-0.5f, 0.5f},
+        // Right
+        { 0.5f,-0.5f, 0.5f}, { 0.5f,-0.5f,-0.5f}, { 0.5f, 0.5f,-0.5f},
+        { 0.5f,-0.5f, 0.5f}, { 0.5f, 0.5f,-0.5f}, { 0.5f, 0.5f, 0.5f},
+        // Left
+        {-0.5f,-0.5f,-0.5f}, {-0.5f,-0.5f, 0.5f}, {-0.5f, 0.5f, 0.5f},
+        {-0.5f,-0.5f,-0.5f}, {-0.5f, 0.5f, 0.5f}, {-0.5f, 0.5f,-0.5f}
+    };
 
     for (const Vector3i &grid_pos : occupied_blocks) {
-        // 周囲6方向すべてがブロックで埋まっているものは地中とみなして物理形状スキップ
         bool is_surrounded = 
             occupied_blocks.has(grid_pos + Vector3i(1, 0, 0)) &&
             occupied_blocks.has(grid_pos + Vector3i(-1, 0, 0)) &&
@@ -287,20 +289,37 @@ void ChunkMeshBuilder::build_chunk_mesh(Node3D *parent_node, const HashMap<Strin
 
         if (is_surrounded) continue;
 
-        CollisionShape3D *col_shape = memnew(CollisionShape3D);
-        Ref<BoxShape3D> box_shape;
-        box_shape.instantiate();
-        box_shape->set_size(Vector3(1.0f, 1.0f, 1.0f));
-
-        col_shape->set_shape(box_shape);
-        col_shape->set_position(Vector3(grid_pos.x, grid_pos.y, grid_pos.z));
-
-        static_body->add_child(col_shape);
+        Vector3 offset(grid_pos.x, grid_pos.y, grid_pos.z);
+        for (int i = 0; i < 36; ++i) {
+            result.collision_faces.append(box_verts[i] + offset);
+        }
     }
 
-    if (static_body->get_child_count() > 0) {
+    return result;
+}
+
+void ChunkMeshBuilder::apply_chunk_data_to_node(Node3D *parent_node, const BuiltChunkData &built_data) {
+    if (!parent_node) return;
+
+    // メッシュの配置
+    for (const auto &E : built_data.multimeshes) {
+        MultiMeshInstance3D *mmi = memnew(MultiMeshInstance3D);
+        mmi->set_multimesh(E.value);
+        parent_node->add_child(mmi);
+    }
+
+    if (built_data.collision_faces.size() > 0) {
+        StaticBody3D *static_body = memnew(StaticBody3D);
+        static_body->set_collision_layer(1);
+        static_body->set_collision_mask(1);
+
+        CollisionShape3D *col_shape = memnew(CollisionShape3D);
+        Ref<ConcavePolygonShape3D> polygon_shape;
+        polygon_shape.instantiate();
+        polygon_shape->set_faces(built_data.collision_faces);
+
+        col_shape->set_shape(polygon_shape);
+        static_body->add_child(col_shape);
         parent_node->add_child(static_body);
-    } else {
-        memdelete(static_body);
     }
 }
