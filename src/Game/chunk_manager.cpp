@@ -32,22 +32,22 @@ void ChunkManager::_bind_methods() {
 }
 
 ChunkManager::ChunkManager() {}
-
-ChunkManager::~ChunkManager() {
-    while (!loaded_queue.is_empty()) {
-        ChunkLoadData *data = loaded_queue.front()->get();
-        loaded_queue.pop_front();
-        delete data;
-    }
-}
+ChunkManager::~ChunkManager() {}
 
 void ChunkManager::_ready() {
-    if (Engine::get_singleton()->is_editor_hint()) {
-        set_process(false);
-        return;
-    }
-
+    if (Engine::get_singleton()->is_editor_hint()) return;
     ChunkMeshBuilder::preload_block_meshes();
+}
+
+Node3D *ChunkManager::find_local_player() {
+    SceneTree *st = get_tree();
+    if (!st) return nullptr;
+
+    Array players = st->get_nodes_in_group("player");
+    if (players.size() > 0) {
+        return Object::cast_to<Node3D>(players[0]);
+    }
+    return nullptr;
 }
 
 void ChunkManager::_process(double delta) {
@@ -59,9 +59,6 @@ void ChunkManager::_process(double delta) {
             Node *node = get_node_or_null(player_path);
             if (node) {
                 player_node = Object::cast_to<Node3D>(node);
-                if (player_node) {
-                    UtilityFunctions::print("[ChunkManager] Player obtained manually from player_path: ", player_path);
-                }
             }
         }
     }
@@ -75,7 +72,7 @@ void ChunkManager::_process(double delta) {
             );
             
             UtilityFunctions::print(vformat(
-                "[ChunkManager] Initial player position detected: Pos(%.1f, %.1f, %.1f) -> ChunkCoord(%d, %d)", 
+                "[ChunkManager] Player Pos: Pos(%.1f, %.1f, %.1f) -> ChunkCoord(%d, %d)", 
                 p_pos.x, p_pos.y, p_pos.z, current_chunk_coord.x, current_chunk_coord.y
             ));
 
@@ -92,43 +89,33 @@ void ChunkManager::_process(double delta) {
             update_chunks_around_player();
         }
     }
+}
 
-    int processed_this_frame = 0;
-    while (!loaded_queue.is_empty() && processed_this_frame < 2) {
-        ChunkLoadData *data = loaded_queue.front()->get();
-        loaded_queue.pop_front();
+void ChunkManager::update_chunks_around_player() {
+    HashMap<Vector2i, bool> keep;
 
-        pending_tasks.erase(data->coord);
+    for (int x = -render_distance; x <= render_distance; ++x) {
+        for (int z = -render_distance; z <= render_distance; ++z) {
+            Vector2i target = current_chunk_coord + Vector2i(x, z);
+            keep[target] = true;
 
-        if (data->has_data) {
-            uint64_t start_apply = Time::get_singleton()->get_ticks_msec();
-
-            Node3D *chunk_node = memnew(Node3D);
-            chunk_node->set_position(Vector3(data->coord.x * chunk_size, 0.0f, data->coord.y * chunk_size));
-            add_child(chunk_node);
-
-            ChunkMeshBuilder::apply_chunk_data_to_node(chunk_node, data->built_data);
-            loaded_chunks[data->coord] = chunk_node;
-
-            uint64_t apply_time = Time::get_singleton()->get_ticks_msec() - start_apply;
-
-            UtilityFunctions::print(vformat(
-                "[ChunkManager Main] Chunk (%d, %d) Applied to SceneTree in %d ms",
-                data->coord.x, data->coord.y, apply_time
-            ));
-        } else {
-            UtilityFunctions::print(vformat(
-                "[ChunkManager Main] Chunk (%d, %d) Has No Data (has_data=false)",
-                data->coord.x, data->coord.y
-            ));
+            if (!loaded_chunks.has(target) && !pending_tasks.has(target)) {
+                UtilityFunctions::print(vformat("[ChunkManager] Requesting load for chunk: X=%d, Z=%d", target.x, target.y));
+                load_chunk(target);
+            }
         }
-
-        delete data;
-        processed_this_frame++;
     }
 
-    if (!initial_load_complete && pending_tasks.is_empty()) {
-        initial_load_complete = true;
+    Array loaded_coords;
+    for (const auto &E : loaded_chunks) {
+        loaded_coords.append(E.key);
+    }
+
+    for (int i = 0; i < loaded_coords.size(); ++i) {
+        Vector2i coord = loaded_coords[i];
+        if (!keep.has(coord)) {
+            unload_chunk(coord);
+        }
     }
 }
 
@@ -159,7 +146,7 @@ void ChunkManager::_async_load_worker(Variant p_userdata) {
 
     MCAParser parser;
     Dictionary chunk_nbt = parser.parse_chunk(data->region_folder_path, data->coord.x, data->coord.y);
-    
+
     if (!chunk_nbt.is_empty()) {
         data->categorized_positions = ChunkMeshBuilder::parse_chunk_positions(chunk_nbt);
         data->has_data = !data->categorized_positions.is_empty();
@@ -204,58 +191,17 @@ void ChunkManager::_on_chunk_loaded(Variant p_userdata) {
 }
 
 void ChunkManager::unload_chunk(const Vector2i &coord) {
-    if (loaded_chunks.has(coord)) {
-        Node3D *chunk_node = loaded_chunks[coord];
-        loaded_chunks.erase(coord);
-        if (chunk_node) {
-            chunk_node->queue_free();
-        }
+    if (!loaded_chunks.has(coord)) return;
+
+    Node3D *chunk_node = loaded_chunks[coord];
+    loaded_chunks.erase(coord);
+
+    if (chunk_node) {
+        chunk_node->queue_free();
     }
+    UtilityFunctions::print(vformat("[ChunkManager] Chunk (%d, %d) Unloaded", coord.x, coord.y));
 }
 
-Node3D *ChunkManager::find_local_player() {
-    if (!player_path.is_empty()) {
-        Node *n = get_node_or_null(player_path);
-        if (n != nullptr) return Object::cast_to<Node3D>(n);
-    }
-
-    SceneTree *tree = get_tree();
-    if (!tree) return nullptr;
-
-    Array players = tree->get_nodes_in_group("LocalPlayer");
-    return (players.size() > 0) ? Object::cast_to<Node3D>(players[0]) : nullptr;
-}
-
-void ChunkManager::update_chunks_around_player() {
-    HashMap<Vector2i, bool> keep;
-    UtilityFunctions::print(vformat("[ChunkManager] Scanning chunks around player (RenderDistance: %d)", render_distance));
-
-    for (int x = -render_distance; x <= render_distance; ++x) {
-        for (int z = -render_distance; z <= render_distance; ++z) {
-            Vector2i target = current_chunk_coord + Vector2i(x, z);
-            keep[target] = true;
-
-            if (!loaded_chunks.has(target) && !pending_tasks.has(target)) {
-                UtilityFunctions::print(vformat("[ChunkManager] Requesting load for chunk: X=%d, Z=%d", target.x, target.y));
-                load_chunk(target);
-            }
-        }
-    }
-
-    Array loaded_coords;
-    for (const auto &E : loaded_chunks) {
-        loaded_coords.append(E.key);
-    }
-
-    for (int i = 0; i < loaded_coords.size(); ++i) {
-        Vector2i coord = loaded_coords[i];
-        if (!keep.has(coord)) {
-            unload_chunk(coord);
-        }
-    }
-}
-
-// Getter / Setter
 void ChunkManager::set_chunk_size(float p_size) { chunk_size = p_size; }
 float ChunkManager::get_chunk_size() const { return chunk_size; }
 

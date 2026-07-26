@@ -18,12 +18,8 @@ namespace godot {
         float chunk_size = 16.0f;
         ChunkManager *manager = nullptr;
 
-        // パース結果の位置データ
         HashMap<String, Vector<Vector3>> categorized_positions;
-        
-        // 非同期で事前ビルドしたメッシュ・コリジョンデータ
         BuiltChunkData built_data; 
-
         bool has_data = false;
     };
 
@@ -41,8 +37,7 @@ namespace godot {
             Vector2i current_chunk_coord = Vector2i(-999999, -999999);
 
             HashMap<Vector2i, Node3D *> loaded_chunks;
-            HashMap<Vector2i, int64_t> pending_tasks; // ロード中のタスクIDを保持
-            List<ChunkLoadData *> loaded_queue;        // ロード完了データの待ち行列
+            HashMap<Vector2i, int64_t> pending_tasks;
 
             String region_folder_path = "res://regions/";
 
@@ -51,7 +46,6 @@ namespace godot {
             void unload_chunk(const Vector2i &coord);
             Node3D *find_local_player();
 
-            // 非同期処理用メソッド
             void _async_load_worker(Variant p_userdata);
             void _on_chunk_loaded(Variant p_userdata);
 
@@ -65,7 +59,6 @@ namespace godot {
             void _ready() override;
             void _process(double delta) override;
 
-            // Getter / Setter
             void set_chunk_size(float p_size);
             float get_chunk_size() const;
             bool is_initial_load_complete() const;

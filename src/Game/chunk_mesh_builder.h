@@ -27,11 +27,8 @@ namespace godot {
         bool valid = false;
     };
 
-    // チャンク全体の構築用データ（サブスレッドで生成）
     struct BuiltChunkData {
-        // ブロック種類ごとの MultiMesh
         HashMap<String, Ref<MultiMesh>> multimeshes;
-        // チャンク全体のコリジョン用ポリゴン頂点
         PackedVector3Array collision_faces;
     };
 
@@ -50,15 +47,10 @@ namespace godot {
                 int max_section_y = 19
             );
 
-            // サブスレッドで実行可能：MultiMeshのリソースデータとコリジョン頂点を事前にビルド
             static BuiltChunkData build_chunk_data_async(
                 const HashMap<String, Vector<Vector3>> &categorized_positions
             );
 
-            // メインスレッドで実行：作成済みのデータからノードを生成して追加
-            static void apply_chunk_data_to_node(
-                Node3D *parent_node, 
-                const BuiltChunkData &built_data
-            );
+            static void apply_chunk_data_to_node(Node3D *parent_node, const BuiltChunkData &built_data);
     };
 }

@@ -202,7 +202,6 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
                             continue;
                         }
 
-                        // マッピングに存在するブロックのみ登録
                         String scene_path = block_map[block_name];
                         Vector3 pos(x, section_y * 16 + y, z);
                         categorized_positions[scene_path].append(pos);
@@ -233,7 +232,6 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
         }
     }
 
-    // MultiMesh の生成
     for (const auto &E : categorized_positions) {
         String scene_path = E.key;
         const Vector<Vector3> &positions = E.value;
@@ -258,29 +256,21 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
         result.multimeshes[scene_path] = multimesh;
     }
 
-    // 立方体ポリゴンの標準頂点
     static const Vector3 box_verts[36] = {
-        // Front
         Vector3(0,0,1), Vector3(1,0,1), Vector3(1,1,1),
         Vector3(0,0,1), Vector3(1,1,1), Vector3(0,1,1),
-        // Back
         Vector3(1,0,0), Vector3(0,0,0), Vector3(0,1,0),
         Vector3(1,0,0), Vector3(0,1,0), Vector3(1,1,0),
-        // Top (Y+)
         Vector3(0,1,1), Vector3(1,1,1), Vector3(1,1,0),
         Vector3(0,1,1), Vector3(1,1,0), Vector3(0,1,0),
-        // Bottom (Y-)
         Vector3(0,0,0), Vector3(1,0,0), Vector3(1,0,1),
         Vector3(0,0,0), Vector3(1,0,1), Vector3(0,0,1),
-        // Right
         Vector3(1,0,1), Vector3(1,0,0), Vector3(1,1,0),
         Vector3(1,0,1), Vector3(1,1,0), Vector3(1,1,1),
-        // Left
         Vector3(0,0,0), Vector3(0,0,1), Vector3(0,1,1),
         Vector3(0,0,0), Vector3(0,1,1), Vector3(0,1,0)
     };
 
-    // コリジョン頂点の生成
     for (const Vector3i &grid_pos : occupied_blocks) {
         bool is_surrounded =
             occupied_blocks.has(grid_pos + Vector3i(1, 0, 0)) &&
