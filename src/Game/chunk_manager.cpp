@@ -56,16 +56,29 @@ void ChunkManager::_process(double delta) {
     if (!player_node) {
         player_node = find_local_player();
         if (!player_node && !player_path.is_empty()) {
-            player_node = get_node<Node3D>(player_path);
+            Node *node = get_node_or_null(player_path);
+            if (node) {
+                player_node = Object::cast_to<Node3D>(node);
+                if (player_node) {
+                    UtilityFunctions::print("[ChunkManager] ✅ player_path からプレイヤーを手動取得しました: ", player_path);
+                }
+            }
         }
     }
 
     if (first_update) {
         if (player_node) {
+            Vector3 p_pos = player_node->get_global_position();
             current_chunk_coord = Vector2i(
-                static_cast<int>(std::floor(player_node->get_global_position().x / chunk_size)),
-                static_cast<int>(std::floor(player_node->get_global_position().z / chunk_size))
+                static_cast<int>(std::floor(p_pos.x / chunk_size)),
+                static_cast<int>(std::floor(p_pos.z / chunk_size))
             );
+            
+            UtilityFunctions::print(vformat(
+                "[ChunkManager] 🚀 初回プレイヤー位置検出: Pos(%.1f, %.1f, %.1f) -> チャンク座標(%d, %d)", 
+                p_pos.x, p_pos.y, p_pos.z, current_chunk_coord.x, current_chunk_coord.y
+            ));
+
             update_chunks_around_player();
             first_update = false;
         }
@@ -102,8 +115,13 @@ void ChunkManager::_process(double delta) {
             uint64_t apply_time = Time::get_singleton()->get_ticks_msec() - start_apply;
 
             UtilityFunctions::print(vformat(
-                "[ChunkManager Main] Chunk (%d, %d) Applied to SceneTree in %d ms",
+                "[ChunkManager Main] 🟢 チャンク (%d, %d) Applied to SceneTree in %d ms",
                 data->coord.x, data->coord.y, apply_time
+            ));
+        } else {
+            UtilityFunctions::print(vformat(
+                "[ChunkManager Main] ⚠️ チャンク (%d, %d) に有効なデータ (has_data=false) がありませんでした。",
+                data->coord.x, data->coord.y
             ));
         }
 
@@ -117,21 +135,19 @@ void ChunkManager::_process(double delta) {
 }
 
 void ChunkManager::load_chunk(const Vector2i &coord) {
-    if (loaded_chunks.has(coord) || pending_tasks.has(coord)) return;
-
-    ChunkLoadData *data = new ChunkLoadData();
+    ChunkLoadData *data = memnew(ChunkLoadData);
     data->coord = coord;
     data->region_folder_path = region_folder_path;
     data->chunk_size = chunk_size;
     data->manager = this;
 
-    // 非同期タスクをプールに登録
+    Callable worker_callable = Callable(this, "_async_load_worker");
     int64_t task_id = WorkerThreadPool::get_singleton()->add_task(
-        callable_mp_static(&ChunkManager::_async_load_worker),
-        reinterpret_cast<uint64_t>(data)
+        Callable(this, "_async_load_worker").bind(Variant(data))
     );
-
+    
     pending_tasks[coord] = task_id;
+    UtilityFunctions::print("[ChunkManager] 🧵 非同期タスク登録完了 (TaskID: ", task_id, ") チャンク: X=", coord.x, ", Z=", coord.y);
 }
 
 void ChunkManager::_async_load_worker(Variant p_userdata) {
@@ -214,12 +230,15 @@ Node3D *ChunkManager::find_local_player() {
 
 void ChunkManager::update_chunks_around_player() {
     HashMap<Vector2i, bool> keep;
+    UtilityFunctions::print("[ChunkManager] 🔄 周囲のチャンクをスキャン中 (RenderDistance: ", render_distance, ")");
+    
     for (int x = -render_distance; x <= render_distance; ++x) {
         for (int z = -render_distance; z <= render_distance; ++z) {
             Vector2i target = current_chunk_coord + Vector2i(x, z);
             keep[target] = true;
 
             if (!loaded_chunks.has(target) && !pending_tasks.has(target)) {
+                UtilityFunctions::print("[ChunkManager] 📥 新規チャンクのロードを要求: X=", target.x, ", Z=", target.y);
                 load_chunk(target);
             }
         }
