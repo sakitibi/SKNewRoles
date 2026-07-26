@@ -216,69 +216,76 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
     return categorized_positions;
 }
 
-BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(const HashMap<String, Vector<Vector3>> &categorized_positions) {
+BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
+    const HashMap<String, Vector<Vector3>> &categorized_positions
+) {
     BuiltChunkData result;
-    const HashMap<String, String> &block_map = get_block_scene_map();
 
+    // 全ブロックの位置を Hash_Set に登録
     HashSet<Vector3i> occupied_blocks;
-
-    // 各ブロックのインスタンス計算 & MultiMesh リソース生成
     for (const auto &E : categorized_positions) {
-        String block_name = E.key;
-        const Vector<Vector3> &positions = E.value;
-
-        if (!block_map.has(block_name) || positions.is_empty()) continue;
-
-        String scene_path = block_map[block_name];
-        BlockMeshData mesh_data = get_block_mesh_data(scene_path);
-        if (!mesh_data.valid || mesh_data.mesh.is_null()) continue;
-
-        Ref<MultiMesh> mm;
-        mm.instantiate();
-        mm->set_transform_format(MultiMesh::TRANSFORM_3D);
-        mm->set_mesh(mesh_data.mesh);
-        mm->set_instance_count(positions.size());
-
-        for (int i = 0; i < positions.size(); ++i) {
-            Vector3 pos = positions[i];
-            Transform3D t;
-            t.origin = pos;
-            mm->set_instance_transform(i, t);
-
-            Vector3i grid_pos(
-                static_cast<int>(std::floor(pos.x + 0.5f)),
-                static_cast<int>(std::floor(pos.y + 0.5f)),
-                static_cast<int>(std::floor(pos.z + 0.5f))
-            );
-            occupied_blocks.insert(grid_pos);
+        const Vector<Vector3> &vec = E.value;
+        for (int i = 0; i < vec.size(); ++i) {
+            Vector3 pos = vec[i];
+            // 整数座標に丸めて誤差を排除
+            occupied_blocks.insert(Vector3i(
+                static_cast<int>(std::round(pos.x)),
+                static_cast<int>(std::round(pos.y)),
+                static_cast<int>(std::round(pos.z))
+            ));
         }
-
-        result.multimeshes[block_name] = mm;
     }
 
-    // コリジョン用ポリゴン頂点データの事前計算（1つのBoxデータ）
+    // 1ブロック(立方体)の標準頂点定義
     static const Vector3 box_verts[36] = {
         // Front
-        {-0.5f,-0.5f, 0.5f}, { 0.5f,-0.5f, 0.5f}, { 0.5f, 0.5f, 0.5f},
-        {-0.5f,-0.5f, 0.5f}, { 0.5f, 0.5f, 0.5f}, {-0.5f, 0.5f, 0.5f},
+        Vector3(0,0,1), Vector3(1,0,1), Vector3(1,1,1),
+        Vector3(0,0,1), Vector3(1,1,1), Vector3(0,1,1),
         // Back
-        { 0.5f,-0.5f,-0.5f}, {-0.5f,-0.5f,-0.5f}, {-0.5f, 0.5f,-0.5f},
-        { 0.5f,-0.5f,-0.5f}, {-0.5f, 0.5f,-0.5f}, { 0.5f, 0.5f,-0.5f},
-        // Top
-        {-0.5f, 0.5f, 0.5f}, { 0.5f, 0.5f, 0.5f}, { 0.5f, 0.5f,-0.5f},
-        {-0.5f, 0.5f, 0.5f}, { 0.5f, 0.5f,-0.5f}, {-0.5f, 0.5f,-0.5f},
-        // Bottom
-        {-0.5f,-0.5f,-0.5f}, { 0.5f,-0.5f,-0.5f}, { 0.5f,-0.5f, 0.5f},
-        {-0.5f,-0.5f,-0.5f}, { 0.5f,-0.5f, 0.5f}, {-0.5f,-0.5f, 0.5f},
+        Vector3(1,0,0), Vector3(0,0,0), Vector3(0,1,0),
+        Vector3(1,0,0), Vector3(0,1,0), Vector3(1,1,0),
+        // Top (Y+)
+        Vector3(0,1,1), Vector3(1,1,1), Vector3(1,1,0),
+        Vector3(0,1,1), Vector3(1,1,0), Vector3(0,1,0),
+        // Bottom (Y-)
+        Vector3(0,0,0), Vector3(1,0,0), Vector3(1,0,1),
+        Vector3(0,0,0), Vector3(1,0,1), Vector3(0,0,1),
         // Right
-        { 0.5f,-0.5f, 0.5f}, { 0.5f,-0.5f,-0.5f}, { 0.5f, 0.5f,-0.5f},
-        { 0.5f,-0.5f, 0.5f}, { 0.5f, 0.5f,-0.5f}, { 0.5f, 0.5f, 0.5f},
+        Vector3(1,0,1), Vector3(1,0,0), Vector3(1,1,0),
+        Vector3(1,0,1), Vector3(1,1,0), Vector3(1,1,1),
         // Left
-        {-0.5f,-0.5f,-0.5f}, {-0.5f,-0.5f, 0.5f}, {-0.5f, 0.5f, 0.5f},
-        {-0.5f,-0.5f,-0.5f}, {-0.5f, 0.5f, 0.5f}, {-0.5f, 0.5f,-0.5f}
+        Vector3(0,0,0), Vector3(0,0,1), Vector3(0,1,1),
+        Vector3(0,0,0), Vector3(0,1,1), Vector3(0,1,0)
     };
 
+    // MultiMeshの作成
+    for (const auto &E : categorized_positions) {
+        String scene_path = E.key;
+        const Vector<Vector3> &positions = E.value;
+        int instance_count = positions.size();
+        if (instance_count == 0) continue;
+
+        BlockMeshData mesh_data = get_block_mesh_data(scene_path);
+        if (!mesh_data.valid) continue;
+
+        Ref<MultiMesh> multimesh;
+        multimesh.instantiate();
+        multimesh->set_transform_format(MultiMesh::TRANSFORM_3D);
+        multimesh->set_mesh(mesh_data.mesh);
+        multimesh->set_instance_count(instance_count);
+
+        for (int i = 0; i < instance_count; ++i) {
+            Transform3D t;
+            t.origin = positions[i];
+            multimesh->set_instance_transform(i, t);
+        }
+
+        result.multimeshes[scene_path] = multimesh;
+    }
+
+    // コリジョン頂点の生成
     for (const Vector3i &grid_pos : occupied_blocks) {
+        // 上下左右前後がすべてブロックで囲まれている場合はコリジョン生成をスキップ
         bool is_surrounded = 
             occupied_blocks.has(grid_pos + Vector3i(1, 0, 0)) &&
             occupied_blocks.has(grid_pos + Vector3i(-1, 0, 0)) &&
@@ -289,7 +296,13 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(const HashMap<String, Ve
 
         if (is_surrounded) continue;
 
-        Vector3 offset(grid_pos.x, grid_pos.y, grid_pos.z);
+        // 整数座標から正確な Vector3 オフセットを生成
+        Vector3 offset(
+            static_cast<float>(grid_pos.x),
+            static_cast<float>(grid_pos.y),
+            static_cast<float>(grid_pos.z)
+        );
+
         for (int i = 0; i < 36; ++i) {
             result.collision_faces.append(box_verts[i] + offset);
         }
