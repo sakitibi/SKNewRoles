@@ -93,7 +93,15 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
                 }
 
                 transformed_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surf_arrays);
-                Ref<Material> mat = mi->get_active_material(s);
+
+                Ref<Material> mat = mi->get_material_override();
+                if (mat.is_null()) {
+                    mat = mi->get_active_material(s);
+                }
+                if (mat.is_null()) {
+                    mat = original_mesh->surface_get_material(s);
+                }
+
                 if (mat.is_valid()) {
                     transformed_mesh->surface_set_material(s, mat);
                     data.materials.append(mat);
@@ -187,15 +195,12 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(const D
     return result;
 }
 
-// 1つの 16x16 Section 内で物理判定用の箱を結合（マージ）して生成する内部関数
 static void create_merged_box_collisions(
     StaticBody3D *static_body,
     const HashSet<Vector3i> &occupied_blocks,
     int section_y
 ) {
     int start_y = section_y * 16;
-
-    // 16x16x16 のグリッド内で露出しているブロックのフラグを作る
     bool grid[16][16][16] = {};
 
     for (int y = 0; y < 16; ++y) {
@@ -206,7 +211,6 @@ static void create_merged_box_collisions(
 
                 if (!occupied_blocks.has(g_pos)) continue;
 
-                // 6方向全てが埋まっているブロックは判定対象外
                 bool is_surrounded = 
                     occupied_blocks.has(g_pos + Vector3i(1, 0, 0)) &&
                     occupied_blocks.has(g_pos + Vector3i(-1, 0, 0)) &&
@@ -222,7 +226,6 @@ static void create_merged_box_collisions(
         }
     }
 
-    // グリーディメッシング（X方向・Z方向に連続する判定箱を結合）
     for (int y = 0; y < 16; ++y) {
         int world_y = start_y + y;
         bool visited[16][16] = {};
@@ -231,13 +234,11 @@ static void create_merged_box_collisions(
             for (int x = 0; x < 16; ++x) {
                 if (!grid[y][z][x] || visited[z][x]) continue;
 
-                // X方向に伸びる長さを計測
                 int width_x = 1;
                 while (x + width_x < 16 && grid[y][z][x + width_x] && !visited[z][x + width_x]) {
                     width_x++;
                 }
 
-                // Z方向にどこまで同じ幅(width_x)で伸ばせるか計測
                 int depth_z = 1;
                 while (z + depth_z < 16) {
                     bool can_extend = true;
@@ -251,19 +252,16 @@ static void create_merged_box_collisions(
                     depth_z++;
                 }
 
-                // 訪問済みにする
-                for (int dz = 0; dz < depth_z; ++dz) {
-                    for (int dx = 0; dx < width_x; ++dx) {
+                for (int dz = 0; dz < depth_z; dz++) {
+                    for (int dx = 0; dx < width_x; dx++) {
                         visited[z + dz][x + dx] = true;
                     }
                 }
 
-                // 結合された箱のパラメータ計算
                 float size_x = (float)width_x;
                 float size_y = 1.0f;
                 float size_z = (float)depth_z;
 
-                // 中心位置の計算
                 float center_x = x + (size_x - 1.0f) * 0.5f;
                 float center_y = (float)world_y;
                 float center_z = z + (size_z - 1.0f) * 0.5f;
@@ -288,7 +286,6 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
     HashSet<Vector3i> occupied_blocks;
     HashSet<int> active_section_ys;
 
-    // ブロック位置の集計
     for (const auto &E : categorized_positions) {
         for (int i = 0; i < E.value.size(); ++i) {
             Vector3 pos = E.value[i];
@@ -322,6 +319,11 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
         mm->set_mesh(mesh_data.mesh);
         mm->set_instance_count(positions.size());
 
+        // MultiMeshInstance3D へのマテリアル適用
+        if (mesh_data.materials.size() > 0 && mesh_data.materials[0].is_valid()) {
+            mmi->set_material_override(mesh_data.materials[0]);
+        }
+
         for (int i = 0; i < positions.size(); ++i) {
             Transform3D t;
             t.origin = positions[i];
@@ -332,7 +334,7 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
         parent_node->add_child(mmi);
     }
 
-    // 結合されたコリジョンノードを構築
+    // 結合コリジョンの生成
     StaticBody3D *static_body = memnew(StaticBody3D);
     static_body->set_collision_layer(1);
     static_body->set_collision_mask(1);

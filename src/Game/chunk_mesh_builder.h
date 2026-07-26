@@ -8,7 +8,6 @@
 #include <godot_cpp/classes/static_body3d.hpp>
 #include <godot_cpp/classes/collision_shape3d.hpp>
 #include <godot_cpp/classes/box_shape3d.hpp>
-#include <godot_cpp/classes/concave_polygon_shape3d.hpp>
 #include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/material.hpp>
@@ -24,7 +23,6 @@ namespace godot {
     struct BlockMeshData {
         Ref<Mesh> mesh;
         Vector<Ref<Material>> materials;
-        PackedVector3Array base_collision_faces;
         bool valid = false;
     };
 
@@ -37,14 +35,12 @@ namespace godot {
             static void preload_block_meshes();
             static BlockMeshData get_block_mesh_data(const String &scene_path);
 
-            // Y軸制限付きのパース
             static HashMap<String, Vector<Vector3>> parse_chunk_positions(
                 const Dictionary &chunk_data, 
                 int min_section_y = -4, 
                 int max_section_y = 19
             );
 
-            // メッシュおよび結合コリジョンの生成
             static void build_from_positions(
                 Node3D *parent_node, 
                 const HashMap<String, Vector<Vector3>> &categorized_positions
