@@ -62,7 +62,7 @@ void ChunkManager::_process(double delta) {
             chunk_node->set_position(Vector3(coord.x * chunk_size, 0, coord.y * chunk_size));
 
             // メッシュ＆コリジョン構築
-            ChunkMeshBuilder::build_from_positions(chunk_node, data->categorized_positions);
+            ChunkMeshBuilder::build_chunk_mesh(chunk_node, data->categorized_positions);
 
             add_child(chunk_node);
             loaded_chunks[coord] = chunk_node;
