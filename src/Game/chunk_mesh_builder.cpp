@@ -73,17 +73,20 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
             Ref<ArrayMesh> transformed_mesh;
             transformed_mesh.instantiate();
 
-            for (int s = 0; s < original_mesh->get_surface_count(); ++s) {
+            int surface_count = original_mesh->get_surface_count();
+            for (int s = 0; s < surface_count; ++s) {
                 Array surf_arrays = original_mesh->surface_get_arrays(s);
                 if (surf_arrays.size() <= Mesh::ARRAY_VERTEX) continue;
 
+                // 頂点座標の変換
                 PackedVector3Array verts = surf_arrays[Mesh::ARRAY_VERTEX];
                 for (int v = 0; v < verts.size(); ++v) {
                     verts[v] = rel_transform.xform(verts[v]);
                 }
                 surf_arrays[Mesh::ARRAY_VERTEX] = verts;
 
-                if (surf_arrays.size() > Mesh::ARRAY_NORMAL) {
+                // 法線ベクトルの変換
+                if (surf_arrays.size() > Mesh::ARRAY_NORMAL && surf_arrays[Mesh::ARRAY_NORMAL].get_type() == Variant::PACKED_VECTOR3_ARRAY) {
                     PackedVector3Array normals = surf_arrays[Mesh::ARRAY_NORMAL];
                     Basis normal_basis = rel_transform.basis.inverse().transposed();
                     for (int n = 0; n < normals.size(); ++n) {
@@ -92,12 +95,10 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
                     surf_arrays[Mesh::ARRAY_NORMAL] = normals;
                 }
 
+                // サーフェスを追加（すべての面を保持）
                 transformed_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surf_arrays);
 
-                Ref<Material> mat = mi->get_material_override();
-                if (mat.is_null()) {
-                    mat = mi->get_active_material(s);
-                }
+                Ref<Material> mat = mi->get_active_material(s);
                 if (mat.is_null()) {
                     mat = original_mesh->surface_get_material(s);
                 }
@@ -105,6 +106,8 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
                 if (mat.is_valid()) {
                     transformed_mesh->surface_set_material(s, mat);
                     data.materials.append(mat);
+                } else {
+                    data.materials.append(Ref<Material>());
                 }
             }
 
@@ -312,17 +315,14 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
         BlockMeshData mesh_data = get_block_mesh_data(scene_path);
         if (!mesh_data.valid || mesh_data.mesh.is_null()) continue;
 
+        // MultiMeshInstance3D の生成
         MultiMeshInstance3D *mmi = memnew(MultiMeshInstance3D);
         Ref<MultiMesh> mm;
         mm.instantiate();
-        mm->set_transform_format(MultiMesh::TRANSFORM_3D);
-        mm->set_mesh(mesh_data.mesh);
-        mm->set_instance_count(positions.size());
 
-        // MultiMeshInstance3D へのマテリアル適用
-        if (mesh_data.materials.size() > 0 && mesh_data.materials[0].is_valid()) {
-            mmi->set_material_override(mesh_data.materials[0]);
-        }
+        mm->set_transform_format(MultiMesh::TRANSFORM_3D);
+        mm->set_mesh(mesh_data.mesh); // 各サーフェスとマテリアルが含まれたメッシュ
+        mm->set_instance_count(positions.size());
 
         for (int i = 0; i < positions.size(); ++i) {
             Transform3D t;
