@@ -63,15 +63,19 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
         return data;
     }
 
+    // シーン内のすべての MeshInstance3D (Top, Bottom, Front, Back, Left, Right) を取得
     TypedArray<Node> nodes = root_3d->find_children("*", "MeshInstance3D", true, false);
     if (nodes.size() > 0) {
-        MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(nodes[0]);
-        if (mi && mi->get_mesh().is_valid()) {
+        Ref<ArrayMesh> combined_mesh;
+        combined_mesh.instantiate();
+
+        // すべての MeshInstance3D 子ノードを走査する
+        for (int i = 0; i < nodes.size(); ++i) {
+            MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(nodes[i]);
+            if (!mi || mi->get_mesh().is_null()) continue;
+
             Ref<Mesh> original_mesh = mi->get_mesh();
             Transform3D rel_transform = get_relative_transform(root_3d, mi);
-
-            Ref<ArrayMesh> transformed_mesh;
-            transformed_mesh.instantiate();
 
             int surface_count = original_mesh->get_surface_count();
             for (int s = 0; s < surface_count; ++s) {
@@ -95,23 +99,29 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
                     surf_arrays[Mesh::ARRAY_NORMAL] = normals;
                 }
 
-                // サーフェスを追加（すべての面を保持）
-                transformed_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surf_arrays);
+                // 結合用メッシュにサーフェスを追加
+                combined_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surf_arrays);
 
-                Ref<Material> mat = mi->get_active_material(s);
+                Ref<Material> mat = mi->get_material_override();
+                if (mat.is_null()) {
+                    mat = mi->get_active_material(s);
+                }
                 if (mat.is_null()) {
                     mat = original_mesh->surface_get_material(s);
                 }
 
+                int new_surface_idx = combined_mesh->get_surface_count() - 1;
                 if (mat.is_valid()) {
-                    transformed_mesh->surface_set_material(s, mat);
+                    combined_mesh->surface_set_material(new_surface_idx, mat);
                     data.materials.append(mat);
                 } else {
                     data.materials.append(Ref<Material>());
                 }
             }
+        }
 
-            data.mesh = transformed_mesh;
+        if (combined_mesh->get_surface_count() > 0) {
+            data.mesh = combined_mesh;
             data.valid = true;
         }
     }
