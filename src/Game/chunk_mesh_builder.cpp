@@ -10,6 +10,7 @@
 #include <godot_cpp/templates/hash_set.hpp>
 #include <godot_cpp/variant/vector3i.hpp>
 #include <cmath>
+#include <vector>
 
 using namespace godot;
 
@@ -228,9 +229,15 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
         }
     }
 
+    // キー（シーンパス）をソートして処理順を完全固定する
+    List<String> sorted_keys;
     for (const auto &E : categorized_positions) {
-        String scene_path = E.key;
-        const Vector<Vector3> &positions = E.value;
+        sorted_keys.push_back(E.key);
+    }
+    sorted_keys.sort();
+
+    for (const String &scene_path : sorted_keys) {
+        const Vector<Vector3> &positions = categorized_positions[scene_path];
         int instance_count = positions.size();
         if (instance_count == 0) continue;
 
@@ -245,6 +252,7 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
 
         for (int i = 0; i < instance_count; ++i) {
             Transform3D t;
+            // 見た目はブロックの中心 (0.5, 0.5, 0.5) を原点にする
             t.origin = positions[i] + Vector3(0.5f, 0.5f, 0.5f);
             multimesh->set_instance_transform(i, t);
         }
@@ -254,26 +262,44 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
 
     static const Vector3 box_verts[36] = {
         // Top (+Y)
-        Vector3(0, 1, 1), Vector3(1, 1, 1), Vector3(1, 1, 0),
-        Vector3(0, 1, 1), Vector3(1, 1, 0), Vector3(0, 1, 0),
+        Vector3(-0.5f,  0.5f,  0.5f), Vector3( 0.5f,  0.5f,  0.5f), Vector3( 0.5f,  0.5f, -0.5f),
+        Vector3(-0.5f,  0.5f,  0.5f), Vector3( 0.5f,  0.5f, -0.5f), Vector3(-0.5f,  0.5f, -0.5f),
         // Bottom (-Y)
-        Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(1, 0, 1),
-        Vector3(0, 0, 0), Vector3(1, 0, 1), Vector3(0, 0, 1),
+        Vector3(-0.5f, -0.5f, -0.5f), Vector3( 0.5f, -0.5f, -0.5f), Vector3( 0.5f, -0.5f,  0.5f),
+        Vector3(-0.5f, -0.5f, -0.5f), Vector3( 0.5f, -0.5f,  0.5f), Vector3(-0.5f, -0.5f,  0.5f),
         // Left (-X)
-        Vector3(0, 0, 0), Vector3(0, 0, 1), Vector3(0, 1, 1),
-        Vector3(0, 0, 0), Vector3(0, 1, 1), Vector3(0, 1, 0),
+        Vector3(-0.5f, -0.5f, -0.5f), Vector3(-0.5f, -0.5f,  0.5f), Vector3(-0.5f,  0.5f,  0.5f),
+        Vector3(-0.5f, -0.5f, -0.5f), Vector3(-0.5f,  0.5f,  0.5f), Vector3(-0.5f,  0.5f, -0.5f),
         // Right (+X)
-        Vector3(1, 0, 1), Vector3(1, 0, 0), Vector3(1, 1, 0),
-        Vector3(1, 0, 1), Vector3(1, 1, 0), Vector3(1, 1, 1),
+        Vector3( 0.5f, -0.5f,  0.5f), Vector3( 0.5f, -0.5f, -0.5f), Vector3( 0.5f,  0.5f, -0.5f),
+        Vector3( 0.5f, -0.5f,  0.5f), Vector3( 0.5f,  0.5f, -0.5f), Vector3( 0.5f,  0.5f,  0.5f),
         // Front (+Z)
-        Vector3(0, 0, 1), Vector3(1, 0, 1), Vector3(1, 1, 1),
-        Vector3(0, 0, 1), Vector3(1, 1, 1), Vector3(0, 1, 1),
+        Vector3(-0.5f, -0.5f,  0.5f), Vector3( 0.5f, -0.5f,  0.5f), Vector3( 0.5f,  0.5f,  0.5f),
+        Vector3(-0.5f, -0.5f,  0.5f), Vector3( 0.5f,  0.5f,  0.5f), Vector3(-0.5f,  0.5f,  0.5f),
         // Back (-Z)
-        Vector3(1, 0, 0), Vector3(0, 0, 0), Vector3(0, 1, 0),
-        Vector3(1, 0, 0), Vector3(0, 1, 0), Vector3(1, 1, 0)
+        Vector3( 0.5f, -0.5f, -0.5f), Vector3(-0.5f, -0.5f, -0.5f), Vector3(-0.5f,  0.5f, -0.5f),
+        Vector3( 0.5f, -0.5f, -0.5f), Vector3(-0.5f,  0.5f, -0.5f), Vector3( 0.5f,  0.5f, -0.5f)
     };
 
+    std::vector<Vector3i> sorted_blocks;
+    sorted_blocks.reserve(occupied_blocks.size());
     for (const Vector3i &grid_pos : occupied_blocks) {
+        sorted_blocks.push_back(grid_pos);
+    }
+
+    std::sort(sorted_blocks.begin(), sorted_blocks.end(), [](const Vector3i &a, const Vector3i &b) {
+        if (a.y != b.y) {
+            return a.y < b.y;
+        }
+        if (a.z != b.z) {
+            return a.z < b.z;
+        }
+        return a.x < b.x;
+    });
+
+    for (int idx = 0; idx < sorted_blocks.size(); ++idx) {
+        const Vector3i &grid_pos = sorted_blocks[idx];
+        
         bool is_surrounded =
             occupied_blocks.has(grid_pos + Vector3i(1, 0, 0)) &&
             occupied_blocks.has(grid_pos + Vector3i(-1, 0, 0)) &&
@@ -285,9 +311,9 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
         if (is_surrounded) continue;
 
         Vector3 offset(
-            static_cast<float>(grid_pos.x),
-            static_cast<float>(grid_pos.y),
-            static_cast<float>(grid_pos.z)
+            static_cast<float>(grid_pos.x) + 0.5f,
+            static_cast<float>(grid_pos.y) + 0.5f,
+            static_cast<float>(grid_pos.z) + 0.5f
         );
 
         for (int i = 0; i < 36; ++i) {
