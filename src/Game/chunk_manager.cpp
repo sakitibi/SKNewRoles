@@ -46,74 +46,58 @@ void ChunkManager::_ready() {
 void ChunkManager::_process(double delta) {
     if (Engine::get_singleton()->is_editor_hint()) return;
 
-    uint64_t max_frame_budget_us = 3000;
-    uint64_t start_ticks = Time::get_singleton()->get_ticks_usec();
+    // プレイヤー位置の追跡と周縁チャンク更新
+    if (first_update) {
+        player_node = find_local_player();
+        if (player_node) {
+            current_chunk_coord = Vector2i(
+                static_cast<int>(std::floor(player_node->get_global_position().x / chunk_size)),
+                static_cast<int>(std::floor(player_node->get_global_position().z / chunk_size))
+            );
+            update_chunks_around_player();
+            first_update = false;
+        }
+    } else if (player_node) {
+        Vector2i new_coord = Vector2i(
+            static_cast<int>(std::floor(player_node->get_global_position().x / chunk_size)),
+            static_cast<int>(std::floor(player_node->get_global_position().z / chunk_size))
+        );
+        if (new_coord != current_chunk_coord) {
+            current_chunk_coord = new_coord;
+            update_chunks_around_player();
+        }
+    }
 
+    // ロード完了キューの消化（メインスレッドでのノード追加）
     while (!loaded_queue.is_empty()) {
         ChunkLoadData *data = loaded_queue.front()->get();
         loaded_queue.pop_front();
 
-        Vector2i coord = data->coord;
-        pending_tasks.erase(coord);
+        pending_tasks.erase(data->coord);
 
-        if (!loaded_chunks.has(coord) && data->has_data) {
+        if (data->has_data) {
+            uint64_t start_apply = Time::get_singleton()->get_ticks_msec();
+
             Node3D *chunk_node = memnew(Node3D);
-            chunk_node->set_name("Chunk_" + String::num_int64(coord.x) + "_" + String::num_int64(coord.y));
-            chunk_node->set_position(Vector3(coord.x * chunk_size, 0, coord.y * chunk_size));
-
-            // メッシュ＆コリジョン構築
-            ChunkMeshBuilder::build_chunk_mesh(chunk_node, data->categorized_positions);
-
+            chunk_node->set_position(Vector3(data->coord.x * chunk_size, 0.0f, data->coord.y * chunk_size));
             add_child(chunk_node);
-            loaded_chunks[coord] = chunk_node;
+
+            ChunkMeshBuilder::apply_chunk_data_to_node(chunk_node, data->built_data);
+            loaded_chunks[data->coord] = chunk_node;
+
+            uint64_t apply_time = Time::get_singleton()->get_ticks_msec() - start_apply;
+
+            UtilityFunctions::print(vformat(
+                "[ChunkManager Main] Chunk (%d, %d) Applied to SceneTree in %d ms",
+                data->coord.x, data->coord.y, apply_time
+            ));
         }
 
-        memdelete(data);
-
-        // 3ms 以上経過した場合は次のフレームへ処理を回す
-        if (Time::get_singleton()->get_ticks_usec() - start_ticks > max_frame_budget_us) {
-            break;
-        }
+        delete data;
     }
 
-    // プレイヤー追従処理
-    if (!player_node) {
-        player_node = find_local_player();
-    }
-
-    Vector2i new_chunk_coord(0, 0);
-    if (player_node) {
-        Vector3 player_pos = player_node->get_global_position();
-        new_chunk_coord = Vector2i(
-            static_cast<int>(std::floor(player_pos.x / chunk_size)),
-            static_cast<int>(std::floor(player_pos.z / chunk_size))
-        );
-    }
-
-    if (first_update || new_chunk_coord != current_chunk_coord) {
-        current_chunk_coord = new_chunk_coord;
-        first_update = false;
-        update_chunks_around_player();
-    }
-
-    // 初期ロード完了チェック
-    if (!initial_load_complete) {
-        bool all_loaded = true;
-        for (int x = -render_distance; x <= render_distance; ++x) {
-            for (int z = -render_distance; z <= render_distance; ++z) {
-                Vector2i target = current_chunk_coord + Vector2i(x, z);
-                if (!loaded_chunks.has(target)) {
-                    all_loaded = false;
-                    break;
-                }
-            }
-            if (!all_loaded) break;
-        }
-
-        if (all_loaded && pending_tasks.is_empty() && loaded_queue.is_empty()) {
-            initial_load_complete = true;
-            UtilityFunctions::print("[ChunkManager] Initial chunks fully loaded!");
-        }
+    if (!initial_load_complete && pending_tasks.is_empty()) {
+        initial_load_complete = true;
     }
 }
 
@@ -140,19 +124,38 @@ void ChunkManager::_async_load_worker(void *p_userdata) {
     ChunkLoadData *data = static_cast<ChunkLoadData *>(p_userdata);
     if (!data) return;
 
-    // MCAパース
-    Dictionary chunk_data = MCAParser::parse_chunk(data->region_folder_path, data->coord.x, data->coord.y);
+    uint64_t start_total = Time::get_singleton()->get_ticks_msec();
 
-    if (!chunk_data.is_empty()) {
-        data->categorized_positions = ChunkMeshBuilder::parse_chunk_positions(chunk_data);
+    // MCAパース処理
+    uint64_t start_parse = Time::get_singleton()->get_ticks_msec();
+    MCAParser parser;
+    Dictionary chunk_nbt = parser.parse_chunk(data->region_folder_path, data->coord.x, data->coord.y);
+    
+    if (!chunk_nbt.is_empty()) {
+        data->categorized_positions = ChunkMeshBuilder::parse_chunk_positions(chunk_nbt);
         data->has_data = !data->categorized_positions.is_empty();
-    } else {
-        data->has_data = false;
+    }
+    uint64_t parse_time = Time::get_singleton()->get_ticks_msec() - start_parse;
+
+    // メッシュ＆コリジョンビルド処理 (データが存在する場合)
+    uint64_t build_time = 0;
+    if (data->has_data) {
+        uint64_t start_build = Time::get_singleton()->get_ticks_msec();
+        data->built_data = ChunkMeshBuilder::build_chunk_data_async(data->categorized_positions);
+        build_time = Time::get_singleton()->get_ticks_msec() - start_build;
     }
 
+    uint64_t total_time = Time::get_singleton()->get_ticks_msec() - start_total;
+
+    // 非同期スレッドからのログ出力
+    UtilityFunctions::print(vformat(
+        "[ChunkManager Async] Chunk (%d, %d) Loaded in %d ms | Parse NBT: %d ms | Build Mesh/Col: %d ms",
+        data->coord.x, data->coord.y, total_time, parse_time, build_time
+    ));
+
+    // メインスレッド処理待ち行列へ安全に送信
     if (data->manager) {
-        uint64_t ptr_val = reinterpret_cast<uint64_t>(data);
-        data->manager->call_deferred("_on_chunk_loaded", ptr_val);
+        data->manager->call_deferred("_on_chunk_loaded", Variant(data));
     }
 }
 

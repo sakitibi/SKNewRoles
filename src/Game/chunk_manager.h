@@ -1,5 +1,6 @@
 #pragma once
 
+#include "chunk_mesh_builder.h"
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/templates/hash_map.hpp>
@@ -18,6 +19,9 @@ namespace godot {
 
         // パース結果の位置データ
         HashMap<String, Vector<Vector3>> categorized_positions;
+
+        BuiltChunkData built_data;
+
         bool has_data = false;
     };
 
