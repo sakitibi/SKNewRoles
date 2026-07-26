@@ -212,53 +212,65 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
 }
 
 BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
-    const HashMap<String, Vector<Vector3>> &categorized_positions
+    const HashMap<String, Vector<Vector3>> &categorized_positions,
+    bool p_is_initial_load
 ) {
     BuiltChunkData result;
 
-    HashSet<Vector3i> occupied_blocks;
-    for (const auto &E : categorized_positions) {
-        const Vector<Vector3> &vec = E.value;
-        for (int i = 0; i < vec.size(); ++i) {
-            Vector3 pos = vec[i];
-            occupied_blocks.insert(Vector3i(
-                static_cast<int>(std::floor(pos.x)),
-                static_cast<int>(std::floor(pos.y)),
-                static_cast<int>(std::floor(pos.z))
-            ));
-        }
-    }
-
-    // キー（シーンパス）をソートして処理順を完全固定する
     List<String> sorted_keys;
     for (const auto &E : categorized_positions) {
         sorted_keys.push_back(E.key);
     }
     sorted_keys.sort();
 
+    std::vector<Vector3> all_block_positions;
+
     for (const String &scene_path : sorted_keys) {
         const Vector<Vector3> &positions = categorized_positions[scene_path];
         int instance_count = positions.size();
         if (instance_count == 0) continue;
 
-        BlockMeshData mesh_data = get_block_mesh_data(scene_path);
-        if (!mesh_data.valid) continue;
-
-        Ref<MultiMesh> multimesh;
-        multimesh.instantiate();
-        multimesh->set_transform_format(MultiMesh::TRANSFORM_3D);
-        multimesh->set_mesh(mesh_data.mesh);
-        multimesh->set_instance_count(instance_count);
-
+        // 各シーン内の位置配列をコピーして Y -> Z -> X の順で安定ソート
+        std::vector<Vector3> sorted_positions;
+        sorted_positions.reserve(instance_count);
         for (int i = 0; i < instance_count; ++i) {
-            Transform3D t;
-            // 見た目はブロックの中心 (0.5, 0.5, 0.5) を原点にする
-            t.origin = positions[i] + Vector3(0.5f, 0.5f, 0.5f);
-            multimesh->set_instance_transform(i, t);
+            sorted_positions.push_back(positions[i]);
+        }
+        std::sort(sorted_positions.begin(), sorted_positions.end(), [](const Vector3 &a, const Vector3 &b) {
+            if (a.y != b.y) return a.y < b.y;
+            if (a.z != b.z) return a.z < b.z;
+            return a.x < b.x;
+        });
+
+        // 見た目（MultiMesh）の構築
+        BlockMeshData mesh_data = get_block_mesh_data(scene_path);
+        if (mesh_data.valid) {
+            Ref<MultiMesh> multimesh;
+            multimesh.instantiate();
+            multimesh->set_transform_format(MultiMesh::TRANSFORM_3D);
+            multimesh->set_mesh(mesh_data.mesh);
+            multimesh->set_instance_count(instance_count);
+
+            for (int i = 0; i < instance_count; ++i) {
+                Transform3D t;
+                // 見た目はブロックの中心 (0.5, 0.5, 0.5) を原点にする
+                t.origin = sorted_positions[i] + Vector3(0.5f, 0.5f, 0.5f);
+                multimesh->set_instance_transform(i, t);
+            }
+            result.multimeshes[scene_path] = multimesh;
         }
 
-        result.multimeshes[scene_path] = multimesh;
+        // コリジョン用の位置を蓄積
+        for (const Vector3 &pos : sorted_positions) {
+            all_block_positions.push_back(pos);
+        }
     }
+
+    std::sort(all_block_positions.begin(), all_block_positions.end(), [](const Vector3 &a, const Vector3 &b) {
+        if (a.y != b.y) return a.y < b.y;
+        if (a.z != b.z) return a.z < b.z;
+        return a.x < b.x;
+    });
 
     static const Vector3 box_verts[36] = {
         // Top (+Y)
@@ -281,43 +293,19 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
         Vector3( 0.5f, -0.5f, -0.5f), Vector3(-0.5f,  0.5f, -0.5f), Vector3( 0.5f,  0.5f, -0.5f)
     };
 
-    std::vector<Vector3i> sorted_blocks;
-    sorted_blocks.reserve(occupied_blocks.size());
-    for (const Vector3i &grid_pos : occupied_blocks) {
-        sorted_blocks.push_back(grid_pos);
-    }
-
-    std::sort(sorted_blocks.begin(), sorted_blocks.end(), [](const Vector3i &a, const Vector3i &b) {
-        if (a.y != b.y) {
-            return a.y < b.y;
+    if (p_is_initial_load) {
+        for (const Vector3 &pos : all_block_positions) {
+            Vector3 offset(pos.x + 0.5f, pos.y + 0.5f, pos.z + 0.5f);
+            for (int i = 0; i < 36; ++i) {
+                result.collision_faces.append(box_verts[i] + offset);
+            }
         }
-        if (a.z != b.z) {
-            return a.z < b.z;
-        }
-        return a.x < b.x;
-    });
-
-    for (int idx = 0; idx < sorted_blocks.size(); ++idx) {
-        const Vector3i &grid_pos = sorted_blocks[idx];
-        
-        bool is_surrounded =
-            occupied_blocks.has(grid_pos + Vector3i(1, 0, 0)) &&
-            occupied_blocks.has(grid_pos + Vector3i(-1, 0, 0)) &&
-            occupied_blocks.has(grid_pos + Vector3i(0, 1, 0)) &&
-            occupied_blocks.has(grid_pos + Vector3i(0, -1, 0)) &&
-            occupied_blocks.has(grid_pos + Vector3i(0, 0, 1)) &&
-            occupied_blocks.has(grid_pos + Vector3i(0, 0, -1));
-
-        if (is_surrounded) continue;
-
-        Vector3 offset(
-            static_cast<float>(grid_pos.x) + 0.5f,
-            static_cast<float>(grid_pos.y) + 0.5f,
-            static_cast<float>(grid_pos.z) + 0.5f
-        );
-
-        for (int i = 0; i < 36; ++i) {
-            result.collision_faces.append(box_verts[i] + offset);
+    } else {
+        for (const Vector3 &pos : all_block_positions) {
+            Vector3 offset(pos.x + 0.5f, pos.y + 0.5f, pos.z + 0.5f);
+            for (int i = 0; i < 36; ++i) {
+                result.collision_faces.append(box_verts[i] + offset);
+            }
         }
     }
 

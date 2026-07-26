@@ -120,45 +120,42 @@ void ChunkManager::update_chunks_around_player() {
 }
 
 void ChunkManager::load_chunk(const Vector2i &coord) {
-    if (pending_tasks.has(coord) || loaded_chunks.has(coord)) return;
+    if (loaded_chunks.has(coord) || pending_tasks.has(coord)) return;
 
-    ChunkLoadData *data = memnew(ChunkLoadData);
+    ChunkLoadData *data = new ChunkLoadData();
     data->coord = coord;
     data->region_folder_path = region_folder_path;
     data->chunk_size = chunk_size;
     data->manager = this;
+    data->is_initial_load = !initial_load_complete;
 
-    uint64_t ptr_val = reinterpret_cast<uint64_t>(data);
-
-    int64_t task_id = WorkerThreadPool::get_singleton()->add_task(
-        callable_mp(this, &ChunkManager::_async_load_worker).bind(Variant(ptr_val)),
-        false,
-        vformat("ChunkLoad_%d_%d", coord.x, coord.y)
+    int64_t task_id = WorkerThreadPool::get_singleton()->add_native_task(
+        &ChunkManager::_async_load_worker,
+        data,
+        true,
+        vformat("Load Chunk (%d, %d)", coord.x, coord.y)
     );
 
     pending_tasks[coord] = task_id;
 }
 
-void ChunkManager::_async_load_worker(Variant p_userdata) {
-    uint64_t ptr_val = static_cast<uint64_t>(p_userdata);
-    ChunkLoadData *data = reinterpret_cast<ChunkLoadData *>(ptr_val);
+void ChunkManager::_async_load_worker(void *p_userdata) {
+    ChunkLoadData *data = static_cast<ChunkLoadData *>(p_userdata);
     if (!data) return;
 
-    MCAParser parser;
-    Dictionary chunk_nbt = parser.parse_chunk(data->region_folder_path, data->coord.x, data->coord.y);
+    // MCAファイルからデータをパース
+    data->categorized_positions = ChunkMeshBuilder::parse_chunk_positions(
+        MCAParser::parse_chunk(data->region_folder_path, data->coord.x, data->coord.y)
+    );
 
-    if (!chunk_nbt.is_empty()) {
-        data->categorized_positions = ChunkMeshBuilder::parse_chunk_positions(chunk_nbt);
-        data->has_data = !data->categorized_positions.is_empty();
+    data->built_data = ChunkMeshBuilder::build_chunk_data_async(
+        data->categorized_positions, 
+        data->is_initial_load
+    );
+    data->has_data = true;
 
-        if (data->has_data) {
-            data->built_data = ChunkMeshBuilder::build_chunk_data_async(data->categorized_positions);
-        }
-    }
-
-    if (data->manager) {
-        data->manager->call_deferred("_on_chunk_loaded", ptr_val);
-    }
+    // メインスレッド側での適用処理を呼び出す
+    data->manager->call_deferred("_on_chunk_loaded", data);
 }
 
 void ChunkManager::_on_chunk_loaded(Variant p_userdata) {
