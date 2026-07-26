@@ -7,13 +7,13 @@
 #include <godot_cpp/classes/multi_mesh.hpp>
 #include <godot_cpp/classes/static_body3d.hpp>
 #include <godot_cpp/classes/collision_shape3d.hpp>
-#include <godot_cpp/classes/box_shape3d.hpp>
+#include <godot_cpp/classes/concave_polygon_shape3d.hpp>
 #include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/material.hpp>
 #include <godot_cpp/classes/standard_material3d.hpp>
-#include <godot_cpp/classes/box_mesh.hpp>
 #include <godot_cpp/templates/hash_map.hpp>
+#include <godot_cpp/templates/hash_set.hpp>
 #include <godot_cpp/variant/array.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/packed_vector3_array.hpp>
@@ -23,19 +23,29 @@ namespace godot {
     struct BlockMeshData {
         Ref<Mesh> mesh;
         Vector<Ref<Material>> materials;
+        PackedVector3Array base_collision_faces;
         bool valid = false;
     };
 
     class ChunkMeshBuilder {
         private:
             static int get_palette_index(const PackedInt64Array &data, int palette_size, int x, int y, int z);
-            static BlockMeshData get_block_mesh_data(const String &scene_path);
 
         public:
             static const HashMap<String, String>& get_block_scene_map();
             static void preload_block_meshes();
+            static BlockMeshData get_block_mesh_data(const String &scene_path);
 
-            static HashMap<String, Vector<Vector3>> parse_chunk_positions(const Dictionary &chunk_data);
-            static void build_from_positions(Node3D *parent_node, const HashMap<String, Vector<Vector3>> &categorized_positions);
+            // Y軸制限付きのパース
+            static HashMap<String, Vector<Vector3>> parse_chunk_positions(
+                const Dictionary &chunk_data, 
+                int min_section_y = -1, 
+                int max_section_y = 5
+            );
+
+            static void build_from_positions(
+                Node3D *parent_node, 
+                const HashMap<String, Vector<Vector3>> &categorized_positions
+            );
     };
 }

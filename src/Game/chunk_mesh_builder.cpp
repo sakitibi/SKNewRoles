@@ -1,10 +1,6 @@
 #include "chunk_mesh_builder.h"
 #include <godot_cpp/core/memory.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
-#include <godot_cpp/classes/concave_polygon_shape3d.hpp>
-#include <godot_cpp/classes/static_body3d.hpp>
-#include <godot_cpp/classes/collision_shape3d.hpp>
-#include <godot_cpp/templates/hash_set.hpp>
 #include <godot_cpp/variant/vector3i.hpp>
 #include <cmath>
 
@@ -20,14 +16,11 @@ static Transform3D get_relative_transform(Node3D *root, Node3D *target) {
     while (parent != nullptr) {
         Node3D *parent_3d = Object::cast_to<Node3D>(parent);
         if (parent_3d) {
-            if (parent_3d == root) {
-                return accumulated_transform;
-            }
+            if (parent_3d == root) return accumulated_transform;
             accumulated_transform = parent_3d->get_transform() * accumulated_transform;
         }
         parent = parent->get_parent();
     }
-
     return accumulated_transform;
 }
 
@@ -44,7 +37,7 @@ const HashMap<String, String>& ChunkMeshBuilder::get_block_scene_map() {
 }
 
 void ChunkMeshBuilder::preload_block_meshes() {
-    UtilityFunctions::print("[ChunkMeshBuilder] Preloading block meshes...");
+    UtilityFunctions::print("[ChunkMeshBuilder] Preloading & Caching block meshes...");
     const HashMap<String, String> &map = get_block_scene_map();
     for (const auto &E : map) {
         get_block_mesh_data(E.value);
@@ -67,7 +60,6 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
     Node *inst = scene->instantiate();
     Node3D *root_3d = Object::cast_to<Node3D>(inst);
     if (!root_3d) {
-        UtilityFunctions::printerr("[ChunkMeshBuilder] Root node of scene is not Node3D: ", scene_path);
         if (inst) memdelete(inst);
         return data;
     }
@@ -92,11 +84,11 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
 
     Ref<ArrayMesh> combined_mesh;
     combined_mesh.instantiate();
+    const float INFLATE_SCALE = 1.005f; // 縫い目すり抜け防止用の微小インフレ
 
     for (int i = 0; i < mesh_instances.size(); ++i) {
         MeshInstance3D *mi = mesh_instances[i];
         Ref<Mesh> mesh = mi->get_mesh();
-
         Transform3D xform = get_relative_transform(root_3d, mi);
 
         for (int s = 0; s < mesh->get_surface_count(); ++s) {
@@ -104,6 +96,8 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
             if (surf_arrays.size() <= Mesh::ARRAY_VERTEX) continue;
 
             PackedVector3Array verts = surf_arrays[Mesh::ARRAY_VERTEX];
+            PackedInt32Array indices = surf_arrays[Mesh::ARRAY_INDEX];
+
             PackedVector3Array new_verts;
             new_verts.resize(verts.size());
 
@@ -112,16 +106,14 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
             }
             surf_arrays[Mesh::ARRAY_VERTEX] = new_verts;
 
-            if (surf_arrays.size() > Mesh::ARRAY_NORMAL) {
-                PackedVector3Array normals = surf_arrays[Mesh::ARRAY_NORMAL];
-                if (normals.size() > 0) {
-                    PackedVector3Array new_normals;
-                    new_normals.resize(normals.size());
-                    Basis normal_basis = xform.basis.inverse().transposed();
-                    for (int n = 0; n < normals.size(); ++n) {
-                        new_normals.set(n, normal_basis.xform(normals[n]).normalized());
-                    }
-                    surf_arrays[Mesh::ARRAY_NORMAL] = new_normals;
+            // コリジョン用ポリゴン頂点を初回1度だけ静的に計算して保持
+            if (indices.size() > 0) {
+                for (int idx = 0; idx < indices.size(); ++idx) {
+                    data.base_collision_faces.append(new_verts[indices[idx]] * INFLATE_SCALE);
+                }
+            } else {
+                for (int v = 0; v < new_verts.size(); ++v) {
+                    data.base_collision_faces.append(new_verts[v] * INFLATE_SCALE);
                 }
             }
 
@@ -129,20 +121,12 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
             if (mat.is_null()) mat = mi->get_material_override();
             if (mat.is_null()) mat = mesh->surface_get_material(s);
 
-            if (mat.is_valid()) {
-                Ref<StandardMaterial3D> std_mat = mat->duplicate();
-                if (std_mat.is_valid()) {
-                    std_mat->set_flag(StandardMaterial3D::FLAG_UV1_USE_TRIPLANAR, false);
-                    std_mat->set_flag(StandardMaterial3D::FLAG_UV2_USE_TRIPLANAR, false);
-                    mat = std_mat;
-                }
-            }
-
             int new_surface_index = combined_mesh->get_surface_count();
             combined_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surf_arrays);
-            combined_mesh->surface_set_material(new_surface_index, mat);
-            
-            data.materials.append(mat);
+            if (mat.is_valid()) {
+                combined_mesh->surface_set_material(new_surface_index, mat);
+                data.materials.append(mat);
+            }
         }
     }
 
@@ -151,7 +135,7 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
     if (combined_mesh->get_surface_count() > 0) {
         data.mesh = combined_mesh;
         data.valid = true;
-        cache[scene_path] = data;
+        cache[scene_path] = data; // 完全静的キャッシュ
     }
 
     return data;
@@ -159,7 +143,6 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
 
 int ChunkMeshBuilder::get_palette_index(const PackedInt64Array &data, int palette_size, int x, int y, int z) {
     if (data.is_empty()) return 0;
-
     int bits_per_entry = std::max(4, (int)std::ceil(std::log2(palette_size)));
     int entries_per_long = 64 / bits_per_entry;
     int block_index = (y * 16 + z) * 16 + x;
@@ -174,7 +157,11 @@ int ChunkMeshBuilder::get_palette_index(const PackedInt64Array &data, int palett
     return static_cast<int>((raw_long >> bit_offset) & mask);
 }
 
-HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(const Dictionary &chunk_data) {
+HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
+    const Dictionary &chunk_data, 
+    int min_section_y, 
+    int max_section_y
+) {
     HashMap<String, Vector<Vector3>> categorized_positions;
 
     if (!chunk_data.has("sections")) return categorized_positions;
@@ -185,8 +172,10 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(const D
         if (!section.has("Y") || !section.has("block_states")) continue;
 
         int section_y = section["Y"];
-        Dictionary block_states = section["block_states"];
+        
+        if (section_y < min_section_y || section_y > max_section_y) continue;
 
+        Dictionary block_states = section["block_states"];
         if (!block_states.has("palette")) continue;
 
         Array palette = block_states["palette"];
@@ -228,7 +217,6 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(const D
 void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<String, Vector<Vector3>> &categorized_positions) {
     const HashMap<String, String> &block_map = get_block_scene_map();
 
-    // 全ブロックの位置を高速検索用に保持
     HashSet<Vector3i> occupied_blocks;
     for (const auto &E : categorized_positions) {
         for (int i = 0; i < E.value.size(); ++i) {
@@ -244,9 +232,6 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
 
     PackedVector3Array collision_faces;
 
-    // コリジョン頂点のスケーリング係数
-    const float INFLATE_SCALE = 1.005f;
-
     for (const auto &E : categorized_positions) {
         String block_name = E.key;
         const Vector<Vector3> &positions = E.value;
@@ -254,14 +239,13 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
         if (!block_map.has(block_name) || positions.is_empty()) continue;
 
         String scene_path = block_map[block_name];
-        BlockMeshData mesh_data = get_block_mesh_data(scene_path);
+        BlockMeshData mesh_data = get_block_mesh_data(scene_path); // 高速キャッシュアクセス
         if (!mesh_data.valid || mesh_data.mesh.is_null()) continue;
 
-        // 描画用の MultiMeshInstance3D
+        // 描画用 MultiMesh
         MultiMeshInstance3D *mmi = memnew(MultiMeshInstance3D);
         Ref<MultiMesh> mm;
         mm.instantiate();
-
         mm->set_transform_format(MultiMesh::TRANSFORM_3D);
         mm->set_mesh(mesh_data.mesh);
         mm->set_instance_count(positions.size());
@@ -275,48 +259,35 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
         mmi->set_multimesh(mm);
         parent_node->add_child(mmi);
 
-        // 物理判定用ポリゴンの抽出
-        for (int s = 0; s < mesh_data.mesh->get_surface_count(); ++s) {
-            Array surf_arrays = mesh_data.mesh->surface_get_arrays(s);
-            if (surf_arrays.size() <= Mesh::ARRAY_VERTEX) continue;
+        const PackedVector3Array &base_faces = mesh_data.base_collision_faces;
+        int base_face_count = base_faces.size();
 
-            PackedVector3Array verts = surf_arrays[Mesh::ARRAY_VERTEX];
-            PackedInt32Array indices = surf_arrays[Mesh::ARRAY_INDEX];
+        for (int i = 0; i < positions.size(); ++i) {
+            Vector3 block_pos = positions[i];
+            Vector3i grid_pos(
+                static_cast<int>(std::floor(block_pos.x + 0.5f)),
+                static_cast<int>(std::floor(block_pos.y + 0.5f)),
+                static_cast<int>(std::floor(block_pos.z + 0.5f))
+            );
 
-            for (int i = 0; i < positions.size(); ++i) {
-                Vector3 block_pos = positions[i];
-                Vector3i grid_pos(
-                    static_cast<int>(std::floor(block_pos.x + 0.5f)),
-                    static_cast<int>(std::floor(block_pos.y + 0.5f)),
-                    static_cast<int>(std::floor(block_pos.z + 0.5f))
-                );
+            // 周囲6方向が全て埋まっている地中ブロックは物理判定をスキップ
+            bool is_surrounded = 
+                occupied_blocks.has(grid_pos + Vector3i(1, 0, 0)) &&
+                occupied_blocks.has(grid_pos + Vector3i(-1, 0, 0)) &&
+                occupied_blocks.has(grid_pos + Vector3i(0, 1, 0)) &&
+                occupied_blocks.has(grid_pos + Vector3i(0, -1, 0)) &&
+                occupied_blocks.has(grid_pos + Vector3i(0, 0, 1)) &&
+                occupied_blocks.has(grid_pos + Vector3i(0, 0, -1));
 
-                // 上下前後左右が全て埋まっている地中ブロックのみ判定生成をスキップ
-                bool is_surrounded = 
-                    occupied_blocks.has(grid_pos + Vector3i(1, 0, 0)) &&
-                    occupied_blocks.has(grid_pos + Vector3i(-1, 0, 0)) &&
-                    occupied_blocks.has(grid_pos + Vector3i(0, 1, 0)) &&
-                    occupied_blocks.has(grid_pos + Vector3i(0, -1, 0)) &&
-                    occupied_blocks.has(grid_pos + Vector3i(0, 0, 1)) &&
-                    occupied_blocks.has(grid_pos + Vector3i(0, 0, -1));
+            if (is_surrounded) continue;
 
-                if (is_surrounded) continue;
-
-                if (indices.size() > 0) {
-                    for (int idx = 0; idx < indices.size(); ++idx) {
-                        Vector3 inflated_v = verts[indices[idx]] * INFLATE_SCALE;
-                        collision_faces.append(inflated_v + block_pos);
-                    }
-                } else {
-                    for (int v = 0; v < verts.size(); ++v) {
-                        Vector3 inflated_v = verts[v] * INFLATE_SCALE;
-                        collision_faces.append(inflated_v + block_pos);
-                    }
-                }
+            for (int f = 0; f < base_face_count; ++f) {
+                collision_faces.append(base_faces[f] + block_pos);
             }
         }
     }
 
+    // 単一 StaticBody3D でまとめて追加
     if (collision_faces.size() > 0) {
         StaticBody3D *static_body = memnew(StaticBody3D);
         static_body->set_collision_layer(1);
