@@ -1,9 +1,11 @@
 #include "chunk_mesh_builder.h"
 #include <godot_cpp/core/memory.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include <godot_cpp/classes/concave_polygon_shape3d.hpp>
 #include <godot_cpp/classes/static_body3d.hpp>
 #include <godot_cpp/classes/collision_shape3d.hpp>
-#include <godot_cpp/classes/box_shape3d.hpp>
+#include <godot_cpp/templates/hash_set.hpp>
+#include <godot_cpp/variant/vector3i.hpp>
 #include <cmath>
 
 using namespace godot;
@@ -226,12 +228,24 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(const D
 void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<String, Vector<Vector3>> &categorized_positions) {
     const HashMap<String, String> &block_map = get_block_scene_map();
 
-    StaticBody3D *static_body = nullptr;
+    // 全ブロックの位置を高速検索用に保持
+    HashSet<Vector3i> occupied_blocks;
+    for (const auto &E : categorized_positions) {
+        for (int i = 0; i < E.value.size(); ++i) {
+            Vector3 pos = E.value[i];
+            Vector3i grid_pos(
+                static_cast<int>(std::floor(pos.x + 0.5f)),
+                static_cast<int>(std::floor(pos.y + 0.5f)),
+                static_cast<int>(std::floor(pos.z + 0.5f))
+            );
+            occupied_blocks.insert(grid_pos);
+        }
+    }
 
-    // 全ブロックで共通で使い回す 1x1x1 の単一 BoxShape3D
-    Ref<BoxShape3D> shared_box_shape;
-    shared_box_shape.instantiate();
-    shared_box_shape->set_size(Vector3(1.0f, 1.0f, 1.0f));
+    PackedVector3Array collision_faces;
+
+    // コリジョン頂点のスケーリング係数
+    const float INFLATE_SCALE = 1.005f;
 
     for (const auto &E : categorized_positions) {
         String block_name = E.key;
@@ -243,7 +257,7 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
         BlockMeshData mesh_data = get_block_mesh_data(scene_path);
         if (!mesh_data.valid || mesh_data.mesh.is_null()) continue;
 
-        // 描画用 MultiMeshInstance3D の生成
+        // 描画用の MultiMeshInstance3D
         MultiMeshInstance3D *mmi = memnew(MultiMeshInstance3D);
         Ref<MultiMesh> mm;
         mm.instantiate();
@@ -261,21 +275,61 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
         mmi->set_multimesh(mm);
         parent_node->add_child(mmi);
 
-        if (!static_body) {
-            static_body = memnew(StaticBody3D);
-            static_body->set_collision_layer(1);
-            static_body->set_collision_mask(1);
-        }
+        // 物理判定用ポリゴンの抽出
+        for (int s = 0; s < mesh_data.mesh->get_surface_count(); ++s) {
+            Array surf_arrays = mesh_data.mesh->surface_get_arrays(s);
+            if (surf_arrays.size() <= Mesh::ARRAY_VERTEX) continue;
 
-        for (int i = 0; i < positions.size(); ++i) {
-            CollisionShape3D *col_shape = memnew(CollisionShape3D);
-            col_shape->set_shape(shared_box_shape);
-            col_shape->set_position(positions[i]);
-            static_body->add_child(col_shape);
+            PackedVector3Array verts = surf_arrays[Mesh::ARRAY_VERTEX];
+            PackedInt32Array indices = surf_arrays[Mesh::ARRAY_INDEX];
+
+            for (int i = 0; i < positions.size(); ++i) {
+                Vector3 block_pos = positions[i];
+                Vector3i grid_pos(
+                    static_cast<int>(std::floor(block_pos.x + 0.5f)),
+                    static_cast<int>(std::floor(block_pos.y + 0.5f)),
+                    static_cast<int>(std::floor(block_pos.z + 0.5f))
+                );
+
+                // 上下前後左右が全て埋まっている地中ブロックのみ判定生成をスキップ
+                bool is_surrounded = 
+                    occupied_blocks.has(grid_pos + Vector3i(1, 0, 0)) &&
+                    occupied_blocks.has(grid_pos + Vector3i(-1, 0, 0)) &&
+                    occupied_blocks.has(grid_pos + Vector3i(0, 1, 0)) &&
+                    occupied_blocks.has(grid_pos + Vector3i(0, -1, 0)) &&
+                    occupied_blocks.has(grid_pos + Vector3i(0, 0, 1)) &&
+                    occupied_blocks.has(grid_pos + Vector3i(0, 0, -1));
+
+                if (is_surrounded) continue;
+
+                if (indices.size() > 0) {
+                    for (int idx = 0; idx < indices.size(); ++idx) {
+                        // 頂点を中心から少し膨らませることで隣接ブロックとの「隙間」を消去
+                        Vector3 inflated_v = verts[indices[idx]] * INFLATE_SCALE;
+                        collision_faces.append(inflated_v + block_pos);
+                    }
+                } else {
+                    for (int v = 0; v < verts.size(); ++v) {
+                        Vector3 inflated_v = verts[v] * INFLATE_SCALE;
+                        collision_faces.append(inflated_v + block_pos);
+                    }
+                }
+            }
         }
     }
 
-    if (static_body) {
+    if (collision_faces.size() > 0) {
+        StaticBody3D *static_body = memnew(StaticBody3D);
+        static_body->set_collision_layer(1);
+        static_body->set_collision_mask(1);
+
+        CollisionShape3D *col_shape = memnew(CollisionShape3D);
+        Ref<ConcavePolygonShape3D> concave_shape;
+        concave_shape.instantiate();
+        concave_shape->set_faces(collision_faces);
+
+        col_shape->set_shape(concave_shape);
+        static_body->add_child(col_shape);
         parent_node->add_child(static_body);
     }
 }
