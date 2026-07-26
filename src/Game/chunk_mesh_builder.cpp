@@ -4,6 +4,8 @@
 #include <godot_cpp/classes/concave_polygon_shape3d.hpp>
 #include <godot_cpp/classes/static_body3d.hpp>
 #include <godot_cpp/classes/collision_shape3d.hpp>
+#include <godot_cpp/templates/hash_set.hpp>
+#include <godot_cpp/variant/vector3i.hpp>
 #include <cmath>
 
 using namespace godot;
@@ -123,7 +125,6 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
                 }
             }
 
-            // マテリアル取得
             Ref<Material> mat = mi->get_surface_override_material(s);
             if (mat.is_null()) mat = mi->get_material_override();
             if (mat.is_null()) mat = mesh->surface_get_material(s);
@@ -137,7 +138,6 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
                 }
             }
 
-            // 結合メッシュにサーフェスを追加し、対応するマテリアルを直接紐づける
             int new_surface_index = combined_mesh->get_surface_count();
             combined_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surf_arrays);
             combined_mesh->surface_set_material(new_surface_index, mat);
@@ -227,6 +227,21 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(const D
 
 void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<String, Vector<Vector3>> &categorized_positions) {
     const HashMap<String, String> &block_map = get_block_scene_map();
+
+    // 全固体ブロックの位置を高速検索用グリッドに保持
+    HashSet<Vector3i> occupied_blocks;
+    for (const auto &E : categorized_positions) {
+        for (int i = 0; i < E.value.size(); ++i) {
+            Vector3 pos = E.value[i];
+            Vector3i grid_pos(
+                static_cast<int>(std::round(pos.x + 0.5f)),
+                static_cast<int>(std::round(pos.y + 0.5f)),
+                static_cast<int>(std::round(pos.z + 0.5f))
+            );
+            occupied_blocks.insert(grid_pos);
+        }
+    }
+
     PackedVector3Array collision_faces;
 
     for (const auto &E : categorized_positions) {
@@ -239,6 +254,7 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
         BlockMeshData mesh_data = get_block_mesh_data(scene_path);
         if (!mesh_data.valid || mesh_data.mesh.is_null()) continue;
 
+        // 見た目のマルチメッシュ作成（描画用）
         MultiMeshInstance3D *mmi = memnew(MultiMeshInstance3D);
         Ref<MultiMesh> mm;
         mm.instantiate();
@@ -254,10 +270,8 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
         }
 
         mmi->set_multimesh(mm);
-
         parent_node->add_child(mmi);
 
-        // コリジョン用頂点データの蓄積
         for (int s = 0; s < mesh_data.mesh->get_surface_count(); ++s) {
             Array surf_arrays = mesh_data.mesh->surface_get_arrays(s);
             if (surf_arrays.size() <= Mesh::ARRAY_VERTEX) continue;
@@ -267,6 +281,23 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
 
             for (int i = 0; i < positions.size(); ++i) {
                 Vector3 block_pos = positions[i];
+                Vector3i grid_pos(
+                    static_cast<int>(std::round(block_pos.x + 0.5f)),
+                    static_cast<int>(std::round(block_pos.y + 0.5f)),
+                    static_cast<int>(std::round(block_pos.z + 0.5f))
+                );
+
+                // 上下左右前後の6方向全てにブロックがある場合は「地中（隠蔽）」と判定
+                bool is_surrounded = 
+                    occupied_blocks.has(grid_pos + Vector3i(1, 0, 0)) &&
+                    occupied_blocks.has(grid_pos + Vector3i(-1, 0, 0)) &&
+                    occupied_blocks.has(grid_pos + Vector3i(0, 1, 0)) &&
+                    occupied_blocks.has(grid_pos + Vector3i(0, -1, 0)) &&
+                    occupied_blocks.has(grid_pos + Vector3i(0, 0, 1)) &&
+                    occupied_blocks.has(grid_pos + Vector3i(0, 0, -1));
+
+                // 周囲が埋まっているブロックはコリジョン生成をスキップ
+                if (is_surrounded) continue;
 
                 if (indices.size() > 0) {
                     for (int idx = 0; idx < indices.size(); ++idx) {
@@ -282,7 +313,7 @@ void ChunkMeshBuilder::build_from_positions(Node3D *parent_node, const HashMap<S
     }
 
     if (collision_faces.size() > 0) {
-        UtilityFunctions::print("[ChunkMeshBuilder] Creating Collision Shape with ", collision_faces.size(), " faces.");
+        UtilityFunctions::print("[ChunkMeshBuilder] Optimized Collision Shape with ", collision_faces.size(), " faces.");
         StaticBody3D *static_body = memnew(StaticBody3D);
         static_body->set_collision_layer(1);
         static_body->set_collision_mask(1);
