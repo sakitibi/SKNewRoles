@@ -37,6 +37,8 @@ const HashMap<String, String>& ChunkMeshBuilder::get_block_scene_map() {
         map["minecraft:grass_block"]   = "res://Scenes/Prefabs/Blocks/GrassBlock.tscn";
         map["minecraft:stone"]         = "res://Scenes/Prefabs/Blocks/Stone.tscn";
         map["minecraft:stone_bricks"]  = "res://Scenes/Prefabs/Blocks/StoneBricks.tscn";
+        map["minecraft:dirt"]          = "res://Scenes/Prefabs/Blocks/Dirt.tscn";
+        map["minecraft:cobblestone"]   = "res://Scenes/Prefabs/Blocks/Cobblestone.tscn";
     }
     return map;
 }
@@ -55,8 +57,7 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
     }
 
     BlockMeshData data;
-
-    if (!scene_path.begins_with("res://")) {
+    if (!ResourceLoader::get_singleton()->exists(scene_path)) {
         cache[scene_path] = data;
         return data;
     }
@@ -139,7 +140,7 @@ BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
 }
 
 int ChunkMeshBuilder::get_palette_index(const PackedInt64Array &data, int palette_size, int x, int y, int z) {
-    if (data.is_empty() || palette_size <= 1) return 0;
+    if (palette_size <= 1) return 0;
 
     int bits_per_entry = 4;
     while ((1 << bits_per_entry) < palette_size) {
@@ -149,14 +150,13 @@ int ChunkMeshBuilder::get_palette_index(const PackedInt64Array &data, int palett
     int block_index = y * 256 + z * 16 + x;
     int entries_per_long = 64 / bits_per_entry;
     int long_index = block_index / entries_per_long;
-
-    if (long_index >= data.size()) return 0;
-
     int bit_offset = (block_index % entries_per_long) * bits_per_entry;
-    int64_t mask = (1LL << bits_per_entry) - 1;
-    int64_t val = data[long_index];
 
-    return static_cast<int>((val >> bit_offset) & mask);
+    if (long_index < 0 || long_index >= data.size()) return 0;
+
+    uint64_t raw_value = static_cast<uint64_t>(data[long_index]);
+    uint64_t mask = (1ULL << bits_per_entry) - 1ULL;
+    return static_cast<int>((raw_value >> bit_offset) & mask);
 }
 
 HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
@@ -198,13 +198,11 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
                         Dictionary b_entry = palette[p_idx];
                         String block_name = b_entry.get("Name", "minecraft:air");
 
-                        if (block_name == "minecraft:air" || !block_map.has(block_name)) {
-                            continue;
+                        if (block_name != "minecraft:air" && block_map.has(block_name)) {
+                            String scene_path = block_map[block_name];
+                            Vector3 pos(x, section_y * 16 + y, z);
+                            categorized_positions[scene_path].append(pos);
                         }
-
-                        String scene_path = block_map[block_name];
-                        Vector3 pos(x, section_y * 16 + y, z);
-                        categorized_positions[scene_path].append(pos);
                     }
                 }
             }
@@ -225,13 +223,14 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
         for (int i = 0; i < vec.size(); ++i) {
             Vector3 pos = vec[i];
             occupied_blocks.insert(Vector3i(
-                static_cast<int>(std::round(pos.x)),
-                static_cast<int>(std::round(pos.y)),
-                static_cast<int>(std::round(pos.z))
+                static_cast<int>(std::floor(pos.x)),
+                static_cast<int>(std::floor(pos.y)),
+                static_cast<int>(std::floor(pos.z))
             ));
         }
     }
 
+    // MultiMeshのインスタンス化
     for (const auto &E : categorized_positions) {
         String scene_path = E.key;
         const Vector<Vector3> &positions = E.value;
@@ -249,7 +248,8 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
 
         for (int i = 0; i < instance_count; ++i) {
             Transform3D t;
-            t.origin = positions[i];
+            // .tscnモデルが(0,0,0)中心で作られているため、グリッド中心(+0.5f)に配置
+            t.origin = positions[i] + Vector3(0.5f, 0.5f, 0.5f);
             multimesh->set_instance_transform(i, t);
         }
 
@@ -257,22 +257,22 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
     }
 
     static const Vector3 box_verts[36] = {
-        // Front face (Z = +0.5)
+        // Front face (+Z)
         Vector3(-0.5f, -0.5f,  0.5f), Vector3( 0.5f, -0.5f,  0.5f), Vector3( 0.5f,  0.5f,  0.5f),
         Vector3(-0.5f, -0.5f,  0.5f), Vector3( 0.5f,  0.5f,  0.5f), Vector3(-0.5f,  0.5f,  0.5f),
-        // Back face (Z = -0.5)
+        // Back face (-Z)
         Vector3( 0.5f, -0.5f, -0.5f), Vector3(-0.5f, -0.5f, -0.5f), Vector3(-0.5f,  0.5f, -0.5f),
         Vector3( 0.5f, -0.5f, -0.5f), Vector3(-0.5f,  0.5f, -0.5f), Vector3( 0.5f,  0.5f, -0.5f),
-        // Top face (Y = +0.5)
+        // Top face (+Y)
         Vector3(-0.5f,  0.5f,  0.5f), Vector3( 0.5f,  0.5f,  0.5f), Vector3( 0.5f,  0.5f, -0.5f),
         Vector3(-0.5f,  0.5f,  0.5f), Vector3( 0.5f,  0.5f, -0.5f), Vector3(-0.5f,  0.5f, -0.5f),
-        // Bottom face (Y = -0.5)
+        // Bottom face (-Y)
         Vector3(-0.5f, -0.5f, -0.5f), Vector3( 0.5f, -0.5f, -0.5f), Vector3( 0.5f, -0.5f,  0.5f),
         Vector3(-0.5f, -0.5f, -0.5f), Vector3( 0.5f, -0.5f,  0.5f), Vector3(-0.5f, -0.5f,  0.5f),
-        // Right face (X = +0.5)
+        // Right face (+X)
         Vector3( 0.5f, -0.5f,  0.5f), Vector3( 0.5f, -0.5f, -0.5f), Vector3( 0.5f,  0.5f, -0.5f),
         Vector3( 0.5f, -0.5f,  0.5f), Vector3( 0.5f,  0.5f, -0.5f), Vector3( 0.5f,  0.5f,  0.5f),
-        // Left face (X = -0.5)
+        // Left face (-X)
         Vector3(-0.5f, -0.5f, -0.5f), Vector3(-0.5f, -0.5f,  0.5f), Vector3(-0.5f,  0.5f,  0.5f),
         Vector3(-0.5f, -0.5f, -0.5f), Vector3(-0.5f,  0.5f,  0.5f), Vector3(-0.5f,  0.5f, -0.5f)
     };
@@ -313,10 +313,13 @@ void ChunkMeshBuilder::apply_chunk_data_to_node(Node3D *parent_node, const Built
 
     if (built_data.collision_faces.size() > 0) {
         StaticBody3D *static_body = memnew(StaticBody3D);
+        static_body->set_name("ChunkStaticBody");
+
         CollisionShape3D *collision_shape = memnew(CollisionShape3D);
         Ref<ConcavePolygonShape3D> shape;
         shape.instantiate();
         shape->set_faces(built_data.collision_faces);
+
         collision_shape->set_shape(shape);
         static_body->add_child(collision_shape);
         parent_node->add_child(static_body);
