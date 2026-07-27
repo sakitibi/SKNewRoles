@@ -27,8 +27,13 @@ const HashMap<String, String>& ChunkMeshBuilder::get_block_scene_map() {
     if (block_scene_map.is_empty()) {
         block_scene_map["minecraft:grass_block"]  = "res://Scenes/Prefabs/Blocks/GrassBlock.tscn";
         block_scene_map["minecraft:dirt"]         = "res://Scenes/Prefabs/Blocks/Dirt.tscn";
+        block_scene_map["minecraft:coarse_dirt"]         = "res://Scenes/Prefabs/Blocks/CoarseDirt.tscn";
+        block_scene_map["minecraft:dirt_path"]    = "res://Scenes/Prefabs/Blocks/DirtPath.tscn";
         block_scene_map["minecraft:stone"]        = "res://Scenes/Prefabs/Blocks/Stone.tscn";
         block_scene_map["minecraft:stone_bricks"] = "res://Scenes/Prefabs/Blocks/StoneBricks.tscn";
+        block_scene_map["minecraft:andsite"]      = "res://Scenes/Prefabs/Blocks/Andsite.tscn";
+        block_scene_map["minecraft:diorite"]      = "res://Scenes/Prefabs/Blocks/Diorite.tscn";
+        block_scene_map["minecraft:granite"]      = "res://Scenes/Prefabs/Blocks/Granite.tscn";
         block_scene_map["minecraft:oak_planks"]   = "res://Scenes/Prefabs/Blocks/OakPlanks.tscn";
         block_scene_map["minecraft:gold_block"]   = "res://Scenes/Prefabs/Blocks/GoldBlock.tscn";
     }
