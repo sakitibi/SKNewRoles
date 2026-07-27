@@ -48,6 +48,8 @@ namespace godot {
             Node3D *find_local_player();
 
             static void _async_load_worker(void *p_userdata);
+
+        public:
             void _on_chunk_loaded(Variant p_userdata);
 
         protected:

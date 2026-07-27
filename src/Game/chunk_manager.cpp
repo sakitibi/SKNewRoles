@@ -28,6 +28,7 @@ void ChunkManager::_bind_methods() {
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "region_folder_path"), "set_region_folder_path", "get_region_folder_path");
 
     ClassDB::bind_method(D_METHOD("is_initial_load_complete"), &ChunkManager::is_initial_load_complete);
+
     ClassDB::bind_method(D_METHOD("_on_chunk_loaded", "p_userdata"), &ChunkManager::_on_chunk_loaded);
 }
 
@@ -119,15 +120,18 @@ void ChunkManager::update_chunks_around_player() {
     }
 }
 
+
 void ChunkManager::load_chunk(const Vector2i &coord) {
     if (loaded_chunks.has(coord) || pending_tasks.has(coord)) return;
+
+    UtilityFunctions::print(vformat("[ChunkManager] Requesting load for chunk: X=%d, Z=%d", coord.x, coord.y));
 
     ChunkLoadData *data = new ChunkLoadData();
     data->coord = coord;
     data->region_folder_path = region_folder_path;
     data->chunk_size = chunk_size;
     data->manager = this;
-    data->is_initial_load = !initial_load_complete;
+    data->is_initial_load = !initial_load_complete; // 初期ロードか判定
 
     int64_t task_id = WorkerThreadPool::get_singleton()->add_native_task(
         &ChunkManager::_async_load_worker,
@@ -141,37 +145,41 @@ void ChunkManager::load_chunk(const Vector2i &coord) {
 
 void ChunkManager::_async_load_worker(void *p_userdata) {
     ChunkLoadData *data = static_cast<ChunkLoadData *>(p_userdata);
-    if (!data) return;
+    if (!data || !data->manager) return;
 
-    // MCAファイルからデータをパース
     data->categorized_positions = ChunkMeshBuilder::parse_chunk_positions(
         MCAParser::parse_chunk(data->region_folder_path, data->coord.x, data->coord.y)
     );
 
     data->built_data = ChunkMeshBuilder::build_chunk_data_async(
-        data->categorized_positions, 
+        data->categorized_positions,
         data->is_initial_load
     );
     data->has_data = true;
 
-    // メインスレッド側での適用処理を呼び出す
-    data->manager->call_deferred("_on_chunk_loaded", data);
+    data->manager->call_deferred("_on_chunk_loaded", (uint64_t)data);
 }
 
 void ChunkManager::_on_chunk_loaded(Variant p_userdata) {
-    uint64_t ptr_val = static_cast<uint64_t>(p_userdata);
+    uint64_t ptr_val = p_userdata;
     ChunkLoadData *data = reinterpret_cast<ChunkLoadData *>(ptr_val);
+    
     if (!data) return;
 
     pending_tasks.erase(data->coord);
 
     if (data->has_data) {
         Node3D *chunk_node = memnew(Node3D);
-        Vector3 world_pos(data->coord.x * data->chunk_size, 0.0f, data->coord.y * data->chunk_size);
-        chunk_node->set_position(world_pos);
+        chunk_node->set_name(vformat("Chunk_%d_%d", data->coord.x, data->coord.y));
+
+        Vector3 pos(
+            data->coord.x * data->chunk_size,
+            0.0f,
+            data->coord.y * data->chunk_size
+        );
+        chunk_node->set_position(pos);
 
         ChunkMeshBuilder::apply_chunk_data_to_node(chunk_node, data->built_data);
-
         add_child(chunk_node);
         loaded_chunks[data->coord] = chunk_node;
 
@@ -184,6 +192,7 @@ void ChunkManager::_on_chunk_loaded(Variant p_userdata) {
 
     if (!initial_load_complete && pending_tasks.is_empty()) {
         initial_load_complete = true;
+        UtilityFunctions::print("[ChunkManager] All Initial Chunks Loaded Completely!");
     }
 }
 
