@@ -157,7 +157,7 @@ namespace SKNewRoles2.Game
 
             AddChild(_myPlayerInstance);
             
-            _myPlayerInstance.GlobalPosition = new Vector3(0, 130, 0);
+            _myPlayerInstance.GlobalPosition = new Vector3(0, 100, 0);
 
             if (_chunkManagerCpp != null)
             {
