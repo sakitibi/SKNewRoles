@@ -244,7 +244,6 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
         int instance_count = positions.size();
         if (instance_count == 0) continue;
 
-        // 各ブロック位置を Y -> Z -> X の順に安定ソート
         std::vector<Vector3> sorted_positions;
         sorted_positions.reserve(instance_count);
         for (int i = 0; i < instance_count; ++i) {
@@ -256,7 +255,7 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
             return a.x < b.x;
         });
 
-        // MultiMesh（見た目）の生成
+        // MultiMesh（見た目）の構築
         BlockMeshData mesh_data = get_block_mesh_data(scene_path);
         if (mesh_data.valid) {
             Ref<MultiMesh> multimesh;
@@ -286,23 +285,23 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
 
     static const Vector3 box_verts[36] = {
         // Top (+Y)
-        Vector3(-0.5f,  0.5f,  0.5f), Vector3( 0.5f,  0.5f,  0.5f), Vector3( 0.5f,  0.5f, -0.5f),
-        Vector3(-0.5f,  0.5f,  0.5f), Vector3( 0.5f,  0.5f, -0.5f), Vector3(-0.5f,  0.5f, -0.5f),
+        Vector3(-0.5f, 0.5f, -0.5f), Vector3(0.5f, 0.5f, -0.5f), Vector3(0.5f, 0.5f, 0.5f),
+        Vector3(-0.5f, 0.5f, -0.5f), Vector3(0.5f, 0.5f, 0.5f), Vector3(-0.5f, 0.5f, 0.5f),
         // Bottom (-Y)
-        Vector3(-0.5f, -0.5f, -0.5f), Vector3( 0.5f, -0.5f, -0.5f), Vector3( 0.5f, -0.5f,  0.5f),
-        Vector3(-0.5f, -0.5f, -0.5f), Vector3( 0.5f, -0.5f,  0.5f), Vector3(-0.5f, -0.5f,  0.5f),
-        // Left (-X)
-        Vector3(-0.5f, -0.5f, -0.5f), Vector3(-0.5f, -0.5f,  0.5f), Vector3(-0.5f,  0.5f,  0.5f),
-        Vector3(-0.5f, -0.5f, -0.5f), Vector3(-0.5f,  0.5f,  0.5f), Vector3(-0.5f,  0.5f, -0.5f),
-        // Right (+X)
-        Vector3( 0.5f, -0.5f,  0.5f), Vector3( 0.5f, -0.5f, -0.5f), Vector3( 0.5f,  0.5f, -0.5f),
-        Vector3( 0.5f, -0.5f,  0.5f), Vector3( 0.5f,  0.5f, -0.5f), Vector3( 0.5f,  0.5f,  0.5f),
+        Vector3(-0.5f, -0.5f, 0.5f), Vector3(0.5f, -0.5f, 0.5f), Vector3(0.5f, -0.5f, -0.5f),
+        Vector3(-0.5f, -0.5f, 0.5f), Vector3(0.5f, -0.5f, -0.5f), Vector3(-0.5f, -0.5f, -0.5f),
         // Front (+Z)
-        Vector3(-0.5f, -0.5f,  0.5f), Vector3( 0.5f, -0.5f,  0.5f), Vector3( 0.5f,  0.5f,  0.5f),
-        Vector3(-0.5f, -0.5f,  0.5f), Vector3( 0.5f,  0.5f,  0.5f), Vector3(-0.5f,  0.5f,  0.5f),
+        Vector3(-0.5f, -0.5f, 0.5f), Vector3(-0.5f, 0.5f, 0.5f), Vector3(0.5f, 0.5f, 0.5f),
+        Vector3(-0.5f, -0.5f, 0.5f), Vector3(0.5f, 0.5f, 0.5f), Vector3(0.5f, -0.5f, 0.5f),
         // Back (-Z)
-        Vector3( 0.5f, -0.5f, -0.5f), Vector3(-0.5f, -0.5f, -0.5f), Vector3(-0.5f,  0.5f, -0.5f),
-        Vector3( 0.5f, -0.5f, -0.5f), Vector3(-0.5f,  0.5f, -0.5f), Vector3( 0.5f,  0.5f, -0.5f)
+        Vector3(0.5f, -0.5f, -0.5f), Vector3(0.5f, 0.5f, -0.5f), Vector3(-0.5f, 0.5f, -0.5f),
+        Vector3(0.5f, -0.5f, -0.5f), Vector3(-0.5f, 0.5f, -0.5f), Vector3(-0.5f, -0.5f, -0.5f),
+        // Left (-X)
+        Vector3(-0.5f, -0.5f, -0.5f), Vector3(-0.5f, 0.5f, -0.5f), Vector3(-0.5f, 0.5f, 0.5f),
+        Vector3(-0.5f, -0.5f, -0.5f), Vector3(-0.5f, 0.5f, 0.5f), Vector3(-0.5f, -0.5f, 0.5f),
+        // Right (+X)
+        Vector3(0.5f, -0.5f, 0.5f), Vector3(0.5f, 0.5f, 0.5f), Vector3(0.5f, 0.5f, -0.5f),
+        Vector3(0.5f, -0.5f, 0.5f), Vector3(0.5f, 0.5f, -0.5f), Vector3(0.5f, -0.5f, -0.5f)
     };
 
     for (const Vector3 &pos : all_block_positions) {
@@ -312,11 +311,10 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
             static_cast<int>(Math::round(pos.z))
         );
 
-        bool has_top_block = occupied_blocks.has(grid_pos + Vector3i(0, 1, 0));
-
-        bool is_fully_surrounded = has_top_block &&
+        bool is_fully_surrounded =
             occupied_blocks.has(grid_pos + Vector3i(1, 0, 0)) &&
             occupied_blocks.has(grid_pos + Vector3i(-1, 0, 0)) &&
+            occupied_blocks.has(grid_pos + Vector3i(0, 1, 0)) &&
             occupied_blocks.has(grid_pos + Vector3i(0, -1, 0)) &&
             occupied_blocks.has(grid_pos + Vector3i(0, 0, 1)) &&
             occupied_blocks.has(grid_pos + Vector3i(0, 0, -1));
