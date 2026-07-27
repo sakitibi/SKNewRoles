@@ -1,9 +1,9 @@
-[gd_scene format=3 uid="uid://c6locxdvnxvi8"]
+[gd_scene format=3 uid="uid://dtvd6r1vdtc2n"]
 
-[ext_resource type="Texture2D" uid="uid://bdrodxppacw04" path="res://Resources/Blocks/dirt.png" id="1_h0i5c"]
+[ext_resource type="Texture2D" uid="uid://o73xm4uh55qc" path="res://Resources/Blocks/oak_planks.png" id="1_vbto1"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1fclr"]
-albedo_texture = ExtResource("1_h0i5c")
+albedo_texture = ExtResource("1_vbto1")
 uv1_triplanar = true
 uv1_world_triplanar = true
 texture_filter = 2
@@ -11,14 +11,14 @@ texture_filter = 2
 [sub_resource type="QuadMesh" id="QuadMesh_xhjgb"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0iane"]
-albedo_texture = ExtResource("1_h0i5c")
+albedo_texture = ExtResource("1_vbto1")
 uv1_triplanar = true
 uv1_world_triplanar = true
 texture_filter = 2
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_yvmil"]
 
-[node name="Dirt" type="StaticBody3D" unique_id=1967058283]
+[node name="OakPlanks" type="StaticBody3D" unique_id=1967058283]
 
 [node name="Top" type="MeshInstance3D" parent="." unique_id=513289371]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0.5, 0)

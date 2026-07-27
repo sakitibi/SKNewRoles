@@ -29,6 +29,7 @@ const HashMap<String, String>& ChunkMeshBuilder::get_block_scene_map() {
         block_scene_map["minecraft:dirt"]         = "res://Scenes/Prefabs/Blocks/Dirt.tscn";
         block_scene_map["minecraft:stone"]        = "res://Scenes/Prefabs/Blocks/Stone.tscn";
         block_scene_map["minecraft:stone_bricks"] = "res://Scenes/Prefabs/Blocks/StoneBricks.tscn";
+        block_scene_map["minecraft:oak_planks"]   = "res://Scenes/Prefabs/Blocks/OakPlanks.tscn";
         block_scene_map["minecraft:gold_block"]   = "res://Scenes/Prefabs/Blocks/GoldBlock.tscn";
     }
     return block_scene_map;
