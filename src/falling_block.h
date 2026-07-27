@@ -16,6 +16,8 @@ namespace godot {
         bool is_landed = false;
         float land_check_timer = 0.0f; // 静止検知タイマー
 
+        String block_type = "gravel"; // ブロックの種類
+
     protected:
         static void _bind_methods();
 
@@ -28,5 +30,9 @@ namespace godot {
 
         // 着地時の処理
         void on_landed();
+
+        // ブロック種類の設定・取得
+        void set_block_type(const String &p_type);
+        String get_block_type() const;
     };
 }

@@ -8,6 +8,7 @@
 #include <godot_cpp/variant/node_path.hpp>
 
 #include "chunk_mesh_builder.h"
+#include "../../falling_block.h"
 
 namespace godot {
     class ChunkManager;
@@ -40,6 +41,8 @@ namespace godot {
             HashMap<Vector2i, Node3D *> loaded_chunks;
             HashMap<Vector2i, int64_t> pending_tasks;
 
+            HashMap<Vector2i, HashMap<String, Vector<Vector3>>> chunk_block_data_map;
+
             String region_folder_path = "res://regions/";
 
             void update_chunks_around_player();
@@ -51,6 +54,12 @@ namespace godot {
 
         public:
             void _on_chunk_loaded(Variant p_userdata);
+
+            void spawn_falling_block(const Vector3 &spawn_pos, const String &block_type = "stone");
+            void _on_block_landed(const Vector3 &land_pos, const String &block_type);
+
+            void add_block_at_world_pos(const Vector3 &world_pos, const String &block_type = "stone");
+            void rebuild_chunk_mesh(const Vector2i &chunk_coord);
 
         protected:
             static void _bind_methods();

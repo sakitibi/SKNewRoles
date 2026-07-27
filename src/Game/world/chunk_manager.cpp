@@ -6,6 +6,8 @@
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/worker_thread_pool.hpp>
 #include <godot_cpp/classes/time.hpp>
+#include <godot_cpp/classes/resource_loader.hpp>
+#include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -32,6 +34,12 @@ void ChunkManager::_bind_methods() {
     ClassDB::bind_method(D_METHOD("verity_initial_collisions"), &ChunkManager::verity_initial_collisions);
 
     ClassDB::bind_method(D_METHOD("_on_chunk_loaded", "p_userdata"), &ChunkManager::_on_chunk_loaded);
+
+    ClassDB::bind_method(D_METHOD("spawn_falling_block", "spawn_pos", "block_type"), &ChunkManager::spawn_falling_block, DEFVAL("stone"));
+    ClassDB::bind_method(D_METHOD("_on_block_landed", "land_pos", "block_type"), &ChunkManager::_on_block_landed);
+
+    ClassDB::bind_method(D_METHOD("add_block_at_world_pos", "world_pos", "block_type"), &ChunkManager::add_block_at_world_pos, DEFVAL("stone"));
+    ClassDB::bind_method(D_METHOD("rebuild_chunk_mesh", "chunk_coord"), &ChunkManager::rebuild_chunk_mesh);
 }
 
 ChunkManager::ChunkManager() {}
@@ -40,6 +48,82 @@ ChunkManager::~ChunkManager() {}
 void ChunkManager::_ready() {
     if (Engine::get_singleton()->is_editor_hint()) return;
     ChunkMeshBuilder::preload_block_meshes();
+}
+
+void ChunkManager::spawn_falling_block(const Vector3 &spawn_pos, const String &block_type) {
+    Ref<PackedScene> falling_scene = ResourceLoader::get_singleton()->load("res://FallingBlock.tscn");
+    if (falling_scene.is_null()) {
+        UtilityFunctions::printerr("[ChunkManager ERROR] FallingBlock.tscn Failed to load");
+        return;
+    }
+
+    SNR2FallingBlock *block = Object::cast_to<SNR2FallingBlock>(falling_scene->instantiate());
+    if (block != nullptr) {
+        block->set_global_position(spawn_pos);
+        block->set_block_type(block_type);
+
+        block->connect("block_landed", Callable(this, "_on_block_landed"));
+
+        add_child(block);
+        UtilityFunctions::print(vformat("[ChunkManager] Falling block (%s) was generated: ", block_type), spawn_pos);
+    }
+}
+
+void ChunkManager::_on_block_landed(const Vector3 &land_pos, const String &block_type) {
+    UtilityFunctions::print(vformat("🧱 [ChunkManager] block (%s) has landed: ", block_type), land_pos);
+
+    add_block_at_world_pos(land_pos, block_type);
+}
+
+void ChunkManager::add_block_at_world_pos(const Vector3 &world_pos, const String &block_type) {
+    int gx = Math::floor(world_pos.x);
+    int gy = Math::floor(world_pos.y);
+    int gz = Math::floor(world_pos.z);
+
+    int chunk_x = static_cast<int>(std::floor((float)gx / chunk_size));
+    int chunk_z = static_cast<int>(std::floor((float)gz / chunk_size));
+    Vector2i chunk_coord(chunk_x, chunk_z);
+
+    Vector3 local_block_pos(
+        gx - (chunk_x * chunk_size) + 0.5f,
+        gy + 0.5f,
+        gz - (chunk_z * chunk_size) + 0.5f
+    );
+
+    if (!chunk_block_data_map.has(chunk_coord)) {
+        chunk_block_data_map[chunk_coord] = HashMap<String, Vector<Vector3>>();
+    }
+    
+    chunk_block_data_map[chunk_coord][block_type].push_back(local_block_pos);
+
+    UtilityFunctions::print(vformat("[ChunkManager] chunk (%d, %d) Block (%s) Add (Local coordinates: %.1f, %.1f, %.1f)", 
+        chunk_coord.x, chunk_coord.y, block_type, local_block_pos.x, local_block_pos.y, local_block_pos.z));
+
+    rebuild_chunk_mesh(chunk_coord);
+}
+
+void ChunkManager::rebuild_chunk_mesh(const Vector2i &chunk_coord) {
+    if (!loaded_chunks.has(chunk_coord)) return;
+
+    Node3D *old_chunk_node = loaded_chunks[chunk_coord];
+
+    HashMap<String, Vector<Vector3>> &positions = chunk_block_data_map[chunk_coord];
+    BuiltChunkData new_built_data = ChunkMeshBuilder::build_chunk_data_async(positions, false);
+
+    Node3D *new_chunk_node = memnew(Node3D);
+    new_chunk_node->set_name(vformat("Chunk_%d_%d", chunk_coord.x, chunk_coord.y));
+    new_chunk_node->set_position(Vector3(chunk_coord.x * chunk_size, 0.0f, chunk_coord.y * chunk_size));
+
+    ChunkMeshBuilder::apply_chunk_data_to_node(new_chunk_node, new_built_data);
+
+    add_child(new_chunk_node);
+    loaded_chunks[chunk_coord] = new_chunk_node;
+
+    if (old_chunk_node) {
+        old_chunk_node->queue_free();
+    }
+
+    UtilityFunctions::print(vformat("[ChunkManager] chunk (%d, %d) Successfully rebuilt the mesh", chunk_coord.x, chunk_coord.y));
 }
 
 Node3D *ChunkManager::find_local_player() {
@@ -122,7 +206,6 @@ void ChunkManager::update_chunks_around_player() {
     }
 }
 
-
 void ChunkManager::load_chunk(const Vector2i &coord) {
     if (loaded_chunks.has(coord) || pending_tasks.has(coord)) return;
 
@@ -133,7 +216,7 @@ void ChunkManager::load_chunk(const Vector2i &coord) {
     data->region_folder_path = region_folder_path;
     data->chunk_size = chunk_size;
     data->manager = this;
-    data->is_initial_load = !initial_load_complete; // 初期ロードか判定
+    data->is_initial_load = !initial_load_complete;
 
     int64_t task_id = WorkerThreadPool::get_singleton()->add_native_task(
         &ChunkManager::_async_load_worker,
@@ -171,6 +254,8 @@ void ChunkManager::_on_chunk_loaded(Variant p_userdata) {
     pending_tasks.erase(data->coord);
 
     if (data->has_data) {
+        chunk_block_data_map[data->coord] = data->categorized_positions;
+
         Node3D *chunk_node = memnew(Node3D);
         chunk_node->set_name(vformat("Chunk_%d_%d", data->coord.x, data->coord.y));
 
@@ -212,7 +297,6 @@ void ChunkManager::verity_initial_collisions() {
         Node3D *chunk_node = E.value;
         if (!chunk_node) continue;
 
-        // チャンク内の StaticBody3D と CollisionShape3D を探す
         for (int i = 0; i < chunk_node->get_child_count(); ++i) {
             StaticBody3D *sb = Object::cast_to<StaticBody3D>(chunk_node->get_child(i));
             if (!sb) continue;
@@ -225,7 +309,7 @@ void ChunkManager::verity_initial_collisions() {
                 Ref<ConcavePolygonShape3D> shape = cs->get_shape();
                 if (shape.is_valid()) {
                     PackedVector3Array faces = shape->get_faces();
-                    total_faces += faces.size() / 3; // ポリゴン数
+                    total_faces += faces.size() / 3;
                 }
             }
         }
