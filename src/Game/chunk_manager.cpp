@@ -28,6 +28,8 @@ void ChunkManager::_bind_methods() {
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "region_folder_path"), "set_region_folder_path", "get_region_folder_path");
 
     ClassDB::bind_method(D_METHOD("is_initial_load_complete"), &ChunkManager::is_initial_load_complete);
+    
+    ClassDB::bind_method(D_METHOD("verity_initial_collisions"), &ChunkManager::verity_initial_collisions);
 
     ClassDB::bind_method(D_METHOD("_on_chunk_loaded", "p_userdata"), &ChunkManager::_on_chunk_loaded);
 }
@@ -192,7 +194,50 @@ void ChunkManager::_on_chunk_loaded(Variant p_userdata) {
 
     if (!initial_load_complete && pending_tasks.is_empty()) {
         initial_load_complete = true;
-        UtilityFunctions::print("[ChunkManager] All Initial Chunks Loaded Completely!");
+        UtilityFunctions::print("[ChunkManager] ==========================================");
+        UtilityFunctions::print("[ChunkManager] Construction of all initial chunks complete. Initiating verification of physical space...");
+        UtilityFunctions::print("[ChunkManager] ==========================================");
+
+        call_deferred("verity_initial_collisions");
+    }
+}
+
+void ChunkManager::verity_initial_collisions() {
+    UtilityFunctions::print("[ChunkManager Verification] --- Chunk Hit Detection Verification Log ---");
+    
+    int total_collision_shapes = 0;
+    int total_faces = 0;
+
+    for (const auto &E : loaded_chunks) {
+        Node3D *chunk_node = E.value;
+        if (!chunk_node) continue;
+
+        // チャンク内の StaticBody3D と CollisionShape3D を探す
+        for (int i = 0; i < chunk_node->get_child_count(); ++i) {
+            StaticBody3D *sb = Object::cast_to<StaticBody3D>(chunk_node->get_child(i));
+            if (!sb) continue;
+
+            for (int j = 0; j < sb->get_child_count(); ++j) {
+                CollisionShape3D *cs = Object::cast_to<CollisionShape3D>(sb->get_child(j));
+                if (!cs) continue;
+
+                total_collision_shapes++;
+                Ref<ConcavePolygonShape3D> shape = cs->get_shape();
+                if (shape.is_valid()) {
+                    PackedVector3Array faces = shape->get_faces();
+                    total_faces += faces.size() / 3; // ポリゴン数
+                }
+            }
+        }
+    }
+
+    UtilityFunctions::print(vformat("[ChunkManager Verification] Number of loaded collision shapes: %d", total_collision_shapes));
+    UtilityFunctions::print(vformat("[ChunkManager Verification] Total collision polygon count (Triangle Count): %d", total_faces));
+
+    if (total_faces == 0) {
+        UtilityFunctions::printerr("[ChunkManager ERROR] There are zero collision polygons! Collision detection has not been generated!");
+    } else {
+        UtilityFunctions::print("[ChunkManager Verification] SUCCESS: The polygons are correctly registered in the physical space.");
     }
 }
 

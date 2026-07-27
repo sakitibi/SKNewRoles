@@ -62,6 +62,8 @@ namespace godot {
             void _ready() override;
             void _process(double delta) override;
 
+            void verity_initial_collisions();
+
             void set_chunk_size(float p_size);
             float get_chunk_size() const;
             bool is_initial_load_complete() const;
