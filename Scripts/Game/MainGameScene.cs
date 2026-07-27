@@ -101,8 +101,8 @@ namespace SKNewRoles2.Game
                 _roleRevealScene.Visible = true;
                 _roleRevealScene.MoveToFront();
 
-                GD.Print("7️⃣ [_Ready] 役職画面を表示しました (3秒カウント開始)");
-                await Task.Delay(3000);
+                GD.Print("7️⃣ [_Ready] 役職画面を表示しました (5秒カウント開始)");
+                await Task.Delay(5000);
 
                 if (IsInstanceValid(_roleRevealScene))
                 {
@@ -157,7 +157,7 @@ namespace SKNewRoles2.Game
 
             AddChild(_myPlayerInstance);
             
-            _myPlayerInstance.GlobalPosition = new Vector3(0, 150, 0);
+            _myPlayerInstance.GlobalPosition = new Vector3(0, 130, 0);
 
             if (_chunkManagerCpp != null)
             {

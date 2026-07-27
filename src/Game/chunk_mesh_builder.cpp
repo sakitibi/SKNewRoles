@@ -218,6 +218,19 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
 ) {
     BuiltChunkData result;
 
+    HashSet<Vector3i> occupied_blocks;
+    for (const auto &E : categorized_positions) {
+        const Vector<Vector3> &vec = E.value;
+        for (int i = 0; i < vec.size(); ++i) {
+            Vector3 pos = vec[i];
+            occupied_blocks.insert(Vector3i(
+                static_cast<int>(std::floor(pos.x)),
+                static_cast<int>(std::floor(pos.y)),
+                static_cast<int>(std::floor(pos.z))
+            ));
+        }
+    }
+
     List<String> sorted_keys;
     for (const auto &E : categorized_positions) {
         sorted_keys.push_back(E.key);
@@ -231,7 +244,7 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
         int instance_count = positions.size();
         if (instance_count == 0) continue;
 
-        // 各シーン内の位置配列をコピーして Y -> Z -> X の順で安定ソート
+        // 各ブロック位置を Y -> Z -> X の順に安定ソート
         std::vector<Vector3> sorted_positions;
         sorted_positions.reserve(instance_count);
         for (int i = 0; i < instance_count; ++i) {
@@ -243,7 +256,7 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
             return a.x < b.x;
         });
 
-        // 見た目（MultiMesh）の構築
+        // MultiMesh（見た目）の生成
         BlockMeshData mesh_data = get_block_mesh_data(scene_path);
         if (mesh_data.valid) {
             Ref<MultiMesh> multimesh;
@@ -254,14 +267,12 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
 
             for (int i = 0; i < instance_count; ++i) {
                 Transform3D t;
-                // 見た目はブロックの中心 (0.5, 0.5, 0.5) を原点にする
                 t.origin = sorted_positions[i] + Vector3(0.5f, 0.5f, 0.5f);
                 multimesh->set_instance_transform(i, t);
             }
             result.multimeshes[scene_path] = multimesh;
         }
 
-        // コリジョン用の位置を蓄積
         for (const Vector3 &pos : sorted_positions) {
             all_block_positions.push_back(pos);
         }
@@ -294,19 +305,26 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
         Vector3( 0.5f, -0.5f, -0.5f), Vector3(-0.5f,  0.5f, -0.5f), Vector3( 0.5f,  0.5f, -0.5f)
     };
 
-    if (p_is_initial_load) {
-        for (const Vector3 &pos : all_block_positions) {
-            Vector3 offset(pos.x + 0.5f, pos.y + 0.5f, pos.z + 0.5f);
-            for (int i = 0; i < 36; ++i) {
-                result.collision_faces.append(box_verts[i] + offset);
-            }
-        }
-    } else {
-        for (const Vector3 &pos : all_block_positions) {
-            Vector3 offset(pos.x + 0.5f, pos.y + 0.5f, pos.z + 0.5f);
-            for (int i = 0; i < 36; ++i) {
-                result.collision_faces.append(box_verts[i] + offset);
-            }
+    for (const Vector3 &pos : all_block_positions) {
+        Vector3i grid_pos(
+            static_cast<int>(std::floor(pos.x)),
+            static_cast<int>(std::floor(pos.y)),
+            static_cast<int>(std::floor(pos.z))
+        );
+
+        bool is_fully_surrounded =
+            occupied_blocks.has(grid_pos + Vector3i(1, 0, 0)) &&
+            occupied_blocks.has(grid_pos + Vector3i(-1, 0, 0)) &&
+            occupied_blocks.has(grid_pos + Vector3i(0, 1, 0)) &&
+            occupied_blocks.has(grid_pos + Vector3i(0, -1, 0)) &&
+            occupied_blocks.has(grid_pos + Vector3i(0, 0, 1)) &&
+            occupied_blocks.has(grid_pos + Vector3i(0, 0, -1));
+
+        if (is_fully_surrounded) continue;
+
+        Vector3 offset(pos.x + 0.5f, pos.y + 0.5f, pos.z + 0.5f);
+        for (int i = 0; i < 36; ++i) {
+            result.collision_faces.append(box_verts[i] + offset);
         }
     }
 
