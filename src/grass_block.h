@@ -1,32 +1,29 @@
-#ifndef GRASS_BLOCK_H
-#define GRASS_BLOCK_H
+#pragma once
 
 #include <godot_cpp/classes/static_body3d.hpp>
 #include <godot_cpp/classes/mesh_instance3d.hpp>
 #include <godot_cpp/variant/color.hpp>
 
 namespace godot {
+    class SNR2GrassBlock : public StaticBody3D {
+        GDCLASS(SNR2GrassBlock, StaticBody3D);
 
-class SNR2GrassBlock : public StaticBody3D {
-    GDCLASS(SNR2GrassBlock, StaticBody3D);
+        private:
+            Color grass_color;
 
-private:
-    Color grass_color;
+            // 指定した名前の MeshInstance3D ノードを取得し、マテリアルの色を更新するヘルパー関数
+            void apply_color_to_mesh(const String &node_name);
 
-protected:
-    static void _bind_methods();
+        protected:
+            static void _bind_methods();
 
-public:
-    SNR2GrassBlock();
-    ~SNR2GrassBlock();
+        public:
+            SNR2GrassBlock();
+            ~SNR2GrassBlock();
 
-    void _ready() override;
+            void _ready() override;
 
-    // 外部（C#や他のスクリプト、またはインスペクター）から色を変えられるように関数を用意
-    void set_grass_color(const Color p_color);
-    Color get_grass_color() const;
-};
-
+            void set_grass_color(const Color p_color);
+            Color get_grass_color() const;
+    };
 }
-
-#endif // GRASS_BLOCK_H

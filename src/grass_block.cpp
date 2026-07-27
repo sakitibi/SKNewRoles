@@ -20,28 +20,37 @@ SNR2GrassBlock::SNR2GrassBlock() {
 SNR2GrassBlock::~SNR2GrassBlock() {
 }
 
-void SNR2GrassBlock::_ready() {
-    MeshInstance3D *top_mesh = Object::cast_to<MeshInstance3D>(get_node_or_null("Top"));
+void SNR2GrassBlock::apply_color_to_mesh(const String &node_name) {
+    MeshInstance3D *mesh = Object::cast_to<MeshInstance3D>(get_node_or_null(node_name));
     
-    if (top_mesh != nullptr) {
-        Ref<Material> mat = top_mesh->get_material_override();
-        if (mat.is_null()) {
-            mat = top_mesh->get_active_material(0);
-        }
+    if (mesh != nullptr) {
+        Ref<StandardMaterial3D> std_mat = mesh->get_material_override();
         
-        if (mat.is_valid()) {
-            Ref<StandardMaterial3D> std_mat = mat->duplicate();
-            
-            if (std_mat.is_valid()) {
-                std_mat->set_albedo(grass_color);
-                // 強力な material_override 側へセットして、強制反映させる
-                top_mesh->set_material_override(std_mat);
+        if (std_mat.is_valid()) {
+            std_mat->set_albedo(grass_color);
+        } else {
+            Ref<Material> mat = mesh->get_active_material(0);
+            if (mat.is_valid()) {
+                Ref<StandardMaterial3D> std_mat_base = mat->duplicate();
+                if (std_mat_base.is_valid()) {
+                    std_mat_base->set_albedo(grass_color);
+                    mesh->set_material_override(std_mat_base);
+                }
             }
         }
     } else {
         if (!Engine::get_singleton()->is_editor_hint()) {
-            UtilityFunctions::printerr("Error: 'Top' node not found in SNR2GrassBlock during gameplay!");
+            UtilityFunctions::printerr("Error: '" + node_name + "' node not found in SNR2GrassBlock during gameplay!");
         }
+    }
+}
+
+void SNR2GrassBlock::_ready() {
+    // 対象となる全ての面ノードの名前リスト
+    static const String face_names[] = { "Top", "Front", "Back", "Left", "Right" };
+
+    for (const String &name : face_names) {
+        apply_color_to_mesh(name);
     }
 }
 
@@ -49,22 +58,10 @@ void SNR2GrassBlock::set_grass_color(const Color p_color) {
     grass_color = p_color;
     
     if (is_inside_tree()) {
-        MeshInstance3D *top_mesh = Object::cast_to<MeshInstance3D>(get_node_or_null("Top"));
-        if (top_mesh != nullptr) {
-            Ref<StandardMaterial3D> std_mat = top_mesh->get_material_override();
-            if (std_mat.is_valid()) {
-                std_mat->set_albedo(grass_color);
-            } else {
-                // 保険処理
-                Ref<Material> mat = top_mesh->get_active_material(0);
-                if (mat.is_valid()) {
-                    Ref<StandardMaterial3D> std_mat_base = mat->duplicate();
-                    if (std_mat_base.is_valid()) {
-                        std_mat_base->set_albedo(grass_color);
-                        top_mesh->set_material_override(std_mat_base);
-                    }
-                }
-            }
+        static const String face_names[] = { "Top", "Front", "Back", "Left", "Right" };
+
+        for (const String &name : face_names) {
+            apply_color_to_mesh(name);
         }
     }
 }

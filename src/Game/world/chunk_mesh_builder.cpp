@@ -8,6 +8,63 @@
 
 using namespace godot;
 
+// 静的メンバ変数の実体化
+HashMap<String, String> ChunkMeshBuilder::block_scene_map;
+
+ChunkMeshBuilder::ChunkMeshBuilder() {}
+ChunkMeshBuilder::~ChunkMeshBuilder() {}
+
+void ChunkMeshBuilder::_bind_methods() {
+    ClassDB::bind_static_method("ChunkMeshBuilder", D_METHOD("register_block", "block_id", "scene_path"), &ChunkMeshBuilder::register_block);
+    ClassDB::bind_static_method("ChunkMeshBuilder", D_METHOD("set_block_scene_map", "map"), &ChunkMeshBuilder::set_block_scene_map);
+    ClassDB::bind_static_method("ChunkMeshBuilder", D_METHOD("get_block_scene_map"), &ChunkMeshBuilder::get_block_scene_map_dict);
+    ClassDB::bind_static_method("ChunkMeshBuilder", D_METHOD("clear_block_map"), &ChunkMeshBuilder::clear_block_map);
+    ClassDB::bind_static_method("ChunkMeshBuilder", D_METHOD("preload_block_meshes"), &ChunkMeshBuilder::preload_block_meshes);
+}
+
+// デフォルトのマッピング初期化 & 取得
+const HashMap<String, String>& ChunkMeshBuilder::get_block_scene_map() {
+    if (block_scene_map.is_empty()) {
+        block_scene_map["minecraft:grass_block"]  = "res://Scenes/Prefabs/Blocks/GrassBlock.tscn";
+        block_scene_map["minecraft:dirt"]         = "res://Scenes/Prefabs/Blocks/Dirt.tscn";
+        block_scene_map["minecraft:stone"]        = "res://Scenes/Prefabs/Blocks/Stone.tscn";
+        block_scene_map["minecraft:stone_bricks"] = "res://Scenes/Prefabs/Blocks/StoneBricks.tscn";
+        block_scene_map["minecraft:gold_block"]   = "res://Scenes/Prefabs/Blocks/GoldBlock.tscn";
+    }
+    return block_scene_map;
+}
+
+// C# から 1 個ずつ追加・上書き
+void ChunkMeshBuilder::register_block(const String &block_id, const String &scene_path) {
+    get_block_scene_map(); // 初期化チェック
+    block_scene_map[block_id] = scene_path;
+}
+
+// C# から Dictionary 一括登録
+void ChunkMeshBuilder::set_block_scene_map(const Dictionary &p_map) {
+    block_scene_map.clear();
+    Array keys = p_map.keys();
+    for (int i = 0; i < keys.size(); ++i) {
+        String key = keys[i];
+        String val = p_map[key];
+        block_scene_map[key] = val;
+    }
+}
+
+// C# への Map 返却（Dictionary型）
+Dictionary ChunkMeshBuilder::get_block_scene_map_dict() {
+    const HashMap<String, String> &map = get_block_scene_map();
+    Dictionary dict;
+    for (const auto &E : map) {
+        dict[E.key] = E.value;
+    }
+    return dict;
+}
+
+void ChunkMeshBuilder::clear_block_map() {
+    block_scene_map.clear();
+}
+
 static Transform3D get_relative_transform(Node3D *root, Node3D *target) {
     if (!root || !target) return Transform3D();
     if (root == target) return Transform3D();
@@ -24,16 +81,6 @@ static Transform3D get_relative_transform(Node3D *root, Node3D *target) {
         parent = parent->get_parent();
     }
     return accumulated_transform;
-}
-
-const HashMap<String, String>& ChunkMeshBuilder::get_block_scene_map() {
-    static HashMap<String, String> map;
-    if (map.is_empty()) {
-        map["minecraft:grass_block"]   = "res://Scenes/Prefabs/Blocks/GrassBlock.tscn";
-        map["minecraft:stone"]         = "res://Scenes/Prefabs/Blocks/Stone.tscn";
-        map["minecraft:stone_bricks"]  = "res://Scenes/Prefabs/Blocks/StoneBricks.tscn";
-    }
-    return map;
 }
 
 void ChunkMeshBuilder::preload_block_meshes() {

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <godot_cpp/classes/object.hpp>
+#include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/classes/array_mesh.hpp>
 #include <godot_cpp/classes/mesh_instance3d.hpp>
@@ -29,26 +31,42 @@ namespace godot {
         PackedVector3Array collision_faces;
     };
 
-    class ChunkMeshBuilder {
-    private:
-        static int get_palette_index(const PackedInt64Array &data, int palette_size, int x, int y, int z);
+    class ChunkMeshBuilder : public Object {
+        GDCLASS(ChunkMeshBuilder, Object)
 
-    public:
-        static const HashMap<String, String>& get_block_scene_map();
-        static void preload_block_meshes();
-        static BlockMeshData get_block_mesh_data(const String &scene_path);
+        private:
+            static HashMap<String, String> block_scene_map;
+            static int get_palette_index(const PackedInt64Array &data, int palette_size, int x, int y, int z);
 
-        static HashMap<String, Vector<Vector3>> parse_chunk_positions(
-            const Dictionary &chunk_data,
-            int min_section_y = -4,
-            int max_section_y = 19
-        );
+        protected:
+            static void _bind_methods();
 
-        static BuiltChunkData build_chunk_data_async(
-            const HashMap<String, Vector<Vector3>> &categorized_positions,
-            bool p_is_initial_load = false
-        );
+        public:
+            ChunkMeshBuilder();
+            ~ChunkMeshBuilder();
 
-        static void apply_chunk_data_to_node(Node3D *parent_node, const BuiltChunkData &built_data);
+            // --- C# / External API ---
+            static void register_block(const String &block_id, const String &scene_path);
+            static void set_block_scene_map(const Dictionary &p_map);
+            static Dictionary get_block_scene_map_dict();
+            static void clear_block_map();
+
+            // 内部 / C++用
+            static const HashMap<String, String>& get_block_scene_map();
+            static void preload_block_meshes();
+            static BlockMeshData get_block_mesh_data(const String &scene_path);
+
+            static HashMap<String, Vector<Vector3>> parse_chunk_positions(
+                const Dictionary &chunk_data,
+                int min_section_y = -4,
+                int max_section_y = 19
+            );
+
+            static BuiltChunkData build_chunk_data_async(
+                const HashMap<String, Vector<Vector3>> &categorized_positions,
+                bool p_is_initial_load = false
+            );
+
+            static void apply_chunk_data_to_node(Node3D *parent_node, const BuiltChunkData &built_data);
     };
 }
