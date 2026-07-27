@@ -3,6 +3,7 @@
 
 #include "register_types.h"
 #include "player.h"
+#include "falling_block.h"
 #include "grass_block.h"
 #include "lobby_manager.h"
 #include "remote_player.h"
@@ -23,6 +24,7 @@ void initialize_player_module(ModuleInitializationLevel p_level) {
         return;
     }
     ClassDB::register_class<SNR2Player>();
+    ClassDB::register_class<SNR2FallingBlock>();
     ClassDB::register_class<SNR2GrassBlock>();
     ClassDB::register_class<LobbyManager>();
     ClassDB::register_class<RemotePlayer>();

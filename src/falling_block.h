@@ -6,8 +6,8 @@
 #include <godot_cpp/core/class_db.hpp>
 
 namespace godot {
-    class FallingBlock : public RigidBody3D {
-        GDCLASS(FallingBlock, RigidBody3D)
+    class SNR2FallingBlock : public RigidBody3D {
+        GDCLASS(SNR2FallingBlock, RigidBody3D)
 
         private:
             MeshInstance3D *mesh_instance = nullptr;
@@ -20,8 +20,8 @@ namespace godot {
             static void _bind_methods();
 
         public:
-            FallingBlock();
-            ~FallingBlock();
+            SNR2FallingBlock();
+            ~SNR2FallingBlock();
 
             void _ready() override;
             void _physics_process(double delta) override;
