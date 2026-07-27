@@ -224,9 +224,9 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
         for (int i = 0; i < vec.size(); ++i) {
             Vector3 pos = vec[i];
             occupied_blocks.insert(Vector3i(
-                static_cast<int>(std::floor(pos.x)),
-                static_cast<int>(std::floor(pos.y)),
-                static_cast<int>(std::floor(pos.z))
+                static_cast<int>(Math::round(pos.x)),
+                static_cast<int>(Math::round(pos.y)),
+                static_cast<int>(Math::round(pos.z))
             ));
         }
     }
@@ -307,15 +307,16 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
 
     for (const Vector3 &pos : all_block_positions) {
         Vector3i grid_pos(
-            static_cast<int>(std::floor(pos.x)),
-            static_cast<int>(std::floor(pos.y)),
-            static_cast<int>(std::floor(pos.z))
+            static_cast<int>(Math::round(pos.x)),
+            static_cast<int>(Math::round(pos.y)),
+            static_cast<int>(Math::round(pos.z))
         );
 
-        bool is_fully_surrounded =
+        bool has_top_block = occupied_blocks.has(grid_pos + Vector3i(0, 1, 0));
+
+        bool is_fully_surrounded = has_top_block &&
             occupied_blocks.has(grid_pos + Vector3i(1, 0, 0)) &&
             occupied_blocks.has(grid_pos + Vector3i(-1, 0, 0)) &&
-            occupied_blocks.has(grid_pos + Vector3i(0, 1, 0)) &&
             occupied_blocks.has(grid_pos + Vector3i(0, -1, 0)) &&
             occupied_blocks.has(grid_pos + Vector3i(0, 0, 1)) &&
             occupied_blocks.has(grid_pos + Vector3i(0, 0, -1));
