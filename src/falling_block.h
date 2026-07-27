@@ -6,27 +6,27 @@
 #include <godot_cpp/core/class_db.hpp>
 
 namespace godot {
-    class SNR2FallingBlock : public RigidBody3D {
-        GDCLASS(SNR2FallingBlock, RigidBody3D)
+    class FallingBlock : public RigidBody3D {
+        GDCLASS(FallingBlock, RigidBody3D)
 
-        private:
-            MeshInstance3D *mesh_instance = nullptr;
-            CollisionShape3D *collision_shape = nullptr;
+    private:
+        MeshInstance3D *mesh_instance = nullptr;
+        CollisionShape3D *collision_shape = nullptr;
 
-            bool is_landed = false;
-            float land_check_timer = 0.0f;
+        bool is_landed = false;
+        float land_check_timer = 0.0f; // 静止検知タイマー
 
-        protected:
-            static void _bind_methods();
+    protected:
+        static void _bind_methods();
 
-        public:
-            SNR2FallingBlock();
-            ~SNR2FallingBlock();
+    public:
+        FallingBlock();
+        ~FallingBlock();
 
-            void _ready() override;
-            void _physics_process(double delta) override;
+        void _ready() override;
+        void _physics_process(double delta) override;
 
-            // 着地時の処理
-            void on_landed();
+        // 着地時の処理
+        void on_landed();
     };
 }

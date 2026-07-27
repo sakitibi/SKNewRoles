@@ -6,23 +6,23 @@
 
 using namespace godot;
 
-void SNR2FallingBlock::_bind_methods() {
-    // 必要に応じてシグナルやメソッドをバインド
+void FallingBlock::_bind_methods() {
     ADD_SIGNAL(MethodInfo("block_landed", PropertyInfo(Variant::VECTOR3, "position")));
 }
 
-SNR2FallingBlock::SNR2FallingBlock() {
-    // 物理プロパティの初期設定
-    set_lock_rotation_enabled(true); // 落下中に回転しないように固定
+FallingBlock::FallingBlock() {
+    // 回転を完全固定
+    set_lock_rotation_enabled(true);
 }
 
-SNR2FallingBlock::~SNR2FallingBlock() {}
+FallingBlock::~FallingBlock() {}
 
-void SNR2FallingBlock::_ready() {
+void FallingBlock::_ready() {
     if (Engine::get_singleton()->is_editor_hint()) {
         return;
     }
 
+    // メッシュの生成
     mesh_instance = Object::cast_to<MeshInstance3D>(get_node_or_null("MeshInstance3D"));
     if (mesh_instance == nullptr) {
         mesh_instance = memnew(MeshInstance3D);
@@ -33,6 +33,7 @@ void SNR2FallingBlock::_ready() {
         add_child(mesh_instance);
     }
 
+    // コリジョンの生成
     collision_shape = Object::cast_to<CollisionShape3D>(get_node_or_null("CollisionShape3D"));
     if (collision_shape == nullptr) {
         collision_shape = memnew(CollisionShape3D);
@@ -43,23 +44,22 @@ void SNR2FallingBlock::_ready() {
         add_child(collision_shape);
     }
 
-    // 接触検知を有効化
     set_max_contacts_reported(4);
     set_contact_monitor(true);
 }
 
-void SNR2FallingBlock::_physics_process(double delta) {
+void FallingBlock::_physics_process(double delta) {
     if (Engine::get_singleton()->is_editor_hint() || is_landed) {
         return;
     }
 
-    // 速度がほぼ0になったか、または接地したかを検知
     Vector3 vel = get_linear_velocity();
-    if (Math::abs(vel.y) < 0.05f && get_colliding_bodies().size() > 0) {
+
+    if (Math::abs(vel.y) < 0.1f && get_colliding_bodies().size() > 0) {
         land_check_timer += (float)delta;
         
-        // 0.1秒間静止したら「着地完了」とみなす
-        if (land_check_timer > 0.1f) {
+        // 判定までの時間を短縮（0.03秒）して沈み込みを防止
+        if (land_check_timer > 0.03f) {
             on_landed();
         }
     } else {
@@ -67,20 +67,22 @@ void SNR2FallingBlock::_physics_process(double delta) {
     }
 }
 
-void SNR2FallingBlock::on_landed() {
+void FallingBlock::on_landed() {
+    if (is_landed) return;
     is_landed = true;
     
-    // 物理挙動を停止させてその場に固定
+    // 物理挙動をフリーズ（静的化）
     set_freeze_enabled(true);
 
-    // グリッド（1x1x1など）に座標をスナップ（整列）させる
     Vector3 pos = get_global_position();
-    pos.x = Math::round(pos.x);
-    pos.y = Math::round(pos.y);
-    pos.z = Math::round(pos.z);
+
+    pos.x = Math::floor(pos.x) + 0.5f;
+    pos.y = Math::floor(pos.y + 0.5f) + 0.5f;
+    pos.z = Math::floor(pos.z) + 0.5f;
+
     set_global_position(pos);
 
-    UtilityFunctions::print("[SNR2FallingBlock] We have landed: ", pos);
+    UtilityFunctions::print("📦 [FallingBlock] 着地完了座標: ", pos);
 
     emit_signal("block_landed", pos);
 }
