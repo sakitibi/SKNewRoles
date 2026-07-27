@@ -11,6 +11,7 @@
 #include <godot_cpp/variant/vector3i.hpp>
 #include <cmath>
 #include <vector>
+#include <algorithm>
 
 using namespace godot;
 
