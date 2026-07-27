@@ -6,18 +6,18 @@
 
 using namespace godot;
 
-void FallingBlock::_bind_methods() {
+void SNR2FallingBlock::_bind_methods() {
     ADD_SIGNAL(MethodInfo("block_landed", PropertyInfo(Variant::VECTOR3, "position")));
 }
 
-FallingBlock::FallingBlock() {
+SNR2FallingBlock::SNR2FallingBlock() {
     // 回転を完全固定
     set_lock_rotation_enabled(true);
 }
 
-FallingBlock::~FallingBlock() {}
+SNR2FallingBlock::~SNR2FallingBlock() {}
 
-void FallingBlock::_ready() {
+void SNR2FallingBlock::_ready() {
     if (Engine::get_singleton()->is_editor_hint()) {
         return;
     }
@@ -48,7 +48,7 @@ void FallingBlock::_ready() {
     set_contact_monitor(true);
 }
 
-void FallingBlock::_physics_process(double delta) {
+void SNR2FallingBlock::_physics_process(double delta) {
     if (Engine::get_singleton()->is_editor_hint() || is_landed) {
         return;
     }
@@ -67,7 +67,7 @@ void FallingBlock::_physics_process(double delta) {
     }
 }
 
-void FallingBlock::on_landed() {
+void SNR2FallingBlock::on_landed() {
     if (is_landed) return;
     is_landed = true;
     
@@ -82,7 +82,7 @@ void FallingBlock::on_landed() {
 
     set_global_position(pos);
 
-    UtilityFunctions::print("📦 [FallingBlock] 着地完了座標: ", pos);
+    UtilityFunctions::print("📦 [SNR2FallingBlock] 着地完了座標: ", pos);
 
     emit_signal("block_landed", pos);
 }
