@@ -5,10 +5,10 @@
 #include "player.h"
 #include "grass_block.h"
 #include "lobby_manager.h"
-#include "RemotePlayer.h"
+#include "remote_player.h"
 #include "config_manager.h"
-#include "Game/RoleManager.h"
-#include "Game/chunk_manager.h"
+#include "Game/world/chunk_manager.h"
+#include "Game/role_manager.h"
 #include "Game/hud_manager.h"
 
 #ifndef GDEXTENSION_API_CC

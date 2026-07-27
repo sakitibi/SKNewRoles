@@ -25,12 +25,13 @@ set(SOURCES
     src/player.cpp
     src/grass_block.cpp
     src/lobby_manager.cpp
-    src/RemotePlayer.cpp
+    src/remote_player.cpp
     src/config_manager.cpp
-    src/Game/RoleManager.cpp
-    src/Game/chunk_manager.cpp
-    src/Game/chunk_mesh_builder.cpp
-    src/Game/mca_parser.cpp
+    src/Game/world/chunk_manager.cpp
+    src/Game/world/chunk_mesh_builder.cpp
+    src/Game/world/chunk_collision_builder.cpp
+    src/Game/world/mca_parser.cpp
+    src/Game/role_manager.cpp
     src/Game/hud_manager.cpp
 )
 

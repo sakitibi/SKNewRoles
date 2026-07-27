@@ -1,15 +1,8 @@
 #include "chunk_mesh_builder.h"
+#include "chunk_collision_builder.h"
+
 #include <godot_cpp/core/memory.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
-#include <godot_cpp/classes/static_body3d.hpp>
-#include <godot_cpp/classes/collision_shape3d.hpp>
-#include <godot_cpp/classes/box_shape3d.hpp>
-#include <godot_cpp/classes/concave_polygon_shape3d.hpp>
-#include <godot_cpp/classes/packed_scene.hpp>
-#include <godot_cpp/classes/resource_loader.hpp>
-#include <godot_cpp/templates/hash_set.hpp>
-#include <godot_cpp/variant/vector3i.hpp>
-#include <cmath>
 #include <vector>
 #include <algorithm>
 
@@ -218,26 +211,12 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
 ) {
     BuiltChunkData result;
 
-    HashSet<Vector3i> occupied_blocks;
-    for (const auto &E : categorized_positions) {
-        const Vector<Vector3> &vec = E.value;
-        for (int i = 0; i < vec.size(); ++i) {
-            Vector3 pos = vec[i];
-            occupied_blocks.insert(Vector3i(
-                static_cast<int>(Math::round(pos.x)),
-                static_cast<int>(Math::round(pos.y)),
-                static_cast<int>(Math::round(pos.z))
-            ));
-        }
-    }
-
+    // 各ブロックの見た目（MultiMesh）の生成
     List<String> sorted_keys;
     for (const auto &E : categorized_positions) {
         sorted_keys.push_back(E.key);
     }
     sorted_keys.sort();
-
-    std::vector<Vector3> all_block_positions;
 
     for (const String &scene_path : sorted_keys) {
         const Vector<Vector3> &positions = categorized_positions[scene_path];
@@ -255,7 +234,6 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
             return a.x < b.x;
         });
 
-        // MultiMesh（見た目）の構築
         BlockMeshData mesh_data = get_block_mesh_data(scene_path);
         if (mesh_data.valid) {
             Ref<MultiMesh> multimesh;
@@ -271,61 +249,9 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
             }
             result.multimeshes[scene_path] = multimesh;
         }
-
-        for (const Vector3 &pos : sorted_positions) {
-            all_block_positions.push_back(pos);
-        }
     }
 
-    std::sort(all_block_positions.begin(), all_block_positions.end(), [](const Vector3 &a, const Vector3 &b) {
-        if (a.y != b.y) return a.y < b.y;
-        if (a.z != b.z) return a.z < b.z;
-        return a.x < b.x;
-    });
-
-    static const Vector3 box_verts[36] = {
-        // Top (+Y)
-        Vector3(-0.5f, 0.5f, -0.5f), Vector3(0.5f, 0.5f, -0.5f), Vector3(0.5f, 0.5f, 0.5f),
-        Vector3(-0.5f, 0.5f, -0.5f), Vector3(0.5f, 0.5f, 0.5f), Vector3(-0.5f, 0.5f, 0.5f),
-        // Bottom (-Y)
-        Vector3(-0.5f, -0.5f, 0.5f), Vector3(0.5f, -0.5f, 0.5f), Vector3(0.5f, -0.5f, -0.5f),
-        Vector3(-0.5f, -0.5f, 0.5f), Vector3(0.5f, -0.5f, -0.5f), Vector3(-0.5f, -0.5f, -0.5f),
-        // Front (+Z)
-        Vector3(-0.5f, -0.5f, 0.5f), Vector3(-0.5f, 0.5f, 0.5f), Vector3(0.5f, 0.5f, 0.5f),
-        Vector3(-0.5f, -0.5f, 0.5f), Vector3(0.5f, 0.5f, 0.5f), Vector3(0.5f, -0.5f, 0.5f),
-        // Back (-Z)
-        Vector3(0.5f, -0.5f, -0.5f), Vector3(0.5f, 0.5f, -0.5f), Vector3(-0.5f, 0.5f, -0.5f),
-        Vector3(0.5f, -0.5f, -0.5f), Vector3(-0.5f, 0.5f, -0.5f), Vector3(-0.5f, -0.5f, -0.5f),
-        // Left (-X)
-        Vector3(-0.5f, -0.5f, -0.5f), Vector3(-0.5f, 0.5f, -0.5f), Vector3(-0.5f, 0.5f, 0.5f),
-        Vector3(-0.5f, -0.5f, -0.5f), Vector3(-0.5f, 0.5f, 0.5f), Vector3(-0.5f, -0.5f, 0.5f),
-        // Right (+X)
-        Vector3(0.5f, -0.5f, 0.5f), Vector3(0.5f, 0.5f, 0.5f), Vector3(0.5f, 0.5f, -0.5f),
-        Vector3(0.5f, -0.5f, 0.5f), Vector3(0.5f, 0.5f, -0.5f), Vector3(0.5f, -0.5f, -0.5f)
-    };
-
-    for (const Vector3 &pos : all_block_positions) {
-        Vector3i grid_pos(
-            static_cast<int>(Math::round(pos.x)),
-            static_cast<int>(Math::round(pos.y)),
-            static_cast<int>(Math::round(pos.z))
-        );
-
-        bool is_fully_surrounded =
-            occupied_blocks.has(grid_pos + Vector3i(1, 0, 0)) &&
-            occupied_blocks.has(grid_pos + Vector3i(-1, 0, 0)) &&
-            occupied_blocks.has(grid_pos + Vector3i(0, 1, 0)) &&
-            occupied_blocks.has(grid_pos + Vector3i(0, -1, 0)) &&
-            occupied_blocks.has(grid_pos + Vector3i(0, 0, 1)) &&
-            occupied_blocks.has(grid_pos + Vector3i(0, 0, -1));
-
-        if (is_fully_surrounded) continue;
-
-        Vector3 offset(pos.x + 0.5f, pos.y + 0.5f, pos.z + 0.5f);
-        for (int i = 0; i < 36; ++i) {
-            result.collision_faces.append(box_verts[i] + offset);
-        }
-    }
+    result.collision_faces = ChunkCollisionBuilder::build_collision_faces(categorized_positions);
 
     return result;
 }
