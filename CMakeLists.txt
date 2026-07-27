@@ -23,6 +23,7 @@ FetchContent_MakeAvailable(godot-cpp)
 set(SOURCES
     src/register_types.cpp
     src/player.cpp
+    src/falling_block.cpp
     src/grass_block.cpp
     src/lobby_manager.cpp
     src/remote_player.cpp
