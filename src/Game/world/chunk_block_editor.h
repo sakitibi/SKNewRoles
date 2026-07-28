@@ -7,7 +7,9 @@
 #include <godot_cpp/variant/string.hpp>
 
 namespace godot {
-    class ChunkBlockEditor {
+    class ChunkBlockEditor : Object {
+        GDCLASS(ChunkBlockEditor, Object)
+
         public:
             static void add_block_at_world_pos(
                 HashMap<Vector2i, Node3D*> &loaded_chunks,
