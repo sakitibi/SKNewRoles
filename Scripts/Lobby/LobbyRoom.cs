@@ -13,10 +13,10 @@ namespace SKNewRoles2.Lobby
         internal Button StartGameButton;
 
         // 他のプレイヤーノードを管理する辞書
-        internal Dictionary<string, Node3D> _otherPlayers = new();
+        internal Dictionary<string, Node3D> _otherPlayers = [];
         
-        private PackedScene _playerPrefab;      // 自分の実体用 (Player.tscn)
-        private PackedScene _dummyPlayerPrefab; // 他人の見た目同期用 (LobbyPlayerDummy.tscn)
+        private PackedScene _playerPrefab;      // 自分の実体用
+        private PackedScene _dummyPlayerPrefab; // 他人の見た目同期用
 
         private Node3D _myPlayerInstance;
         private RoomUI _roomUIInstance;

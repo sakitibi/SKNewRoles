@@ -54,9 +54,6 @@ namespace SKNewRoles2.SessionManagerSystem
             }
         }
 
-        // ==========================================
-        // 2. 外部MODアセンブリ対応型 シングルトン構造
-        // ==========================================
         private static SessionManager _instance;
 
         /// <summary>

@@ -38,14 +38,13 @@ public partial class Lobby_select : Control
 
     public override void _ExitTree()
     {
-        // ⚠️ メモリリーク防止のため、シーンが破棄される時にイベント接続を解除
+        // メモリリーク防止のため、シーンが破棄される時にイベント接続を解除
         if (SessionManager.Instance != null)
         {
             SessionManager.Instance.UserInfoUpdated -= OnUserInfoUpdated;
         }
     }
 
-    // 🔔 裏で本物のEmail（ユーザー情報）が同期されたら自動で呼ばれる
     private void OnUserInfoUpdated()
     {
         // データが更新されたので画面をリフレッシュ

@@ -80,7 +80,7 @@ namespace SKNewRoles2.Game
             int loopCheck = 0;
             while (!_hasRoleReceived && loopCheck < 50)
             {
-                await Task.Delay(100);
+                await Task.Delay(200);
                 loopCheck++;
             }
 
@@ -173,10 +173,7 @@ namespace SKNewRoles2.Game
                 OnMyPlayerHpChanged(curHp, maxHp);
             }
 
-            if (_chunkManagerCpp != null)
-            {
-                _chunkManagerCpp.Set("player_path", _myPlayerInstance.GetPath());
-            }
+            _chunkManagerCpp?.Set("player_path", _myPlayerInstance.GetPath());
         }
 
         private void SetPlayerPhysicsEnabled(bool enabled)
@@ -215,7 +212,7 @@ namespace SKNewRoles2.Game
                 playerIdsArray.Add(myUserId);
             }
 
-            var roleCountsDict = new Godot.Collections.Dictionary();
+            Godot.Collections.Dictionary roleCountsDict = [];
             roleCountsDict[1] = 1; // 役職ID 1 (人狼) を 1人
 
             GD.Print($"🎲 [AssignRoles] {playerIdsArray.Count} 人のプレイヤーに役職を割り当てます");
