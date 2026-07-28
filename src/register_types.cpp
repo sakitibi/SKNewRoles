@@ -8,6 +8,7 @@
 #include "config_manager.h"
 #include "Blocks/falling_block.h"
 #include "Blocks/grass_block.h"
+#include "Game/world/chunk_block_editor.h"
 #include "Game/world/chunk_manager.h"
 #include "Game/world/chunk_mesh_builder.h"
 #include "Game/role_manager.h"
@@ -30,6 +31,7 @@ void initialize_player_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<RemotePlayer>();
     ClassDB::register_class<RoleManager>();
     ClassDB::register_class<ConfigManager>();
+    ClassDB::register_class<ChunkBlockEditor>();
     ClassDB::register_class<ChunkManager>();
     ClassDB::register_class<ChunkMeshBuilder>();
     ClassDB::register_class<HUDManager>();

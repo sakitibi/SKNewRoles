@@ -1,7 +1,9 @@
 #include "chunk_manager.h"
 #include "mca_parser.h"
 #include "chunk_mesh_builder.h"
+#include "chunk_block_editor.h"
 
+#include <godot_cpp/core/object.hpp>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/worker_thread_pool.hpp>
@@ -9,6 +11,7 @@
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include <cmath>
 
 using namespace godot;
 
@@ -30,16 +33,11 @@ void ChunkManager::_bind_methods() {
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "region_folder_path"), "set_region_folder_path", "get_region_folder_path");
 
     ClassDB::bind_method(D_METHOD("is_initial_load_complete"), &ChunkManager::is_initial_load_complete);
-    
     ClassDB::bind_method(D_METHOD("verity_initial_collisions"), &ChunkManager::verity_initial_collisions);
-
     ClassDB::bind_method(D_METHOD("_on_chunk_loaded", "p_userdata"), &ChunkManager::_on_chunk_loaded);
 
     ClassDB::bind_method(D_METHOD("spawn_falling_block", "spawn_pos", "block_type"), &ChunkManager::spawn_falling_block, DEFVAL("stone"));
     ClassDB::bind_method(D_METHOD("_on_block_landed", "land_pos", "block_type"), &ChunkManager::_on_block_landed);
-
-    ClassDB::bind_method(D_METHOD("add_block_at_world_pos", "world_pos", "block_type"), &ChunkManager::add_block_at_world_pos, DEFVAL("stone"));
-    ClassDB::bind_method(D_METHOD("rebuild_chunk_mesh", "chunk_coord"), &ChunkManager::rebuild_chunk_mesh);
 }
 
 ChunkManager::ChunkManager() {}
@@ -61,7 +59,6 @@ void ChunkManager::spawn_falling_block(const Vector3 &spawn_pos, const String &b
     if (block != nullptr) {
         block->set_global_position(spawn_pos);
         block->set_block_type(block_type);
-
         block->connect("block_landed", Callable(this, "_on_block_landed"));
 
         add_child(block);
@@ -71,88 +68,55 @@ void ChunkManager::spawn_falling_block(const Vector3 &spawn_pos, const String &b
 
 void ChunkManager::_on_block_landed(const Vector3 &land_pos, const String &block_type) {
     UtilityFunctions::print(vformat("🧱 [ChunkManager] block (%s) has landed: ", block_type), land_pos);
-
-    add_block_at_world_pos(land_pos, block_type);
-}
-
-void ChunkManager::add_block_at_world_pos(const Vector3 &world_pos, const String &block_type) {
-    int gx = Math::floor(world_pos.x);
-    int gy = Math::floor(world_pos.y);
-    int gz = Math::floor(world_pos.z);
-
-    int chunk_x = static_cast<int>(std::floor((float)gx / chunk_size));
-    int chunk_z = static_cast<int>(std::floor((float)gz / chunk_size));
-    Vector2i chunk_coord(chunk_x, chunk_z);
-
-    Vector3 local_block_pos(
-        gx - (chunk_x * chunk_size) + 0.5f,
-        gy + 0.5f,
-        gz - (chunk_z * chunk_size) + 0.5f
-    );
-
-    if (!chunk_block_data_map.has(chunk_coord)) {
-        chunk_block_data_map[chunk_coord] = HashMap<String, Vector<Vector3>>();
-    }
-    
-    chunk_block_data_map[chunk_coord][block_type].push_back(local_block_pos);
-
-    UtilityFunctions::print(vformat("[ChunkManager] chunk (%d, %d) Block (%s) Add (Local coordinates: %.1f, %.1f, %.1f)", 
-        chunk_coord.x, chunk_coord.y, block_type, local_block_pos.x, local_block_pos.y, local_block_pos.z));
-
-    rebuild_chunk_mesh(chunk_coord);
-}
-
-void ChunkManager::rebuild_chunk_mesh(const Vector2i &chunk_coord) {
-    if (!loaded_chunks.has(chunk_coord)) return;
-
-    Node3D *old_chunk_node = loaded_chunks[chunk_coord];
-
-    HashMap<String, Vector<Vector3>> &positions = chunk_block_data_map[chunk_coord];
-    BuiltChunkData new_built_data = ChunkMeshBuilder::build_chunk_data_async(positions, false);
-
-    Node3D *new_chunk_node = memnew(Node3D);
-    new_chunk_node->set_name(vformat("Chunk_%d_%d", chunk_coord.x, chunk_coord.y));
-    new_chunk_node->set_position(Vector3(chunk_coord.x * chunk_size, 0.0f, chunk_coord.y * chunk_size));
-
-    ChunkMeshBuilder::apply_chunk_data_to_node(new_chunk_node, new_built_data);
-
-    add_child(new_chunk_node);
-    loaded_chunks[chunk_coord] = new_chunk_node;
-
-    if (old_chunk_node) {
-        old_chunk_node->queue_free();
-    }
-
-    UtilityFunctions::print(vformat("[ChunkManager] chunk (%d, %d) Successfully rebuilt the mesh", chunk_coord.x, chunk_coord.y));
+    ChunkBlockEditor::add_block_at_world_pos(loaded_chunks, chunk_block_data_map, chunk_size, land_pos, block_type);
 }
 
 Node3D *ChunkManager::find_local_player() {
-    SceneTree *st = get_tree();
-    if (!st) return nullptr;
-
-    Array players = st->get_nodes_in_group("player");
-    if (players.size() > 0) {
-        return Object::cast_to<Node3D>(players[0]);
+    // 保存済み ID が生きているか確認して取得
+    if (player_instance_id != 0) {
+        if (UtilityFunctions::is_instance_id_valid(player_instance_id)) {
+            Object *obj = ObjectDB::get_instance(player_instance_id);
+            if (obj) {
+                return Object::cast_to<Node3D>(obj);
+            }
+        }
+        player_instance_id = 0; // 無効化されていたらリセット
     }
+
+    if (!player_path.is_empty()) {
+        Node *node = get_node_or_null(player_path);
+        if (node) {
+            Node3D *p = Object::cast_to<Node3D>(node);
+            if (p) {
+                player_instance_id = p->get_instance_id();
+                return p;
+            }
+        }
+    }
+
+    SceneTree *st = get_tree();
+    if (st) {
+        Array players = st->get_nodes_in_group("player");
+        if (players.size() > 0) {
+            Node3D *p = Object::cast_to<Node3D>(players[0]);
+            if (p) {
+                player_instance_id = p->get_instance_id();
+                return p;
+            }
+        }
+    }
+
     return nullptr;
 }
 
 void ChunkManager::_process(double delta) {
     if (Engine::get_singleton()->is_editor_hint()) return;
 
-    if (!player_node) {
-        player_node = find_local_player();
-        if (!player_node && !player_path.is_empty()) {
-            Node *node = get_node_or_null(player_path);
-            if (node) {
-                player_node = Object::cast_to<Node3D>(node);
-            }
-        }
-    }
+    Node3D *p_node = find_local_player();
 
     if (first_update) {
-        if (player_node) {
-            Vector3 p_pos = player_node->get_global_position();
+        if (p_node) {
+            Vector3 p_pos = p_node->get_global_position();
             current_chunk_coord = Vector2i(
                 static_cast<int>(std::floor(p_pos.x / chunk_size)),
                 static_cast<int>(std::floor(p_pos.z / chunk_size))
@@ -166,10 +130,10 @@ void ChunkManager::_process(double delta) {
             update_chunks_around_player();
             first_update = false;
         }
-    } else if (player_node) {
+    } else if (p_node) {
         Vector2i new_coord = Vector2i(
-            static_cast<int>(std::floor(player_node->get_global_position().x / chunk_size)),
-            static_cast<int>(std::floor(player_node->get_global_position().z / chunk_size))
+            static_cast<int>(std::floor(p_node->get_global_position().x / chunk_size)),
+            static_cast<int>(std::floor(p_node->get_global_position().z / chunk_size))
         );
         if (new_coord != current_chunk_coord) {
             current_chunk_coord = new_coord;

@@ -35,12 +35,11 @@ namespace godot {
             bool first_update = true;
             NodePath player_path;
 
-            Node3D *player_node = nullptr;
+            uint64_t player_instance_id = 0; // 生ポインタではなく ID で安全保持
             Vector2i current_chunk_coord = Vector2i(-999999, -999999);
 
             HashMap<Vector2i, Node3D *> loaded_chunks;
             HashMap<Vector2i, int64_t> pending_tasks;
-
             HashMap<Vector2i, HashMap<String, Vector<Vector3>>> chunk_block_data_map;
 
             String region_folder_path = "res://regions/";
@@ -66,9 +65,6 @@ namespace godot {
 
             void spawn_falling_block(const Vector3 &spawn_pos, const String &block_type = "stone");
             void _on_block_landed(const Vector3 &land_pos, const String &block_type);
-
-            void add_block_at_world_pos(const Vector3 &world_pos, const String &block_type = "stone");
-            void rebuild_chunk_mesh(const Vector2i &chunk_coord);
 
             void verity_initial_collisions();
 
