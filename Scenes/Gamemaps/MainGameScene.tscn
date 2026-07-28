@@ -4,6 +4,13 @@
 [ext_resource type="PackedScene" uid="uid://b42xncvhtc3l5" path="res://Scenes/Gamemaps/StartupScene.tscn" id="2_vg2oi"]
 [ext_resource type="PackedScene" uid="uid://bgybqu4t6omyp" path="res://Scenes/Gamemaps/RoleRevealScene.tscn" id="3_pswr4"]
 [ext_resource type="FontFile" uid="uid://bnpuryk64ipb5" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="4_pswr4"]
+[ext_resource type="FontFile" uid="uid://dh2srjx51onl7" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="5_o3sw3"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0iane"]
+bg_color = Color(0, 0, 0, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1fclr"]
+bg_color = Color(1, 0, 0, 1)
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_vg2oi"]
 
@@ -26,6 +33,37 @@ script = ExtResource("1_cakpg")
 [node name="LoadingScene" parent="UILayer" unique_id=1208099915 instance=ExtResource("2_vg2oi")]
 
 [node name="RoleRevealScene" parent="UILayer" unique_id=1913904660 instance=ExtResource("3_pswr4")]
+
+[node name="HPBar" type="ProgressBar" parent="UILayer" unique_id=1030434168]
+offset_left = 329.0
+offset_top = 617.0
+offset_right = 739.0
+offset_bottom = 653.0
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("4_pswr4")
+theme_override_font_sizes/font_size = 28
+theme_override_styles/background = SubResource("StyleBoxFlat_0iane")
+theme_override_styles/fill = SubResource("StyleBoxFlat_1fclr")
+max_value = 20.0
+value = 20.0
+show_percentage = false
+
+[node name="HPLabel" type="Label" parent="UILayer/HPBar" unique_id=1004456570]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -14.5
+offset_right = 20.0
+offset_bottom = 14.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("5_o3sw3")
+theme_override_font_sizes/font_size = 28
+text = "20"
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=111003577]
 environment = SubResource("Environment_pswr4")
