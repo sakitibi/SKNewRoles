@@ -21,6 +21,8 @@ namespace SKNewRoles2.Game
 
         private Control _loadingScene;
         private Control _roleRevealScene;
+        private ProgressBar _hpBar;
+        private Label _hpLabel;
         private Label _factionLabel;
         private Label _roleTitleLabel;
         private Label _descriptionLabel;
@@ -33,6 +35,8 @@ namespace SKNewRoles2.Game
 
             _loadingScene = GetNodeOrNull<Control>("UILayer/LoadingScene");
             _roleRevealScene = GetNodeOrNull<Control>("UILayer/RoleRevealScene");
+            _hpBar = GetNodeOrNull<ProgressBar>("UILayer/HPBar");
+            _hpLabel = GetNodeOrNull<Label>("UILayer/HPBar/HPLabel");
 
             if (_roleRevealScene != null)
             {
@@ -52,6 +56,7 @@ namespace SKNewRoles2.Game
 
             Realtime.OnRoleAssignedReceived += OnRoleAssignedReceived;
             Realtime.OnPlayerTransformReceivedAll += OnPlayerTransformReceivedAll;
+            Realtime.OnPlayerHpReceived += OnOtherPlayerHpReceived;
 
             // プレイヤーを生成
             if (_myPlayerInstance == null)
@@ -79,6 +84,7 @@ namespace SKNewRoles2.Game
 
             if (!_hasRoleReceived)
             {
+                GD.PrintErr("⚠️ 役職受信タイムアウトのため、デフォルト(村人)を適用します");
                 ApplyRole(0, 0);
             }
 
@@ -156,15 +162,22 @@ namespace SKNewRoles2.Game
             
             _myPlayerInstance.GlobalPosition = new Vector3(0, 100, 0);
 
+            _myPlayerInstance.Connect("hp_changed", Callable.From<int, int>(OnMyPlayerHpChanged));
+
+            // 初期表示用に取得
+            if (_myPlayerInstance.HasMethod("get_current_hp") && _myPlayerInstance.HasMethod("get_max_hp"))
+            {
+                int curHp = (int)_myPlayerInstance.Call("get_current_hp");
+                int maxHp = (int)_myPlayerInstance.Call("get_max_hp");
+                OnMyPlayerHpChanged(curHp, maxHp);
+            }
+
             if (_chunkManagerCpp != null)
             {
                 _chunkManagerCpp.Set("player_path", _myPlayerInstance.GetPath());
             }
         }
 
-        /// <summary>
-        /// プレイヤーの物理更新（重力・移動処理）を切り替える
-        /// </summary>
         private void SetPlayerPhysicsEnabled(bool enabled)
         {
             if (_myPlayerInstance == null) return;
@@ -186,7 +199,6 @@ namespace SKNewRoles2.Game
                 return;
             }
 
-            // 参加プレイヤーリストを作成
             var playerIdsArray = new Godot.Collections.Array();
             string myUserId = GetMyUserId();
 
@@ -197,6 +209,10 @@ namespace SKNewRoles2.Game
                     playerIdsArray.Add(id);
                 }
             }
+            else
+            {
+                playerIdsArray.Add(myUserId);
+            }
 
             var roleCountsDict = new Godot.Collections.Dictionary();
             roleCountsDict[1] = 1; // 役職ID 1 (人狼) を 1人
@@ -206,7 +222,6 @@ namespace SKNewRoles2.Game
             var rawResult = _roleManagerCpp.Call("assign_roles", playerIdsArray, roleCountsDict);
             var assignmentResult = rawResult.AsGodotDictionary();
 
-            // 割り当て結果を取得して適用
             foreach (Variant key in assignmentResult.Keys)
             {
                 string targetUserId = key.AsString();
@@ -249,10 +264,10 @@ namespace SKNewRoles2.Game
 
         private string GetMyUserId()
         {
-            string myUserId = SessionManager.Instance.CurrentSession?.User?.Id;
+            string myUserId = SessionManager.Instance?.CurrentSession?.User?.Id;
             if (string.IsNullOrEmpty(myUserId))
             {
-                myUserId = $"Guest_{SessionManager.Instance.CurrentRoomCode}";
+                myUserId = $"Guest_{SessionManager.Instance?.CurrentRoomCode ?? "SingleTest"}";
             }
             return myUserId;
         }
@@ -261,7 +276,7 @@ namespace SKNewRoles2.Game
         {
             return factionId switch
             {
-                0 => "村陣営",
+                0 => "村人陣営",
                 1 => "人狼陣営",
                 2 => "第三陣営",
                 _ => "不明な陣営"
@@ -328,10 +343,42 @@ namespace SKNewRoles2.Game
             Realtime.SendTransformBroadcastAll(pos.X, pos.Y, pos.Z, rot.X, rot.Y, rot.Z);
         }
 
+        private void OnMyPlayerHpChanged(int currentHp, int maxHp)
+        {
+            if (_hpBar != null)
+            {
+                _hpBar.MaxValue = maxHp;
+                _hpBar.Value = currentHp;
+            }
+            if (_hpLabel != null)
+            {
+                _hpLabel.Text = $"{currentHp} / {maxHp}";
+            }
+
+            string myUserId = GetMyUserId();
+            Realtime.SendHpBroadcast(myUserId, currentHp, maxHp);
+        }
+
+        private void OnOtherPlayerHpReceived(string senderId, int currentHp, int maxHp)
+        {
+            string myUserId = GetMyUserId();
+            if (senderId == myUserId) return;
+
+            if (_otherPlayers.ContainsKey(senderId))
+            {
+                Node3D remotePlayer = _otherPlayers[senderId];
+                if (IsInstanceValid(remotePlayer) && remotePlayer.HasMethod("set_current_hp"))
+                {
+                    remotePlayer.Call("set_current_hp", currentHp);
+                }
+            }
+        }
+
         public override void _ExitTree()
         {
             Realtime.OnRoleAssignedReceived -= OnRoleAssignedReceived;
             Realtime.OnPlayerTransformReceivedAll -= OnPlayerTransformReceivedAll;
+            Realtime.OnPlayerHpReceived -= OnOtherPlayerHpReceived;
         }
     }
 }

@@ -14,6 +14,7 @@ namespace SKNewRoles2.Game
 
         public static event Action<string, float, float, float, float, float, float> OnPlayerTransformReceivedAll;
         public static event Action<string, int, int> OnRoleAssignedReceived;
+        public static event Action<string, int, int> OnPlayerHpReceived;
 
         /// <summary>
         /// チャンネル参加完了までポーリングしながら非同期待機
@@ -41,76 +42,57 @@ namespace SKNewRoles2.Game
             _isJoinedChannel = false;
             GD.Print("🌐 [Realtime] MainGame 用 WebSocket 接続を開始しました。");
 
-            // WebSocket が Open になるまで Poll しながら待機
-            int timeout = 0;
-            while (_realtimeClient != null && timeout < 50)
+            int timeoutCounter = 0;
+            while (timeoutCounter < 100)
             {
                 _realtimeClient.Poll();
                 var state = _realtimeClient.GetReadyState();
 
                 if (state == WebSocketPeer.State.Open)
                 {
-                    break;
+                    if (!_isJoinedChannel)
+                    {
+                        SendJoinChannelRequest();
+                    }
+
+                    while (_realtimeClient.GetAvailablePacketCount() > 0)
+                    {
+                        string message = _realtimeClient.GetPacket().GetStringFromUtf8();
+                        ProcessWebSocketMessage(message);
+                    }
+
+                    if (_isJoinedChannel)
+                    {
+                        GD.Print("✅ [Realtime] Realtime チャンネルに正常に参加完了しました。");
+                        return true;
+                    }
                 }
-                if (state == WebSocketPeer.State.Closed)
+                else if (state == WebSocketPeer.State.Closed)
                 {
-                    GD.PrintErr("❌ [Realtime] WebSocket 接続が Closed になりました。");
+                    GD.PrintErr("❌ [Realtime] 接続確立前に WebSocket が切断されました。");
                     return false;
                 }
 
                 await Task.Delay(100);
-                timeout++;
+                timeoutCounter++;
             }
 
-            if (_realtimeClient == null || _realtimeClient.GetReadyState() != WebSocketPeer.State.Open)
-            {
-                GD.PrintErr("❌ [Realtime] WebSocket の接続タイムアウト。");
-                return false;
-            }
+            GD.PrintErr("⚠️ [Realtime] WebSocket 接続待機がタイムアウト(10秒)しました。");
+            return false;
+        }
 
-            // チャンネル参加リクエスト (phx_join) を送信
-            string currentRef = _refCounter++.ToString();
+        private static void SendJoinChannelRequest()
+        {
             var joinPayload = new
             {
                 topic = "realtime:public:lobbies",
                 @event = "phx_join",
-                payload = new
-                {
-                    config = new
-                    {
-                        broadcast = new { ack = false, self = true }
-                    }
-                },
-                @ref = currentRef
+                payload = new { config = new { broadcast = new { self = false } } },
+                @ref = _refCounter++.ToString()
             };
-            
-            string joinJson = JsonSerializer.Serialize(joinPayload);
-            _realtimeClient.SendText(joinJson);
-            _realtimeClient.Poll();
-            GD.Print($"📡 [Realtime] チャンネル接続リクエスト送信完了！ (Ref: {currentRef}) サーバー承認待機中...");
 
-            int joinTimeout = 0;
-            while (joinTimeout < 60) // 最大6秒待機
-            {
-                PollRealtimeEvents(); // 受信パケットを消化して _isJoinedChannel を判定
-
-                if (_isJoinedChannel)
-                {
-                    GD.Print("✅ [Realtime] チャンネル参加承認 (phx_reply: ok) を確認しました！");
-                    return true;
-                }
-
-                await Task.Delay(100);
-                joinTimeout++;
-            }
-
-            GD.PrintErr("❌ [Realtime] チャンネル参加承認がタイムアウトしました。");
-            return false;
-        }
-
-        public static void StartListening()
-        {
-            _ = EnsureConnectedAsync();
+            _realtimeClient.SendText(JsonSerializer.Serialize(joinPayload));
+            GD.Print("📡 [Realtime] phx_join リクエストを送信しました。");
         }
 
         public static void PollRealtimeEvents()
@@ -118,69 +100,78 @@ namespace SKNewRoles2.Game
             if (_realtimeClient == null) return;
 
             _realtimeClient.Poll();
-            var state = _realtimeClient.GetReadyState();
 
-            if (state == WebSocketPeer.State.Open)
+            while (_realtimeClient.GetAvailablePacketCount() > 0)
             {
-                while (_realtimeClient.GetAvailablePacketCount() > 0)
+                string message = _realtimeClient.GetPacket().GetStringFromUtf8();
+                ProcessWebSocketMessage(message);
+            }
+        }
+
+        private static void ProcessWebSocketMessage(string rawJson)
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(rawJson);
+                var root = doc.RootElement;
+
+                if (root.TryGetProperty("event", out var eventProp))
                 {
-                    byte[] rawPacket = _realtimeClient.GetPacket();
-                    string message = rawPacket.GetStringFromUtf8();
-                    if (string.IsNullOrEmpty(message)) continue;
+                    string eventName = eventProp.GetString();
 
-                    try
+                    if (eventName == "phx_reply")
                     {
-                        using (JsonDocument doc = JsonDocument.Parse(message))
+                        if (root.TryGetProperty("payload", out var payloadProp) &&
+                            payloadProp.TryGetProperty("status", out var statusProp) &&
+                            statusProp.GetString() == "ok")
                         {
-                            JsonElement root = doc.RootElement;
-
-                            if (root.TryGetProperty("event", out JsonElement evElem))
+                            _isJoinedChannel = true;
+                        }
+                    }
+                    else if (eventName == "broadcast")
+                    {
+                        if (root.TryGetProperty("payload", out var payloadProp))
+                        {
+                            if (payloadProp.TryGetProperty("type", out var typeProp))
                             {
-                                string ev = evElem.GetString();
+                                string type = typeProp.GetString();
 
-                                if (ev == "phx_reply")
+                                if (type == "transform_all")
                                 {
-                                    if (root.TryGetProperty("payload", out JsonElement payload) &&
-                                        payload.TryGetProperty("status", out JsonElement statusElem) &&
-                                        statusElem.GetString() == "ok")
-                                    {
-                                        _isJoinedChannel = true;
-                                    }
+                                    string senderId = payloadProp.GetProperty("player_id").GetString();
+                                    float px = payloadProp.GetProperty("px").GetSingle();
+                                    float py = payloadProp.GetProperty("py").GetSingle();
+                                    float pz = payloadProp.GetProperty("pz").GetSingle();
+                                    float rx = payloadProp.GetProperty("rx").GetSingle();
+                                    float ry = payloadProp.GetProperty("ry").GetSingle();
+                                    float rz = payloadProp.GetProperty("rz").GetSingle();
+
+                                    OnPlayerTransformReceivedAll?.Invoke(senderId, px, py, pz, rx, ry, rz);
                                 }
-                                else if (ev == "broadcast")
+                                else if (type == "assign_role")
                                 {
-                                    JsonElement payload = root.GetProperty("payload");
-                                    if (payload.TryGetProperty("type", out JsonElement typeElem))
-                                    {
-                                        string type = typeElem.GetString();
+                                    string targetPlayerId = payloadProp.GetProperty("target_player_id").GetString();
+                                    int role = payloadProp.GetProperty("role").GetInt32();
+                                    int faction = payloadProp.GetProperty("faction").GetInt32();
 
-                                        if (type == "assign_role")
-                                        {
-                                            string targetPlayerId = payload.GetProperty("target_player_id").GetString();
-                                            int role = payload.GetProperty("role").GetInt32();
-                                            int faction = payload.GetProperty("faction").GetInt32();
+                                    OnRoleAssignedReceived?.Invoke(targetPlayerId, role, faction);
+                                }
+                                else if (type == "player_hp")
+                                {
+                                    string playerId = payloadProp.GetProperty("player_id").GetString();
+                                    int currentHp = payloadProp.GetProperty("current_hp").GetInt32();
+                                    int maxHp = payloadProp.GetProperty("max_hp").GetInt32();
 
-                                            OnRoleAssignedReceived?.Invoke(targetPlayerId, role, faction);
-                                        }
-                                        else if (type == "transform_all")
-                                        {
-                                            string pId = payload.GetProperty("player_id").GetString();
-                                            float px = (float)payload.GetProperty("px").GetDouble();
-                                            float py = (float)payload.GetProperty("py").GetDouble();
-                                            float pz = (float)payload.GetProperty("pz").GetDouble();
-                                            float rx = (float)payload.GetProperty("rx").GetDouble();
-                                            float ry = (float)payload.GetProperty("ry").GetDouble();
-                                            float rz = (float)payload.GetProperty("rz").GetDouble();
-
-                                            OnPlayerTransformReceivedAll?.Invoke(pId, px, py, pz, rx, ry, rz);
-                                        }
-                                    }
+                                    OnPlayerHpReceived?.Invoke(playerId, currentHp, maxHp);
                                 }
                             }
                         }
                     }
-                    catch { }
                 }
+            }
+            catch (Exception ex)
+            {
+                GD.PrintErr($"⚠️ [Realtime] JSON 解析エラー: {ex.Message}");
             }
         }
 
@@ -219,6 +210,21 @@ namespace SKNewRoles2.Game
 
             _realtimeClient.SendText(JsonSerializer.Serialize(broadcastPayload));
             GD.Print($"📡 [Realtime] 役職データ送信成功: Target={targetPlayerId}, Role={role}, Faction={faction}");
+        }
+
+        public static void SendHpBroadcast(string playerId, int currentHp, int maxHp)
+        {
+            if (_realtimeClient == null || _realtimeClient.GetReadyState() != WebSocketPeer.State.Open || !_isJoinedChannel) return;
+
+            var broadcastPayload = new
+            {
+                topic = "realtime:public:lobbies",
+                @event = "broadcast",
+                payload = new { type = "player_hp", player_id = playerId, current_hp = currentHp, max_hp = maxHp },
+                @ref = (string)null
+            };
+
+            _realtimeClient.SendText(JsonSerializer.Serialize(broadcastPayload));
         }
     }
 }

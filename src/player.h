@@ -6,31 +6,43 @@
 #include <godot_cpp/classes/input.hpp>
 
 namespace godot {
-    class SNR2Player : public CharacterBody3D {
-        GDCLASS(SNR2Player, CharacterBody3D)
 
-        private:
-            float gravity = 9.8f;
-            const float SPEED = 5.0f;
-            const float JUMP_VELOCITY = 4.5f;
+class SNR2Player : public CharacterBody3D {
+    GDCLASS(SNR2Player, CharacterBody3D)
 
-            // 視点操作用パラメータ
-            float mouse_sensitivity = 0.003f;
-            float camera_rotation_x = 0.0f;
-            const float LIMIT_ANGLE_X = 1.48f;
+    private:
+        int max_hp = 100;
+        int current_hp = 100;
 
-            Camera3D *camera = nullptr;
-            Input *input = nullptr; // キャッシュ用
+        float gravity = 9.8f;
+        const float SPEED = 5.0f;
+        const float JUMP_VELOCITY = 4.5f;
 
-        protected:
-            static void _bind_methods();
+        float mouse_sensitivity = 0.003f;
+        float camera_rotation_x = 0.0f;
+        const float LIMIT_ANGLE_X = 1.48f;
 
-        public:
-            SNR2Player();
-            ~SNR2Player();
+        Camera3D *camera = nullptr;
+        Input *input = nullptr;
 
-            void _ready() override;
-            void _physics_process(double delta) override;
-            void _input(const Ref<InputEvent> &event) override;
+    protected:
+        static void _bind_methods();
+
+    public:
+        SNR2Player();
+        ~SNR2Player();
+
+        void _ready() override;
+        void _physics_process(double delta) override;
+        void _input(const Ref<InputEvent> &event) override;
+
+        void set_max_hp(int p_hp);
+        int get_max_hp() const;
+
+        void set_current_hp(int p_hp);
+        int get_current_hp() const;
+
+        void take_damage(int amount);
+        void heal(int amount);
     };
 }
