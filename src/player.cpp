@@ -65,8 +65,10 @@ void SNR2Player::take_damage(int amount) {
     current_hp = Math::max(0, current_hp - amount);
     emit_signal("hp_changed", current_hp, max_hp);
 
+    UtilityFunctions::print("[Player] Took damage: ", amount, " (Remaining HP: ", current_hp, "/", max_hp, ")");
+
     if (current_hp <= 0) {
-        UtilityFunctions::print("[Player] The player's HP has dropped to 0");
+        UtilityFunctions::print("[Player] The player has died.");
     }
 }
 
@@ -104,34 +106,28 @@ void SNR2Player::_physics_process(double delta) {
     Vector3 velocity = get_velocity();
     Vector3 current_pos = get_global_position();
 
-    // 落下および高度判定
     if (!is_on_floor()) {
         velocity.y -= gravity * (float)delta;
 
         if (!was_in_air) {
-            // 空中に入った瞬間の高さ
             was_in_air = true;
             fall_start_y = current_pos.y;
         } else {
-            // ノックバックやジャンプで上昇した場合は最高到達点を更新
             if (current_pos.y > fall_start_y) {
                 fall_start_y = current_pos.y;
             }
         }
     } else {
         if (was_in_air) {
-            // 落下した総距離（メートル/ブロック数）
             float fall_distance = fall_start_y - current_pos.y;
 
             if (fall_distance > SAFE_FALL_HEIGHT) {
                 float excess_distance = fall_distance - SAFE_FALL_HEIGHT;
-                
-                // 1m超えるごとに HP 1 のダメージ
                 int damage = static_cast<int>(Math::floor(excess_distance)) * DAMAGE_PER_BLOCK;
 
                 if (damage > 0) {
                     take_damage(damage);
-                    UtilityFunctions::print("[Player] Fall damage: ", damage, " (Fall distance: ", fall_distance, "m)");
+                    UtilityFunctions::print("[SNR2Player] Fall damage: ", damage, " (Fall distance: ", fall_distance, "m)");
                 }
             }
 
@@ -140,13 +136,11 @@ void SNR2Player::_physics_process(double delta) {
         }
     }
 
-    // ジャンプ処理
     bool is_jump_pressed = input->is_key_pressed(KEY_SPACE) || input->is_action_pressed("ui_accept");
     if (is_jump_pressed && is_on_floor()) {
         velocity.y = JUMP_VELOCITY;
     }
 
-    // 移動処理
     Vector2 input_dir = Vector2(0, 0);
     if (input->is_key_pressed(KEY_D) || input->is_action_pressed("ui_right")) input_dir.x += 1.0f;
     if (input->is_key_pressed(KEY_A) || input->is_action_pressed("ui_left")) input_dir.x -= 1.0f;
