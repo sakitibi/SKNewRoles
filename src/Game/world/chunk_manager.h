@@ -8,7 +8,7 @@
 #include <godot_cpp/variant/node_path.hpp>
 
 #include "chunk_mesh_builder.h"
-#include "../../falling_block.h"
+#include "../../Blocks/falling_block.h"
 
 namespace godot {
     class ChunkManager;

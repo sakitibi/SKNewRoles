@@ -23,11 +23,11 @@ FetchContent_MakeAvailable(godot-cpp)
 set(SOURCES
     src/register_types.cpp
     src/player.cpp
-    src/falling_block.cpp
-    src/grass_block.cpp
     src/lobby_manager.cpp
     src/remote_player.cpp
     src/config_manager.cpp
+    src/Blocks/falling_block.cpp
+    src/Blocks/grass_block.cpp
     src/Game/world/chunk_manager.cpp
     src/Game/world/chunk_mesh_builder.cpp
     src/Game/world/chunk_collision_builder.cpp

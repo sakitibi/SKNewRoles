@@ -3,11 +3,11 @@
 
 #include "register_types.h"
 #include "player.h"
-#include "falling_block.h"
-#include "grass_block.h"
 #include "lobby_manager.h"
 #include "remote_player.h"
 #include "config_manager.h"
+#include "Blocks/falling_block.h"
+#include "Blocks/grass_block.h"
 #include "Game/world/chunk_manager.h"
 #include "Game/world/chunk_mesh_builder.h"
 #include "Game/role_manager.h"
