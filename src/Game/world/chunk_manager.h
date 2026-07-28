@@ -52,15 +52,6 @@ namespace godot {
 
             static void _async_load_worker(void *p_userdata);
 
-        public:
-            void _on_chunk_loaded(Variant p_userdata);
-
-            void spawn_falling_block(const Vector3 &spawn_pos, const String &block_type = "stone");
-            void _on_block_landed(const Vector3 &land_pos, const String &block_type);
-
-            void add_block_at_world_pos(const Vector3 &world_pos, const String &block_type = "stone");
-            void rebuild_chunk_mesh(const Vector2i &chunk_coord);
-
         protected:
             static void _bind_methods();
 
@@ -70,6 +61,14 @@ namespace godot {
 
             void _ready() override;
             void _process(double delta) override;
+
+            void _on_chunk_loaded(Variant p_userdata);
+
+            void spawn_falling_block(const Vector3 &spawn_pos, const String &block_type = "stone");
+            void _on_block_landed(const Vector3 &land_pos, const String &block_type);
+
+            void add_block_at_world_pos(const Vector3 &world_pos, const String &block_type = "stone");
+            void rebuild_chunk_mesh(const Vector2i &chunk_coord);
 
             void verity_initial_collisions();
 
