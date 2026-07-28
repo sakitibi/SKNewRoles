@@ -28,17 +28,6 @@ void SNR2FallingBlock::_ready() {
         return;
     }
 
-    mesh_instance = Object::cast_to<MeshInstance3D>(get_node_or_null("MeshInstance3D"));
-    
-    if (mesh_instance == nullptr) {
-        mesh_instance = memnew(MeshInstance3D);
-        Ref<BoxMesh> box_mesh;
-        box_mesh.instantiate();
-        box_mesh->set_size(Vector3(1.0f, 1.0f, 1.0f));
-        mesh_instance->set_mesh(box_mesh);
-        add_child(mesh_instance);
-    }
-
     collision_shape = Object::cast_to<CollisionShape3D>(get_node_or_null("CollisionShape3D"));
     if (collision_shape == nullptr) {
         collision_shape = memnew(CollisionShape3D);
@@ -47,6 +36,24 @@ void SNR2FallingBlock::_ready() {
         box_shape->set_size(Vector3(1.0f, 1.0f, 1.0f));
         collision_shape->set_shape(box_shape);
         add_child(collision_shape);
+    }
+
+    // 子ノードに MeshInstance3D が1つもない場合のみ、デフォルトのBoxMeshを追加
+    bool has_mesh_child = false;
+    for (int i = 0; i < get_child_count(); ++i) {
+        if (Object::cast_to<MeshInstance3D>(get_child(i)) != nullptr) {
+            has_mesh_child = true;
+            break;
+        }
+    }
+
+    if (!has_mesh_child) {
+        mesh_instance = memnew(MeshInstance3D);
+        Ref<BoxMesh> box_mesh;
+        box_mesh.instantiate();
+        box_mesh->set_size(Vector3(1.0f, 1.0f, 1.0f));
+        mesh_instance->set_mesh(box_mesh);
+        add_child(mesh_instance);
     }
 
     set_max_contacts_reported(4);
