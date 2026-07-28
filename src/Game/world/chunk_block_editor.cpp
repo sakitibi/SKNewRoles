@@ -6,9 +6,10 @@
 
 using namespace godot;
 
+ChunkBlockEditor::ChunkBlockEditor() {}
+ChunkBlockEditor::~ChunkBlockEditor() {}
+
 void ChunkBlockEditor::_bind_methods() {
-    ClassDB::bind_method(D_METHOD("add_block_at_world_pos", "world_pos", "block_type"), &ChunkBlockEditor::add_block_at_world_pos, DEFVAL("stone"));
-    ClassDB::bind_method(D_METHOD("rebuild_chunk_mesh", "chunk_coord"), &ChunkBlockEditor::rebuild_chunk_mesh);
 }
 
 void ChunkBlockEditor::add_block_at_world_pos(

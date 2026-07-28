@@ -1,16 +1,24 @@
 #pragma once
 
+#include <godot_cpp/classes/object.hpp>
 #include <godot_cpp/classes/node3d.hpp>
+#include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/templates/hash_map.hpp>
 #include <godot_cpp/variant/vector2i.hpp>
 #include <godot_cpp/variant/vector3.hpp>
 #include <godot_cpp/variant/string.hpp>
 
 namespace godot {
-    class ChunkBlockEditor : Object {
+    class ChunkBlockEditor : public Object {
         GDCLASS(ChunkBlockEditor, Object)
 
+        protected:
+            static void _bind_methods();
+
         public:
+            ChunkBlockEditor();
+            ~ChunkBlockEditor();
+
             static void add_block_at_world_pos(
                 HashMap<Vector2i, Node3D*> &loaded_chunks,
                 HashMap<Vector2i, HashMap<String, Vector<Vector3>>> &chunk_block_data_map,
@@ -25,7 +33,5 @@ namespace godot {
                 float chunk_size,
                 const Vector2i &chunk_coord
             );
-        protected:
-            static void _bind_methods();
     };
 }
