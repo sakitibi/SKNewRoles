@@ -79,9 +79,7 @@ namespace SKNewRoles2.Game
 
             if (!_hasRoleReceived)
             {
-                MyRole = 0;
-                MyFaction = 0;
-                _hasRoleReceived = true;
+                ApplyRole(0, 0);
             }
 
             GD.Print("5️⃣ [_Ready] 役職データ確認完了");
@@ -111,7 +109,6 @@ namespace SKNewRoles2.Game
                 }
             }
 
-            // ★ ゲーム開始時にプレイヤーの物理挙動を有効化
             SetPlayerPhysicsEnabled(true);
         }
 
@@ -200,7 +197,7 @@ namespace SKNewRoles2.Game
 
                     if (targetUserId == myUserId)
                     {
-                        OnRoleAssignedReceived(targetUserId, roleId, factionId);
+                        ApplyRole(roleId, factionId);
                     }
                     else
                     {
@@ -217,11 +214,16 @@ namespace SKNewRoles2.Game
 
             if (_hasRoleReceived) return;
 
+            ApplyRole(roleId, factionId);
+            GD.Print($"📩 [OnRoleAssignedReceived] 役職データを受信しました: Faction={MyFaction}, Role={MyRole}");
+        }
+
+        public void ApplyRole(int roleId, int factionId)
+        {
             MyRole = roleId;
             MyFaction = factionId;
             _hasRoleReceived = true;
-
-            GD.Print($"📩 [OnRoleAssignedReceived] 役職データを受信しました: Faction={MyFaction}, Role={MyRole}");
+            GD.Print($"✨ 自分の役職が適用されました: Role={MyRole}, Faction={MyFaction}");
         }
 
         private string GetMyUserId()

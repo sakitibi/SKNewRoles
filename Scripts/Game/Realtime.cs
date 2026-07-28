@@ -16,7 +16,7 @@ namespace SKNewRoles2.Game
         public static event Action<string, int, int> OnRoleAssignedReceived;
 
         /// <summary>
-        /// チャンネル参加完了までポーリングしながら非同期待機（メインスレッド安全）
+        /// チャンネル参加完了までポーリングしながら非同期待機
         /// </summary>
         public static async Task<bool> EnsureConnectedAsync()
         {
