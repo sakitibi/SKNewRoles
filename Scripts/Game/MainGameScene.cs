@@ -1,5 +1,4 @@
 using Godot;
-using Godot.Collections;
 using System.Threading.Tasks;
 using SKNewRoles2.SessionManagerSystem;
 
@@ -7,11 +6,7 @@ namespace SKNewRoles2.Game
 {
     public partial class MainGameScene : Node3D
     {
-        private Node _roleManagerCpp;
         private Node3D _chunkManagerCpp;
-
-        public int MyRole { get; private set; } = -1;
-        public int MyFaction { get; private set; } = -1;
 
         private PackedScene _playerScene = GD.Load<PackedScene>("res://Scenes/Prefabs/Player.tscn");
         private PackedScene _opponentScene = GD.Load<PackedScene>("res://Scenes/Prefabs/LobbyPlayerDummy.tscn");
@@ -19,47 +14,31 @@ namespace SKNewRoles2.Game
         private Node3D _myPlayerInstance;
         private RemotePlayerManager _remotePlayerManager;
 
-        private Control _loadingScene;
-        private Control _roleRevealScene;
-        private ProgressBar _hpBar;
-        private Label _hpLabel;
-        private Label _factionLabel;
-        private Label _roleTitleLabel;
-        private Label _descriptionLabel;
+        private GameUIController _uiController;
+        private GameRoleManager _roleManager;
 
-        private bool _hasRoleReceived = false;
+        public int MyRole => _roleManager?.MyRole ?? -1;
+        public int MyFaction => _roleManager?.MyFaction ?? -1;
 
         public override async void _Ready()
         {
             GD.Print("1️⃣ [_Ready] 開始");
 
-            _loadingScene = GetNodeOrNull<Control>("UILayer/LoadingScene");
-            _roleRevealScene = GetNodeOrNull<Control>("UILayer/RoleRevealScene");
-            _hpBar = GetNodeOrNull<ProgressBar>("UILayer/HPBar");
-            _hpLabel = GetNodeOrNull<Label>("UILayer/HPBar/HPLabel");
+            // サブマネージャーの生成と初期化
+            _uiController = new GameUIController();
+            AddChild(_uiController);
+            _uiController.Initialize(this);
 
-            if (_roleRevealScene != null)
-            {
-                _factionLabel = _roleRevealScene.GetNodeOrNull<Label>("MainContainer/VBoxContainer/FactionLabel");
-                _roleTitleLabel = _roleRevealScene.GetNodeOrNull<Label>("MainContainer/VBoxContainer/RoleTitleLabel");
-                _descriptionLabel = _roleRevealScene.GetNodeOrNull<Label>("MainContainer/VBoxContainer/DescriptionLabel");
-                _roleRevealScene.Visible = false;
-            }
+            _roleManager = new GameRoleManager();
+            AddChild(_roleManager);
+            _roleManager.Initialize(GetNodeOrNull<Node>("RoleManager"));
 
-            if (_loadingScene != null)
-            {
-                _loadingScene.Visible = true;
-            }
-
-            _roleManagerCpp = GetNodeOrNull<Node>("RoleManager");
             _chunkManagerCpp = GetNodeOrNull<Node3D>("ChunkManager");
 
             // リモートプレイヤーマネージャーの登録
             _remotePlayerManager = new RemotePlayerManager();
             AddChild(_remotePlayerManager);
             _remotePlayerManager.Initialize(_opponentScene, GetMyUserId());
-
-            Realtime.OnRoleAssignedReceived += OnRoleAssignedReceived;
 
             // 自分のプレイヤーを生成
             if (_myPlayerInstance == null)
@@ -74,49 +53,23 @@ namespace SKNewRoles2.Game
             if (SessionManager.Instance != null && SessionManager.Instance.IsHost)
             {
                 GD.Print("3️⃣ [_Ready] ホストとして役職割り当てを実行");
-                AssignRolesToAllPlayers();
+                _roleManager.AssignRolesToAllPlayers(GetMyUserId());
             }
 
             GD.Print("4️⃣ [_Ready] 役職受諾のループ待機開始");
-            int loopCheck = 0;
-            while (!_hasRoleReceived && loopCheck < 50)
-            {
-                await Task.Delay(200);
-                loopCheck++;
-            }
+            bool received = await _roleManager.WaitForRoleAssignedAsync(timeoutMs: 10000);
 
-            if (!_hasRoleReceived)
+            if (!received)
             {
                 GD.PrintErr("⚠️ 役職受信タイムアウトのため、デフォルト(村人)を適用します");
-                ApplyRole(0, 0);
+                _roleManager.ApplyRole(0, 0);
             }
 
             GD.Print("5️⃣ [_Ready] 役職データ確認完了");
             GD.Print("6️⃣ [_Ready] ロード画面を非表示にして役職画面を表示します");
 
-            if (_loadingScene != null)
-            {
-                _loadingScene.Visible = false;
-            }
-
-            if (_roleRevealScene != null)
-            {
-                if (_factionLabel != null) _factionLabel.Text = RoleInfo.GetFactionName(MyFaction);
-                if (_roleTitleLabel != null) _roleTitleLabel.Text = RoleInfo.GetRoleName(MyRole);
-                if (_descriptionLabel != null) _descriptionLabel.Text = RoleInfo.GetRoleDescription(MyRole);
-
-                _roleRevealScene.Visible = true;
-                _roleRevealScene.MoveToFront();
-
-                GD.Print("7️⃣ [_Ready] 役職画面を表示しました (5秒カウント開始)");
-                await Task.Delay(5000);
-
-                if (IsInstanceValid(_roleRevealScene))
-                {
-                    _roleRevealScene.Visible = false;
-                    GD.Print("8️⃣ [_Ready] 役職画面を非表示にしました (ゲームスタート)");
-                }
-            }
+            _uiController.HideLoadingScene();
+            await _uiController.ShowRoleRevealAsync(_roleManager.MyRole, _roleManager.MyFaction, displayTimeMs: 5000);
 
             SetPlayerPhysicsEnabled(true);
         }
@@ -162,7 +115,7 @@ namespace SKNewRoles2.Game
             _myPlayerInstance.AddToGroup("LocalPlayer");
 
             AddChild(_myPlayerInstance);
-            
+
             _myPlayerInstance.GlobalPosition = new Vector3(0, 100, 0);
 
             _myPlayerInstance.Connect("hp_changed", Callable.From<int, int>(OnMyPlayerHpChanged));
@@ -190,85 +143,7 @@ namespace SKNewRoles2.Game
             }
         }
 
-        private void AssignRolesToAllPlayers()
-        {
-            if (_roleManagerCpp == null || !_roleManagerCpp.HasMethod("assign_roles"))
-            {
-                GD.PrintErr("❌ [AssignRoles] RoleManager が正しく設定されていません");
-                return;
-            }
-
-            var playerIdsArray = new Array();
-            string myUserId = GetMyUserId();
-
-            if (SessionManager.Instance?.CurrentRoomPlayerIds != null && SessionManager.Instance.CurrentRoomPlayerIds.Count > 0)
-            {
-                var playerIds = SessionManager.Instance.CurrentRoomPlayerIds;
-                int playerCount = playerIds.Count;
-
-                for (int i = 0; i < playerCount; i++)
-                {
-                    playerIdsArray.Add(playerIds[i]);
-                }
-            }
-            else
-            {
-                playerIdsArray.Add(myUserId);
-            }
-
-            Dictionary roleCountsDict = [];
-            roleCountsDict[1] = 1; // 役職ID 1 (人狼) を 1人
-
-            GD.Print($"🎲 [AssignRoles] {playerIdsArray.Count} 人のプレイヤーに役職を割り当てます");
-
-            var rawResult = _roleManagerCpp.Call("assign_roles", playerIdsArray, roleCountsDict);
-            var assignmentResult = rawResult.AsGodotDictionary();
-
-            var keysList = new Array<Variant>(assignmentResult.Keys);
-            int count = keysList.Count;
-
-            for (int i = 0; i < count; i++)
-            {
-                Variant key = keysList[i];
-                string targetUserId = key.AsString();
-                var roleData = assignmentResult[key].AsGodotDictionary();
-
-                int assignedRole = roleData["role"].AsInt32();
-                int assignedFaction = roleData["faction"].AsInt32();
-
-                GD.Print($"🎭 割り当て完了: Player={targetUserId}, Role={assignedRole}, Faction={assignedFaction}");
-
-                if (targetUserId == myUserId)
-                {
-                    ApplyRole(assignedRole, assignedFaction);
-                }
-                else
-                {
-                    Realtime.SendRoleBroadcast(targetUserId, assignedRole, assignedFaction);
-                }
-            }
-        }
-
-        private void OnRoleAssignedReceived(string targetUserId, int roleId, int factionId)
-        {
-            string myUserId = GetMyUserId();
-            if (targetUserId != myUserId && !string.IsNullOrEmpty(targetUserId)) return;
-
-            if (_hasRoleReceived) return;
-
-            ApplyRole(roleId, factionId);
-            GD.Print($"📩 [OnRoleAssignedReceived] 役職データを受信しました: Faction={MyFaction}, Role={MyRole}");
-        }
-
-        public void ApplyRole(int roleId, int factionId)
-        {
-            MyRole = roleId;
-            MyFaction = factionId;
-            _hasRoleReceived = true;
-            GD.Print($"✨ 自分の役職が適用されました: Role={MyRole}, Faction={MyFaction}");
-        }
-
-        private string GetMyUserId()
+        private static string GetMyUserId()
         {
             string myUserId = SessionManager.Instance?.CurrentSession?.User?.Id;
             if (string.IsNullOrEmpty(myUserId))
@@ -290,23 +165,10 @@ namespace SKNewRoles2.Game
 
         private void OnMyPlayerHpChanged(int currentHp, int maxHp)
         {
-            if (_hpBar != null)
-            {
-                _hpBar.MaxValue = maxHp;
-                _hpBar.Value = currentHp;
-            }
-            if (_hpLabel != null)
-            {
-                _hpLabel.Text = $"{currentHp} / {maxHp}";
-            }
+            _uiController?.UpdateHp(currentHp, maxHp);
 
             string myUserId = GetMyUserId();
             Realtime.SendHpBroadcast(myUserId, currentHp, maxHp);
-        }
-
-        public override void _ExitTree()
-        {
-            Realtime.OnRoleAssignedReceived -= OnRoleAssignedReceived;
         }
     }
 }
