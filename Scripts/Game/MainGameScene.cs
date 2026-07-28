@@ -180,29 +180,50 @@ namespace SKNewRoles2.Game
 
         private void AssignRolesToAllPlayers()
         {
-            List<string> players = SessionManager.Instance.CurrentRoomPlayerIds;
-            if (players == null || players.Count == 0) return;
-
-            if (_roleManagerCpp != null && _roleManagerCpp.HasMethod("assign_roles"))
+            if (_roleManagerCpp == null || !_roleManagerCpp.HasMethod("assign_roles"))
             {
-                _roleManagerCpp.Call("assign_roles", players.Count);
+                GD.PrintErr("❌ [AssignRoles] RoleManager が正しく設定されていません");
+                return;
+            }
 
-                string myUserId = GetMyUserId();
+            // 参加プレイヤーリストを作成
+            var playerIdsArray = new Godot.Collections.Array();
+            string myUserId = GetMyUserId();
 
-                for (int i = 0; i < players.Count; i++)
+            if (SessionManager.Instance?.CurrentRoomPlayerIds != null && SessionManager.Instance.CurrentRoomPlayerIds.Count > 0)
+            {
+                foreach (var id in SessionManager.Instance.CurrentRoomPlayerIds)
                 {
-                    string targetUserId = players[i];
-                    int roleId = (int)_roleManagerCpp.Call("get_assigned_role", i);
-                    int factionId = (int)_roleManagerCpp.Call("get_assigned_faction", i);
+                    playerIdsArray.Add(id);
+                }
+            }
 
-                    if (targetUserId == myUserId)
-                    {
-                        ApplyRole(roleId, factionId);
-                    }
-                    else
-                    {
-                        Realtime.SendRoleBroadcast(targetUserId, roleId, factionId);
-                    }
+            var roleCountsDict = new Godot.Collections.Dictionary();
+            roleCountsDict[1] = 1; // 役職ID 1 (人狼) を 1人
+
+            GD.Print($"🎲 [AssignRoles] {playerIdsArray.Count} 人のプレイヤーに役職を割り当てます");
+
+            var rawResult = _roleManagerCpp.Call("assign_roles", playerIdsArray, roleCountsDict);
+            var assignmentResult = rawResult.AsGodotDictionary();
+
+            // 割り当て結果を取得して適用
+            foreach (Variant key in assignmentResult.Keys)
+            {
+                string targetUserId = key.AsString();
+                var roleData = assignmentResult[key].AsGodotDictionary();
+
+                int assignedRole = roleData["role"].AsInt32();
+                int assignedFaction = roleData["faction"].AsInt32();
+
+                GD.Print($"🎭 割り当て完了: Player={targetUserId}, Role={assignedRole}, Faction={assignedFaction}");
+
+                if (targetUserId == myUserId)
+                {
+                    ApplyRole(assignedRole, assignedFaction);
+                }
+                else
+                {
+                    Realtime.SendRoleBroadcast(targetUserId, assignedRole, assignedFaction);
                 }
             }
         }
