@@ -7,7 +7,6 @@
 [ext_resource type="PackedScene" uid="uid://m6hx5x2hhw1o" path="res://Scenes/Prefabs/Blocks/GrassBlock.tscn" id="3_yf6jr"]
 [ext_resource type="Script" uid="uid://d20clvv62ng41" path="res://Scripts/Lobby/LobbyBridge.cs" id="6_67ex4"]
 [ext_resource type="PackedScene" uid="uid://6llaatunfapt" path="res://Scenes/Prefabs/Player.tscn" id="6_tm6sf"]
-[ext_resource type="PackedScene" uid="uid://bq7r4flwc7ewk" path="res://Scenes/Prefabs/Blocks/Gravel.tscn" id="8_btpec"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_3sykc"]
 
@@ -101,6 +100,3 @@ transform = Transform3D(1, 0, 0, 0, 3, 0, 0, 0, 8, 4.5, 1.5, 0)
 [node name="LobbyManager" type="LobbyManager" parent="." unique_id=1950573728]
 other_player_prefab = ExtResource("6_tm6sf")
 script = ExtResource("6_67ex4")
-
-[node name="Gravel" parent="." unique_id=323733759 instance=ExtResource("8_btpec")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, -3.5)
