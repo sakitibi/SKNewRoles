@@ -1,5 +1,4 @@
 using Godot;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using SKNewRoles2.SessionManagerSystem;
 
@@ -17,7 +16,7 @@ namespace SKNewRoles2.Game
         private PackedScene _opponentScene = GD.Load<PackedScene>("res://Scenes/Prefabs/LobbyPlayerDummy.tscn");
 
         private Node3D _myPlayerInstance;
-        private Dictionary<string, Node3D> _otherPlayers = new Dictionary<string, Node3D>();
+        private RemotePlayerManager _remotePlayerManager;
 
         private Control _loadingScene;
         private Control _roleRevealScene;
@@ -54,11 +53,14 @@ namespace SKNewRoles2.Game
             _roleManagerCpp = GetNodeOrNull<Node>("RoleManager");
             _chunkManagerCpp = GetNodeOrNull<Node3D>("ChunkManager");
 
-            Realtime.OnRoleAssignedReceived += OnRoleAssignedReceived;
-            Realtime.OnPlayerTransformReceivedAll += OnPlayerTransformReceivedAll;
-            Realtime.OnPlayerHpReceived += OnOtherPlayerHpReceived;
+            // リモートプレイヤーマネージャーの登録
+            _remotePlayerManager = new RemotePlayerManager();
+            AddChild(_remotePlayerManager);
+            _remotePlayerManager.Initialize(_opponentScene, GetMyUserId());
 
-            // プレイヤーを生成
+            Realtime.OnRoleAssignedReceived += OnRoleAssignedReceived;
+
+            // 自分のプレイヤーを生成
             if (_myPlayerInstance == null)
             {
                 SpawnMyPlayer();
@@ -98,9 +100,9 @@ namespace SKNewRoles2.Game
 
             if (_roleRevealScene != null)
             {
-                if (_factionLabel != null) _factionLabel.Text = GetFactionName(MyFaction);
-                if (_roleTitleLabel != null) _roleTitleLabel.Text = GetRoleName(MyRole);
-                if (_descriptionLabel != null) _descriptionLabel.Text = GetRoleDescription(MyRole);
+                if (_factionLabel != null) _factionLabel.Text = RoleInfo.GetFactionName(MyFaction);
+                if (_roleTitleLabel != null) _roleTitleLabel.Text = RoleInfo.GetRoleName(MyRole);
+                if (_descriptionLabel != null) _descriptionLabel.Text = RoleInfo.GetRoleDescription(MyRole);
 
                 _roleRevealScene.Visible = true;
                 _roleRevealScene.MoveToFront();
@@ -164,7 +166,6 @@ namespace SKNewRoles2.Game
 
             _myPlayerInstance.Connect("hp_changed", Callable.From<int, int>(OnMyPlayerHpChanged));
 
-            // 初期表示用に取得
             if (_myPlayerInstance.HasMethod("get_current_hp") && _myPlayerInstance.HasMethod("get_max_hp"))
             {
                 int curHp = (int)_myPlayerInstance.Call("get_current_hp");
@@ -272,67 +273,6 @@ namespace SKNewRoles2.Game
             return myUserId;
         }
 
-        private string GetFactionName(int factionId)
-        {
-            return factionId switch
-            {
-                0 => "村人陣営",
-                1 => "人狼陣営",
-                2 => "第三陣営",
-                _ => "不明な陣営"
-            };
-        }
-
-        private string GetRoleName(int roleId)
-        {
-            return roleId switch
-            {
-                0 => "村人",
-                1 => "人狼",
-                _ => $"役職ID: {roleId}"
-            };
-        }
-
-        private string GetRoleDescription(int roleId)
-        {
-            return roleId switch
-            {
-                0 => "議論によって人狼を追放せよ。",
-                1 => "村人に扮し、怪しまれずに全員を排除せよ。",
-                _ => "割り当てられた目的を達成してください。"
-            };
-        }
-
-        private void OnPlayerTransformReceivedAll(string senderId, float px, float py, float pz, float rx, float ry, float rz)
-        {
-            string myUserId = GetMyUserId();
-            if (senderId == myUserId) return;
-
-            if (!_otherPlayers.ContainsKey(senderId))
-            {
-                if (_opponentScene == null) return;
-
-                Node3D remotePlayer = _opponentScene.Instantiate<Node3D>();
-                remotePlayer.Name = $"RemotePlayer_{senderId}";
-                AddChild(remotePlayer);
-                _otherPlayers[senderId] = remotePlayer;
-            }
-
-            Node3D targetPlayer = _otherPlayers[senderId];
-            if (targetPlayer != null)
-            {
-                if (targetPlayer.HasMethod("set_target_transform"))
-                {
-                    targetPlayer.Call("set_target_transform", px, py, pz, rx, ry, rz);
-                }
-                else
-                {
-                    targetPlayer.GlobalPosition = new Vector3(px, py, pz);
-                    targetPlayer.Rotation = new Vector3(rx, ry, rz);
-                }
-            }
-        }
-
         private void SendMyTransform()
         {
             if (_myPlayerInstance == null) return;
@@ -359,26 +299,9 @@ namespace SKNewRoles2.Game
             Realtime.SendHpBroadcast(myUserId, currentHp, maxHp);
         }
 
-        private void OnOtherPlayerHpReceived(string senderId, int currentHp, int maxHp)
-        {
-            string myUserId = GetMyUserId();
-            if (senderId == myUserId) return;
-
-            if (_otherPlayers.ContainsKey(senderId))
-            {
-                Node3D remotePlayer = _otherPlayers[senderId];
-                if (IsInstanceValid(remotePlayer) && remotePlayer.HasMethod("set_current_hp"))
-                {
-                    remotePlayer.Call("set_current_hp", currentHp);
-                }
-            }
-        }
-
         public override void _ExitTree()
         {
             Realtime.OnRoleAssignedReceived -= OnRoleAssignedReceived;
-            Realtime.OnPlayerTransformReceivedAll -= OnPlayerTransformReceivedAll;
-            Realtime.OnPlayerHpReceived -= OnOtherPlayerHpReceived;
         }
     }
 }
