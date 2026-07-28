@@ -16,7 +16,7 @@ namespace SKNewRoles2.SessionManagerSystem
         public string CurrentRoomName { get; set; } = "";
         public bool IsHost { get; set; } = false;
         public bool IsPublic { get; set; } = true;
-        public List<string> CurrentRoomPlayerIds { get; set; } = new List<string>();
+        public List<string> CurrentRoomPlayerIds { get; set; } = [];
 
         public SessionData CurrentSession { get; private set; }
         public bool IsLoggedIn => CurrentSession != null;

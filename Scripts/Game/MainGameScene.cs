@@ -1,4 +1,5 @@
 using Godot;
+using Godot.Collections;
 using System.Threading.Tasks;
 using SKNewRoles2.SessionManagerSystem;
 
@@ -197,14 +198,17 @@ namespace SKNewRoles2.Game
                 return;
             }
 
-            var playerIdsArray = new Godot.Collections.Array();
+            var playerIdsArray = new Array();
             string myUserId = GetMyUserId();
 
             if (SessionManager.Instance?.CurrentRoomPlayerIds != null && SessionManager.Instance.CurrentRoomPlayerIds.Count > 0)
             {
-                foreach (var id in SessionManager.Instance.CurrentRoomPlayerIds)
+                var playerIds = SessionManager.Instance.CurrentRoomPlayerIds;
+                int playerCount = playerIds.Count;
+
+                for (int i = 0; i < playerCount; i++)
                 {
-                    playerIdsArray.Add(id);
+                    playerIdsArray.Add(playerIds[i]);
                 }
             }
             else
@@ -212,7 +216,7 @@ namespace SKNewRoles2.Game
                 playerIdsArray.Add(myUserId);
             }
 
-            Godot.Collections.Dictionary roleCountsDict = [];
+            Dictionary roleCountsDict = [];
             roleCountsDict[1] = 1; // 役職ID 1 (人狼) を 1人
 
             GD.Print($"🎲 [AssignRoles] {playerIdsArray.Count} 人のプレイヤーに役職を割り当てます");
@@ -220,8 +224,12 @@ namespace SKNewRoles2.Game
             var rawResult = _roleManagerCpp.Call("assign_roles", playerIdsArray, roleCountsDict);
             var assignmentResult = rawResult.AsGodotDictionary();
 
-            foreach (Variant key in assignmentResult.Keys)
+            var keysList = new Array<Variant>(assignmentResult.Keys);
+            int count = keysList.Count;
+
+            for (int i = 0; i < count; i++)
             {
+                Variant key = keysList[i];
                 string targetUserId = key.AsString();
                 var roleData = assignmentResult[key].AsGodotDictionary();
 

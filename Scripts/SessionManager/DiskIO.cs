@@ -2,15 +2,21 @@ using Godot;
 using System;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace SKNewRoles2.SessionManagerSystem
 {
     public partial class SessionManager : Node
     {
-        private string TokenFilePath => Path.Combine(
+        private static string TokenFilePath => Path.Combine(
             System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile), 
             ".askreditor_token.json"
         );
+        private static readonly JsonSerializerOptions DefaultJsonOptions = new()
+        {
+            WriteIndented = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
 
         // ==========================================
         // 4. ディスク I/O ヘルパー関数 (ローカルファイル関連)
@@ -23,13 +29,7 @@ namespace SKNewRoles2.SessionManagerSystem
             {
                 EnsureUserObjectInitialized();
 
-                var options = new JsonSerializerOptions 
-                { 
-                    WriteIndented = true,
-                    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-                };
-
-                string jsonText = JsonSerializer.Serialize(CurrentSession, options);
+                string jsonText = JsonSerializer.Serialize(CurrentSession, DefaultJsonOptions);
                 File.WriteAllText(TokenFilePath, jsonText);
                 GD.Print($"💾 セッションファイルを保存しました: {TokenFilePath}");
             }
@@ -67,7 +67,7 @@ namespace SKNewRoles2.SessionManagerSystem
             }
         }
 
-        private void DeleteSessionFile()
+        private static void DeleteSessionFile()
         {
             try
             {

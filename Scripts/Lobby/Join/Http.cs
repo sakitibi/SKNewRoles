@@ -1,4 +1,5 @@
 using Godot;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
@@ -17,7 +18,7 @@ namespace SKNewRoles2.Lobby.JOIN
     {
         
         /// <summary>
-        /// 公開されているアクティブなロビーの一覧を最大20件、作成日降順でランダム（最新順）に取得します。
+        /// 公開されているアクティブなロビーの一覧を最大20件、作成日降順でランダム（最新順）に取得
         /// </summary>
         public static async Task<List<LobbyData>> FetchRandomPublicLobbiesAsync()
         {
@@ -59,30 +60,33 @@ namespace SKNewRoles2.Lobby.JOIN
                 string jsonText = Encoding.UTF8.GetString(bodyData);
                 try
                 {
-                    using (JsonDocument doc = JsonDocument.Parse(jsonText))
+                    using JsonDocument doc = JsonDocument.Parse(jsonText);
+
+                    JsonElement root = doc.RootElement;
+                    if (root.ValueKind == JsonValueKind.Array)
                     {
-                        JsonElement root = doc.RootElement;
-                        if (root.ValueKind == JsonValueKind.Array)
+                        int arrayLength = root.GetArrayLength();
+                        for (int i = 0; i < arrayLength; i++)
                         {
-                            foreach (JsonElement elem in root.EnumerateArray())
+                            JsonElement elem = root[i];
+                            resultList.Add(new LobbyData
                             {
-                                resultList.Add(new LobbyData
-                                {
-                                    RoomCode = elem.GetProperty("room_code").GetString(),
-                                    RoomName = elem.GetProperty("room_name").GetString()
-                                });
-                            }
+                                RoomCode = elem.GetProperty("room_code").GetString(),
+                                RoomName = elem.GetProperty("room_name").GetString()
+                            });
                         }
                     }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    GD.PrintErr($"⚠️ [Realtime] JSON 解析エラー: {ex.Message}");
+                }
             }
             return resultList;
         }
 
         /// <summary>
-        /// 指定された部屋コードのステータスをチェックし、ローカルのセッション情報を更新します。
-        /// 戻り値: 0 = アクティブなロビー、1 = 終了（非アクティブ）したロビー、-1 = エラーまたは削除済み
+        /// 指定された部屋コードのステータスをチェックし、ローカルのセッション情報を更新
         /// </summary>
         public static async Task<int> CheckLobbyStatusAsync(string roomCode)
         {
@@ -123,32 +127,31 @@ namespace SKNewRoles2.Lobby.JOIN
                 string jsonText = Encoding.UTF8.GetString(bodyData);
                 try
                 {
-                    using (JsonDocument doc = JsonDocument.Parse(jsonText))
+                    using JsonDocument doc = JsonDocument.Parse(jsonText);
+
+                    JsonElement root = doc.RootElement;
+                    if (root.ValueKind == JsonValueKind.Array && root.GetArrayLength() == 0) return -1;
+
+                    JsonElement lobbyElement = root[0];
+
+                    if (lobbyElement.TryGetProperty("is_active", out JsonElement activeElem) && !activeElem.GetBoolean())
                     {
-                        JsonElement root = doc.RootElement;
-                        if (root.ValueKind == JsonValueKind.Array && root.GetArrayLength() == 0) return -1;
-
-                        JsonElement lobbyElement = root[0];
-
-                        if (lobbyElement.TryGetProperty("is_active", out JsonElement activeElem) && !activeElem.GetBoolean())
-                        {
-                            return 1; 
-                        }
-
-                        SessionManager.Instance.CurrentRoomCode = roomCode;
-                        SessionManager.Instance.CurrentRoomName = lobbyElement.GetProperty("room_name").GetString();
-                        SessionManager.Instance.IsHost = (
-                            lobbyElement.GetProperty("host_id").GetString() ==
-                            SessionManager.Instance.CurrentSession.User.Id
-                        );
-                        
-                        if (lobbyElement.TryGetProperty("is_public", out JsonElement publicElem))
-                        {
-                            SessionManager.Instance.IsPublic = publicElem.GetBoolean();
-                        }
-
-                        return 0;
+                        return 1; 
                     }
+
+                    SessionManager.Instance.CurrentRoomCode = roomCode;
+                    SessionManager.Instance.CurrentRoomName = lobbyElement.GetProperty("room_name").GetString();
+                    SessionManager.Instance.IsHost = (
+                        lobbyElement.GetProperty("host_id").GetString() ==
+                        SessionManager.Instance.CurrentSession.User.Id
+                    );
+
+                    if (lobbyElement.TryGetProperty("is_public", out JsonElement publicElem))
+                    {
+                        SessionManager.Instance.IsPublic = publicElem.GetBoolean();
+                    }
+
+                    return 0;
                 }
                 catch
                 {
@@ -190,13 +193,13 @@ namespace SKNewRoles2.Lobby.JOIN
             string jsonBody = JsonSerializer.Serialize(payload);
 
             var tcs = new TaskCompletionSource<(long result, long responseCode, byte[] body)>(TaskCreationOptions.RunContinuationsAsynchronously);
-            HttpRequest.RequestCompletedEventHandler onCompleted = null;
-            onCompleted = (result, responseCode, responseHeaders, body) =>
+            httpRequest.RequestCompleted += OnCompleted;
+
+            void OnCompleted(long result, long responseCode, string[] headers, byte[] body)
             {
-                httpRequest.RequestCompleted -= onCompleted;
+                httpRequest.RequestCompleted -= OnCompleted;
                 tcs.SetResult((result, responseCode, body));
-            };
-            httpRequest.RequestCompleted += onCompleted;
+            }
 
             Error err = httpRequest.Request(url, headers, HttpClient.Method.Patch, jsonBody);
             if (err != Error.Ok)
