@@ -1,4 +1,5 @@
 using Godot;
+using SKNewRoles2.Game.Network;
 using System.Collections.Generic;
 
 namespace SKNewRoles2.Game
@@ -14,8 +15,8 @@ namespace SKNewRoles2.Game
             _opponentScene = opponentScene;
             _myUserId = myUserId;
 
-            Realtime.OnPlayerTransformReceivedAll += OnPlayerTransformReceivedAll;
-            Realtime.OnPlayerHpReceived += OnOtherPlayerHpReceived;
+            RealtimeMessageDispatcher.OnPlayerTransformReceivedAll += OnPlayerTransformReceivedAll;
+            RealtimeMessageDispatcher.OnPlayerHpReceived += OnOtherPlayerHpReceived;
         }
 
         private void OnPlayerTransformReceivedAll(string senderId, float px, float py, float pz, float rx, float ry, float rz)
@@ -62,8 +63,8 @@ namespace SKNewRoles2.Game
 
         public override void _ExitTree()
         {
-            Realtime.OnPlayerTransformReceivedAll -= OnPlayerTransformReceivedAll;
-            Realtime.OnPlayerHpReceived -= OnOtherPlayerHpReceived;
+            RealtimeMessageDispatcher.OnPlayerTransformReceivedAll -= OnPlayerTransformReceivedAll;
+            RealtimeMessageDispatcher.OnPlayerHpReceived -= OnOtherPlayerHpReceived;
         }
     }
 }

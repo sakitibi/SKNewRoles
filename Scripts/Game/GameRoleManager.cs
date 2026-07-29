@@ -3,6 +3,7 @@ using Godot.Collections;
 using System;
 using System.Threading.Tasks;
 using SKNewRoles2.SessionManagerSystem;
+using SKNewRoles2.Game.Network;
 
 namespace SKNewRoles2.Game
 {
@@ -15,11 +16,12 @@ namespace SKNewRoles2.Game
         public bool HasRoleReceived { get; private set; } = false;
 
         public event Action<int, int> OnRoleApplied;
+        private readonly RealtimeConnection _connection;
 
         public void Initialize(Node roleManagerCppNode)
         {
             _roleManagerCpp = roleManagerCppNode;
-            Realtime.OnRoleAssignedReceived += OnRoleAssignedReceived;
+            RealtimeMessageDispatcher.OnRoleAssignedReceived += OnRoleAssignedReceived;
         }
 
         public void AssignRolesToAllPlayers(string myUserId)
@@ -75,7 +77,7 @@ namespace SKNewRoles2.Game
                 }
                 else
                 {
-                    Realtime.SendRoleBroadcast(targetUserId, assignedRole, assignedFaction);
+                    RealtimeBroadcaster.SendRole(_connection, targetUserId, assignedRole, assignedFaction);
                 }
             }
         }
@@ -127,7 +129,7 @@ namespace SKNewRoles2.Game
 
         public override void _ExitTree()
         {
-            Realtime.OnRoleAssignedReceived -= OnRoleAssignedReceived;
+            RealtimeMessageDispatcher.OnRoleAssignedReceived -= OnRoleAssignedReceived;
         }
     }
 }

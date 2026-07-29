@@ -1,6 +1,7 @@
 using Godot;
 using System.Threading.Tasks;
 using SKNewRoles2.SessionManagerSystem;
+using SKNewRoles2.Game.Network;
 
 namespace SKNewRoles2.Game
 {
@@ -16,6 +17,7 @@ namespace SKNewRoles2.Game
 
         private GameUIController _uiController;
         private GameRoleManager _roleManager;
+        private readonly RealtimeConnection _connection;
 
         public int MyRole => _roleManager?.MyRole ?? -1;
         public int MyFaction => _roleManager?.MyFaction ?? -1;
@@ -102,7 +104,7 @@ namespace SKNewRoles2.Game
 
         public override void _Process(double delta)
         {
-            Realtime.PollRealtimeEvents();
+            _connection.Poll();
             SendMyTransform();
         }
 
@@ -160,7 +162,7 @@ namespace SKNewRoles2.Game
             Vector3 pos = _myPlayerInstance.GlobalPosition;
             Vector3 rot = _myPlayerInstance.Rotation;
 
-            Realtime.SendTransformBroadcastAll(pos.X, pos.Y, pos.Z, rot.X, rot.Y, rot.Z);
+            RealtimeBroadcaster.SendTransform(_connection, pos.X, pos.Y, pos.Z, rot.X, rot.Y, rot.Z);
         }
 
         private void OnMyPlayerHpChanged(int currentHp, int maxHp)
@@ -168,7 +170,7 @@ namespace SKNewRoles2.Game
             _uiController?.UpdateHp(currentHp, maxHp);
 
             string myUserId = GetMyUserId();
-            Realtime.SendHpBroadcast(myUserId, currentHp, maxHp);
+            RealtimeBroadcaster.SendHp(_connection, myUserId, currentHp, maxHp);
         }
     }
 }

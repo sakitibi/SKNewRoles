@@ -2,6 +2,7 @@ using Godot;
 using System;
 using System.Threading.Tasks;
 using SKNewRoles2.Game;
+using SKNewRoles2.Game.Network;
 
 namespace SKNewRoles2.SNRSystem
 {
@@ -15,6 +16,7 @@ namespace SKNewRoles2.SNRSystem
         private ProgressBar _progressBar;
         private Label _statusLabel;
         private ColorRect _background;
+        private readonly RealtimeConnection _connection;
 
         public ProgressBar StartupProgressBar => _progressBar;
         public Label StatusLabel => _statusLabel;
@@ -44,7 +46,7 @@ namespace SKNewRoles2.SNRSystem
             if (!IsInstanceValid(this) || !IsInsideTree()) return;
 
             UpdateProgress(30, "ネットワーク接続を確保中...");
-            bool isConnected = await Realtime.EnsureConnectedAsync();
+            bool isConnected = await _connection.EnsureConnectedAsync();
             if (!IsInstanceValid(this) || !IsInsideTree()) return;
 
             UpdateProgress(50, "コアモジュールをロード中...");
