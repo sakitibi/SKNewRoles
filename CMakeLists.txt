@@ -28,6 +28,8 @@ set(SOURCES
     src/config_manager.cpp
     src/Blocks/falling_block.cpp
     src/Blocks/grass_block.cpp
+    src/Blocks/block_registry.cpp
+    src/Blocks/block_mesh_cache.cpp
     src/Game/world/chunk_block_editor.cpp
     src/Game/world/chunk_manager.cpp
     src/Game/world/chunk_mesh_builder.cpp

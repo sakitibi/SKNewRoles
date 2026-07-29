@@ -6,8 +6,12 @@
 #include "lobby_manager.h"
 #include "remote_player.h"
 #include "config_manager.h"
+
+#include "Blocks/block_registry.h"
+#include "Blocks/block_mesh_cache.h"
 #include "Blocks/falling_block.h"
 #include "Blocks/grass_block.h"
+
 #include "Game/world/chunk_block_editor.h"
 #include "Game/world/chunk_manager.h"
 #include "Game/world/chunk_mesh_builder.h"
@@ -25,6 +29,8 @@ void initialize_player_module(ModuleInitializationLevel p_level) {
         return;
     }
     ClassDB::register_class<SNR2Player>();
+    ClassDB::register_class<BlockRegistry>();
+    ClassDB::register_class<BlockMeshCache>();
     ClassDB::register_class<SNR2FallingBlock>();
     ClassDB::register_class<SNR2GrassBlock>();
     ClassDB::register_class<LobbyManager>();

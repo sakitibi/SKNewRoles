@@ -1,189 +1,22 @@
 #include "chunk_mesh_builder.h"
+#include "../../Blocks/block_registry.h"
+#include "../../Blocks/block_mesh_cache.h"
 #include "chunk_collision_builder.h"
 
-#include <godot_cpp/core/memory.hpp>
-#include <godot_cpp/variant/utility_functions.hpp>
+#include <godot_cpp/classes/multi_mesh_instance3d.hpp>
+#include <godot_cpp/classes/static_body3d.hpp>
+#include <godot_cpp/classes/collision_shape3d.hpp>
+#include <godot_cpp/classes/concave_polygon_shape3d.hpp>
+
 #include <vector>
 #include <algorithm>
 
 using namespace godot;
 
-// 静的メンバ変数の実体化
-HashMap<String, String> ChunkMeshBuilder::block_scene_map;
-
 ChunkMeshBuilder::ChunkMeshBuilder() {}
 ChunkMeshBuilder::~ChunkMeshBuilder() {}
 
 void ChunkMeshBuilder::_bind_methods() {
-    ClassDB::bind_static_method("ChunkMeshBuilder", D_METHOD("register_block", "block_id", "scene_path"), &ChunkMeshBuilder::register_block);
-    ClassDB::bind_static_method("ChunkMeshBuilder", D_METHOD("set_block_scene_map", "map"), &ChunkMeshBuilder::set_block_scene_map);
-    ClassDB::bind_static_method("ChunkMeshBuilder", D_METHOD("get_block_scene_map"), &ChunkMeshBuilder::get_block_scene_map_dict);
-    ClassDB::bind_static_method("ChunkMeshBuilder", D_METHOD("clear_block_map"), &ChunkMeshBuilder::clear_block_map);
-    ClassDB::bind_static_method("ChunkMeshBuilder", D_METHOD("preload_block_meshes"), &ChunkMeshBuilder::preload_block_meshes);
-}
-
-// デフォルトのマッピング初期化 & 取得
-const HashMap<String, String>& ChunkMeshBuilder::get_block_scene_map() {
-    if (block_scene_map.is_empty()) {
-        block_scene_map["minecraft:grass_block"]  = "res://Scenes/Prefabs/Blocks/GrassBlock.tscn";
-        block_scene_map["minecraft:dirt"]         = "res://Scenes/Prefabs/Blocks/Dirt.tscn";
-        block_scene_map["minecraft:coarse_dirt"]  = "res://Scenes/Prefabs/Blocks/CoarseDirt.tscn";
-        block_scene_map["minecraft:dirt_path"]    = "res://Scenes/Prefabs/Blocks/DirtPath.tscn";
-        block_scene_map["minecraft:stone"]        = "res://Scenes/Prefabs/Blocks/Stone.tscn";
-        block_scene_map["minecraft:stone_bricks"] = "res://Scenes/Prefabs/Blocks/StoneBricks.tscn";
-        block_scene_map["minecraft:andsite"]      = "res://Scenes/Prefabs/Blocks/Andsite.tscn";
-        block_scene_map["minecraft:diorite"]      = "res://Scenes/Prefabs/Blocks/Diorite.tscn";
-        block_scene_map["minecraft:granite"]      = "res://Scenes/Prefabs/Blocks/Granite.tscn";
-        block_scene_map["minecraft:oak_planks"]   = "res://Scenes/Prefabs/Blocks/OakPlanks.tscn";
-        block_scene_map["minecraft:gold_block"]   = "res://Scenes/Prefabs/Blocks/GoldBlock.tscn";
-        block_scene_map["minecraft:gravel"]       = "res://Scenes/Prefabs/Blocks/Gravel.tscn";
-    }
-    return block_scene_map;
-}
-
-// C# から 1 個ずつ追加・上書き
-void ChunkMeshBuilder::register_block(const String &block_id, const String &scene_path) {
-    get_block_scene_map(); // 初期化チェック
-    block_scene_map[block_id] = scene_path;
-}
-
-// C# から Dictionary 一括登録
-void ChunkMeshBuilder::set_block_scene_map(const Dictionary &p_map) {
-    block_scene_map.clear();
-    Array keys = p_map.keys();
-    for (int i = 0; i < keys.size(); ++i) {
-        String key = keys[i];
-        String val = p_map[key];
-        block_scene_map[key] = val;
-    }
-}
-
-// C# への Map 返却（Dictionary型）
-Dictionary ChunkMeshBuilder::get_block_scene_map_dict() {
-    const HashMap<String, String> &map = get_block_scene_map();
-    Dictionary dict;
-    for (const auto &E : map) {
-        dict[E.key] = E.value;
-    }
-    return dict;
-}
-
-void ChunkMeshBuilder::clear_block_map() {
-    block_scene_map.clear();
-}
-
-static Transform3D get_relative_transform(Node3D *root, Node3D *target) {
-    if (!root || !target) return Transform3D();
-    if (root == target) return Transform3D();
-
-    Transform3D accumulated_transform = target->get_transform();
-    Node *parent = target->get_parent();
-
-    while (parent != nullptr) {
-        Node3D *parent_3d = Object::cast_to<Node3D>(parent);
-        if (parent_3d) {
-            if (parent_3d == root) return accumulated_transform;
-            accumulated_transform = parent_3d->get_transform() * accumulated_transform;
-        }
-        parent = parent->get_parent();
-    }
-    return accumulated_transform;
-}
-
-void ChunkMeshBuilder::preload_block_meshes() {
-    const HashMap<String, String> &map = get_block_scene_map();
-    for (const auto &E : map) {
-        get_block_mesh_data(E.value);
-    }
-}
-
-BlockMeshData ChunkMeshBuilder::get_block_mesh_data(const String &scene_path) {
-    static HashMap<String, BlockMeshData> cache;
-    if (cache.has(scene_path)) {
-        return cache[scene_path];
-    }
-
-    BlockMeshData data;
-    if (!ResourceLoader::get_singleton()->exists(scene_path)) {
-        cache[scene_path] = data;
-        return data;
-    }
-
-    Ref<PackedScene> scene = ResourceLoader::get_singleton()->load(scene_path);
-    if (scene.is_null()) {
-        cache[scene_path] = data;
-        return data;
-    }
-
-    Node *inst = scene->instantiate();
-    Node3D *root_3d = Object::cast_to<Node3D>(inst);
-    if (!root_3d) {
-        inst->queue_free();
-        cache[scene_path] = data;
-        return data;
-    }
-
-    TypedArray<Node> nodes = root_3d->find_children("*", "MeshInstance3D", true, false);
-    if (nodes.size() > 0) {
-        Ref<ArrayMesh> combined_mesh;
-        combined_mesh.instantiate();
-
-        for (int i = 0; i < nodes.size(); ++i) {
-            MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(nodes[i]);
-            if (!mi || mi->get_mesh().is_null()) continue;
-
-            Ref<Mesh> original_mesh = mi->get_mesh();
-            Transform3D rel_transform = get_relative_transform(root_3d, mi);
-
-            int surface_count = original_mesh->get_surface_count();
-            for (int s = 0; s < surface_count; ++s) {
-                Array surf_arrays = original_mesh->surface_get_arrays(s);
-                if (surf_arrays.size() <= Mesh::ARRAY_VERTEX) continue;
-
-                PackedVector3Array verts = surf_arrays[Mesh::ARRAY_VERTEX];
-                for (int v = 0; v < verts.size(); ++v) {
-                    verts[v] = rel_transform.xform(verts[v]);
-                }
-                surf_arrays[Mesh::ARRAY_VERTEX] = verts;
-
-                if (surf_arrays.size() > Mesh::ARRAY_NORMAL && surf_arrays[Mesh::ARRAY_NORMAL].get_type() == Variant::PACKED_VECTOR3_ARRAY) {
-                    PackedVector3Array normals = surf_arrays[Mesh::ARRAY_NORMAL];
-                    Basis normal_basis = rel_transform.basis.inverse().transposed();
-                    for (int n = 0; n < normals.size(); ++n) {
-                        normals[n] = normal_basis.xform(normals[n]).normalized();
-                    }
-                    surf_arrays[Mesh::ARRAY_NORMAL] = normals;
-                }
-
-                combined_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surf_arrays);
-
-                Ref<Material> mat = mi->get_material_override();
-                if (mat.is_null()) {
-                    mat = mi->get_active_material(s);
-                }
-                if (mat.is_null()) {
-                    mat = original_mesh->surface_get_material(s);
-                }
-
-                int new_surface_idx = combined_mesh->get_surface_count() - 1;
-                if (mat.is_valid()) {
-                    combined_mesh->surface_set_material(new_surface_idx, mat);
-                    data.materials.append(mat);
-                } else {
-                    data.materials.append(Ref<Material>());
-                }
-            }
-        }
-
-        if (combined_mesh->get_surface_count() > 0) {
-            data.mesh = combined_mesh;
-            data.valid = true;
-        }
-    }
-
-    inst->queue_free();
-    cache[scene_path] = data;
-    return data;
 }
 
 int ChunkMeshBuilder::get_palette_index(const PackedInt64Array &data, int palette_size, int x, int y, int z) {
@@ -214,7 +47,7 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
     HashMap<String, Vector<Vector3>> categorized_positions;
     if (!chunk_data.has("sections")) return categorized_positions;
 
-    const HashMap<String, String> &block_map = get_block_scene_map();
+    const HashMap<String, String> &block_map = BlockRegistry::get_block_scene_map();
     Array sections = chunk_data["sections"];
 
     for (int i = 0; i < sections.size(); ++i) {
@@ -265,7 +98,6 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
 ) {
     BuiltChunkData result;
 
-    // 各ブロックの見た目（MultiMesh）の生成
     List<String> sorted_keys;
     for (const auto &E : categorized_positions) {
         sorted_keys.push_back(E.key);
@@ -288,7 +120,7 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
             return a.x < b.x;
         });
 
-        BlockMeshData mesh_data = get_block_mesh_data(scene_path);
+        BlockMeshData mesh_data = BlockMeshCache::get_block_mesh_data(scene_path);
         if (mesh_data.valid) {
             Ref<MultiMesh> multimesh;
             multimesh.instantiate();
