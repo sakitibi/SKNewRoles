@@ -2,6 +2,7 @@
 #include "mca_parser.h"
 #include "chunk_mesh_builder.h"
 #include "chunk_block_editor.h"
+#include "../../Blocks/block_mesh_cache.h"
 
 #include <godot_cpp/core/object.hpp>
 #include <godot_cpp/classes/engine.hpp>
@@ -45,7 +46,7 @@ ChunkManager::~ChunkManager() {}
 
 void ChunkManager::_ready() {
     if (Engine::get_singleton()->is_editor_hint()) return;
-    ChunkMeshBuilder::preload_block_meshes();
+    BlockMeshCache::preload_block_meshes();
 }
 
 void ChunkManager::spawn_falling_block(const Vector3 &spawn_pos, const String &block_type) {
