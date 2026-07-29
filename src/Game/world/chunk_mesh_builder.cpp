@@ -1,7 +1,7 @@
 #include "chunk_mesh_builder.h"
+#include "chunk_collision_builder.h"
 #include "../../Blocks/block_registry.h"
 #include "../../Blocks/block_mesh_cache.h"
-#include "chunk_collision_builder.h"
 
 #include <godot_cpp/classes/multi_mesh_instance3d.hpp>
 #include <godot_cpp/classes/static_body3d.hpp>

@@ -20,12 +20,6 @@
 #include <godot_cpp/variant/packed_int64_array.hpp>
 
 namespace godot {
-    struct BlockMeshData {
-        Ref<Mesh> mesh;
-        Vector<Ref<Material>> materials;
-        bool valid = false;
-    };
-
     struct BuiltChunkData {
         HashMap<String, Ref<MultiMesh>> multimeshes;
         PackedVector3Array collision_faces;
@@ -44,17 +38,6 @@ namespace godot {
         public:
             ChunkMeshBuilder();
             ~ChunkMeshBuilder();
-
-            // --- C# / External API ---
-            static void register_block(const String &block_id, const String &scene_path);
-            static void set_block_scene_map(const Dictionary &p_map);
-            static Dictionary get_block_scene_map_dict();
-            static void clear_block_map();
-
-            // 内部 / C++用
-            static const HashMap<String, String>& get_block_scene_map();
-            static void preload_block_meshes();
-            static BlockMeshData get_block_mesh_data(const String &scene_path);
 
             static HashMap<String, Vector<Vector3>> parse_chunk_positions(
                 const Dictionary &chunk_data,
