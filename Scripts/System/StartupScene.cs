@@ -30,6 +30,7 @@ namespace SKNewRoles2.SNRSystem
             _statusLabel = GetNode<Label>("CenterContainer/VBoxContainer/LoadingLabel");
             _progressBar = GetNode<TextureProgressBar>("CenterContainer/VBoxContainer/StartupProgressBar");
 
+            // PercentLabel の参照を取得
             if (_progressBar.HasNode("PercentLabel"))
             {
                 _percentLabel = _progressBar.GetNode<Label>("PercentLabel");
