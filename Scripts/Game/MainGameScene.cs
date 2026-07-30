@@ -45,21 +45,6 @@ namespace SKNewRoles2.Game
             // リモートプレイヤーマネージャーの登録
             _remotePlayerManager = new RemotePlayerManager();
             AddChild(_remotePlayerManager);
-
-            // サブマネージャーの生成と初期化
-            _uiController = new GameUIController();
-            AddChild(_uiController);
-            _uiController.Initialize(this);
-
-            _roleManager = new GameRoleManager();
-            AddChild(_roleManager);
-            _roleManager.Initialize(GetNodeOrNull<Node>("RoleManager"));
-
-            _chunkManagerCpp = GetNodeOrNull<Node3D>("ChunkManager");
-
-            // リモートプレイヤーマネージャーの登録
-            _remotePlayerManager = new RemotePlayerManager();
-            AddChild(_remotePlayerManager);
             _remotePlayerManager.Initialize(_opponentScene, GetMyUserId());
 
             // 自分のプレイヤーを生成
@@ -193,6 +178,19 @@ namespace SKNewRoles2.Game
 
             string myUserId = GetMyUserId();
             RealtimeBroadcaster.SendHp(_connection, myUserId, currentHp, maxHp);
+        }
+        
+        public override void _ExitTree()
+        {
+            GD.Print("🚪 [MainGameScene] _ExitTree: シーン破棄のためBGMを停止します。");
+            _bgmManager?.StopBgm();
+
+            base._ExitTree();
+        }
+
+        public void StopBGM()
+        {
+            _bgmManager?.StopBgm();
         }
     }
 }
