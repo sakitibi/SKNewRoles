@@ -16,7 +16,7 @@ namespace SKNewRoles2.SNRSystem
         private ProgressBar _progressBar;
         private Label _statusLabel;
         private ColorRect _background;
-        private readonly RealtimeConnection _connection;
+        private readonly RealtimeConnection _connection = new();
 
         public ProgressBar StartupProgressBar => _progressBar;
         public Label StatusLabel => _statusLabel;

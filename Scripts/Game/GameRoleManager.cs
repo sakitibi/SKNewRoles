@@ -16,7 +16,7 @@ namespace SKNewRoles2.Game
         public bool HasRoleReceived { get; private set; } = false;
 
         public event Action<int, int> OnRoleApplied;
-        private readonly RealtimeConnection _connection;
+        private readonly RealtimeConnection _connection = new();
 
         public void Initialize(Node roleManagerCppNode)
         {

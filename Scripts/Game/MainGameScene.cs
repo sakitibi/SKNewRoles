@@ -17,7 +17,7 @@ namespace SKNewRoles2.Game
 
         private GameUIController _uiController;
         private GameRoleManager _roleManager;
-        private readonly RealtimeConnection _connection;
+        private readonly RealtimeConnection _connection = new();
 
         public int MyRole => _roleManager?.MyRole ?? -1;
         public int MyFaction => _roleManager?.MyFaction ?? -1;
