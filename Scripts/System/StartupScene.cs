@@ -11,16 +11,15 @@ namespace SKNewRoles2.SNRSystem
 
         public static event Func<Action<float, string>, Task> OnModLoadingSequence;
         public static event Action<StartupScene> OnStartupVisualInitialized;
-
-        private ProgressBar _progressBar;
+        private TextureProgressBar _progressBar;
         private Label _statusLabel;
         private ColorRect _background;
         private readonly RealtimeConnection _connection = new();
 
-        // 追記: アニメーション管理用のTweenオブジェクト
+        // アニメーション管理用のTweenオブジェクト
         private Tween _progressTween;
 
-        public ProgressBar StartupProgressBar => _progressBar;
+        public TextureProgressBar StartupProgressBar => _progressBar;
         public Label StatusLabel => _statusLabel;
         public ColorRect BackgroundRect => _background;
 
@@ -28,7 +27,7 @@ namespace SKNewRoles2.SNRSystem
         {
             _background = GetNode<ColorRect>("Background");
             _statusLabel = GetNode<Label>("CenterContainer/VBoxContainer/LoadingLabel");
-            _progressBar = GetNode<ProgressBar>("CenterContainer/VBoxContainer/StartupProgressBar");
+            _progressBar = GetNode<TextureProgressBar>("CenterContainer/VBoxContainer/StartupProgressBar");
 
             _progressBar.Value = 0;
             
@@ -113,18 +112,19 @@ namespace SKNewRoles2.SNRSystem
         }
 
         /// <summary>
-        /// 進捗バーをTweenを使って滑らかに更新します
+        /// 進捗バーをTweenを使って滑らかに更新
         /// </summary>
-        private void UpdateProgress(float value, string statusText)
+        private void UpdateProgress(float targetValue, string statusText)
         {
             if (_statusLabel != null)
             {
+                _statusLabel.Text = $"{statusText} ({Mathf.RoundToInt(targetValue)}%)";
                 _statusLabel.Text = statusText;
             }
 
             if (_progressBar != null)
             {
-                // 進行中の既存Tweenを無効化
+                // 進行中の既存Tweenがあればキャンセル
                 if (_progressTween != null && _progressTween.IsValid())
                 {
                     _progressTween.Kill();
@@ -132,7 +132,9 @@ namespace SKNewRoles2.SNRSystem
 
                 // 新しいTweenを開始
                 _progressTween = CreateTween();
-                _progressTween.TweenProperty(_progressBar, "value", value, 0.25f)
+                
+                // 0.25秒かけて目標値までアニメーション
+                _progressTween.TweenProperty(_progressBar, "value", targetValue, 0.25f)
                               .SetTrans(Tween.TransitionType.Sine)
                               .SetEase(Tween.EaseType.Out);
             }
