@@ -11,12 +11,13 @@ namespace SKNewRoles2.SNRSystem
 
         public static event Func<Action<float, string>, Task> OnModLoadingSequence;
         public static event Action<StartupScene> OnStartupVisualInitialized;
+
         private TextureProgressBar _progressBar;
         private Label _statusLabel;
+        private Label _percentLabel;
         private ColorRect _background;
         private readonly RealtimeConnection _connection = new();
 
-        // アニメーション管理用のTweenオブジェクト
         private Tween _progressTween;
 
         public TextureProgressBar StartupProgressBar => _progressBar;
@@ -28,6 +29,12 @@ namespace SKNewRoles2.SNRSystem
             _background = GetNode<ColorRect>("Background");
             _statusLabel = GetNode<Label>("CenterContainer/VBoxContainer/LoadingLabel");
             _progressBar = GetNode<TextureProgressBar>("CenterContainer/VBoxContainer/StartupProgressBar");
+
+            if (_progressBar.HasNode("PercentLabel"))
+            {
+                _percentLabel = _progressBar.GetNode<Label>("PercentLabel");
+                _percentLabel.Text = "0%";
+            }
 
             _progressBar.Value = 0;
             
@@ -112,18 +119,19 @@ namespace SKNewRoles2.SNRSystem
         }
 
         /// <summary>
-        /// 進捗バーをTweenを使って滑らかに更新
+        /// 進捗バーとパーセンテージのテキストをTweenで滑らかにアニメーション更新
         /// </summary>
         private void UpdateProgress(float targetValue, string statusText)
         {
             if (_statusLabel != null)
             {
-                _statusLabel.Text = $"{statusText} ({Mathf.RoundToInt(targetValue)}%)";
                 _statusLabel.Text = statusText;
             }
 
             if (_progressBar != null)
             {
+                float startValue = (float)_progressBar.Value;
+
                 // 進行中の既存Tweenがあればキャンセル
                 if (_progressTween != null && _progressTween.IsValid())
                 {
@@ -133,10 +141,22 @@ namespace SKNewRoles2.SNRSystem
                 // 新しいTweenを開始
                 _progressTween = CreateTween();
                 
-                // 0.25秒かけて目標値までアニメーション
                 _progressTween.TweenProperty(_progressBar, "value", targetValue, 0.25f)
                               .SetTrans(Tween.TransitionType.Sine)
                               .SetEase(Tween.EaseType.Out);
+
+                if (_percentLabel != null)
+                {
+                    _progressTween.Parallel().TweenMethod(
+                        Callable.From<float>(val => {
+                            _percentLabel.Text = $"{Mathf.RoundToInt(val)}%";
+                        }),
+                        startValue,
+                        targetValue,
+                        0.25f
+                    ).SetTrans(Tween.TransitionType.Sine)
+                     .SetEase(Tween.EaseType.Out);
+                }
             }
         }
     }
