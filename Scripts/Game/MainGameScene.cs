@@ -14,6 +14,7 @@ namespace SKNewRoles2.Game
 
         private Node3D _myPlayerInstance;
         private RemotePlayerManager _remotePlayerManager;
+        private BGMManager _bgmManager;
 
         private GameUIController _uiController;
         private GameRoleManager _roleManager;
@@ -25,6 +26,25 @@ namespace SKNewRoles2.Game
         public override async void _Ready()
         {
             GD.Print("1️⃣ [_Ready] 開始");
+
+            _bgmManager = new BGMManager();
+            AddChild(_bgmManager);
+            _bgmManager.PlayRandomBgm(0.0f);
+
+            // サブマネージャーの生成と初期化
+            _uiController = new GameUIController();
+            AddChild(_uiController);
+            _uiController.Initialize(this);
+
+            _roleManager = new GameRoleManager();
+            AddChild(_roleManager);
+            _roleManager.Initialize(GetNodeOrNull<Node>("RoleManager"));
+
+            _chunkManagerCpp = GetNodeOrNull<Node3D>("ChunkManager");
+
+            // リモートプレイヤーマネージャーの登録
+            _remotePlayerManager = new RemotePlayerManager();
+            AddChild(_remotePlayerManager);
 
             // サブマネージャーの生成と初期化
             _uiController = new GameUIController();
