@@ -4,7 +4,12 @@
 
 using namespace godot;
 
-HealthComponent::HealthComponent() {}
+HealthComponent::HealthComponent() {
+    max_hp = 20;
+    current_hp = 20;
+    is_dead = false;
+}
+
 HealthComponent::~HealthComponent() {}
 
 void HealthComponent::_bind_methods() {
@@ -50,7 +55,7 @@ void HealthComponent::set_current_hp(int p_hp) {
     current_hp = std::clamp(p_hp, 0, max_hp);
     emit_signal("hp_changed", current_hp, max_hp);
 
-    if (current_hp <= 0 && !is_dead) {
+    if (current_hp <= 0 && !is_dead && is_inside_tree()) {
         die();
     }
 }
