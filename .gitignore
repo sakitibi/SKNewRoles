@@ -11,7 +11,6 @@ build
 *.command
 Resources/Blocks/*
 Resources/Audio/BGM/*
-Sounds/*
 bin/libgodot_player_extension.dylib
 bin/libgodot_player_extension.so
 bin/godot_player_extension.dll
