@@ -18,13 +18,19 @@ void SNR2Player::_bind_methods() {
     ClassDB::bind_method(D_METHOD("take_damage", "amount"), &SNR2Player::take_damage);
     ClassDB::bind_method(D_METHOD("heal", "amount"), &SNR2Player::heal);
 
+    ClassDB::bind_method(D_METHOD("die"), &SNR2Player::die);
+    ClassDB::bind_method(D_METHOD("set_spectator_mode", "enable"), &SNR2Player::set_spectator_mode);
+    ClassDB::bind_method(D_METHOD("is_spectator"), &SNR2Player::is_spectator);
+
+    ClassDB::bind_method(D_METHOD("_on_health_died"), &SNR2Player::_on_health_died);
+    ClassDB::bind_method(D_METHOD("_on_health_hp_changed", "current_hp", "max_hp"), &SNR2Player::_on_health_hp_changed);
+
     ADD_SIGNAL(MethodInfo("hp_changed", PropertyInfo(Variant::INT, "current_hp"), PropertyInfo(Variant::INT, "max_hp")));
+    ADD_SIGNAL(MethodInfo("died"));
 }
 
 SNR2Player::SNR2Player() {
     gravity = 9.8f;
-    max_hp = 20;
-    current_hp = 20;
 }
 
 SNR2Player::~SNR2Player() {}
@@ -37,45 +43,93 @@ void SNR2Player::_ready() {
         gravity = settings->get_setting("physics/3d/default_gravity");
     }
 
-    Node *node = get_node_or_null(NodePath("Camera3D"));
-    if (node != nullptr) {
-        camera = Object::cast_to<Camera3D>(node);
+    // Camera3D の取得
+    Node *cam_node = get_node_or_null(NodePath("Camera3D"));
+    if (cam_node != nullptr) {
+        camera = Object::cast_to<Camera3D>(cam_node);
+    }
+
+    // HealthComponent の取得
+    Node *health_node = get_node_or_null(NodePath("HealthComponent"));
+    if (health_node != nullptr) {
+        health_component = Object::cast_to<HealthComponent>(health_node);
+    }
+
+    if (health_component != nullptr) {
+        health_component->connect("died", Callable(this, "_on_health_died"));
+        health_component->connect("hp_changed", Callable(this, "_on_health_hp_changed"));
+    }
+
+    // SpectatorComponent の取得とセットアップ
+    Node *spec_node = get_node_or_null(NodePath("SpectatorComponent"));
+    if (spec_node != nullptr) {
+        spectator_component = Object::cast_to<SpectatorComponent>(spec_node);
+    }
+
+    if (spectator_component != nullptr) {
+        spectator_component->setup(this, camera);
     }
 }
 
 void SNR2Player::set_max_hp(int p_hp) {
-    max_hp = p_hp;
-    if (current_hp > max_hp) {
-        current_hp = max_hp;
-    }
-    emit_signal("hp_changed", current_hp, max_hp);
+    if (health_component) health_component->set_max_hp(p_hp);
 }
 
-int SNR2Player::get_max_hp() const { return max_hp; }
+int SNR2Player::get_max_hp() const {
+    return health_component ? health_component->get_max_hp() : 0;
+}
 
 void SNR2Player::set_current_hp(int p_hp) {
-    current_hp = Math::clamp(p_hp, 0, max_hp);
-    emit_signal("hp_changed", current_hp, max_hp);
+    if (health_component) health_component->set_current_hp(p_hp);
 }
 
-int SNR2Player::get_current_hp() const { return current_hp; }
+int SNR2Player::get_current_hp() const {
+    return health_component ? health_component->get_current_hp() : 0;
+}
 
 void SNR2Player::take_damage(int amount) {
-    if (amount <= 0) return;
-    current_hp = Math::max(0, current_hp - amount);
-    emit_signal("hp_changed", current_hp, max_hp);
-
-    UtilityFunctions::print("[Player] Took damage: ", amount, " (Remaining HP: ", current_hp, "/", max_hp, ")");
-
-    if (current_hp <= 0) {
-        UtilityFunctions::print("[Player] The player has died.");
+    if (is_spectator()) return;
+    if (health_component) {
+        health_component->take_damage(amount);
     }
 }
 
 void SNR2Player::heal(int amount) {
-    if (amount <= 0) return;
-    current_hp = Math::min(max_hp, current_hp + amount);
-    emit_signal("hp_changed", current_hp, max_hp);
+    if (is_spectator()) return;
+    if (health_component) {
+        health_component->heal(amount);
+    }
+}
+
+void SNR2Player::_on_health_hp_changed(int p_current_hp, int p_max_hp) {
+    emit_signal("hp_changed", p_current_hp, p_max_hp);
+}
+
+void SNR2Player::_on_health_died() {
+    die();
+}
+
+void SNR2Player::die() {
+    if (is_spectator()) return;
+
+    if (health_component && !health_component->get_is_dead()) {
+        health_component->die();
+    }
+
+    UtilityFunctions::print("[Player] Player died. Entering Spectator Mode.");
+    emit_signal("died");
+
+    set_spectator_mode(true);
+}
+
+void SNR2Player::set_spectator_mode(bool p_enable) {
+    if (spectator_component) {
+        spectator_component->set_spectator_mode(p_enable);
+    }
+}
+
+bool SNR2Player::is_spectator() const {
+    return spectator_component ? spectator_component->get_is_spectator() : false;
 }
 
 void SNR2Player::_input(const Ref<InputEvent> &event) {
@@ -102,6 +156,13 @@ void SNR2Player::_input(const Ref<InputEvent> &event) {
 
 void SNR2Player::_physics_process(double delta) {
     if (!input) return;
+
+    if (is_spectator()) {
+        if (spectator_component) {
+            spectator_component->process_movement(delta);
+        }
+        return;
+    }
 
     Vector3 velocity = get_velocity();
     Vector3 current_pos = get_global_position();

@@ -37,6 +37,8 @@ set(SOURCES
     src/Game/world/mca_parser.cpp
     src/Game/role_manager.cpp
     src/Game/hud_manager.cpp
+    src/Game/health_component.cpp
+    src/Game/spectator_component.cpp
 )
 
 # 共有ライブラリとしてビルド

@@ -17,6 +17,8 @@
 #include "Game/world/chunk_mesh_builder.h"
 #include "Game/role_manager.h"
 #include "Game/hud_manager.h"
+#include "Game/health_component.h"
+#include "Game/spectator_component.h"
 
 #ifndef GDEXTENSION_API_CC
 #define GDEXTENSION_API_CC
@@ -41,6 +43,8 @@ void initialize_player_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<ChunkManager>();
     ClassDB::register_class<ChunkMeshBuilder>();
     ClassDB::register_class<HUDManager>();
+    ClassDB::register_class<HealthComponent>();
+    ClassDB::register_class<SpectatorComponent>();
 }
 
 void uninitialize_player_module(ModuleInitializationLevel p_level) {
