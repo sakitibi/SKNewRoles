@@ -124,9 +124,14 @@ namespace SKNewRoles2.Game
 
             if (_myPlayerInstance.HasMethod("get_current_hp") && _myPlayerInstance.HasMethod("get_max_hp"))
             {
-                int curHp = (int)_myPlayerInstance.Call("get_current_hp");
-                int maxHp = (int)_myPlayerInstance.Call("get_max_hp");
-                OnMyPlayerHpChanged(curHp, maxHp);
+                _myPlayerInstance = _playerScene.Instantiate<Node3D>();
+                _myPlayerInstance.Connect("hp_changed", Callable.From<int, int>(OnMyPlayerHpChanged));
+                AddChild(_myPlayerInstance);
+
+                if (_myPlayerInstance != null)
+                {
+                    _chunkManagerCpp?.Set("player_path", _myPlayerInstance.GetPath());
+                }
             }
 
             _chunkManagerCpp?.Set("player_path", _myPlayerInstance.GetPath());

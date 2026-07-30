@@ -58,6 +58,14 @@ void SNR2Player::_ready() {
     if (health_component != nullptr) {
         health_component->connect("died", Callable(this, "_on_health_died"));
         health_component->connect("hp_changed", Callable(this, "_on_health_hp_changed"));
+
+        if (health_component->get_current_hp() <= 0 && !health_component->get_is_dead()) {
+            health_component->set_current_hp(health_component->get_max_hp());
+        }
+
+        emit_signal("hp_changed", health_component->get_current_hp(), health_component->get_max_hp());
+    } else {
+        UtilityFunctions::print("[SNR2Player] Warning: Child node 'HealthComponent' not found!");
     }
 
     // SpectatorComponent の取得とセットアップ
