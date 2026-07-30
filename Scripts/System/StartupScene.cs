@@ -1,7 +1,6 @@
 using Godot;
 using System;
 using System.Threading.Tasks;
-using SKNewRoles2.Game;
 using SKNewRoles2.Game.Network;
 
 namespace SKNewRoles2.SNRSystem
@@ -18,13 +17,15 @@ namespace SKNewRoles2.SNRSystem
         private ColorRect _background;
         private readonly RealtimeConnection _connection = new();
 
+        // 追記: アニメーション管理用のTweenオブジェクト
+        private Tween _progressTween;
+
         public ProgressBar StartupProgressBar => _progressBar;
         public Label StatusLabel => _statusLabel;
         public ColorRect BackgroundRect => _background;
 
         public override async void _Ready()
         {
-            // GetNode<T> で厳密にノードを参照（パスと型の一致）
             _background = GetNode<ColorRect>("Background");
             _statusLabel = GetNode<Label>("CenterContainer/VBoxContainer/LoadingLabel");
             _progressBar = GetNode<ProgressBar>("CenterContainer/VBoxContainer/StartupProgressBar");
@@ -40,7 +41,7 @@ namespace SKNewRoles2.SNRSystem
 
         private async Task RunStartupSequenceAsync()
         {
-            // 1. 基本システムの準備
+            // 基本システムの準備
             UpdateProgress(10, "セッション情報を準備中...");
             await Task.Delay(200);
             if (!IsInstanceValid(this) || !IsInsideTree()) return;
@@ -53,7 +54,7 @@ namespace SKNewRoles2.SNRSystem
             await Task.Delay(200);
             if (!IsInstanceValid(this) || !IsInsideTree()) return;
 
-            // 2. Mod/拡張機能のロードシーケンス実行
+            // Mod/拡張機能のロードシーケンス実行
             if (OnModLoadingSequence != null)
             {
                 Delegate[] invocationList = OnModLoadingSequence.GetInvocationList();
@@ -76,7 +77,7 @@ namespace SKNewRoles2.SNRSystem
                 }
             }
 
-            // 3. 起動完了フェーズ
+            // 起動完了フェーズ
             UpdateProgress(95, "ゲーム環境を構築中...");
             await Task.Delay(400);
 
@@ -87,7 +88,8 @@ namespace SKNewRoles2.SNRSystem
             }
 
             UpdateProgress(100, "準備完了！");
-            await Task.Delay(200);
+            
+            await Task.Delay(400);
 
             if (!IsInstanceValid(this) || !IsInsideTree())
             {
@@ -110,10 +112,30 @@ namespace SKNewRoles2.SNRSystem
             }
         }
 
+        /// <summary>
+        /// 進捗バーをTweenを使って滑らかに更新します
+        /// </summary>
         private void UpdateProgress(float value, string statusText)
         {
-            if (_progressBar != null) _progressBar.Value = value;
-            if (_statusLabel != null) _statusLabel.Text = statusText;
+            if (_statusLabel != null)
+            {
+                _statusLabel.Text = statusText;
+            }
+
+            if (_progressBar != null)
+            {
+                // 進行中の既存Tweenを無効化
+                if (_progressTween != null && _progressTween.IsValid())
+                {
+                    _progressTween.Kill();
+                }
+
+                // 新しいTweenを開始
+                _progressTween = CreateTween();
+                _progressTween.TweenProperty(_progressBar, "value", value, 0.25f)
+                              .SetTrans(Tween.TransitionType.Sine)
+                              .SetEase(Tween.EaseType.Out);
+            }
         }
     }
 }
