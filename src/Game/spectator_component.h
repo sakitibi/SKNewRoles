@@ -4,6 +4,7 @@
 #include <godot_cpp/classes/character_body3d.hpp>
 #include <godot_cpp/classes/camera3d.hpp>
 #include <godot_cpp/classes/input.hpp>
+#include <godot_cpp/classes/collision_shape3d.hpp>
 
 namespace godot {
     class SpectatorComponent : public Node {
@@ -11,11 +12,13 @@ namespace godot {
 
         private:
             bool is_spectator = false;
-            const float SPECTATOR_SPEED = 10.0f;
+            const float SPECTATOR_SPEED = 15.0f;
 
             CharacterBody3D *target_player = nullptr;
             Camera3D *camera = nullptr;
             Input *input = nullptr;
+
+            void set_node_visible_recursive(Node *p_node, bool p_visible);
 
         protected:
             static void _bind_methods();

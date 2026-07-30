@@ -1,4 +1,5 @@
 #include "spectator_component.h"
+#include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/classes/collision_shape3d.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
@@ -25,13 +26,21 @@ void SpectatorComponent::set_spectator_mode(bool p_enable) {
 
     is_spectator = p_enable;
 
-    // メッシュ（姿）の表示 / 非表示切り替え
+    // 移動速度のリセット
+    target_player->set_velocity(Vector3(0, 0, 0));
+
     Node *mesh_node = target_player->get_node_or_null(NodePath("MeshInstance3D"));
     if (mesh_node) {
-        mesh_node->call("set_visible", !p_enable);
+        set_node_visible_recursive(mesh_node, !p_enable);
+    } else {
+        for (int i = 0; i < target_player->get_child_count(); ++i) {
+            Node *child = target_player->get_child(i);
+            if (child && child->is_class("MeshInstance3D")) {
+                set_node_visible_recursive(child, !p_enable);
+            }
+        }
     }
 
-    // 衝突判定の無効化 / 有効化
     for (int i = 0; i < target_player->get_child_count(); ++i) {
         CollisionShape3D *col = Object::cast_to<CollisionShape3D>(target_player->get_child(i));
         if (col) {
@@ -42,22 +51,34 @@ void SpectatorComponent::set_spectator_mode(bool p_enable) {
     emit_signal("spectator_mode_changed", is_spectator);
 }
 
+void SpectatorComponent::set_node_visible_recursive(Node *p_node, bool p_visible) {
+    if (!p_node) return;
+
+    Node3D *node3d = Object::cast_to<Node3D>(p_node);
+    if (node3d) {
+        node3d->set_visible(p_visible);
+    }
+}
+
 void SpectatorComponent::process_movement(double delta) {
     if (!is_spectator || !target_player || !input) return;
 
     Vector3 move_dir = Vector3(0, 0, 0);
 
+    // キー入力判定
     if (input->is_key_pressed(KEY_W) || input->is_action_pressed("ui_up")) move_dir.z -= 1.0f;
     if (input->is_key_pressed(KEY_S) || input->is_action_pressed("ui_down")) move_dir.z += 1.0f;
     if (input->is_key_pressed(KEY_A) || input->is_action_pressed("ui_left")) move_dir.x -= 1.0f;
     if (input->is_key_pressed(KEY_D) || input->is_action_pressed("ui_right")) move_dir.x += 1.0f;
 
+    // 上下移動 (Spaceで上昇, Shift/Eで下降)
     if (input->is_key_pressed(KEY_SPACE)) move_dir.y += 1.0f;
     if (input->is_key_pressed(KEY_SHIFT) || input->is_key_pressed(KEY_E)) move_dir.y -= 1.0f;
 
     if (move_dir.length_squared() > 0.0f) {
         move_dir = move_dir.normalized();
 
+        // カメラまたはプレイヤーの Transform 取得
         Transform3D cam_transform = (camera != nullptr) ? camera->get_global_transform() : target_player->get_global_transform();
 
         Vector3 forward = -cam_transform.basis.get_column(2);
@@ -65,10 +86,11 @@ void SpectatorComponent::process_movement(double delta) {
         Vector3 up = Vector3(0, 1, 0);
 
         Vector3 target_velocity = (forward * -move_dir.z) + (right * move_dir.x) + (up * move_dir.y);
-        target_player->set_velocity(target_velocity * SPECTATOR_SPEED);
-    } else {
-        target_player->set_velocity(Vector3(0, 0, 0));
+
+        Vector3 new_global_pos = target_player->get_global_position() + (target_velocity * SPECTATOR_SPEED * static_cast<float>(delta));
+        target_player->set_global_position(new_global_pos);
     }
 
-    target_player->set_position(target_player->get_position() + target_player->get_velocity() * static_cast<float>(delta));
+    // 物理移動速度を 0 に保ち、重力や慣性による位置ずれを防止
+    target_player->set_velocity(Vector3(0, 0, 0));
 }

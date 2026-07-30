@@ -124,14 +124,9 @@ namespace SKNewRoles2.Game
 
             if (_myPlayerInstance.HasMethod("get_current_hp") && _myPlayerInstance.HasMethod("get_max_hp"))
             {
-                _myPlayerInstance = _playerScene.Instantiate<Node3D>();
-                _myPlayerInstance.Connect("hp_changed", Callable.From<int, int>(OnMyPlayerHpChanged));
-                AddChild(_myPlayerInstance);
-
-                if (_myPlayerInstance != null)
-                {
-                    _chunkManagerCpp?.Set("player_path", _myPlayerInstance.GetPath());
-                }
+                int curHp = (int)_myPlayerInstance.Call("get_current_hp");
+                int maxHp = (int)_myPlayerInstance.Call("get_max_hp");
+                OnMyPlayerHpChanged(curHp, maxHp);
             }
 
             _chunkManagerCpp?.Set("player_path", _myPlayerInstance.GetPath());
@@ -141,12 +136,14 @@ namespace SKNewRoles2.Game
         {
             if (_myPlayerInstance == null) return;
 
-            _myPlayerInstance.SetPhysicsProcess(enabled);
-            _myPlayerInstance.SetProcess(enabled);
-
             if (_myPlayerInstance is CharacterBody3D body)
             {
                 body.Velocity = Vector3.Zero;
+            }
+
+            if (_myPlayerInstance.HasMethod("set_movement_enabled"))
+            {
+                _myPlayerInstance.Call("set_movement_enabled", enabled);
             }
         }
 
