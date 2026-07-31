@@ -7,6 +7,7 @@
 #include <godot_cpp/classes/static_body3d.hpp>
 #include <godot_cpp/classes/collision_shape3d.hpp>
 #include <godot_cpp/classes/concave_polygon_shape3d.hpp>
+#include <godot_cpp/templates/hash_set.hpp>
 
 #include <vector>
 #include <algorithm>
@@ -34,9 +35,9 @@ int ChunkMeshBuilder::get_palette_index(const PackedInt64Array &data, int palett
 
     if (long_index < 0 || long_index >= data.size()) return 0;
 
-    uint64_t raw_value = static_cast<uint64_t>(data[long_index]);
-    uint64_t mask = (1ULL << bits_per_entry) - 1ULL;
-    return static_cast<int>((raw_value >> bit_offset) & mask);
+    uint64_t raw_long = static_cast<uint64_t>(data[long_index]);
+    uint64_t mask = (1ULL << bits_per_entry) - 1;
+    return static_cast<int>((raw_long >> bit_offset) & mask);
 }
 
 HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
@@ -47,7 +48,6 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
     HashMap<String, Vector<Vector3>> categorized_positions;
     if (!chunk_data.has("sections")) return categorized_positions;
 
-    const HashMap<String, String> &block_map = BlockRegistry::get_block_scene_map();
     Array sections = chunk_data["sections"];
 
     for (int i = 0; i < sections.size(); ++i) {
@@ -78,10 +78,10 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
                         Dictionary b_entry = palette[p_idx];
                         String block_name = b_entry.get("Name", "minecraft:air");
 
-                        if (block_name != "minecraft:air" && block_map.has(block_name)) {
-                            String scene_path = block_map[block_name];
+                        // BlockRegistry::has_block を静的に呼び出し
+                        if (block_name != "minecraft:air" && BlockRegistry::has_block(block_name)) {
                             Vector3 pos(x, section_y * 16 + y, z);
-                            categorized_positions[scene_path].append(pos);
+                            categorized_positions[block_name].append(pos);
                         }
                     }
                 }
@@ -98,42 +98,67 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
 ) {
     BuiltChunkData result;
 
-    List<String> sorted_keys;
+    HashSet<Vector3i> occupied_blocks;
     for (const auto &E : categorized_positions) {
-        sorted_keys.push_back(E.key);
-    }
-    sorted_keys.sort();
-
-    for (const String &scene_path : sorted_keys) {
-        const Vector<Vector3> &positions = categorized_positions[scene_path];
-        int instance_count = positions.size();
-        if (instance_count == 0) continue;
-
-        std::vector<Vector3> sorted_positions;
-        sorted_positions.reserve(instance_count);
-        for (int i = 0; i < instance_count; ++i) {
-            sorted_positions.push_back(positions[i]);
+        for (const Vector3 &pos : E.value) {
+            occupied_blocks.insert(Vector3i(
+                static_cast<int>(std::floor(pos.x)),
+                static_cast<int>(std::floor(pos.y)),
+                static_cast<int>(std::floor(pos.z))
+            ));
         }
-        std::sort(sorted_positions.begin(), sorted_positions.end(), [](const Vector3 &a, const Vector3 &b) {
-            if (a.y != b.y) return a.y < b.y;
-            if (a.z != b.z) return a.z < b.z;
-            return a.x < b.x;
-        });
+    }
+
+    const HashMap<String, String> &registry_map = BlockRegistry::get_block_scene_map();
+
+    for (const auto &E : categorized_positions) {
+        String block_id = E.key;
+        const Vector<Vector3> &positions = E.value;
+
+        if (!registry_map.has(block_id)) continue;
+
+        String scene_path = registry_map[block_id];
+
+        // 遮蔽カリング（完全に囲まれたブロックを判定して除外）
+        Vector<Vector3> visible_positions;
+        for (const Vector3 &pos : positions) {
+            Vector3i grid_pos(
+                static_cast<int>(std::floor(pos.x)),
+                static_cast<int>(std::floor(pos.y)),
+                static_cast<int>(std::floor(pos.z))
+            );
+
+            bool is_fully_surrounded =
+                occupied_blocks.has(grid_pos + Vector3i(1, 0, 0)) &&
+                occupied_blocks.has(grid_pos + Vector3i(-1, 0, 0)) &&
+                occupied_blocks.has(grid_pos + Vector3i(0, 1, 0)) &&
+                occupied_blocks.has(grid_pos + Vector3i(0, -1, 0)) &&
+                occupied_blocks.has(grid_pos + Vector3i(0, 0, 1)) &&
+                occupied_blocks.has(grid_pos + Vector3i(0, 0, -1));
+
+            if (!is_fully_surrounded) {
+                visible_positions.append(pos);
+            }
+        }
+
+        int visible_count = visible_positions.size();
+        if (visible_count == 0) continue;
 
         BlockMeshData mesh_data = BlockMeshCache::get_block_mesh_data(scene_path);
+
         if (mesh_data.valid) {
             Ref<MultiMesh> multimesh;
             multimesh.instantiate();
             multimesh->set_transform_format(MultiMesh::TRANSFORM_3D);
             multimesh->set_mesh(mesh_data.mesh);
-            multimesh->set_instance_count(instance_count);
+            multimesh->set_instance_count(visible_count);
 
-            for (int i = 0; i < instance_count; ++i) {
+            for (int i = 0; i < visible_count; ++i) {
                 Transform3D t;
-                t.origin = sorted_positions[i] + Vector3(0.5f, 0.5f, 0.5f);
+                t.origin = visible_positions[i] + Vector3(0.5f, 0.5f, 0.5f);
                 multimesh->set_instance_transform(i, t);
             }
-            result.multimeshes[scene_path] = multimesh;
+            result.multimeshes[block_id] = multimesh;
         }
     }
 
@@ -156,12 +181,13 @@ void ChunkMeshBuilder::apply_chunk_data_to_node(Node3D *parent_node, const Built
         static_body->set_name("ChunkStaticBody");
 
         CollisionShape3D *collision_shape = memnew(CollisionShape3D);
-        Ref<ConcavePolygonShape3D> shape;
-        shape.instantiate();
-        shape->set_faces(built_data.collision_faces);
+        Ref<ConcavePolygonShape3D> concave_shape;
+        concave_shape.instantiate();
+        concave_shape->set_faces(built_data.collision_faces);
 
-        collision_shape->set_shape(shape);
+        collision_shape->set_shape(concave_shape);
         static_body->add_child(collision_shape);
+
         parent_node->add_child(static_body);
     }
 }

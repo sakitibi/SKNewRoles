@@ -8,7 +8,7 @@
 
 namespace godot {
     class BlockRegistry : public Object {
-        GDCLASS(BlockRegistry, Object)
+            GDCLASS(BlockRegistry, Object)
 
         private:
             static HashMap<String, String> block_scene_map;
@@ -24,6 +24,7 @@ namespace godot {
             static void set_block_scene_map(const Dictionary &p_map);
             static Dictionary get_block_scene_map_dict();
             static void clear_block_map();
+            static bool has_block(const String &block_id);
 
             static const HashMap<String, String>& get_block_scene_map();
     };

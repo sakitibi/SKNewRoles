@@ -12,6 +12,7 @@ void BlockRegistry::_bind_methods() {
     ClassDB::bind_static_method("BlockRegistry", D_METHOD("set_block_scene_map", "map"), &BlockRegistry::set_block_scene_map);
     ClassDB::bind_static_method("BlockRegistry", D_METHOD("get_block_scene_map"), &BlockRegistry::get_block_scene_map_dict);
     ClassDB::bind_static_method("BlockRegistry", D_METHOD("clear_block_map"), &BlockRegistry::clear_block_map);
+    ClassDB::bind_static_method("BlockRegistry", D_METHOD("has_block", "block_id"), &BlockRegistry::has_block); // 👈 追加
 }
 
 const HashMap<String, String>& BlockRegistry::get_block_scene_map() {
@@ -58,4 +59,9 @@ Dictionary BlockRegistry::get_block_scene_map_dict() {
 
 void BlockRegistry::clear_block_map() {
     block_scene_map.clear();
+}
+
+bool BlockRegistry::has_block(const String &block_id) {
+    const HashMap<String, String> &map = get_block_scene_map();
+    return map.has(block_id);
 }
