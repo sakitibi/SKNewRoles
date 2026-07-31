@@ -98,7 +98,7 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
     return categorized_positions;
 }
 
-// 6方向の法線・頂点オフセットデータ
+// 6方向の幾何定義 (0:Top, 1:Bottom, 2:Back, 3:Front, 4:Right, 5:Left)
 struct CubeFaceData {
     Vector3i dir;
     Vector3 normal;
@@ -133,13 +133,22 @@ static const CubeFaceData CUBE_FACES[6] = {
       { Vector2(0, 1), Vector2(1, 1), Vector2(1, 0), Vector2(0, 0) } }
 };
 
+struct SurfaceMeshData {
+    Ref<Material> material;
+    PackedVector3Array vertices;
+    PackedVector3Array normals;
+    PackedVector2Array uvs;
+    PackedInt32Array indices;
+    int vertex_count = 0;
+};
+
 BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
     const HashMap<String, Vector<Vector3>> &categorized_positions,
     bool p_is_initial_load
 ) {
     BuiltChunkData result;
 
-    // 全ブロックの格子座標セットを登録
+    // チャック内の全ブロック座標をグリッド参照用に登録
     HashSet<Vector3i> occupied_blocks;
     for (const auto &E : categorized_positions) {
         for (const Vector3 &pos : E.value) {
@@ -156,62 +165,72 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
         if (!registry_map.has(block_id)) continue;
         String scene_path = registry_map[block_id];
 
-        // メッシュ生成に必要な各属性配列
-        PackedVector3Array vertices;
-        PackedVector3Array normals;
-        PackedVector2Array uvs;
-        PackedInt32Array indices;
+        // 6面の各マテリアル配列をキャッシュから取得
+        BlockMeshData mesh_data = BlockMeshCache::get_block_mesh_data(scene_path);
 
-        int vertex_count = 0;
+        // マテリアルごとにサーフェスバッファを管理
+        HashMap<Ref<Material>, SurfaceMeshData> surface_map;
 
         for (const Vector3 &pos : positions) {
             Vector3i grid_pos = to_grid_pos(pos);
 
-            // 6面（Top, Bottom, Back, Front, Right, Left）を独立判定
             for (int f = 0; f < 6; ++f) {
                 Vector3i neighbor_pos = grid_pos + CUBE_FACES[f].dir;
 
-                // 隣接位置にブロックが存在する場合は描画をスキップ（Face Culling）
-                if (occupied_blocks.has(neighbor_pos)) {
-                    continue;
+                // 隣接ブロックが存在する場合はカリング
+                if (occupied_blocks.has(neighbor_pos)) continue;
+
+                // 該当する面のマテリアルを取得
+                Ref<Material> face_mat;
+                if (mesh_data.valid && f < mesh_data.materials.size() && mesh_data.materials[f].is_valid()) {
+                    face_mat = mesh_data.materials[f];
                 }
 
-                // 露出面（Face）の4頂点・法線・UV・インデックスを登録
+                SurfaceMeshData &surf = surface_map[face_mat];
+                surf.material = face_mat;
+
+                // 面の頂点・法線・UVを追加
                 for (int v = 0; v < 4; ++v) {
-                    vertices.append(pos + CUBE_FACES[f].vertices[v]);
-                    normals.append(CUBE_FACES[f].normal);
-                    uvs.append(CUBE_FACES[f].uvs[v]);
+                    surf.vertices.append(pos + CUBE_FACES[f].vertices[v]);
+                    surf.normals.append(CUBE_FACES[f].normal);
+                    surf.uvs.append(CUBE_FACES[f].uvs[v]);
                 }
 
-                // Quadを2つの三角形に分割
-                indices.append(vertex_count + 0);
-                indices.append(vertex_count + 1);
-                indices.append(vertex_count + 2);
-                indices.append(vertex_count + 0);
-                indices.append(vertex_count + 2);
-                indices.append(vertex_count + 3);
+                // インデックス追加
+                surf.indices.append(surf.vertex_count + 0);
+                surf.indices.append(surf.vertex_count + 1);
+                surf.indices.append(surf.vertex_count + 2);
+                surf.indices.append(surf.vertex_count + 0);
+                surf.indices.append(surf.vertex_count + 2);
+                surf.indices.append(surf.vertex_count + 3);
 
-                vertex_count += 4;
+                surf.vertex_count += 4;
             }
         }
 
-        if (vertices.size() == 0) continue;
-
-        Array surface_arrays;
-        surface_arrays.resize(Mesh::ARRAY_MAX);
-        surface_arrays[Mesh::ARRAY_VERTEX] = vertices;
-        surface_arrays[Mesh::ARRAY_NORMAL] = normals;
-        surface_arrays[Mesh::ARRAY_TEX_UV] = uvs;
-        surface_arrays[Mesh::ARRAY_INDEX] = indices;
+        if (surface_map.is_empty()) continue;
 
         Ref<ArrayMesh> array_mesh;
         array_mesh.instantiate();
-        array_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surface_arrays);
 
-        // キャッシュからマテリアルを取得してアタッチ
-        BlockMeshData mesh_data = BlockMeshCache::get_block_mesh_data(scene_path);
-        if (mesh_data.valid && mesh_data.materials.size() > 0 && mesh_data.materials[0].is_valid()) {
-            array_mesh->surface_set_material(0, mesh_data.materials[0]);
+        // 各マテリアルに対応する Surface を作成
+        for (const auto &S : surface_map) {
+            const SurfaceMeshData &surf = S.value;
+            if (surf.vertices.size() == 0) continue;
+
+            Array surface_arrays;
+            surface_arrays.resize(Mesh::ARRAY_MAX);
+            surface_arrays[Mesh::ARRAY_VERTEX] = surf.vertices;
+            surface_arrays[Mesh::ARRAY_NORMAL] = surf.normals;
+            surface_arrays[Mesh::ARRAY_TEX_UV] = surf.uvs;
+            surface_arrays[Mesh::ARRAY_INDEX] = surf.indices;
+
+            int surf_idx = array_mesh->get_surface_count();
+            array_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surface_arrays);
+
+            if (surf.material.is_valid()) {
+                array_mesh->surface_set_material(surf_idx, surf.material);
+            }
         }
 
         result.meshes[block_id] = array_mesh;

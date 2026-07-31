@@ -10,16 +10,12 @@
 
 namespace godot {
     struct BlockMeshData {
-        Ref<Mesh> mesh;
         Vector<Ref<Material>> materials;
         bool valid = false;
     };
 
     class BlockMeshCache : public Object {
         GDCLASS(BlockMeshCache, Object)
-
-        private:
-            static Transform3D get_relative_transform(Node3D *root, Node3D *target);
 
         protected:
             static void _bind_methods();
