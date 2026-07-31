@@ -100,7 +100,7 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
     return categorized_positions;
 }
 
-CubeFaceData CUBE_FACES[6] = {
+const CubeFaceData ChunkMeshBuilder::CUBE_FACES[6] = {
     // 0: Top (+Y)
     { Vector3i(0, 1, 0), Vector3(0, 1, 0),
       { Vector3(0, 1, 1), Vector3(1, 1, 1), Vector3(1, 1, 0), Vector3(0, 1, 0) },
