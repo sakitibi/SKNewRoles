@@ -5,25 +5,23 @@
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/classes/array_mesh.hpp>
 #include <godot_cpp/classes/mesh_instance3d.hpp>
-#include <godot_cpp/classes/multi_mesh_instance3d.hpp>
-#include <godot_cpp/classes/multi_mesh.hpp>
 #include <godot_cpp/classes/static_body3d.hpp>
 #include <godot_cpp/classes/collision_shape3d.hpp>
 #include <godot_cpp/classes/concave_polygon_shape3d.hpp>
-#include <godot_cpp/classes/packed_scene.hpp>
-#include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/material.hpp>
 #include <godot_cpp/templates/hash_map.hpp>
 #include <godot_cpp/templates/hash_set.hpp>
 #include <godot_cpp/variant/array.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/packed_vector3_array.hpp>
+#include <godot_cpp/variant/packed_vector2_array.hpp>
+#include <godot_cpp/variant/packed_int32_array.hpp>
 #include <godot_cpp/variant/packed_int64_array.hpp>
 #include <godot_cpp/variant/vector3i.hpp>
 
 namespace godot {
     struct BuiltChunkData {
-        HashMap<String, Ref<MultiMesh>> multimeshes;
+        HashMap<String, Ref<ArrayMesh>> meshes;
         PackedVector3Array collision_faces;
     };
 
@@ -31,7 +29,6 @@ namespace godot {
         GDCLASS(ChunkMeshBuilder, Object)
 
         private:
-            static HashMap<String, String> block_scene_map;
             static int get_palette_index(const PackedInt64Array &data, int palette_size, int x, int y, int z);
 
         protected:

@@ -3,7 +3,7 @@
 #include "../../Blocks/block_registry.h"
 #include "../../Blocks/block_mesh_cache.h"
 
-#include <godot_cpp/classes/multi_mesh_instance3d.hpp>
+#include <godot_cpp/classes/mesh_instance3d.hpp>
 #include <godot_cpp/classes/static_body3d.hpp>
 #include <godot_cpp/classes/collision_shape3d.hpp>
 #include <godot_cpp/classes/concave_polygon_shape3d.hpp>
@@ -11,12 +11,9 @@
 #include <godot_cpp/variant/vector3i.hpp>
 
 #include <cmath>
-#include <vector>
-#include <algorithm>
 
 using namespace godot;
 
-// 浮動小数点誤差による座標ずれを防ぐ丸め処理
 static inline Vector3i to_grid_pos(const Vector3 &v) {
     return Vector3i(
         static_cast<int>(std::round(v.x)),
@@ -89,7 +86,6 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
                         String block_name = b_entry.get("Name", "minecraft:air");
 
                         if (block_name != "minecraft:air" && BlockRegistry::has_block(block_name)) {
-                            // Y軸絶対座標を整数値として正確に格納
                             Vector3 pos(static_cast<float>(x), static_cast<float>(section_y * 16 + y), static_cast<float>(z));
                             categorized_positions[block_name].append(pos);
                         }
@@ -102,13 +98,48 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
     return categorized_positions;
 }
 
+// 6方向の法線・頂点オフセットデータ
+struct CubeFaceData {
+    Vector3i dir;
+    Vector3 normal;
+    Vector3 vertices[4];
+    Vector2 uvs[4];
+};
+
+static const CubeFaceData CUBE_FACES[6] = {
+    // 0: Top (+Y)
+    { Vector3i(0, 1, 0), Vector3(0, 1, 0),
+      { Vector3(0, 1, 1), Vector3(1, 1, 1), Vector3(1, 1, 0), Vector3(0, 1, 0) },
+      { Vector2(0, 1), Vector2(1, 1), Vector2(1, 0), Vector2(0, 0) } },
+    // 1: Bottom (-Y)
+    { Vector3i(0, -1, 0), Vector3(0, -1, 0),
+      { Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(1, 0, 1), Vector3(0, 0, 1) },
+      { Vector2(0, 1), Vector2(1, 1), Vector2(1, 0), Vector2(0, 0) } },
+    // 2: Back (-Z)
+    { Vector3i(0, 0, -1), Vector3(0, 0, -1),
+      { Vector3(1, 0, 0), Vector3(0, 0, 0), Vector3(0, 1, 0), Vector3(1, 1, 0) },
+      { Vector2(0, 1), Vector2(1, 1), Vector2(1, 0), Vector2(0, 0) } },
+    // 3: Front (+Z)
+    { Vector3i(0, 0, 1), Vector3(0, 0, 1),
+      { Vector3(0, 0, 1), Vector3(1, 0, 1), Vector3(1, 1, 1), Vector3(0, 1, 1) },
+      { Vector2(0, 1), Vector2(1, 1), Vector2(1, 0), Vector2(0, 0) } },
+    // 4: Right (+X)
+    { Vector3i(1, 0, 0), Vector3(1, 0, 0),
+      { Vector3(1, 0, 1), Vector3(1, 0, 0), Vector3(1, 1, 0), Vector3(1, 1, 1) },
+      { Vector2(0, 1), Vector2(1, 1), Vector2(1, 0), Vector2(0, 0) } },
+    // 5: Left (-X)
+    { Vector3i(-1, 0, 0), Vector3(-1, 0, 0),
+      { Vector3(0, 0, 0), Vector3(0, 0, 1), Vector3(0, 1, 1), Vector3(0, 1, 0) },
+      { Vector2(0, 1), Vector2(1, 1), Vector2(1, 0), Vector2(0, 0) } }
+};
+
 BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
     const HashMap<String, Vector<Vector3>> &categorized_positions,
     bool p_is_initial_load
 ) {
     BuiltChunkData result;
 
-    // 全ブロックの格子座標を厳密に格納
+    // 全ブロックの格子座標セットを登録
     HashSet<Vector3i> occupied_blocks;
     for (const auto &E : categorized_positions) {
         for (const Vector3 &pos : E.value) {
@@ -123,46 +154,67 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
         const Vector<Vector3> &positions = E.value;
 
         if (!registry_map.has(block_id)) continue;
-
         String scene_path = registry_map[block_id];
 
-        Vector<Vector3> visible_positions;
+        // メッシュ生成に必要な各属性配列
+        PackedVector3Array vertices;
+        PackedVector3Array normals;
+        PackedVector2Array uvs;
+        PackedInt32Array indices;
+
+        int vertex_count = 0;
+
         for (const Vector3 &pos : positions) {
             Vector3i grid_pos = to_grid_pos(pos);
 
-            // 6方向隣接チェック（自チャンク内データでの完全遮蔽判定）
-            bool is_fully_surrounded =
-                occupied_blocks.has(grid_pos + Vector3i(1, 0, 0)) &&
-                occupied_blocks.has(grid_pos + Vector3i(-1, 0, 0)) &&
-                occupied_blocks.has(grid_pos + Vector3i(0, 1, 0)) &&
-                occupied_blocks.has(grid_pos + Vector3i(0, -1, 0)) &&
-                occupied_blocks.has(grid_pos + Vector3i(0, 0, 1)) &&
-                occupied_blocks.has(grid_pos + Vector3i(0, 0, -1));
+            // 6面（Top, Bottom, Back, Front, Right, Left）を独立判定
+            for (int f = 0; f < 6; ++f) {
+                Vector3i neighbor_pos = grid_pos + CUBE_FACES[f].dir;
 
-            if (!is_fully_surrounded) {
-                visible_positions.append(pos);
+                // 隣接位置にブロックが存在する場合は描画をスキップ（Face Culling）
+                if (occupied_blocks.has(neighbor_pos)) {
+                    continue;
+                }
+
+                // 露出面（Face）の4頂点・法線・UV・インデックスを登録
+                for (int v = 0; v < 4; ++v) {
+                    vertices.append(pos + CUBE_FACES[f].vertices[v]);
+                    normals.append(CUBE_FACES[f].normal);
+                    uvs.append(CUBE_FACES[f].uvs[v]);
+                }
+
+                // Quadを2つの三角形に分割
+                indices.append(vertex_count + 0);
+                indices.append(vertex_count + 1);
+                indices.append(vertex_count + 2);
+                indices.append(vertex_count + 0);
+                indices.append(vertex_count + 2);
+                indices.append(vertex_count + 3);
+
+                vertex_count += 4;
             }
         }
 
-        int visible_count = visible_positions.size();
-        if (visible_count == 0) continue;
+        if (vertices.size() == 0) continue;
 
+        Array surface_arrays;
+        surface_arrays.resize(Mesh::ARRAY_MAX);
+        surface_arrays[Mesh::ARRAY_VERTEX] = vertices;
+        surface_arrays[Mesh::ARRAY_NORMAL] = normals;
+        surface_arrays[Mesh::ARRAY_TEX_UV] = uvs;
+        surface_arrays[Mesh::ARRAY_INDEX] = indices;
+
+        Ref<ArrayMesh> array_mesh;
+        array_mesh.instantiate();
+        array_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surface_arrays);
+
+        // キャッシュからマテリアルを取得してアタッチ
         BlockMeshData mesh_data = BlockMeshCache::get_block_mesh_data(scene_path);
-
-        if (mesh_data.valid) {
-            Ref<MultiMesh> multimesh;
-            multimesh.instantiate();
-            multimesh->set_transform_format(MultiMesh::TRANSFORM_3D);
-            multimesh->set_mesh(mesh_data.mesh);
-            multimesh->set_instance_count(visible_count);
-
-            for (int i = 0; i < visible_count; ++i) {
-                Transform3D t;
-                t.origin = visible_positions[i] + Vector3(0.5f, 0.5f, 0.5f);
-                multimesh->set_instance_transform(i, t);
-            }
-            result.multimeshes[block_id] = multimesh;
+        if (mesh_data.valid && mesh_data.materials.size() > 0 && mesh_data.materials[0].is_valid()) {
+            array_mesh->surface_set_material(0, mesh_data.materials[0]);
         }
+
+        result.meshes[block_id] = array_mesh;
     }
 
     result.collision_faces = ChunkCollisionBuilder::build_collision_faces(categorized_positions);
@@ -173,10 +225,10 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
 void ChunkMeshBuilder::apply_chunk_data_to_node(Node3D *parent_node, const BuiltChunkData &built_data) {
     if (!parent_node) return;
 
-    for (const auto &E : built_data.multimeshes) {
-        MultiMeshInstance3D *mmi = memnew(MultiMeshInstance3D);
-        mmi->set_multimesh(E.value);
-        parent_node->add_child(mmi);
+    for (const auto &E : built_data.meshes) {
+        MeshInstance3D *mi = memnew(MeshInstance3D);
+        mi->set_mesh(E.value);
+        parent_node->add_child(mi);
     }
 
     if (built_data.collision_faces.size() > 0) {
