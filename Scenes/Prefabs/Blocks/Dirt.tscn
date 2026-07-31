@@ -4,16 +4,12 @@
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1fclr"]
 albedo_texture = ExtResource("1_h0i5c")
-uv1_triplanar = false
-uv1_world_triplanar = false
 texture_filter = 2
 
 [sub_resource type="QuadMesh" id="QuadMesh_xhjgb"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0iane"]
 albedo_texture = ExtResource("1_h0i5c")
-uv1_triplanar = false
-uv1_world_triplanar = false
 texture_filter = 2
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_yvmil"]
@@ -21,7 +17,7 @@ texture_filter = 2
 [node name="Dirt" type="StaticBody3D" unique_id=1967058283]
 
 [node name="Top" type="MeshInstance3D" parent="." unique_id=513289371]
-transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0.5, 0)
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0.5, 0)
 material_override = SubResource("StandardMaterial3D_1fclr")
 mesh = SubResource("QuadMesh_xhjgb")
 
