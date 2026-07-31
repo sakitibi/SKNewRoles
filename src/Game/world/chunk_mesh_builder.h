@@ -25,6 +25,14 @@ namespace godot {
         PackedVector3Array collision_faces;
     };
 
+    // 6方向の定義 (0:Top, 1:Bottom, 2:Back, 3:Front, 4:Right, 5:Left)
+    struct CubeFaceData {
+        Vector3i dir;
+        Vector3 normal;
+        Vector3 vertices[4];
+        Vector2 uvs[4];
+    };
+
     class ChunkMeshBuilder : public Object {
         GDCLASS(ChunkMeshBuilder, Object)
 
