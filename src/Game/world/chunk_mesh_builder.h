@@ -14,10 +14,12 @@
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/material.hpp>
 #include <godot_cpp/templates/hash_map.hpp>
+#include <godot_cpp/templates/hash_set.hpp>
 #include <godot_cpp/variant/array.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/packed_vector3_array.hpp>
 #include <godot_cpp/variant/packed_int64_array.hpp>
+#include <godot_cpp/variant/vector3i.hpp>
 
 namespace godot {
     struct BuiltChunkData {

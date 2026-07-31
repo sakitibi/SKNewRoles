@@ -8,7 +8,9 @@
 #include <godot_cpp/classes/collision_shape3d.hpp>
 #include <godot_cpp/classes/concave_polygon_shape3d.hpp>
 #include <godot_cpp/templates/hash_set.hpp>
+#include <godot_cpp/variant/vector3i.hpp>
 
+#include <cmath>
 #include <vector>
 #include <algorithm>
 
@@ -78,7 +80,6 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
                         Dictionary b_entry = palette[p_idx];
                         String block_name = b_entry.get("Name", "minecraft:air");
 
-                        // BlockRegistry::has_block を静的に呼び出し
                         if (block_name != "minecraft:air" && BlockRegistry::has_block(block_name)) {
                             Vector3 pos(x, section_y * 16 + y, z);
                             categorized_positions[block_name].append(pos);
@@ -98,6 +99,7 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
 ) {
     BuiltChunkData result;
 
+    // ブロックが配置されている座標の集合
     HashSet<Vector3i> occupied_blocks;
     for (const auto &E : categorized_positions) {
         for (const Vector3 &pos : E.value) {
@@ -119,7 +121,7 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
 
         String scene_path = registry_map[block_id];
 
-        // 遮蔽カリング（完全に囲まれたブロックを判定して除外）
+        // 6方向すべてが別ブロックに囲まれている場合は描画から除外
         Vector<Vector3> visible_positions;
         for (const Vector3 &pos : positions) {
             Vector3i grid_pos(
