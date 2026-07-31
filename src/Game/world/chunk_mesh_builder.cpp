@@ -104,15 +104,15 @@ const CubeFaceData ChunkMeshBuilder::CUBE_FACES[6] = {
     // 0: Top (+Y)
     { Vector3i(0, 1, 0), Vector3(0, 1, 0),
       { Vector3(0, 1, 1), Vector3(1, 1, 1), Vector3(1, 1, 0), Vector3(0, 1, 0) },
-      { Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1) } },
+      { Vector2(0, 1), Vector2(1, 1), Vector2(1, 0), Vector2(0, 0) } },
     // 1: Bottom (-Y)
     { Vector3i(0, -1, 0), Vector3(0, -1, 0),
       { Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(1, 0, 1), Vector3(0, 0, 1) },
-      { Vector2(0, 1), Vector2(1, 1), Vector2(1, 0), Vector2(0, 0) } },
+      { Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1) } },
     // 2: Back (-Z)
     { Vector3i(0, 0, -1), Vector3(0, 0, -1),
       { Vector3(1, 0, 0), Vector3(0, 0, 0), Vector3(0, 1, 0), Vector3(1, 1, 0) },
-      { Vector2(0, 1), Vector2(1, 1), Vector2(1, 0), Vector2(0, 0) } },
+      { Vector2(1, 1), Vector2(0, 1), Vector2(0, 0), Vector2(1, 0) } },
     // 3: Front (+Z)
     { Vector3i(0, 0, 1), Vector3(0, 0, 1),
       { Vector3(0, 0, 1), Vector3(1, 0, 1), Vector3(1, 1, 1), Vector3(0, 1, 1) },
@@ -215,7 +215,6 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
             array_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surface_arrays);
 
             if (surf.material.is_valid()) {
-                // BaseMaterial3D または StandardMaterial3D にキャスト
                 Ref<BaseMaterial3D> base_mat = surf.material;
                 if (base_mat.is_valid()) {
                     base_mat->set_flag(BaseMaterial3D::FLAG_UV1_USE_TRIPLANAR, false);
