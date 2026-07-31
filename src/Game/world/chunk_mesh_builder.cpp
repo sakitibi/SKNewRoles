@@ -7,6 +7,8 @@
 #include <godot_cpp/classes/static_body3d.hpp>
 #include <godot_cpp/classes/collision_shape3d.hpp>
 #include <godot_cpp/classes/concave_polygon_shape3d.hpp>
+#include <godot_cpp/classes/base_material3d.hpp>
+#include <godot_cpp/classes/standard_material3d.hpp>
 #include <godot_cpp/templates/hash_set.hpp>
 #include <godot_cpp/variant/vector3i.hpp>
 
@@ -98,7 +100,7 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
     return categorized_positions;
 }
 
-// 6方向の幾何定義 (0:Top, 1:Bottom, 2:Back, 3:Front, 4:Right, 5:Left)
+// 6方向の定義 (0:Top, 1:Bottom, 2:Back, 3:Front, 4:Right, 5:Left)
 struct CubeFaceData {
     Vector3i dir;
     Vector3 normal;
@@ -148,7 +150,6 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
 ) {
     BuiltChunkData result;
 
-    // チャック内の全ブロック座標をグリッド参照用に登録
     HashSet<Vector3i> occupied_blocks;
     for (const auto &E : categorized_positions) {
         for (const Vector3 &pos : E.value) {
@@ -165,10 +166,8 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
         if (!registry_map.has(block_id)) continue;
         String scene_path = registry_map[block_id];
 
-        // 6面の各マテリアル配列をキャッシュから取得
         BlockMeshData mesh_data = BlockMeshCache::get_block_mesh_data(scene_path);
 
-        // マテリアルごとにサーフェスバッファを管理
         HashMap<Ref<Material>, SurfaceMeshData> surface_map;
 
         for (const Vector3 &pos : positions) {
@@ -177,10 +176,8 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
             for (int f = 0; f < 6; ++f) {
                 Vector3i neighbor_pos = grid_pos + CUBE_FACES[f].dir;
 
-                // 隣接ブロックが存在する場合はカリング
                 if (occupied_blocks.has(neighbor_pos)) continue;
 
-                // 該当する面のマテリアルを取得
                 Ref<Material> face_mat;
                 if (mesh_data.valid && f < mesh_data.materials.size() && mesh_data.materials[f].is_valid()) {
                     face_mat = mesh_data.materials[f];
@@ -189,14 +186,12 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
                 SurfaceMeshData &surf = surface_map[face_mat];
                 surf.material = face_mat;
 
-                // 面の頂点・法線・UVを追加
                 for (int v = 0; v < 4; ++v) {
                     surf.vertices.append(pos + CUBE_FACES[f].vertices[v]);
                     surf.normals.append(CUBE_FACES[f].normal);
                     surf.uvs.append(CUBE_FACES[f].uvs[v]);
                 }
 
-                // インデックス追加
                 surf.indices.append(surf.vertex_count + 0);
                 surf.indices.append(surf.vertex_count + 1);
                 surf.indices.append(surf.vertex_count + 2);
@@ -213,7 +208,6 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
         Ref<ArrayMesh> array_mesh;
         array_mesh.instantiate();
 
-        // 各マテリアルに対応する Surface を作成
         for (const auto &S : surface_map) {
             const SurfaceMeshData &surf = S.value;
             if (surf.vertices.size() == 0) continue;
@@ -229,6 +223,12 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
             array_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surface_arrays);
 
             if (surf.material.is_valid()) {
+                // BaseMaterial3D または StandardMaterial3D にキャスト
+                Ref<BaseMaterial3D> base_mat = surf.material;
+                if (base_mat.is_valid()) {
+                    base_mat->set_flag(BaseMaterial3D::FLAG_UV1_USE_TRIPLANAR, false);
+                    base_mat->set_flag(BaseMaterial3D::FLAG_UV1_USE_WORLD_TRIPLANAR, false);
+                }
                 array_mesh->surface_set_material(surf_idx, surf.material);
             }
         }
