@@ -30,7 +30,7 @@ texture_filter = 2
 [node name="GrassBlock" type="SNR2GrassBlock" unique_id=1717427691]
 
 [node name="Top" type="MeshInstance3D" parent="." unique_id=1904126623]
-transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0.5, 0)
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0.5, 0)
 material_override = SubResource("StandardMaterial3D_o4wg0")
 mesh = SubResource("QuadMesh_0iane")
 surface_material_override/0 = SubResource("StandardMaterial3D_6nnxi")

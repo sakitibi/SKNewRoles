@@ -104,7 +104,7 @@ const CubeFaceData ChunkMeshBuilder::CUBE_FACES[6] = {
     // 0: Top (+Y)
     { Vector3i(0, 1, 0), Vector3(0, 1, 0),
       { Vector3(0, 1, 1), Vector3(1, 1, 1), Vector3(1, 1, 0), Vector3(0, 1, 0) },
-      { Vector2(1, 0), Vector2(0, 0), Vector2(0, 1), Vector2(1, 1) } },
+      { Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1) } },
     // 1: Bottom (-Y)
     { Vector3i(0, -1, 0), Vector3(0, -1, 0),
       { Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(1, 0, 1), Vector3(0, 0, 1) },
