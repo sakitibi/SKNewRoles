@@ -4,8 +4,8 @@
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1fclr"]
 albedo_texture = ExtResource("1_b5df3")
-uv1_triplanar = true
-uv1_world_triplanar = true
+uv1_triplanar = false
+uv1_world_triplanar = false
 texture_filter = 2
 
 [sub_resource type="QuadMesh" id="QuadMesh_b5df3"]

@@ -4,16 +4,16 @@
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1fclr"]
 albedo_texture = ExtResource("1_hu5dm")
-uv1_triplanar = true
-uv1_world_triplanar = true
+uv1_triplanar = false
+uv1_world_triplanar = false
 texture_filter = 2
 
 [sub_resource type="QuadMesh" id="QuadMesh_xhjgb"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0iane"]
 albedo_texture = ExtResource("1_hu5dm")
-uv1_triplanar = true
-uv1_world_triplanar = true
+uv1_triplanar = false
+uv1_world_triplanar = false
 texture_filter = 2
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_yvmil"]

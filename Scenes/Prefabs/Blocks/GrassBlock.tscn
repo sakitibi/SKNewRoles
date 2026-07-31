@@ -7,8 +7,8 @@
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_o4wg0"]
 albedo_color = Color(0.2, 0.8, 0.2, 1)
 albedo_texture = ExtResource("1_3hkb4")
-uv1_triplanar = true
-uv1_world_triplanar = true
+uv1_triplanar = false
+uv1_world_triplanar = false
 texture_filter = 2
 
 [sub_resource type="QuadMesh" id="QuadMesh_0iane"]
@@ -16,20 +16,20 @@ texture_filter = 2
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6nnxi"]
 albedo_color = Color(0.2, 0.8, 0.2, 1)
 albedo_texture = ExtResource("1_3hkb4")
-uv1_triplanar = true
-uv1_world_triplanar = true
+uv1_triplanar = false
+uv1_world_triplanar = false
 texture_filter = 2
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cty71"]
 albedo_texture = ExtResource("2_hwu5v")
-uv1_triplanar = true
-uv1_world_triplanar = true
+uv1_triplanar = false
+uv1_world_triplanar = false
 texture_filter = 2
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bsme7"]
 albedo_texture = ExtResource("3_cty71")
-uv1_triplanar = true
-uv1_world_triplanar = true
+uv1_triplanar = false
+uv1_world_triplanar = false
 texture_filter = 2
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_1fclr"]
