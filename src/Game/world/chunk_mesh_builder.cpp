@@ -16,11 +16,19 @@
 
 using namespace godot;
 
+// 浮動小数点誤差による座標ずれを防ぐ丸め処理
+static inline Vector3i to_grid_pos(const Vector3 &v) {
+    return Vector3i(
+        static_cast<int>(std::round(v.x)),
+        static_cast<int>(std::round(v.y)),
+        static_cast<int>(std::round(v.z))
+    );
+}
+
 ChunkMeshBuilder::ChunkMeshBuilder() {}
 ChunkMeshBuilder::~ChunkMeshBuilder() {}
 
-void ChunkMeshBuilder::_bind_methods() {
-}
+void ChunkMeshBuilder::_bind_methods() {}
 
 int ChunkMeshBuilder::get_palette_index(const PackedInt64Array &data, int palette_size, int x, int y, int z) {
     if (palette_size <= 1) return 0;
@@ -81,7 +89,8 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
                         String block_name = b_entry.get("Name", "minecraft:air");
 
                         if (block_name != "minecraft:air" && BlockRegistry::has_block(block_name)) {
-                            Vector3 pos(x, section_y * 16 + y, z);
+                            // Y軸絶対座標を整数値として正確に格納
+                            Vector3 pos(static_cast<float>(x), static_cast<float>(section_y * 16 + y), static_cast<float>(z));
                             categorized_positions[block_name].append(pos);
                         }
                     }
@@ -99,15 +108,11 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
 ) {
     BuiltChunkData result;
 
-    // ブロックが配置されている座標の集合
+    // 全ブロックの格子座標を厳密に格納
     HashSet<Vector3i> occupied_blocks;
     for (const auto &E : categorized_positions) {
         for (const Vector3 &pos : E.value) {
-            occupied_blocks.insert(Vector3i(
-                static_cast<int>(std::floor(pos.x)),
-                static_cast<int>(std::floor(pos.y)),
-                static_cast<int>(std::floor(pos.z))
-            ));
+            occupied_blocks.insert(to_grid_pos(pos));
         }
     }
 
@@ -121,15 +126,11 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
 
         String scene_path = registry_map[block_id];
 
-        // 6方向すべてが別ブロックに囲まれている場合は描画から除外
         Vector<Vector3> visible_positions;
         for (const Vector3 &pos : positions) {
-            Vector3i grid_pos(
-                static_cast<int>(std::floor(pos.x)),
-                static_cast<int>(std::floor(pos.y)),
-                static_cast<int>(std::floor(pos.z))
-            );
+            Vector3i grid_pos = to_grid_pos(pos);
 
+            // 6方向隣接チェック（自チャンク内データでの完全遮蔽判定）
             bool is_fully_surrounded =
                 occupied_blocks.has(grid_pos + Vector3i(1, 0, 0)) &&
                 occupied_blocks.has(grid_pos + Vector3i(-1, 0, 0)) &&
