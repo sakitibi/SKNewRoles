@@ -104,12 +104,12 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
 const CubeFaceData ChunkMeshBuilder::CUBE_FACES[6] = {
     // 0: Top (+Y)
     { Vector3i(0, 1, 0), Vector3(0, 1, 0),
-      { Vector3(0, 1, 1), Vector3(1, 1, 1), Vector3(1, 1, 0), Vector3(0, 1, 0) },
-      { Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1) } },
+      { Vector3(0, 1, 0), Vector3(0, 1, 1), Vector3(1, 1, 1), Vector3(1, 1, 0) },
+      { Vector2(0, 0), Vector2(0, 1), Vector2(1, 1), Vector2(1, 0) } },
     // 1: Bottom (-Y)
     { Vector3i(0, -1, 0), Vector3(0, -1, 0),
-      { Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(1, 0, 1), Vector3(0, 0, 1) },
-      { Vector2(0, 1), Vector2(1, 1), Vector2(1, 0), Vector2(0, 0) } },
+      { Vector3(0, 0, 1), Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(1, 0, 1) },
+      { Vector2(0, 1), Vector2(0, 0), Vector2(1, 0), Vector2(1, 1) } },
     // 2: Back (-Z)
     { Vector3i(0, 0, -1), Vector3(0, 0, -1),
       { Vector3(1, 0, 0), Vector3(0, 0, 0), Vector3(0, 1, 0), Vector3(1, 1, 0) },
@@ -128,16 +128,6 @@ const CubeFaceData ChunkMeshBuilder::CUBE_FACES[6] = {
       { Vector2(0, 1), Vector2(1, 1), Vector2(1, 0), Vector2(0, 0) } }
 };
 
-struct SurfaceMeshData {
-    Ref<Material> material;
-    PackedVector3Array vertices;
-    PackedVector3Array normals;
-    PackedVector2Array uvs;
-    PackedInt32Array indices;
-    int vertex_count = 0;
-};
-
-// 1〜6の全マテリアル登録数パターンに対応するヘルパー関数
 static Ref<Material> resolve_face_material(const BlockMeshData &mesh_data, int face_index) {
     if (!mesh_data.valid || mesh_data.materials.is_empty()) {
         return Ref<Material>();
@@ -194,7 +184,6 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
 
                 if (occupied_blocks.has(neighbor_pos)) continue;
 
-                // 1〜6全パターン対応のマテリアル取得
                 Ref<Material> face_mat = resolve_face_material(mesh_data, f);
 
                 SurfaceMeshData &surf = surface_map[face_mat];

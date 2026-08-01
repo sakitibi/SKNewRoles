@@ -6,6 +6,7 @@
 #include <godot_cpp/classes/mesh_instance3d.hpp>
 #include <godot_cpp/classes/base_material3d.hpp>
 #include <godot_cpp/classes/texture2d.hpp>
+#include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
 
@@ -41,6 +42,7 @@ void BlockMeshCache::preload_block_meshes() {
         BlockMeshData data;
         data.materials.resize(6);
 
+        // テクスチャファイルパスに基づく重複マテリアル統合マップ
         HashMap<String, Ref<Material>> material_dedup_map;
 
         // 各面のノードからマテリアルを取得
@@ -55,15 +57,20 @@ void BlockMeshCache::preload_block_meshes() {
                 }
 
                 if (mat.is_valid()) {
-                    String mat_key = mat->get_path();
-                    if (mat_key.is_empty()) {
-                        Ref<BaseMaterial3D> base_mat = mat;
-                        if (base_mat.is_valid()) {
-                            Ref<Texture2D> tex = base_mat->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
-                            if (tex.is_valid()) {
-                                mat_key = tex->get_path();
-                            }
+                    String mat_key;
+                    Ref<BaseMaterial3D> base_mat = mat;
+                    if (base_mat.is_valid()) {
+                        Ref<Texture2D> tex = base_mat->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
+                        if (tex.is_valid() && !tex->get_path().is_empty()) {
+                            mat_key = tex->get_path();
+                        } else {
+                            Color c = base_mat->get_albedo();
+                            mat_key = UtilityFunctions::str("color_", c.r, "_", c.g, "_", c.b, "_", c.a);
                         }
+                    }
+
+                    if (mat_key.is_empty()) {
+                        mat_key = mat->get_path();
                     }
 
                     if (!mat_key.is_empty()) {

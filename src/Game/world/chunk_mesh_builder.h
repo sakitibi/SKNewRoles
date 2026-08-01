@@ -33,6 +33,15 @@ namespace godot {
         Vector2 uvs[4];
     };
 
+    struct SurfaceMeshData {
+        Ref<Material> material;
+        PackedVector3Array vertices;
+        PackedVector3Array normals;
+        PackedVector2Array uvs;
+        PackedInt32Array indices;
+        int vertex_count = 0;
+    };
+
     class ChunkMeshBuilder : public Object {
         GDCLASS(ChunkMeshBuilder, Object)
 
