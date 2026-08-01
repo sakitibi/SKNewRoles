@@ -15,6 +15,9 @@ using namespace godot;
 BlockMeshCache::BlockMeshCache() {}
 BlockMeshCache::~BlockMeshCache() {}
 
+HashMap<String, BlockMeshData> BlockMeshCache::mesh_cache;
+HashMap<String, Ref<Material>> BlockMeshCache::material_dedup_map;
+
 void BlockMeshCache::_bind_methods() {
     ClassDB::bind_static_method("BlockMeshCache", D_METHOD("preload_block_meshes"), &BlockMeshCache::preload_block_meshes);
     ClassDB::bind_static_method("BlockMeshCache", D_METHOD("clear_cache"), &BlockMeshCache::clear_cache);
