@@ -9,7 +9,6 @@
 #include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/classes/array_mesh.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
-#include <godot_cpp/variant/transform3d.hpp>
 
 using namespace godot;
 
@@ -46,7 +45,6 @@ void BlockMeshCache::preload_block_meshes() {
 
         BlockMeshData data;
         data.materials.resize(6);
-        data.face_vertices.resize(6);
 
         for (int i = 0; i < 6; ++i) {
             Node *child = inst->find_child(FACE_NODE_NAMES[i], true, false);
@@ -83,18 +81,6 @@ void BlockMeshCache::preload_block_meshes() {
                     }
                 }
                 data.materials.set(i, mat);
-
-                Transform3D xform = mi->get_transform();
-                if (xform != Transform3D()) {
-                    PackedVector3Array face_verts;
-                    face_verts.resize(4);
-
-                    for (int v = 0; v < 4; ++v) {
-                        Vector3 base_v = ChunkMeshBuilder::CUBE_FACES[i].vertices[v];
-                        face_verts.set(v, xform.xform(base_v));
-                    }
-                    data.face_vertices.set(i, face_verts);
-                }
             }
         }
 

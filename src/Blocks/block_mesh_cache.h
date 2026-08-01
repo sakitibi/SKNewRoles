@@ -7,12 +7,10 @@
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/templates/hash_map.hpp>
 #include <godot_cpp/templates/vector.hpp>
-#include <godot_cpp/variant/packed_vector3_array.hpp>
 
 namespace godot {
     struct BlockMeshData {
         Vector<Ref<Material>> materials;
-        Vector<PackedVector3Array> face_vertices;
         bool valid = false;
     };
 

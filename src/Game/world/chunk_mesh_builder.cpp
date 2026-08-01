@@ -101,6 +101,7 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
     return categorized_positions;
 }
 
+// 0:Top, 1:Bottom, 2:Front, 3:Back, 4:Left, 5:Right
 const CubeFaceData ChunkMeshBuilder::CUBE_FACES[6] = {
     // 0: Top (+Y)
     { Vector3i(0, 1, 0), Vector3(0, 1, 0),
@@ -122,14 +123,14 @@ const CubeFaceData ChunkMeshBuilder::CUBE_FACES[6] = {
       { Vector3(1, 1, 0), Vector3(0, 1, 0), Vector3(0, 0, 0), Vector3(1, 0, 0) },
       { Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1) } },
 
-    // 4: Left (-X)
-    { Vector3i(-1, 0, 0), Vector3(-1, 0, 0),
-      { Vector3(0, 1, 0), Vector3(0, 1, 1), Vector3(0, 0, 1), Vector3(0, 0, 0) },
-      { Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1) } },
-
-    // 5: Right (+X)
+    // 4: Right (+X)
     { Vector3i(1, 0, 0), Vector3(1, 0, 0),
       { Vector3(1, 1, 1), Vector3(1, 1, 0), Vector3(1, 0, 0), Vector3(1, 0, 1) },
+      { Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1) } },
+
+    // 5: Left (-X)
+    { Vector3i(-1, 0, 0), Vector3(-1, 0, 0),
+      { Vector3(0, 1, 0), Vector3(0, 1, 1), Vector3(0, 0, 1), Vector3(0, 0, 0) },
       { Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1) } }
 };
 
@@ -194,16 +195,8 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
                 SurfaceMeshData &surf = surface_map[face_mat];
                 surf.material = face_mat;
 
-                bool has_custom_verts = (mesh_data.valid && 
-                                         f < mesh_data.face_vertices.size() && 
-                                         mesh_data.face_vertices[f].size() == 4);
-
-                const PackedVector3Array &custom_f_verts = has_custom_verts ? mesh_data.face_vertices[f] : PackedVector3Array();
-
                 for (int v = 0; v < 4; ++v) {
-                    Vector3 v_offset = has_custom_verts ? custom_f_verts[v] : CUBE_FACES[f].vertices[v];
-
-                    surf.vertices.append(pos + v_offset);
+                    surf.vertices.append(pos + CUBE_FACES[f].vertices[v]);
                     surf.normals.append(CUBE_FACES[f].normal);
                     surf.uvs.append(CUBE_FACES[f].uvs[v]);
                 }
