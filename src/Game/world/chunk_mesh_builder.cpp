@@ -104,24 +104,29 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
 const CubeFaceData ChunkMeshBuilder::CUBE_FACES[6] = {
     // 0: Top (+Y)
     { Vector3i(0, 1, 0), Vector3(0, 1, 0),
-      { Vector3(0, 1, 0), Vector3(0, 1, 1), Vector3(1, 1, 1), Vector3(1, 1, 0) },
-      { Vector2(0, 0), Vector2(0, 1), Vector2(1, 1), Vector2(1, 0) } },
+      { Vector3(0, 1, 1), Vector3(1, 1, 1), Vector3(1, 1, 0), Vector3(0, 1, 0) },
+      { Vector2(0, 1), Vector2(1, 1), Vector2(1, 0), Vector2(0, 0) } },
+
     // 1: Bottom (-Y)
     { Vector3i(0, -1, 0), Vector3(0, -1, 0),
-      { Vector3(0, 0, 1), Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(1, 0, 1) },
-      { Vector2(0, 1), Vector2(0, 0), Vector2(1, 0), Vector2(1, 1) } },
+      { Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(1, 0, 1), Vector3(0, 0, 1) },
+      { Vector2(0, 1), Vector2(1, 1), Vector2(1, 0), Vector2(0, 0) } },
+
     // 2: Back (-Z)
     { Vector3i(0, 0, -1), Vector3(0, 0, -1),
       { Vector3(1, 0, 0), Vector3(0, 0, 0), Vector3(0, 1, 0), Vector3(1, 1, 0) },
       { Vector2(0, 1), Vector2(1, 1), Vector2(1, 0), Vector2(0, 0) } },
+
     // 3: Front (+Z)
     { Vector3i(0, 0, 1), Vector3(0, 0, 1),
       { Vector3(0, 0, 1), Vector3(1, 0, 1), Vector3(1, 1, 1), Vector3(0, 1, 1) },
       { Vector2(0, 1), Vector2(1, 1), Vector2(1, 0), Vector2(0, 0) } },
+
     // 4: Right (+X)
     { Vector3i(1, 0, 0), Vector3(1, 0, 0),
       { Vector3(1, 0, 1), Vector3(1, 0, 0), Vector3(1, 1, 0), Vector3(1, 1, 1) },
       { Vector2(0, 1), Vector2(1, 1), Vector2(1, 0), Vector2(0, 0) } },
+
     // 5: Left (-X)
     { Vector3i(-1, 0, 0), Vector3(-1, 0, 0),
       { Vector3(0, 0, 0), Vector3(0, 0, 1), Vector3(0, 1, 1), Vector3(0, 1, 0) },
@@ -195,6 +200,7 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
                     surf.uvs.append(CUBE_FACES[f].uvs[v]);
                 }
 
+                // 反時計回りのインデックス設定 (0->1->2, 0->2->3)
                 surf.indices.append(surf.vertex_count + 0);
                 surf.indices.append(surf.vertex_count + 1);
                 surf.indices.append(surf.vertex_count + 2);
