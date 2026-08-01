@@ -139,6 +139,9 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
 
     const HashMap<String, String> &registry_map = BlockRegistry::get_block_scene_map();
 
+    // 1つのブロックの高さ
+    Vector<CubeFaceData> faces = CubeMeshUtils::get_cube_faces(1.0f);
+
     for (const auto &E : categorized_positions) {
         String block_id = E.key;
         const Vector<Vector3> &positions = E.value;
@@ -153,8 +156,6 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
         for (const Vector3 &pos : positions) {
             Vector3i grid_pos = to_grid_pos(pos);
 
-            Vector<CubeFaceData> faces = CubeMeshUtils::get_cube_faces_at_y(pos.y);
-
             for (int f = 0; f < 6; ++f) {
                 const CubeFaceData &face = faces[f];
                 Vector3i neighbor_pos = grid_pos + face.dir;
@@ -167,12 +168,7 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
                 surf.material = face_mat;
 
                 for (int v = 0; v < 4; ++v) {
-                    // Y座標は適用済みのため、XとZのみ加算
-                    Vector3 v_pos = face.vertices[v];
-                    v_pos.x += pos.x;
-                    v_pos.z += pos.z;
-
-                    surf.vertices.append(v_pos);
+                    surf.vertices.append(pos + face.vertices[v]);
                     surf.normals.append(face.normal);
                     surf.uvs.append(face.uvs[v]);
                 }

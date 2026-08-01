@@ -17,8 +17,9 @@ namespace godot {
 
     class CubeMeshUtils {
     public:
-        static Vector<CubeFaceData> get_cube_faces_at_y(float pos_y);
+        static Vector<CubeFaceData> get_cube_faces(float height = 1.0f);
 
         static const char* get_face_node_name(int index);
     };
+
 }
