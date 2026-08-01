@@ -6,12 +6,11 @@
 #include <godot_cpp/classes/mesh_instance3d.hpp>
 #include <godot_cpp/classes/base_material3d.hpp>
 #include <godot_cpp/classes/texture2d.hpp>
+#include <godot_cpp/classes/array_mesh.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include <godot_cpp/variant/transform3d.hpp>
 
 using namespace godot;
-
-static HashMap<String, BlockMeshData> mesh_cache;
-static HashMap<String, Ref<Material>> material_dedup_map;
 
 BlockMeshCache::BlockMeshCache() {}
 BlockMeshCache::~BlockMeshCache() {}
@@ -43,13 +42,15 @@ void BlockMeshCache::preload_block_meshes() {
 
         BlockMeshData data;
         data.materials.resize(6);
+        data.face_vertices.resize(6);
 
-        // 各面のノードからマテリアルを取得
+        // 各面のノードからマテリアルと頂点データを取り出す
         for (int i = 0; i < 6; ++i) {
             Node *child = inst->find_child(FACE_NODE_NAMES[i], true, false);
             MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(child);
 
             if (mi) {
+                // マテリアルの取得
                 Ref<Material> mat = mi->get_material_override();
                 if (mat.is_null()) {
                     mat = mi->get_active_material(0);
@@ -80,8 +81,23 @@ void BlockMeshCache::preload_block_meshes() {
                         }
                     }
                 }
+                data.materials.set(i, mat);
 
-                data.materials.write[i] = mat;
+                Ref<Mesh> mesh = mi->get_mesh();
+                if (mesh.is_valid() && mesh->get_surface_count() > 0) {
+                    Array arrays = mesh->surface_get_arrays(0);
+                    if (arrays.size() > Mesh::ARRAY_VERTEX) {
+                        PackedVector3Array verts = arrays[Mesh::ARRAY_VERTEX];
+                        Transform3D xform = mi->get_transform();
+
+                        PackedVector3Array xformed_verts;
+                        xformed_verts.resize(verts.size());
+                        for (int v = 0; v < verts.size(); ++v) {
+                            xformed_verts.set(v, xform.xform(verts[v]));
+                        }
+                        data.face_vertices.set(i, xformed_verts);
+                    }
+                }
             }
         }
 

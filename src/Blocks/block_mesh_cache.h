@@ -7,10 +7,12 @@
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/templates/hash_map.hpp>
 #include <godot_cpp/templates/vector.hpp>
+#include <godot_cpp/variant/packed_vector3_array.hpp>
 
 namespace godot {
     struct BlockMeshData {
         Vector<Ref<Material>> materials;
+        Vector<PackedVector3Array> face_vertices;
         bool valid = false;
     };
 
@@ -18,6 +20,8 @@ namespace godot {
         GDCLASS(BlockMeshCache, Object)
         private:
             static const char* FACE_NODE_NAMES[6];
+            static HashMap<String, BlockMeshData> mesh_cache;
+            static HashMap<String, Ref<Material>> material_dedup_map;
         protected:
             static void _bind_methods();
 
