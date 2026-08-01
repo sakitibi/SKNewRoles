@@ -77,7 +77,7 @@ namespace SKNewRoles2.Lobby
             GetTree().ChangeSceneToFile("res://Scenes/LobbySelect.tscn");
         }
 
-        private string GenerateRandomRoomCode(int length)
+        private static string GenerateRandomRoomCode(int length)
         {
             var random = new Random();
             var result = new StringBuilder(length);
