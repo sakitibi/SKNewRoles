@@ -17,7 +17,7 @@ texture_filter = 2
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0iane"]
 albedo_texture = ExtResource("3_gwiku")
 uv1_scale = Vector3(1, 0.938, 1)
-uv1_offset = Vector3(0, 0.18, 0)
+uv1_offset = Vector3(0, 0.15, 0)
 texture_filter = 2
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_yvmil"]

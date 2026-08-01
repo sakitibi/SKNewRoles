@@ -26,6 +26,12 @@ static inline Vector3i to_grid_pos(const Vector3 &v) {
     );
 }
 
+static inline bool is_dirt_path_id(const String &block_id) {
+    return block_id == "minecraft:dirt_path" ||
+        block_id.contains("dirt_path") ||
+        block_id.contains("DirtPath");
+}
+
 ChunkMeshBuilder::ChunkMeshBuilder() {}
 ChunkMeshBuilder::~ChunkMeshBuilder() {}
 
@@ -131,9 +137,16 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
     BuiltChunkData result;
 
     HashSet<Vector3i> occupied_blocks;
+    HashSet<Vector3i> dirt_path_blocks;
+
     for (const auto &E : categorized_positions) {
+        bool is_dirt_path = is_dirt_path_id(E.key);
         for (const Vector3 &pos : E.value) {
-            occupied_blocks.insert(to_grid_pos(pos));
+            Vector3i grid_pos = to_grid_pos(pos);
+            occupied_blocks.insert(grid_pos);
+            if (is_dirt_path) {
+                dirt_path_blocks.insert(grid_pos);
+            }
         }
     }
 
@@ -146,10 +159,7 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
         if (!registry_map.has(block_id)) continue;
         String scene_path = registry_map[block_id];
 
-        float height = 1.0f;
-        if (block_id == "minecraft:dirt_path" || block_id.contains("dirt_path") || block_id.contains("DirtPath")) {
-            height = 0.938f;
-        }
+        float height = is_dirt_path_id(block_id) ? 0.938f : 1.0f;
 
         // 指定された高さで面データを取得
         Vector<CubeFaceData> faces = CubeMeshUtils::get_cube_faces(height);
@@ -165,7 +175,9 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
                 const CubeFaceData &face = faces[f];
                 Vector3i neighbor_pos = grid_pos + face.dir;
 
-                if (occupied_blocks.has(neighbor_pos)) continue;
+                if (occupied_blocks.has(neighbor_pos) && !dirt_path_blocks.has(neighbor_pos)) {
+                    continue;
+                }
 
                 Ref<Material> face_mat = resolve_face_material(mesh_data, f);
 
