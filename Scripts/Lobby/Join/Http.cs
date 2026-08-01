@@ -90,6 +90,7 @@ namespace SKNewRoles2.Lobby.JOIN
         /// </summary>
         public static async Task<int> CheckLobbyStatusAsync(string roomCode)
         {
+            GD.Print("CheckLobbyStatusAsync Called");
             if (SessionManager.Instance.CurrentSession == null || string.IsNullOrEmpty(SessionManager.Instance.CurrentSession.AccessToken)) return -1;
 
             var httpRequest = new HttpRequest();
