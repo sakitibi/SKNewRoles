@@ -4,6 +4,8 @@
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/classes/mesh_instance3d.hpp>
+#include <godot_cpp/classes/base_material3d.hpp>
+#include <godot_cpp/classes/texture2d.hpp>
 
 using namespace godot;
 
@@ -39,6 +41,8 @@ void BlockMeshCache::preload_block_meshes() {
         BlockMeshData data;
         data.materials.resize(6);
 
+        HashMap<String, Ref<Material>> material_dedup_map;
+
         // 各面のノードからマテリアルを取得
         for (int i = 0; i < 6; ++i) {
             Node *child = inst->find_child(FACE_NODE_NAMES[i], true, false);
@@ -49,6 +53,28 @@ void BlockMeshCache::preload_block_meshes() {
                 if (mat.is_null()) {
                     mat = mi->get_active_material(0);
                 }
+
+                if (mat.is_valid()) {
+                    String mat_key = mat->get_path();
+                    if (mat_key.is_empty()) {
+                        Ref<BaseMaterial3D> base_mat = mat;
+                        if (base_mat.is_valid()) {
+                            Ref<Texture2D> tex = base_mat->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
+                            if (tex.is_valid()) {
+                                mat_key = tex->get_path();
+                            }
+                        }
+                    }
+
+                    if (!mat_key.is_empty()) {
+                        if (material_dedup_map.has(mat_key)) {
+                            mat = material_dedup_map[mat_key];
+                        } else {
+                            material_dedup_map[mat_key] = mat;
+                        }
+                    }
+                }
+
                 data.materials.write[i] = mat;
             }
         }
