@@ -139,15 +139,20 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
 
     const HashMap<String, String> &registry_map = BlockRegistry::get_block_scene_map();
 
-    // 1つのブロックの高さ
-    Vector<CubeFaceData> faces = CubeMeshUtils::get_cube_faces(1.0f);
-
     for (const auto &E : categorized_positions) {
         String block_id = E.key;
         const Vector<Vector3> &positions = E.value;
 
         if (!registry_map.has(block_id)) continue;
         String scene_path = registry_map[block_id];
+
+        float height = 1.0f;
+        if (block_id == "minecraft:dirt_path" || block_id.contains("dirt_path") || block_id.contains("DirtPath")) {
+            height = 0.938f;
+        }
+
+        // 指定された高さで面データを取得
+        Vector<CubeFaceData> faces = CubeMeshUtils::get_cube_faces(height);
 
         BlockMeshData mesh_data = BlockMeshCache::get_block_mesh_data(scene_path);
 
