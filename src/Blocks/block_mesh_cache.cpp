@@ -11,6 +11,7 @@
 using namespace godot;
 
 static HashMap<String, BlockMeshData> mesh_cache;
+static HashMap<String, Ref<Material>> material_dedup_map;
 
 BlockMeshCache::BlockMeshCache() {}
 BlockMeshCache::~BlockMeshCache() {}
@@ -26,6 +27,7 @@ const char* BlockMeshCache::FACE_NODE_NAMES[6] = {
 
 void BlockMeshCache::preload_block_meshes() {
     mesh_cache.clear();
+    material_dedup_map.clear();
     const HashMap<String, String> &registry_map = BlockRegistry::get_block_scene_map();
 
     for (const auto &E : registry_map) {
@@ -41,9 +43,6 @@ void BlockMeshCache::preload_block_meshes() {
 
         BlockMeshData data;
         data.materials.resize(6);
-
-        // テクスチャファイルパスに基づく重複マテリアル統合マップ
-        HashMap<String, Ref<Material>> material_dedup_map;
 
         // 各面のノードからマテリアルを取得
         for (int i = 0; i < 6; ++i) {
@@ -61,11 +60,11 @@ void BlockMeshCache::preload_block_meshes() {
                     Ref<BaseMaterial3D> base_mat = mat;
                     if (base_mat.is_valid()) {
                         Ref<Texture2D> tex = base_mat->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
+                        Color c = base_mat->get_albedo();
                         if (tex.is_valid() && !tex->get_path().is_empty()) {
-                            mat_key = tex->get_path();
+                            mat_key = UtilityFunctions::str(tex->get_path(), "_col_", c.r, "_", c.g, "_", c.b, "_", c.a);
                         } else {
-                            Color c = base_mat->get_albedo();
-                            mat_key = UtilityFunctions::str("color_", c.r, "_", c.g, "_", c.b, "_", c.a);
+                            mat_key = UtilityFunctions::str("col_", c.r, "_", c.g, "_", c.b, "_", c.a);
                         }
                     }
 
@@ -105,4 +104,5 @@ BlockMeshData BlockMeshCache::get_block_mesh_data(const String &scene_path) {
 
 void BlockMeshCache::clear_cache() {
     mesh_cache.clear();
+    material_dedup_map.clear();
 }
