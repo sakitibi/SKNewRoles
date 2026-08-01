@@ -46,7 +46,6 @@ namespace godot {
         GDCLASS(ChunkMeshBuilder, Object)
 
         private:
-            static const CubeFaceData CUBE_FACES[6];
             static int get_palette_index(const PackedInt64Array &data, int palette_size, int x, int y, int z);
 
         protected:
@@ -55,6 +54,8 @@ namespace godot {
         public:
             ChunkMeshBuilder();
             ~ChunkMeshBuilder();
+
+            static const CubeFaceData CUBE_FACES[6];
 
             static HashMap<String, Vector<Vector3>> parse_chunk_positions(
                 const Dictionary &chunk_data,

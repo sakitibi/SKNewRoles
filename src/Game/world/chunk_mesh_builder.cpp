@@ -196,7 +196,7 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
 
                 bool has_cached_verts = (mesh_data.valid && 
                                          mesh_data.face_vertices.size() == 6 && 
-                                         mesh_data.face_vertices[f].size() >= 4);
+                                         mesh_data.face_vertices[f].size() == 4);
 
                 const PackedVector3Array &cached_f_verts = has_cached_verts ? mesh_data.face_vertices[f] : PackedVector3Array();
 

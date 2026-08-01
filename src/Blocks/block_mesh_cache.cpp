@@ -1,5 +1,6 @@
 #include "block_mesh_cache.h"
 #include "block_registry.h"
+#include "../Game/world/chunk_mesh_builder.h"
 
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/packed_scene.hpp>
@@ -12,11 +13,11 @@
 
 using namespace godot;
 
-BlockMeshCache::BlockMeshCache() {}
-BlockMeshCache::~BlockMeshCache() {}
-
 HashMap<String, BlockMeshData> BlockMeshCache::mesh_cache;
 HashMap<String, Ref<Material>> BlockMeshCache::material_dedup_map;
+
+BlockMeshCache::BlockMeshCache() {}
+BlockMeshCache::~BlockMeshCache() {}
 
 void BlockMeshCache::_bind_methods() {
     ClassDB::bind_static_method("BlockMeshCache", D_METHOD("preload_block_meshes"), &BlockMeshCache::preload_block_meshes);
@@ -47,13 +48,12 @@ void BlockMeshCache::preload_block_meshes() {
         data.materials.resize(6);
         data.face_vertices.resize(6);
 
-        // 各面のノードからマテリアルと頂点データを取り出す
         for (int i = 0; i < 6; ++i) {
             Node *child = inst->find_child(FACE_NODE_NAMES[i], true, false);
             MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(child);
 
             if (mi) {
-                // マテリアルの取得
+                // マテリアル取得
                 Ref<Material> mat = mi->get_material_override();
                 if (mat.is_null()) {
                     mat = mi->get_active_material(0);
@@ -72,9 +72,7 @@ void BlockMeshCache::preload_block_meshes() {
                         }
                     }
 
-                    if (mat_key.is_empty()) {
-                        mat_key = mat->get_path();
-                    }
+                    if (mat_key.is_empty()) mat_key = mat->get_path();
 
                     if (!mat_key.is_empty()) {
                         if (material_dedup_map.has(mat_key)) {
@@ -86,21 +84,15 @@ void BlockMeshCache::preload_block_meshes() {
                 }
                 data.materials.set(i, mat);
 
-                Ref<Mesh> mesh = mi->get_mesh();
-                if (mesh.is_valid() && mesh->get_surface_count() > 0) {
-                    Array arrays = mesh->surface_get_arrays(0);
-                    if (arrays.size() > Mesh::ARRAY_VERTEX) {
-                        PackedVector3Array verts = arrays[Mesh::ARRAY_VERTEX];
-                        Transform3D xform = mi->get_transform();
+                Transform3D xform = mi->get_transform();
+                PackedVector3Array face_verts;
+                face_verts.resize(4);
 
-                        PackedVector3Array xformed_verts;
-                        xformed_verts.resize(verts.size());
-                        for (int v = 0; v < verts.size(); ++v) {
-                            xformed_verts.set(v, xform.xform(verts[v]));
-                        }
-                        data.face_vertices.set(i, xformed_verts);
-                    }
+                for (int v = 0; v < 4; ++v) {
+                    Vector3 base_v = ChunkMeshBuilder::CUBE_FACES[i].vertices[v];
+                    face_verts.set(v, xform.xform(base_v));
                 }
+                data.face_vertices.set(i, face_verts);
             }
         }
 
