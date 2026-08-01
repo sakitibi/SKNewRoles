@@ -1,6 +1,6 @@
 #include "grass_block.h"
-#include <godot_cpp/classes/material.hpp>
-#include <godot_cpp/classes/standard_material3d.hpp>
+#include <godot_cpp/classes/shader.hpp>
+#include <godot_cpp/classes/shader_material.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/classes/engine.hpp>
 
@@ -24,18 +24,12 @@ void SNR2GrassBlock::apply_color_to_mesh(const String &node_name) {
     MeshInstance3D *mesh = Object::cast_to<MeshInstance3D>(get_node_or_null(node_name));
     
     if (mesh != nullptr) {
-        Ref<StandardMaterial3D> std_mat = mesh->get_material_override();
-        
-        if (std_mat.is_valid()) {
-            std_mat->set_albedo(grass_color);
-        } else {
-            Ref<Material> mat = mesh->get_active_material(0);
-            if (mat.is_valid()) {
-                Ref<StandardMaterial3D> std_mat_base = mat->duplicate();
-                if (std_mat_base.is_valid()) {
-                    std_mat_base->set_albedo(grass_color);
-                    mesh->set_material_override(std_mat_base);
-                }
+        Ref<Material> mat = mesh->get_active_material(0);
+        if (mat.is_valid()) {
+            Ref<ShaderMaterial> shader_mat = mat->duplicate(true);
+            if (shader_mat.is_valid()) {
+                shader_mat->set_shader_parameter("grass_color", grass_color);
+                mesh->set_material_override(shader_mat);
             }
         }
     } else {
