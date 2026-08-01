@@ -20,13 +20,13 @@ void BlockMeshCache::_bind_methods() {
     ClassDB::bind_static_method("BlockMeshCache", D_METHOD("clear_cache"), &BlockMeshCache::clear_cache);
 }
 
+const char* BlockMeshCache::FACE_NODE_NAMES[6] = {
+    "Top", "Bottom", "Front", "Back", "Left", "Right"
+};
+
 void BlockMeshCache::preload_block_meshes() {
     mesh_cache.clear();
     const HashMap<String, String> &registry_map = BlockRegistry::get_block_scene_map();
-
-    static const char* FACE_NODE_NAMES[6] = {
-        "Top", "Bottom", "Back", "Front", "Right", "Left"
-    };
 
     for (const auto &E : registry_map) {
         String scene_path = E.value;

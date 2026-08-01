@@ -16,7 +16,8 @@ namespace godot {
 
     class BlockMeshCache : public Object {
         GDCLASS(BlockMeshCache, Object)
-
+        private:
+            static const char* FACE_NODE_NAMES[6];
         protected:
             static void _bind_methods();
 
