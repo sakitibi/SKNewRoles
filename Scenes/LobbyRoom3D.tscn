@@ -1,11 +1,11 @@
 [gd_scene format=3 uid="uid://cok8g652uaa1t"]
 
-[ext_resource type="Script" uid="uid://di1xouohl2xq" path="res://Scripts/Lobby/LobbyRoom.cs" id="1_me3y1"]
+[ext_resource type="Script" uid="uid://di1xouohl2xq" path="res://SKNewRoles2/Lobby/LobbyRoom.cs" id="1_me3y1"]
 [ext_resource type="FontFile" uid="uid://bnpuryk64ipb5" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="2_xpaeq"]
 [ext_resource type="PackedScene" uid="uid://da4etnx7lybvw" path="res://Scenes/Prefabs/Blocks/Stone.tscn" id="3_6h38u"]
 [ext_resource type="FontFile" uid="uid://dh2srjx51onl7" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="3_iex2o"]
 [ext_resource type="PackedScene" uid="uid://m6hx5x2hhw1o" path="res://Scenes/Prefabs/Blocks/GrassBlock.tscn" id="3_yf6jr"]
-[ext_resource type="Script" uid="uid://d20clvv62ng41" path="res://Scripts/Lobby/LobbyBridge.cs" id="6_67ex4"]
+[ext_resource type="Script" uid="uid://d20clvv62ng41" path="res://SKNewRoles2/Lobby/LobbyBridge.cs" id="6_67ex4"]
 [ext_resource type="PackedScene" uid="uid://6llaatunfapt" path="res://Scenes/Prefabs/Player.tscn" id="6_tm6sf"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_3sykc"]

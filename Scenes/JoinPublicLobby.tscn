@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bp74wyuvkvhjt"]
 
 [ext_resource type="FontFile" uid="uid://dh2srjx51onl7" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="1_4klwk"]
-[ext_resource type="Script" uid="uid://d11pydadtbhm" path="res://Scripts/Lobby/Join/JoinPublicLobby.cs" id="1_gmvms"]
+[ext_resource type="Script" uid="uid://d11pydadtbhm" path="res://SKNewRoles2/Lobby/Join/JoinPublicLobby.cs" id="1_gmvms"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4klwk"]
 bg_color = Color(0, 0.64705884, 0.6862745, 1)

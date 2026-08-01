@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://i7ulot2x5nia"]
 
-[ext_resource type="Script" uid="uid://b5lug7s21j3n7" path="res://Scripts/Lobby/CreateLobby.cs" id="1_script"]
+[ext_resource type="Script" uid="uid://b5lug7s21j3n7" path="res://SKNewRoles2/Lobby/CreateLobby.cs" id="1_script"]
 [ext_resource type="FontFile" uid="uid://bnpuryk64ipb5" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="2_ql7qh"]
 [ext_resource type="FontFile" uid="uid://dh2srjx51onl7" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="2_sjs2x"]
 

@@ -16,7 +16,6 @@ namespace SKNewRoles2.Lobby.JOIN
 
     public partial class Http
     {
-        
         /// <summary>
         /// 公開されているアクティブなロビーの一覧を最大20件、作成日降順でランダム（最新順）に取得
         /// </summary>
@@ -37,13 +36,15 @@ namespace SKNewRoles2.Lobby.JOIN
             ];
 
             var tcs = new TaskCompletionSource<(long result, long responseCode, byte[] body)>(TaskCreationOptions.RunContinuationsAsynchronously);
-            HttpRequest.RequestCompletedEventHandler onCompleted = null;
-            onCompleted = (result, responseCode, responseHeaders, body) =>
+
+            void OnCompleted(long result, long responseCode, string[] responseHeaders, byte[] body)
             {
-                httpRequest.RequestCompleted -= onCompleted;
+                httpRequest.RequestCompleted -= OnCompleted;
                 tcs.SetResult((result, responseCode, body));
-            };
-            httpRequest.RequestCompleted += onCompleted;
+            }
+
+            // イベントに登録
+            httpRequest.RequestCompleted += OnCompleted;
 
             Error err = httpRequest.Request(url, headers, HttpClient.Method.Get, "");
             if (err != Error.Ok)
@@ -96,7 +97,8 @@ namespace SKNewRoles2.Lobby.JOIN
             var httpRequest = new HttpRequest();
             SessionManager.Instance.AddChild(httpRequest);
 
-            string url = $"{SessionManager.SupabaseUrl}/rest/v1/lobbies?room_code=eq.{roomCode}&select=*";
+            string escapedCode = Uri.EscapeDataString(roomCode.Trim());
+            string url = $"{SessionManager.SupabaseUrl}/rest/v1/lobbies?room_code=eq.{escapedCode}&select=*";
             
             string[] headers = [
                 $"apikey: {SessionManager.SupabaseAnonKey}",
@@ -105,13 +107,14 @@ namespace SKNewRoles2.Lobby.JOIN
             ];
 
             var tcs = new TaskCompletionSource<(long result, long responseCode, byte[] body)>(TaskCreationOptions.RunContinuationsAsynchronously);
-            HttpRequest.RequestCompletedEventHandler onCompleted = null;
-            onCompleted = (result, responseCode, responseHeaders, body) =>
+
+            void OnCompleted(long result, long responseCode, string[] responseHeaders, byte[] body)
             {
-                httpRequest.RequestCompleted -= onCompleted;
+                httpRequest.RequestCompleted -= OnCompleted;
                 tcs.SetResult((result, responseCode, body));
-            };
-            httpRequest.RequestCompleted += onCompleted;
+            }
+
+            httpRequest.RequestCompleted += OnCompleted;
 
             Error err = httpRequest.Request(url, headers, HttpClient.Method.Get, "");
             GD.Print($"Request Call Result: {err}");
@@ -155,8 +158,9 @@ namespace SKNewRoles2.Lobby.JOIN
 
                     return 0;
                 }
-                catch
+                catch (Exception ex)
                 {
+                    GD.PrintErr($"⚠️ [CheckLobbyStatus] JSON 解析エラー: {ex.Message}");
                     return -1;
                 }
             }
@@ -182,7 +186,8 @@ namespace SKNewRoles2.Lobby.JOIN
             var httpRequest = new HttpRequest();
             SessionManager.Instance.AddChild(httpRequest);
 
-            string url = $"{SessionManager.SupabaseUrl}/rest/v1/lobbies?room_code=eq.{roomCode}";
+            string escapedCode = Uri.EscapeDataString(roomCode.Trim());
+            string url = $"{SessionManager.SupabaseUrl}/rest/v1/lobbies?room_code=eq.{escapedCode}";
 
             string[] headers = [
                 $"apikey: {SessionManager.SupabaseAnonKey}",

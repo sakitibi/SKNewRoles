@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://cf1k5bv4rvny0"]
 
-[ext_resource type="Script" uid="uid://drrtl1i136xpt" path="res://Scripts/Game/MainGameScene.cs" id="1_cakpg"]
+[ext_resource type="Script" uid="uid://drrtl1i136xpt" path="res://SKNewRoles2/Game/MainGameScene.cs" id="1_cakpg"]
 [ext_resource type="PackedScene" uid="uid://b42xncvhtc3l5" path="res://Scenes/Gamemaps/StartupScene.tscn" id="2_vg2oi"]
 [ext_resource type="PackedScene" uid="uid://bgybqu4t6omyp" path="res://Scenes/Gamemaps/RoleRevealScene.tscn" id="3_pswr4"]
 [ext_resource type="FontFile" uid="uid://bnpuryk64ipb5" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="4_pswr4"]

@@ -2,7 +2,7 @@
 
 [ext_resource type="FontFile" uid="uid://bnpuryk64ipb5" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="1_33lhu"]
 [ext_resource type="FontFile" uid="uid://dh2srjx51onl7" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="1_cgoxs"]
-[ext_resource type="Script" uid="uid://4jkcrngyyawr" path="res://Scripts/System/StartupScene.cs" id="1_csbgd"]
+[ext_resource type="Script" uid="uid://4jkcrngyyawr" path="res://SKNewRoles2/System/StartupScene.cs" id="1_csbgd"]
 [ext_resource type="Texture2D" uid="uid://cn0vqs0mig5j6" path="res://Resources/LoagingGaugeRed.png" id="3_gd2pg"]
 [ext_resource type="Texture2D" uid="uid://bgk22rmm4bov1" path="res://Resources/LoagingGaugeGreen.png" id="4_3kyf1"]
 

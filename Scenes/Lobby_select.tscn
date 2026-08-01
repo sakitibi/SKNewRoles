@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://52lmevfxe8hp"]
 
 [ext_resource type="FontFile" uid="uid://dh2srjx51onl7" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="1_4a7xb"]
-[ext_resource type="Script" uid="uid://stwneksbj0l4" path="res://Scripts/Lobby/Lobby_select.cs" id="1_jrcml"]
+[ext_resource type="Script" uid="uid://stwneksbj0l4" path="res://SKNewRoles2/Lobby/Lobby_select.cs" id="1_jrcml"]
 [ext_resource type="FontFile" uid="uid://bnpuryk64ipb5" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="3_411oe"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jrcml"]

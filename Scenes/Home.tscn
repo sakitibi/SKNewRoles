@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://x6a0w15otf3e"]
 
-[ext_resource type="Script" uid="uid://fw80cjy6b2bf" path="res://Scripts/Home.cs" id="1_maaha"]
+[ext_resource type="Script" uid="uid://fw80cjy6b2bf" path="res://SKNewRoles2/Home.cs" id="1_maaha"]
 [ext_resource type="FontFile" uid="uid://dh2srjx51onl7" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="2_hf3nf"]
 [ext_resource type="Texture2D" uid="uid://d2oqkqps0e80m" path="res://Resources/HomeBackground.png" id="2_maaha"]
 
