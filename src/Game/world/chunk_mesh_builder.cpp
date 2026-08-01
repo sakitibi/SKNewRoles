@@ -109,27 +109,27 @@ const CubeFaceData ChunkMeshBuilder::CUBE_FACES[6] = {
 
     // 1: Bottom (-Y)
     { Vector3i(0, -1, 0), Vector3(0, -1, 0),
-      { Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(1, 0, 1), Vector3(0, 0, 1) },
+      { Vector3(0, 0, 1), Vector3(1, 0, 1), Vector3(1, 0, 0), Vector3(0, 0, 0) },
       { Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1) } },
 
     // 2: Front (+Z)
     { Vector3i(0, 0, 1), Vector3(0, 0, 1),
-      { Vector3(1, 0, 1), Vector3(0, 0, 1), Vector3(0, 1, 1), Vector3(1, 1, 1) },
+      { Vector3(0, 1, 1), Vector3(1, 1, 1), Vector3(1, 0, 1), Vector3(0, 0, 1) },
       { Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1) } },
 
     // 3: Back (-Z)
     { Vector3i(0, 0, -1), Vector3(0, 0, -1),
-      { Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(1, 1, 0), Vector3(0, 1, 0) },
+      { Vector3(1, 1, 0), Vector3(0, 1, 0), Vector3(0, 0, 0), Vector3(1, 0, 0) },
       { Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1) } },
 
-    // 4: Left (-X)
-    { Vector3i(-1, 0, 0), Vector3(-1, 0, 0),
-      { Vector3(0, 0, 1), Vector3(0, 0, 0), Vector3(0, 1, 0), Vector3(0, 1, 1) },
-      { Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1) } },
-
-    // 5: Right (+X)
+    // 4: Right (+X)
     { Vector3i(1, 0, 0), Vector3(1, 0, 0),
-      { Vector3(1, 0, 0), Vector3(1, 0, 1), Vector3(1, 1, 1), Vector3(1, 1, 0) },
+      { Vector3(1, 1, 1), Vector3(1, 1, 0), Vector3(1, 0, 0), Vector3(1, 0, 1) },
+      { Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1) } },
+
+    // 5: Left (-X)
+    { Vector3i(-1, 0, 0), Vector3(-1, 0, 0),
+      { Vector3(0, 1, 0), Vector3(0, 1, 1), Vector3(0, 0, 1), Vector3(0, 0, 0) },
       { Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1) } }
 };
 
