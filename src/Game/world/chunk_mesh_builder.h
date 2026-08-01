@@ -25,13 +25,6 @@ namespace godot {
         PackedVector3Array collision_faces;
     };
 
-    struct CubeFaceData {
-        Vector3i dir;
-        Vector3 normal;
-        Vector3 vertices[4];
-        Vector2 uvs[4];
-    };
-
     struct SurfaceMeshData {
         Ref<Material> material;
         PackedVector3Array vertices;
@@ -53,8 +46,6 @@ namespace godot {
         public:
             ChunkMeshBuilder();
             ~ChunkMeshBuilder();
-
-            static const CubeFaceData CUBE_FACES[6];
 
             static HashMap<String, Vector<Vector3>> parse_chunk_positions(
                 const Dictionary &chunk_data,

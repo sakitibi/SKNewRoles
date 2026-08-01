@@ -33,6 +33,7 @@ set(SOURCES
     src/Game/world/chunk_block_editor.cpp
     src/Game/world/chunk_manager.cpp
     src/Game/world/chunk_mesh_builder.cpp
+    src/Game/world/cube_mesh_utils.cpp
     src/Game/world/chunk_collision_builder.cpp
     src/Game/world/mca_parser.cpp
     src/Game/role_manager.cpp
