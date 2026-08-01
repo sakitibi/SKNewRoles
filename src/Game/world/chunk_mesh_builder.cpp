@@ -55,15 +55,10 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
     int min_section_y,
     int max_section_y
 ) {
-    UtilityFunctions::print("[ChunkMeshBuilder] Starting parse_chunk_positions...");
     HashMap<String, Vector<Vector3>> categorized_positions;
-    if (!chunk_data.has("sections")) {
-        UtilityFunctions::print("[ChunkMeshBuilder] Warning: 'sections' key not found in chunk_data.");
-        return categorized_positions;
-    }
+    if (!chunk_data.has("sections")) return categorized_positions;
 
     Array sections = chunk_data["sections"];
-    int total_parsed_blocks = 0;
 
     for (int i = 0; i < sections.size(); ++i) {
         Dictionary section = sections[i];
@@ -96,7 +91,6 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
                         if (block_name != "minecraft:air" && BlockRegistry::has_block(block_name)) {
                             Vector3 pos(static_cast<float>(x), static_cast<float>(section_y * 16 + y), static_cast<float>(z));
                             categorized_positions[block_name].append(pos);
-                            total_parsed_blocks++;
                         }
                     }
                 }
@@ -104,7 +98,6 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
         }
     }
 
-    UtilityFunctions::print("[ChunkMeshBuilder] parse_chunk_positions completed. Total blocks parsed: ", total_parsed_blocks);
     return categorized_positions;
 }
 
@@ -144,11 +137,33 @@ struct SurfaceMeshData {
     int vertex_count = 0;
 };
 
+// 1〜6の全マテリアル登録数パターンに対応するヘルパー関数
+static Ref<Material> resolve_face_material(const BlockMeshData &mesh_data, int face_index) {
+    if (!mesh_data.valid || mesh_data.materials.is_empty()) {
+        return Ref<Material>();
+    }
+
+    int mat_count = mesh_data.materials.size();
+
+    if (mat_count == 1) {
+        return mesh_data.materials[0];
+    }
+
+    if (face_index >= 0 && face_index < mat_count && mesh_data.materials[face_index].is_valid()) {
+        return mesh_data.materials[face_index];
+    }
+
+    if (mesh_data.materials[0].is_valid()) {
+        return mesh_data.materials[0];
+    }
+
+    return Ref<Material>();
+}
+
 BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
     const HashMap<String, Vector<Vector3>> &categorized_positions,
     bool p_is_initial_load
 ) {
-    UtilityFunctions::print("[ChunkMeshBuilder] Starting build_chunk_data_async...");
     BuiltChunkData result;
 
     HashSet<Vector3i> occupied_blocks;
@@ -164,10 +179,7 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
         String block_id = E.key;
         const Vector<Vector3> &positions = E.value;
 
-        if (!registry_map.has(block_id)) {
-            UtilityFunctions::print("[ChunkMeshBuilder] Skipping unregistered block ID: ", block_id);
-            continue;
-        }
+        if (!registry_map.has(block_id)) continue;
         String scene_path = registry_map[block_id];
 
         BlockMeshData mesh_data = BlockMeshCache::get_block_mesh_data(scene_path);
@@ -182,10 +194,8 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
 
                 if (occupied_blocks.has(neighbor_pos)) continue;
 
-                Ref<Material> face_mat;
-                if (mesh_data.valid && f < mesh_data.materials.size() && mesh_data.materials[f].is_valid()) {
-                    face_mat = mesh_data.materials[f];
-                }
+                // 1〜6全パターン対応のマテリアル取得
+                Ref<Material> face_mat = resolve_face_material(mesh_data, f);
 
                 SurfaceMeshData &surf = surface_map[face_mat];
                 surf.material = face_mat;
@@ -241,25 +251,17 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
     }
 
     result.collision_faces = ChunkCollisionBuilder::build_collision_faces(categorized_positions);
-    UtilityFunctions::print("[ChunkMeshBuilder] build_chunk_data_async completed. Collision faces count: ", result.collision_faces.size() / 3);
 
     return result;
 }
 
 void ChunkMeshBuilder::apply_chunk_data_to_node(Node3D *parent_node, const BuiltChunkData &built_data) {
-    if (!parent_node) {
-        UtilityFunctions::print("[ChunkMeshBuilder] Error: parent_node is null in apply_chunk_data_to_node.");
-        return;
-    }
+    if (!parent_node) return;
 
-    UtilityFunctions::print("[ChunkMeshBuilder] Applying chunk data to node...");
-
-    int mesh_count = 0;
     for (const auto &E : built_data.meshes) {
         MeshInstance3D *mi = memnew(MeshInstance3D);
         mi->set_mesh(E.value);
         parent_node->add_child(mi);
-        mesh_count++;
     }
 
     if (built_data.collision_faces.size() > 0) {
@@ -275,8 +277,5 @@ void ChunkMeshBuilder::apply_chunk_data_to_node(Node3D *parent_node, const Built
         static_body->add_child(collision_shape);
 
         parent_node->add_child(static_body);
-        UtilityFunctions::print("[ChunkMeshBuilder] StaticBody3D with collision created.");
     }
-
-    UtilityFunctions::print("[ChunkMeshBuilder] Chunk data applied successfully. Added MeshInstances: ", mesh_count);
 }
