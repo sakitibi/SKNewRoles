@@ -21,7 +21,6 @@ namespace SKNewRoles2.Lobby
         private Node3D _myPlayerInstance;
         private RoomUI _roomUIInstance;
 
-        // 二重遷移防止・破棄済みアクセス防止用フラグ
         private bool _isTransitioning = false;
 
         // 位置同期配信用タイマー
@@ -87,7 +86,59 @@ namespace SKNewRoles2.Lobby
                 _dummyPlayerPrefab = _playerPrefab;
             }
 
+            ApplyTriplanarToAllMeshes(this);
+
             await SpawnPlayerPrefab();
+        }
+
+        /// <summary>
+        /// 指定したノード以下のすべての MeshInstance3D に対して Triplanar と World Triplanar を有効化
+        /// </summary>
+        private void ApplyTriplanarToAllMeshes(Node parent)
+        {
+            foreach (Node child in parent.GetChildren())
+            {
+                if (child is MeshInstance3D meshInstance)
+                {
+                    EnableTriplanarForMesh(meshInstance);
+                }
+
+                // 子ノードも再帰的に走査
+                if (child.GetChildCount() > 0)
+                {
+                    ApplyTriplanarToAllMeshes(child);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 単一の MeshInstance3D 内に設定されたマテリアルに Triplanar を適用
+        /// </summary>
+        private static void EnableTriplanarForMesh(MeshInstance3D meshInstance)
+        {
+            if (meshInstance.MaterialOverride is BaseMaterial3D overrideMat)
+            {
+                BaseMaterial3D newMat = (BaseMaterial3D)overrideMat.Duplicate();
+                newMat.Uv1Triplanar = true;
+                newMat.Uv1WorldTriplanar = true;
+                meshInstance.MaterialOverride = newMat;
+            }
+
+            if (meshInstance.Mesh != null)
+            {
+                int surfaceCount = meshInstance.Mesh.GetSurfaceCount();
+                for (int i = 0; i < surfaceCount; i++)
+                {
+                    Material activeMat = meshInstance.GetActiveMaterial(i);
+                    if (activeMat is BaseMaterial3D baseMat)
+                    {
+                        BaseMaterial3D newMat = (BaseMaterial3D)baseMat.Duplicate();
+                        newMat.Uv1Triplanar = true;
+                        newMat.Uv1WorldTriplanar = true;
+                        meshInstance.SetSurfaceOverrideMaterial(i, newMat);
+                    }
+                }
+            }
         }
 
         public override void _Process(double delta)
@@ -154,7 +205,7 @@ namespace SKNewRoles2.Lobby
         }
 
         /// <summary>
-        /// メインゲームステージ（MainGameScene.tscn）へ安全に遷移します
+        /// メインゲームステージ（MainGameScene.tscn）へ安全に遷移
         /// </summary>
         public void TransitionToGameStage()
         {
@@ -206,8 +257,7 @@ namespace SKNewRoles2.Lobby
             if (disposing)
             {
                 CleanupEvents();
-            }
-            base.Dispose(disposing);
+            } base.Dispose(disposing);
         }
     }
 }
