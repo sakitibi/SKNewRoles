@@ -91,8 +91,14 @@ namespace SKNewRoles2.Lobby.JOIN
         /// </summary>
         public static async Task<int> CheckLobbyStatusAsync(string roomCode)
         {
-            GD.Print("CheckLobbyStatusAsync Called");
-            if (SessionManager.Instance.CurrentSession == null || string.IsNullOrEmpty(SessionManager.Instance.CurrentSession.AccessToken)) return -1;
+            GD.Print($"========================================");
+            GD.Print($"🔍 [1] CheckLobbyStatusAsync 開始 (roomCode: '{roomCode}')");
+
+            if (SessionManager.Instance.CurrentSession == null || string.IsNullOrEmpty(SessionManager.Instance.CurrentSession.AccessToken))
+            {
+                GD.PrintErr("❌ [2] 中止: CurrentSession または AccessToken が null/空 です");
+                return -1;
+            }
 
             var httpRequest = new HttpRequest();
             SessionManager.Instance.AddChild(httpRequest);
@@ -100,6 +106,8 @@ namespace SKNewRoles2.Lobby.JOIN
             string escapedCode = Uri.EscapeDataString(roomCode.Trim());
             string url = $"{SessionManager.SupabaseUrl}/rest/v1/lobbies?room_code=eq.{escapedCode}&select=*";
             
+            GD.Print($"📡 [3] リクエスト送信先 URL: {url}");
+
             string[] headers = [
                 $"apikey: {SessionManager.SupabaseAnonKey}",
                 $"Authorization: Bearer {SessionManager.Instance.CurrentSession.AccessToken}",
@@ -117,53 +125,72 @@ namespace SKNewRoles2.Lobby.JOIN
             httpRequest.RequestCompleted += OnCompleted;
 
             Error err = httpRequest.Request(url, headers, HttpClient.Method.Get, "");
-            GD.Print($"Request Call Result: {err}");
+            GD.Print($"⚙️ [4] Request() 戻り値: {err}");
+
             if (err != Error.Ok)
             {
                 httpRequest.QueueFree();
                 return -1;
             }
 
+            GD.Print("⏳ [5] Supabaseからのレスポンスを待機中...");
             var (res, code, bodyData) = await tcs.Task;
             httpRequest.QueueFree();
 
-            if (res == (long)HttpRequest.Result.Success && code == 200)
+            GD.Print($"📥 [6] 受信完了 - Result: {res}, HTTP Code: {code}");
+
+            if (bodyData != null && bodyData.Length > 0)
             {
-                string jsonText = Encoding.UTF8.GetString(bodyData);
+                string rawJson = Encoding.UTF8.GetString(bodyData);
+                GD.Print($"📄 [7] 生のレスポンスJSON:\n{rawJson}");
+
                 try
                 {
-                    using JsonDocument doc = JsonDocument.Parse(jsonText);
-
+                    using JsonDocument doc = JsonDocument.Parse(rawJson);
                     JsonElement root = doc.RootElement;
-                    if (root.ValueKind == JsonValueKind.Array && root.GetArrayLength() == 0) return -1;
 
-                    JsonElement lobbyElement = root[0];
-
-                    if (lobbyElement.TryGetProperty("is_active", out JsonElement activeElem) && !activeElem.GetBoolean())
+                    if (root.ValueKind == JsonValueKind.Array)
                     {
-                        return 1; 
+                        if (root.GetArrayLength() == 0)
+                        {
+                            GD.PrintErr("⚠️ [8] 判定結果: Supabaseから空の配列 [] が返されました（一致するデータがない、または RLS でブロックされています）");
+                            return -1;
+                        }
+
+                        JsonElement lobbyElement = root[0];
+
+                        if (lobbyElement.TryGetProperty("is_active", out JsonElement activeElem) && !activeElem.GetBoolean())
+                        {
+                            GD.Print("⚠️ [8] 判定結果: is_active が false です");
+                            return 1; 
+                        }
+
+                        SessionManager.Instance.CurrentRoomCode = roomCode;
+                        SessionManager.Instance.CurrentRoomName = lobbyElement.GetProperty("room_name").GetString();
+                        SessionManager.Instance.IsHost = (
+                            lobbyElement.GetProperty("host_id").GetString() ==
+                            SessionManager.Instance.CurrentSession.User.Id
+                        );
+
+                        if (lobbyElement.TryGetProperty("is_public", out JsonElement publicElem))
+                        {
+                            SessionManager.Instance.IsPublic = publicElem.GetBoolean();
+                        }
+
+                        GD.Print("✅ [8] 判定結果: ロビー確認成功！(0を返します)");
+                        return 0;
                     }
-
-                    SessionManager.Instance.CurrentRoomCode = roomCode;
-                    SessionManager.Instance.CurrentRoomName = lobbyElement.GetProperty("room_name").GetString();
-                    SessionManager.Instance.IsHost = (
-                        lobbyElement.GetProperty("host_id").GetString() ==
-                        SessionManager.Instance.CurrentSession.User.Id
-                    );
-
-                    if (lobbyElement.TryGetProperty("is_public", out JsonElement publicElem))
-                    {
-                        SessionManager.Instance.IsPublic = publicElem.GetBoolean();
-                    }
-
-                    return 0;
                 }
                 catch (Exception ex)
                 {
-                    GD.PrintErr($"⚠️ [CheckLobbyStatus] JSON 解析エラー: {ex.Message}");
-                    return -1;
+                    GD.PrintErr($"⚠️ [エラー] JSON解析失敗: {ex.Message}");
                 }
             }
+            else
+            {
+                GD.PrintErr("⚠️ [7] レスポンスの Body が空です");
+            }
+
             return -1;
         }
 
