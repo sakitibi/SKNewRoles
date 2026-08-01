@@ -114,6 +114,7 @@ namespace SKNewRoles2.Lobby.JOIN
             httpRequest.RequestCompleted += onCompleted;
 
             Error err = httpRequest.Request(url, headers, HttpClient.Method.Get, "");
+            GD.Print($"Request Call Result: {err}");
             if (err != Error.Ok)
             {
                 httpRequest.QueueFree();
