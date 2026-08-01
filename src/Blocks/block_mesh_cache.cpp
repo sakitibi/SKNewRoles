@@ -85,14 +85,16 @@ void BlockMeshCache::preload_block_meshes() {
                 data.materials.set(i, mat);
 
                 Transform3D xform = mi->get_transform();
-                PackedVector3Array face_verts;
-                face_verts.resize(4);
+                if (xform != Transform3D()) {
+                    PackedVector3Array face_verts;
+                    face_verts.resize(4);
 
-                for (int v = 0; v < 4; ++v) {
-                    Vector3 base_v = ChunkMeshBuilder::CUBE_FACES[i].vertices[v];
-                    face_verts.set(v, xform.xform(base_v));
+                    for (int v = 0; v < 4; ++v) {
+                        Vector3 base_v = ChunkMeshBuilder::CUBE_FACES[i].vertices[v];
+                        face_verts.set(v, xform.xform(base_v));
+                    }
+                    data.face_vertices.set(i, face_verts);
                 }
-                data.face_vertices.set(i, face_verts);
             }
         }
 
