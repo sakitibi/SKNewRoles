@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using SKNewRoles2.SessionManagerSystem;
-using SKNewRoles2.Lobby.JOIN;
 
 namespace SKNewRoles2.Lobby
 {
