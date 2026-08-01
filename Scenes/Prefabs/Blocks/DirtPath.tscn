@@ -6,30 +6,25 @@
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1fclr"]
 albedo_texture = ExtResource("1_dpura")
-uv1_triplanar = false
-uv1_world_triplanar = false
 texture_filter = 2
 
 [sub_resource type="QuadMesh" id="QuadMesh_xhjgb"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5p8xv"]
 albedo_texture = ExtResource("1_3d0yw")
-uv1_triplanar = false
-uv1_world_triplanar = false
 texture_filter = 2
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0iane"]
 albedo_texture = ExtResource("3_gwiku")
 uv1_scale = Vector3(1, 0.938, 1)
 uv1_offset = Vector3(0, 0.27, 0)
-uv1_triplanar = false
-uv1_world_triplanar = false
 texture_filter = 2
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_yvmil"]
 size = Vector3(1, 0.938, 1)
 
 [node name="DirtPath" type="StaticBody3D" unique_id=1967058283]
+transform = Transform3D(1, 0, 0, 0, 0.938, 0, 0, 0, 1, 0, -0.031, 0)
 
 [node name="Top" type="MeshInstance3D" parent="." unique_id=513289371]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0.438, 0)
