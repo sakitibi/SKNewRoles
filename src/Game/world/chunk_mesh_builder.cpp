@@ -194,8 +194,16 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
                 SurfaceMeshData &surf = surface_map[face_mat];
                 surf.material = face_mat;
 
+                bool has_cached_verts = (mesh_data.valid && 
+                                         mesh_data.face_vertices.size() == 6 && 
+                                         mesh_data.face_vertices[f].size() >= 4);
+
+                const PackedVector3Array &cached_f_verts = has_cached_verts ? mesh_data.face_vertices[f] : PackedVector3Array();
+
                 for (int v = 0; v < 4; ++v) {
-                    surf.vertices.append(pos + CUBE_FACES[f].vertices[v]);
+                    Vector3 v_offset = has_cached_verts ? cached_f_verts[v] : CUBE_FACES[f].vertices[v];
+
+                    surf.vertices.append(pos + v_offset);
                     surf.normals.append(CUBE_FACES[f].normal);
                     surf.uvs.append(CUBE_FACES[f].uvs[v]);
                 }
