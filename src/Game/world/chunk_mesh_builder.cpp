@@ -11,6 +11,7 @@
 #include <godot_cpp/classes/standard_material3d.hpp>
 #include <godot_cpp/templates/hash_set.hpp>
 #include <godot_cpp/variant/vector3i.hpp>
+#include <godot_cpp/variant/utility_functions.hpp>
 
 #include <cmath>
 
@@ -54,10 +55,15 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
     int min_section_y,
     int max_section_y
 ) {
+    UtilityFunctions::print("[ChunkMeshBuilder] Starting parse_chunk_positions...");
     HashMap<String, Vector<Vector3>> categorized_positions;
-    if (!chunk_data.has("sections")) return categorized_positions;
+    if (!chunk_data.has("sections")) {
+        UtilityFunctions::print("[ChunkMeshBuilder] Warning: 'sections' key not found in chunk_data.");
+        return categorized_positions;
+    }
 
     Array sections = chunk_data["sections"];
+    int total_parsed_blocks = 0;
 
     for (int i = 0; i < sections.size(); ++i) {
         Dictionary section = sections[i];
@@ -90,6 +96,7 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
                         if (block_name != "minecraft:air" && BlockRegistry::has_block(block_name)) {
                             Vector3 pos(static_cast<float>(x), static_cast<float>(section_y * 16 + y), static_cast<float>(z));
                             categorized_positions[block_name].append(pos);
+                            total_parsed_blocks++;
                         }
                     }
                 }
@@ -97,6 +104,7 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
         }
     }
 
+    UtilityFunctions::print("[ChunkMeshBuilder] parse_chunk_positions completed. Total blocks parsed: ", total_parsed_blocks);
     return categorized_positions;
 }
 
@@ -104,15 +112,15 @@ const CubeFaceData ChunkMeshBuilder::CUBE_FACES[6] = {
     // 0: Top (+Y)
     { Vector3i(0, 1, 0), Vector3(0, 1, 0),
       { Vector3(0, 1, 1), Vector3(1, 1, 1), Vector3(1, 1, 0), Vector3(0, 1, 0) },
-      { Vector2(0, 1), Vector2(1, 1), Vector2(1, 0), Vector2(0, 0) } },
+      { Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1) } },
     // 1: Bottom (-Y)
     { Vector3i(0, -1, 0), Vector3(0, -1, 0),
       { Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(1, 0, 1), Vector3(0, 0, 1) },
-      { Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1) } },
+      { Vector2(0, 1), Vector2(1, 1), Vector2(1, 0), Vector2(0, 0) } },
     // 2: Back (-Z)
     { Vector3i(0, 0, -1), Vector3(0, 0, -1),
       { Vector3(1, 0, 0), Vector3(0, 0, 0), Vector3(0, 1, 0), Vector3(1, 1, 0) },
-      { Vector2(1, 1), Vector2(0, 1), Vector2(0, 0), Vector2(1, 0) } },
+      { Vector2(0, 1), Vector2(1, 1), Vector2(1, 0), Vector2(0, 0) } },
     // 3: Front (+Z)
     { Vector3i(0, 0, 1), Vector3(0, 0, 1),
       { Vector3(0, 0, 1), Vector3(1, 0, 1), Vector3(1, 1, 1), Vector3(0, 1, 1) },
@@ -140,6 +148,7 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
     const HashMap<String, Vector<Vector3>> &categorized_positions,
     bool p_is_initial_load
 ) {
+    UtilityFunctions::print("[ChunkMeshBuilder] Starting build_chunk_data_async...");
     BuiltChunkData result;
 
     HashSet<Vector3i> occupied_blocks;
@@ -155,7 +164,10 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
         String block_id = E.key;
         const Vector<Vector3> &positions = E.value;
 
-        if (!registry_map.has(block_id)) continue;
+        if (!registry_map.has(block_id)) {
+            UtilityFunctions::print("[ChunkMeshBuilder] Skipping unregistered block ID: ", block_id);
+            continue;
+        }
         String scene_path = registry_map[block_id];
 
         BlockMeshData mesh_data = BlockMeshCache::get_block_mesh_data(scene_path);
@@ -225,20 +237,29 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
         }
 
         result.meshes[block_id] = array_mesh;
+        UtilityFunctions::print("[ChunkMeshBuilder] Built mesh for block: ", block_id, " | Surfaces: ", array_mesh->get_surface_count());
     }
 
     result.collision_faces = ChunkCollisionBuilder::build_collision_faces(categorized_positions);
+    UtilityFunctions::print("[ChunkMeshBuilder] build_chunk_data_async completed. Collision faces count: ", result.collision_faces.size() / 3);
 
     return result;
 }
 
 void ChunkMeshBuilder::apply_chunk_data_to_node(Node3D *parent_node, const BuiltChunkData &built_data) {
-    if (!parent_node) return;
+    if (!parent_node) {
+        UtilityFunctions::print("[ChunkMeshBuilder] Error: parent_node is null in apply_chunk_data_to_node.");
+        return;
+    }
 
+    UtilityFunctions::print("[ChunkMeshBuilder] Applying chunk data to node...");
+
+    int mesh_count = 0;
     for (const auto &E : built_data.meshes) {
         MeshInstance3D *mi = memnew(MeshInstance3D);
         mi->set_mesh(E.value);
         parent_node->add_child(mi);
+        mesh_count++;
     }
 
     if (built_data.collision_faces.size() > 0) {
@@ -254,5 +275,8 @@ void ChunkMeshBuilder::apply_chunk_data_to_node(Node3D *parent_node, const Built
         static_body->add_child(collision_shape);
 
         parent_node->add_child(static_body);
+        UtilityFunctions::print("[ChunkMeshBuilder] StaticBody3D with collision created.");
     }
+
+    UtilityFunctions::print("[ChunkMeshBuilder] Chunk data applied successfully. Added MeshInstances: ", mesh_count);
 }
