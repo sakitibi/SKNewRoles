@@ -12,22 +12,16 @@ namespace SKNewRoles2.Lobby
         internal Button PrivacyToggleButton;
         internal Button StartGameButton;
 
-        // 他のプレイヤーノードを管理する辞書
         internal Dictionary<string, Node3D> _otherPlayers = [];
-        
-        private PackedScene _playerPrefab;      // 自分の実体用
-        private PackedScene _dummyPlayerPrefab; // 他人の見た目同期用
 
+        private PackedScene _playerPrefab;
+        private PackedScene _dummyPlayerPrefab;
         private Node3D _myPlayerInstance;
         private RoomUI _roomUIInstance;
 
         private bool _isTransitioning = false;
-
-        // 位置同期配信用タイマー
         private float _broadcastTimer = 0.0f;
-        private const float BroadcastInterval = 0.05f; // 1秒間に20回座標情報を送信
 
-        // ステージの草ブロック（SNR2GrassBlock）の同期カラー
         public Color GrassBlockColor { get; set; } = new Color(0.3f, 0.85f, 0.15f, 1.0f);
 
         public override async void _Ready()
@@ -41,215 +35,74 @@ namespace SKNewRoles2.Lobby
 
             if (LeaveButton != null)
             {
-                LeaveButton.Pressed += LeaveLobbyAsync;
+                LeaveButton.Pressed += async () => await LobbyNavigation.LeaveLobbyAsync(GetTree(), LeaveButton, CleanupEvents);
             }
 
             if (PrivacyToggleButton != null)
             {
                 PrivacyToggleButton.Pressed += _roomUIInstance.OnPrivacyToggleButtonPressed;
-                bool isHost = SessionManager.Instance.IsHost;
-                PrivacyToggleButton.Disabled = !isHost;
+                PrivacyToggleButton.Disabled = !SessionManager.Instance.IsHost;
             }
 
             if (StartGameButton != null)
             {
                 StartGameButton.Pressed += _roomUIInstance.OnStartGameButtonPressed;
-                bool isHost = SessionManager.Instance.IsHost;
-                StartGameButton.Disabled = !isHost;
+                StartGameButton.Disabled = !SessionManager.Instance.IsHost;
             }
 
-            // イベントの二重登録防止
-            LobbyRealtime.OnLobbyTableChanged -= OnRoomSettingsChangedFromServer;
-            LobbyRealtime.OnLobbyTableChanged += OnRoomSettingsChangedFromServer;
-            
-            LobbyRealtime.OnPlayerTransformReceivedAll -= OnRemotePlayerTransformReceived;
-            LobbyRealtime.OnPlayerTransformReceivedAll += OnRemotePlayerTransformReceived;
-
-            LobbyRealtime.StartListeningLobbyChanges();
+            // ネットワークイベント登録
+            LobbyRealtimeHelper.RegisterListeners(OnRoomSettingsChangedFromServer, OnRemotePlayerTransformReceived);
 
             _roomUIInstance.UpdateRoomInfoUI();
             _roomUIInstance.UpdatePrivacyButtonVisual(SessionManager.Instance.IsPublic);
 
-            // 自分の操作キャラクター用プレハブをロード
+            // プレハブのロード
             if (ResourceLoader.Exists("res://Scenes/Prefabs/Player.tscn"))
             {
                 _playerPrefab = GD.Load<PackedScene>("res://Scenes/Prefabs/Player.tscn");
             }
 
-            // 見た目同期用プレハブをロード
-            if (ResourceLoader.Exists("res://Scenes/Prefabs/LobbyPlayerDummy.tscn"))
-            {
-                _dummyPlayerPrefab = GD.Load<PackedScene>("res://Scenes/Prefabs/LobbyPlayerDummy.tscn");
-            }
-            else
-            {
-                _dummyPlayerPrefab = _playerPrefab;
-            }
+            _dummyPlayerPrefab = ResourceLoader.Exists("res://Scenes/Prefabs/LobbyPlayerDummy.tscn")
+                ? GD.Load<PackedScene>("res://Scenes/Prefabs/LobbyPlayerDummy.tscn")
+                : _playerPrefab;
 
-            ApplyTriplanarToAllMeshes(this);
+            // マテリアルの Triplanar 自動適用
+            LobbyMeshUtility.ApplyTriplanarToAllMeshes(this);
 
             await SpawnPlayerPrefab();
-        }
-
-        /// <summary>
-        /// 指定したノード以下のすべての MeshInstance3D に対して Triplanar と World Triplanar を有効化
-        /// </summary>
-        private void ApplyTriplanarToAllMeshes(Node parent)
-        {
-            foreach (Node child in parent.GetChildren())
-            {
-                if (child is MeshInstance3D meshInstance)
-                {
-                    EnableTriplanarForMesh(meshInstance);
-                }
-
-                // 子ノードも再帰的に走査
-                if (child.GetChildCount() > 0)
-                {
-                    ApplyTriplanarToAllMeshes(child);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 単一の MeshInstance3D 内に設定されたマテリアルに Triplanar を適用
-        /// </summary>
-        private static void EnableTriplanarForMesh(MeshInstance3D meshInstance)
-        {
-            if (meshInstance.MaterialOverride is BaseMaterial3D overrideMat)
-            {
-                BaseMaterial3D newMat = (BaseMaterial3D)overrideMat.Duplicate();
-                newMat.Uv1Triplanar = true;
-                newMat.Uv1WorldTriplanar = true;
-                meshInstance.MaterialOverride = newMat;
-            }
-
-            if (meshInstance.Mesh != null)
-            {
-                int surfaceCount = meshInstance.Mesh.GetSurfaceCount();
-                for (int i = 0; i < surfaceCount; i++)
-                {
-                    Material activeMat = meshInstance.GetActiveMaterial(i);
-                    if (activeMat is BaseMaterial3D baseMat)
-                    {
-                        BaseMaterial3D newMat = (BaseMaterial3D)baseMat.Duplicate();
-                        newMat.Uv1Triplanar = true;
-                        newMat.Uv1WorldTriplanar = true;
-                        meshInstance.SetSurfaceOverrideMaterial(i, newMat);
-                    }
-                }
-            }
         }
 
         public override void _Process(double delta)
         {
             LobbyRealtime.PollRealtimeEvents();
 
-            if (_myPlayerInstance != null && IsInstanceValid(_myPlayerInstance))
-            {
-                _broadcastTimer += (float)delta;
-                if (_broadcastTimer >= BroadcastInterval)
-                {
-                    _broadcastTimer = 0.0f;
-                    
-                    LobbyRealtime.LobbySendTransformBroadcastAll(
-                        _myPlayerInstance.Position.X, 
-                        _myPlayerInstance.Position.Y, 
-                        _myPlayerInstance.Position.Z,
-                        _myPlayerInstance.Rotation.X,
-                        _myPlayerInstance.Rotation.Y,
-                        _myPlayerInstance.Rotation.Z
-                    );
-                }
-            }
+            // プレイヤー座標の定期送信
+            LobbyRealtimeHelper.UpdatePlayerTransformBroadcast(_myPlayerInstance, ref _broadcastTimer, (float)delta);
         }
 
         private void OnRoomSettingsChangedFromServer()
         {
-            // 既に破棄または遷移中なら実行しない
             if (_isTransitioning || !IsInstanceValid(this) || !IsInsideTree()) return;
             _roomUIInstance.OnRoomSettingsChangedFromServer();
         }
 
-        public async void LeaveLobbyAsync()
-        {
-            if (IsInstanceValid(LeaveButton))
-            {
-                LeaveButton.Disabled = true;
-            }
-
-            if (SessionManager.Instance.IsHost)
-            {
-                GD.Print("👑 ホストが退出したため、ロビーを解散します...");
-                await LobbySettings.CloseLobbyAsync(SessionManager.Instance.CurrentRoomCode);
-            }
-
-            LeaveLobbyCleanup();
-        }
-
         public void LeaveLobbyForced()
         {
-            LeaveLobbyCleanup();
+            LobbyNavigation.LeaveLobbyCleanup(GetTree(), CleanupEvents);
         }
 
-        public void LeaveLobbyCleanup()
-        {
-            CleanupEvents();
-
-            SessionManager.Instance.CurrentRoomCode = "";
-            SessionManager.Instance.CurrentRoomName = "";
-            SessionManager.Instance.IsHost = false;
-
-            _otherPlayers.Clear();
-            GetTree().ChangeSceneToFile("res://Scenes/Lobby_select.tscn");
-        }
-
-        /// <summary>
-        /// メインゲームステージ（MainGameScene.tscn）へ安全に遷移
-        /// </summary>
         public void TransitionToGameStage()
         {
-            if (_isTransitioning || !IsInstanceValid(this) || !IsInsideTree())
-            {
-                return;
-            }
+            if (_isTransitioning || !IsInstanceValid(this) || !IsInsideTree()) return;
             _isTransitioning = true;
 
-            // 参加者全員の ID を集計して SessionManager に保存
-            SessionManager.Instance.CurrentRoomPlayerIds.Clear();
-
-            // 1. 自分の ID
-            string myId = SessionManager.Instance.CurrentSession?.User?.Id;
-            if (string.IsNullOrEmpty(myId))
-            {
-                myId = $"Guest_{SessionManager.Instance.CurrentRoomCode}";
-            }
-            SessionManager.Instance.CurrentRoomPlayerIds.Add(myId);
-
-            // 2. 他プレイヤー (_otherPlayers) の ID
-            foreach (string remoteId in _otherPlayers.Keys)
-            {
-                if (!SessionManager.Instance.CurrentRoomPlayerIds.Contains(remoteId))
-                {
-                    SessionManager.Instance.CurrentRoomPlayerIds.Add(remoteId);
-                }
-            }
-
-            GD.Print($"🎮 メインステージへ安全に遷移します。参加者数: {SessionManager.Instance.CurrentRoomPlayerIds.Count} 人");
-
-            // イベントを全解除
-            CleanupEvents();
-            _otherPlayers.Clear();
-
-            // MainGameScene へ移動
-            GetTree().ChangeSceneToFile("res://Scenes/Gamemaps/MainGameScene.tscn");
+            LobbyNavigation.TransitionToGameStage(GetTree(), _otherPlayers.Keys, CleanupEvents);
         }
 
         private void CleanupEvents()
         {
-            LobbyRealtime.OnLobbyTableChanged -= OnRoomSettingsChangedFromServer;
-            LobbyRealtime.OnPlayerTransformReceivedAll -= OnRemotePlayerTransformReceived;
-            LobbyRealtime.StopListeningLobbyChanges();
+            LobbyRealtimeHelper.UnregisterListeners(OnRoomSettingsChangedFromServer, OnRemotePlayerTransformReceived);
+            _otherPlayers.Clear();
         }
 
         protected override void Dispose(bool disposing)
@@ -257,7 +110,8 @@ namespace SKNewRoles2.Lobby
             if (disposing)
             {
                 CleanupEvents();
-            } base.Dispose(disposing);
+            }
+            base.Dispose(disposing);
         }
     }
 }

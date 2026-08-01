@@ -30,7 +30,7 @@ namespace SKNewRoles2.Lobby
                 await ToSignal(GetTree(), "process_frame");
 
                 // ステージ内のSNR2GrassBlockを全探索して色を一括同期
-                List<Node> grassBlocks = new List<Node>();
+                List<Node> grassBlocks = [];
                 await FindGrassBlocksRecursive(GetTree().Root, grassBlocks);
 
                 if (grassBlocks.Count > 0)
@@ -55,7 +55,7 @@ namespace SKNewRoles2.Lobby
         {
             string myId = SessionManager.Instance.CurrentSession?.User?.Id;
 
-            // 1. 自分のIDと同じデータなら無視
+            // 自分のIDと同じデータなら無視
             if (!string.IsNullOrEmpty(myId) && playerId == myId)
             {
                 return;
@@ -63,7 +63,7 @@ namespace SKNewRoles2.Lobby
 
             GD.Print($"📡 他プレイヤーの座標を受信: ID={playerId}, Pos=({px}, {py}, {pz})");
 
-            // 2. すでに存在する場合は移動
+            // すでに存在する場合は移動
             if (_otherPlayers.TryGetValue(playerId, out Node3D remotePlayerNode))
             {
                 if (IsInstanceValid(remotePlayerNode))
@@ -115,7 +115,7 @@ namespace SKNewRoles2.Lobby
             _otherPlayers[playerId] = remotePlayer;
         }
 
-        private async Task FindGrassBlocksRecursive(Node node, List<Node> result)
+        private static async Task FindGrassBlocksRecursive(Node node, List<Node> result)
         {
             if (node == null) return;
 
