@@ -164,10 +164,16 @@ namespace SKNewRoles2.Game
 
         private void SendMyTransform()
         {
-            if (_myPlayerInstance == null) return;
+            if (_myPlayerInstance == null)
+            {
+                // プレイヤーがまだロードされていない場合
+                return;
+            }
 
             Vector3 pos = _myPlayerInstance.GlobalPosition;
             Vector3 rot = _myPlayerInstance.Rotation;
+
+            GD.Print($"[SendTransform] Pos: {pos}, Rot: {rot}");
 
             RealtimeBroadcaster.SendTransform(_connection, pos.X, pos.Y, pos.Z, rot.X, rot.Y, rot.Z);
         }
