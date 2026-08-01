@@ -133,7 +133,7 @@ namespace SKNewRoles2.Lobby.JOIN
 
         private void OnBackButtonPressed()
         {
-            GetTree().ChangeSceneToFile("res://Scenes/Lobby_select.tscn");
+            GetTree().ChangeSceneToFile("res://Scenes/LobbySelect.tscn");
         }
     }
 }

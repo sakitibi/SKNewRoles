@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://c2w7a5c7s2nhi"]
 
-[ext_resource type="Script" uid="uid://35s2io0u5yt0" path="res://SKNewRoles2/Login.cs" id="1_8amdc"]
+[ext_resource type="Script" uid="uid://35s2io0u5yt0" path="res://SKNewRoles2/System/Login.cs" id="1_8amdc"]
 [ext_resource type="FontFile" uid="uid://dh2srjx51onl7" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="1_uo606"]
 [ext_resource type="FontFile" uid="uid://bnpuryk64ipb5" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="2_8amdc"]
 

@@ -64,7 +64,7 @@ public partial class JoinPrivateLobby : Control
     private void OnCancelButtonPressed()
     {
         GD.Print("🔙 ロビー選択画面に戻ります。");
-        GetTree().ChangeSceneToFile("res://Scenes/Lobby_select.tscn");
+        GetTree().ChangeSceneToFile("res://Scenes/LobbySelect.tscn");
     }
 
     /// <summary>

@@ -11,7 +11,7 @@ namespace SKNewRoles2.Lobby
     /// </summary>
     public static class LobbyNavigation
     {
-        private const string DefaultLobbySelectScene = "res://Scenes/Lobby_select.tscn";
+        private const string DefaultLobbySelectScene = "res://Scenes/LobbySelect.tscn";
         private const string DefaultMainGameScene = "res://Scenes/Gamemaps/MainGameScene.tscn";
 
         /// <summary>
