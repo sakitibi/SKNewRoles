@@ -201,7 +201,6 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
                     surf.uvs.append(CUBE_FACES[f].uvs[v]);
                 }
 
-                // 反時計回りのインデックス設定 (0->1->2, 0->2->3)
                 surf.indices.append(surf.vertex_count + 0);
                 surf.indices.append(surf.vertex_count + 1);
                 surf.indices.append(surf.vertex_count + 2);
