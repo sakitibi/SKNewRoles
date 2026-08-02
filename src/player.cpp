@@ -36,6 +36,7 @@ void SNR2Player::_ready() {
     input = Input::get_singleton();
     camera = Object::cast_to<Camera3D>(get_node_or_null(NodePath("Camera3D")));
 
+    // コンポーネントの取得または生成
     health_component = Object::cast_to<HealthComponent>(get_node_or_null(NodePath("HealthComponent")));
     if (!health_component) {
         health_component = memnew(HealthComponent);
@@ -54,6 +55,10 @@ void SNR2Player::_ready() {
         add_child(fall_damage_component);
     }
 
+    if (spectator_component) {
+        spectator_component->setup(this, camera);
+    }
+
     // シグナルの接続
     if (health_component) {
         if (!health_component->is_connected("hp_changed", Callable(this, "_on_hp_changed"))) {
@@ -70,7 +75,7 @@ void SNR2Player::_on_hp_changed(int current_hp, int max_hp) {
 }
 
 void SNR2Player::_on_player_died() {
-    UtilityFunctions::print("[SNR2Player] プレイヤー死亡通知を受信。スペクテイターモードを開始します。");
+    UtilityFunctions::print("[SNR2Player] 死亡通知を受信。スペクテイターモードに移行します。");
     emit_signal("player_died");
     die();
 }
@@ -195,5 +200,5 @@ void SNR2Player::set_spectator_mode(bool p_enable) {
 }
 
 bool SNR2Player::is_spectator() const {
-    return spectator_component ? spectator_component->is_spectator : false;
+    return spectator_component ? spectator_component->get_is_spectator() : false;
 }
