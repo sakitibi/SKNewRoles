@@ -48,13 +48,15 @@ namespace SKNewRoles2.Lobby.JOIN
             _refreshButton.Disabled = true;
 
             // コンテナ内の古い部屋ボタンを完全にクリア
-            foreach (Node child in _lobbyListContainer.GetChildren())
+            for (int i = _lobbyListContainer.GetChildren().Count - 1; i >= 0; i--)
             {
-                child.QueueFree();
+                _lobbyListContainer.GetChildren()[i].QueueFree();
             }
 
             GD.Print("🌐 Supabaseから公開ロビーを取得中...");
             List<LobbyData> lobbies = await LobbyQueryService.FetchRandomPublicLobbiesAsync();
+            // 逆順ループの為にここで逆にする
+            lobbies.Reverse();
 
             if (lobbies.Count == 0)
             {
@@ -74,12 +76,13 @@ namespace SKNewRoles2.Lobby.JOIN
             }
             else
             {
-                foreach (var lobby in lobbies)
+                // 逆の逆は正なのでこれで最初の順番に戻る
+                for (int i = lobbies.Count - 1; i >= 0; i--)
                 {
                     // 部屋ごとに参加用のエントリーボタンを動的に作成
                     Button joinButton = new()
                     {
-                        Text = $" 🏠  {lobby.RoomName}   [{lobby.RoomCode}]",
+                        Text = $" 🏠  {lobbies[i].RoomName}   [{lobbies[i].RoomCode}]",
                         Alignment = HorizontalAlignment.Left
                     };
                     
@@ -102,7 +105,7 @@ namespace SKNewRoles2.Lobby.JOIN
                     joinButton.AddThemeStyleboxOverride("hover", hoverStyle);
 
                     // 変数のキャプチャ問題を回避してイベントをバインド
-                    string targetCode = lobby.RoomCode;
+                    string targetCode = lobbies[i].RoomCode;
                     joinButton.Pressed += () => OnJoinLobbyClicked(targetCode);
 
                     _lobbyListContainer.AddChild(joinButton);

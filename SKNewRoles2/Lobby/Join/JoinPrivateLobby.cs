@@ -2,78 +2,81 @@ using Godot;
 using System;
 using SKNewRoles2.Lobby.JOIN.Services;
 
-public partial class JoinPrivateLobby : Control
+namespace SKNewRoles2.Lobby.JOIN
 {
-    private LineEdit _roomCodeEdit;
-    private Button _joinButton;
-    private Button _cancelButton;
-
-    public override void _Ready()
+    public partial class JoinPrivateLobby : Control
     {
-        _roomCodeEdit = GetNode<LineEdit>("%RoomCodeEdit");
-        _joinButton = GetNode<Button>("%JoinButton");
-        _cancelButton = GetNode<Button>("%CancelButton");
+        private LineEdit _roomCodeEdit;
+        private Button _joinButton;
+        private Button _cancelButton;
 
-        // ボタンのクリックイベントを関数に接続
-        _joinButton.Pressed += OnJoinButtonPressed;
-        _cancelButton.Pressed += OnCancelButtonPressed;
-
-        // 入力欄でEnterキーを押したときも参加処理を走らせる
-        _roomCodeEdit.TextSubmitted += (text) => OnJoinButtonPressed();
-    }
-
-    private async void OnJoinButtonPressed()
-    {
-        // 入力された文字を取得（前後の空白を消し、小文字で入力されても大文字に統一）
-        string roomCode = _roomCodeEdit.Text.Trim().ToUpper();
-
-        // バリデーションチェック
-        if (string.IsNullOrEmpty(roomCode))
+        public override void _Ready()
         {
-            GD.Print("⚠️ 部屋コードが入力されていません！");
-            return;
+            _roomCodeEdit = GetNode<LineEdit>("%RoomCodeEdit");
+            _joinButton = GetNode<Button>("%JoinButton");
+            _cancelButton = GetNode<Button>("%CancelButton");
+
+            // ボタンのクリックイベントを関数に接続
+            _joinButton.Pressed += OnJoinButtonPressed;
+            _cancelButton.Pressed += OnCancelButtonPressed;
+
+            // 入力欄でEnterキーを押したときも参加処理を走らせる
+            _roomCodeEdit.TextSubmitted += (text) => OnJoinButtonPressed();
         }
 
-        // 処理中の連打・多重送信を防止するためにUIを無効化
-        SetUiEnabled(false);
-        GD.Print($"🔍 部屋コード [{roomCode}] のロビーを探しています...");
-
-        try
+        private async void OnJoinButtonPressed()
         {
-            bool success = await LobbyQueryService.JoinLobbyAsync(roomCode);
+            // 入力された文字を取得
+            string roomCode = _roomCodeEdit.Text.Trim().ToUpper();
 
-            if (success)
+            // バリデーションチェック
+            if (string.IsNullOrEmpty(roomCode))
             {
-                GD.Print("✅ 入室成功！待機室（LobbyRoom3D）へ移動します。");
-                GetTree().ChangeSceneToFile("res://Scenes/LobbyRoom3D.tscn");
+                GD.Print("⚠️ 部屋コードが入力されていません！");
+                return;
             }
-            else
+
+            // 処理中の連打・多重送信を防止するためにUIを無効化
+            SetUiEnabled(false);
+            GD.Print($"🔍 部屋コード [{roomCode}] のロビーを探しています...");
+
+            try
             {
-                GD.PrintErr("❌ ロビーが見つからないか、満員で入室できませんでした。");
-                // 失敗した場合は再度入力・ボタン押しができるように戻す
+                bool success = await LobbyQueryService.JoinLobbyAsync(roomCode);
+
+                if (success)
+                {
+                    GD.Print("✅ 入室成功！待機室（LobbyRoom3D）へ移動します。");
+                    GetTree().ChangeSceneToFile("res://Scenes/LobbyRoom3D.tscn");
+                }
+                else
+                {
+                    GD.PrintErr("❌ ロビーが見つからないか、満員で入室できませんでした。");
+                    // 失敗した場合は再度入力・ボタン押しができるように戻す
+                    SetUiEnabled(true);
+                }
+            }
+            catch (Exception ex)
+            {
+                GD.PrintErr($"❌ 通信中にエラーが発生しました: {ex.Message}");
                 SetUiEnabled(true);
             }
         }
-        catch (Exception ex)
+
+        private void OnCancelButtonPressed()
         {
-            GD.PrintErr($"❌ 通信中にエラーが発生しました: {ex.Message}");
-            SetUiEnabled(true);
+            GD.Print("🔙 ロビー選択画面に戻ります。");
+            GetTree().ChangeSceneToFile("res://Scenes/LobbySelect.tscn");
         }
-    }
 
-    private void OnCancelButtonPressed()
-    {
-        GD.Print("🔙 ロビー選択画面に戻ります。");
-        GetTree().ChangeSceneToFile("res://Scenes/LobbySelect.tscn");
-    }
-
-    /// <summary>
-    /// 通信中のボタンや入力欄の有効・無効を一括切り替えするヘルパー関数
-    /// </summary>
-    private void SetUiEnabled(bool enabled)
-    {
-        _joinButton.Disabled = !enabled;
-        _cancelButton.Disabled = !enabled;
-        _roomCodeEdit.Editable = enabled; // 通信中は文字を入力できないようにする
+        /// <summary>
+        /// 通信中のボタンや入力欄の有効・無効を一括切り替えするヘルパー関数
+        /// </summary>
+        private void SetUiEnabled(bool enabled)
+        {
+            _joinButton.Disabled = !enabled;
+            _cancelButton.Disabled = !enabled;
+            _roomCodeEdit.Editable = enabled; // 通信中は文字を入力できないようにする
+        }
     }
 }
