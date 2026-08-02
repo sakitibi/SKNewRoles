@@ -24,7 +24,7 @@ namespace SKNewRoles2.Game
             RealtimeMessageDispatcher.OnRoleAssignedReceived += OnRoleAssignedReceived;
         }
 
-        public void AssignRolesToAllPlayers(string myUserId)
+        public async Task AssignRolesToAllPlayers(string myUserId)
         {
             if (_roleManagerCpp == null || !_roleManagerCpp.HasMethod("assign_roles"))
             {
@@ -77,7 +77,7 @@ namespace SKNewRoles2.Game
                 }
                 else
                 {
-                    RealtimeBroadcaster.SendRole(_connection, targetUserId, assignedRole, assignedFaction);
+                    await RealtimeBroadcaster.SendRoleAsync(_connection, targetUserId, assignedRole, assignedFaction);
                 }
             }
         }

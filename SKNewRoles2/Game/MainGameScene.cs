@@ -175,7 +175,7 @@ namespace SKNewRoles2.Game
 
             GD.Print($"[SendTransform] Pos: {pos}, Rot: {rot}");
 
-            RealtimeBroadcaster.SendTransform(_connection, pos.X, pos.Y, pos.Z, rot.X, rot.Y, rot.Z);
+            _ = RealtimeBroadcaster.SendTransformAsync(_connection, pos.X, pos.Y, pos.Z, rot.X, rot.Y, rot.Z);
         }
 
         private void OnMyPlayerHpChanged(int currentHp, int maxHp)
@@ -185,7 +185,7 @@ namespace SKNewRoles2.Game
             _remotePlayerManager?.SetMyHp(currentHp);
 
             string myUserId = GetMyUserId();
-            RealtimeBroadcaster.SendHp(_connection, myUserId, currentHp, maxHp);
+            _ = RealtimeBroadcaster.SendHpAsync(_connection, myUserId, currentHp, maxHp);
         }
         
         public override void _ExitTree()
