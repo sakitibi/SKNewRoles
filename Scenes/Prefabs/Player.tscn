@@ -6,14 +6,13 @@
 albedo_texture = ExtResource("1_fiu32")
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_0iane"]
+lightmap_size_hint = Vector2i(17, 14)
 material = SubResource("StandardMaterial3D_42ksm")
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1fclr"]
 
-[node name="Player" type="SNR2Player" unique_id=1638812057]
-max_hp = 20
-current_hp = 20
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.25, -3090.8691, 2.0000005)
+[node name="Player" type="SNR2Player" unique_id=378689782]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -140.59203, 0.25)
 velocity = Vector3(0, 0, 0)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1291165692]
