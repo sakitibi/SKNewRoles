@@ -31,6 +31,12 @@ namespace SKNewRoles2.Game
             AddChild(_bgmManager);
             _bgmManager.PlayRandomBgm(0.0f);
 
+            bool isConnected = await _connection.EnsureConnectedAsync();
+            if (!isConnected)
+            {
+                GD.PrintErr("❌ [Realtime] MainGameScene での WebSocket 接続に失敗しました。");
+            }
+
             // サブマネージャーの生成と初期化
             _uiController = new GameUIController();
             AddChild(_uiController);
