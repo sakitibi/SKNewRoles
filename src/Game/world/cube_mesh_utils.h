@@ -7,7 +7,6 @@
 #include <godot_cpp/templates/vector.hpp>
 
 namespace godot {
-
     struct CubeFaceData {
         Vector3i dir;
         Vector3 normal;
@@ -16,10 +15,8 @@ namespace godot {
     };
 
     class CubeMeshUtils {
-    public:
-        static Vector<CubeFaceData> get_cube_faces(float height = 1.0f);
-
-        static const char* get_face_node_name(int index);
+        public:
+            static Vector<CubeFaceData> get_cube_faces(float height = 1.0f);
+            static const char* get_face_node_name(int index);
     };
-
 }

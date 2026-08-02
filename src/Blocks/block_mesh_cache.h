@@ -17,7 +17,6 @@ namespace godot {
     class BlockMeshCache : public Object {
         GDCLASS(BlockMeshCache, Object)
         private:
-            static const char* FACE_NODE_NAMES[6];
             static HashMap<String, BlockMeshData> mesh_cache;
             static HashMap<String, Ref<Material>> material_dedup_map;
         protected:
@@ -27,6 +26,7 @@ namespace godot {
             BlockMeshCache();
             ~BlockMeshCache();
 
+            static const char* FACE_NODE_NAMES[6];
             static void preload_block_meshes();
             static BlockMeshData get_block_mesh_data(const String &scene_path);
             static void clear_cache();

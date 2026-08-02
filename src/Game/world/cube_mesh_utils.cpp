@@ -1,16 +1,13 @@
 #include "cube_mesh_utils.h"
+#include "../../Blocks/block_mesh_cache.h"
 
 using namespace godot;
-
-static const char* FACE_NODE_NAMES[6] = {
-    "Top", "Bottom", "Front", "Back", "Left", "Right"
-};
 
 const char* CubeMeshUtils::get_face_node_name(int index) {
     if (index < 0 || index >= 6) {
         return "";
     }
-    return FACE_NODE_NAMES[index];
+    return BlockMeshCache::FACE_NODE_NAMES[index];
 }
 
 Vector<CubeFaceData> CubeMeshUtils::get_cube_faces(float height) {
