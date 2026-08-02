@@ -1,9 +1,9 @@
 #include "chunk_manager.h"
-#include "chunk/chunk_loader.h"
-#include "chunk/chunk_veritier.h"
-#include "chunk/chunk_spawner.h"
+#include "chunk_loader.h"
+#include "chunk_veritier.h"
+#include "chunk_spawner.h"
 #include "chunk_block_editor.h"
-#include "../../Blocks/block_mesh_cache.h"
+#include "../../../Blocks/block_mesh_cache.h"
 
 #include <godot_cpp/core/object.hpp>
 #include <godot_cpp/classes/engine.hpp>
