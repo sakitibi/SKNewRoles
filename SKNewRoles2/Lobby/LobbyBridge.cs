@@ -1,9 +1,8 @@
 using Godot;
-using SKNewRoles2.Lobby.JOIN;
+using SKNewRoles2.Lobby.JOIN.Services.Realtime;
 
 namespace SKNewRoles2.Lobby
 {
-    // GDExtensionで登録された「LobbyManager (C++)」ノード、またはその子ノードにアタッチするスクリプト
     public partial class LobbyBridge : Node
     {
         private GodotObject _cppLobbyManager;
@@ -12,20 +11,20 @@ namespace SKNewRoles2.Lobby
         {
             _cppLobbyManager = GetParent(); 
 
-            LobbyRealtime.OnPlayerTransformReceivedAll += OnPlayerTransformReceivedAll;
+            RealtimeEvents.OnPlayerTransformReceivedAll += OnPlayerTransformReceivedAll;
             GD.Print("🌁 LobbyBridge: C++へのフル3Dトランスフォーム仲介システムが正常に起動しました。");
         }
 
         public override void _ExitTree()
         {
             // メモリリーク防止のためイベント解除
-            LobbyRealtime.OnPlayerTransformReceivedAll -= OnPlayerTransformReceivedAll;
+            RealtimeEvents.OnPlayerTransformReceivedAll -= OnPlayerTransformReceivedAll;
         }
 
         public override void _Process(double delta)
         {
-            // WebSocketのイベント回収（C#側の通信を走らせる）
-            LobbyRealtime.PollRealtimeEvents();
+            // WebSocketのイベント回収
+            RealtimeBroadcastService.PollRealtimeEvents();
 
             // 3Dロビー用にNode3Dとして自分の座標を取得・送信する処理
             if (_cppLobbyManager is Node3D lobbyNode3D)
@@ -34,7 +33,7 @@ namespace SKNewRoles2.Lobby
                 if (myPlayer != null && IsInstanceValid(myPlayer))
                 {
                     // 自分の最新のフル3D位置・回転データを全員へBroadcast送信
-                    LobbyRealtime.LobbySendTransformBroadcastAll(
+                    RealtimeBroadcastService.LobbySendTransformBroadcastAll(
                         myPlayer.Position.X,
                         myPlayer.Position.Y,
                         myPlayer.Position.Z,

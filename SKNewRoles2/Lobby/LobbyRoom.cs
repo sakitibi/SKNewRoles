@@ -2,6 +2,7 @@ using Godot;
 using System.Collections.Generic;
 using SKNewRoles2.SessionManagerSystem;
 using SKNewRoles2.Lobby.JOIN;
+using SKNewRoles2.Lobby.JOIN.Services.Realtime;
 
 namespace SKNewRoles2.Lobby
 {
@@ -74,7 +75,7 @@ namespace SKNewRoles2.Lobby
 
         public override void _Process(double delta)
         {
-            LobbyRealtime.PollRealtimeEvents();
+            RealtimeBroadcastService.PollRealtimeEvents();
 
             // プレイヤー座標の定期送信
             LobbyRealtimeHelper.UpdatePlayerTransformBroadcast(_myPlayerInstance, ref _broadcastTimer, (float)delta);

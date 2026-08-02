@@ -1,5 +1,5 @@
 using Godot;
-using SKNewRoles2.Lobby.JOIN;
+using SKNewRoles2.Lobby.JOIN.Services.Realtime;
 using System;
 
 namespace SKNewRoles2.Lobby
@@ -16,16 +16,16 @@ namespace SKNewRoles2.Lobby
             Action onTableChanged, 
             Action<string, float, float, float, float, float, float> onTransformReceived)
         {
-            LobbyRealtime.OnLobbyTableChanged -= onTableChanged;
-            LobbyRealtime.OnLobbyTableChanged += onTableChanged;
+            RealtimeEvents.OnLobbyTableChanged -= onTableChanged;
+            RealtimeEvents.OnLobbyTableChanged += onTableChanged;
 
             if (onTransformReceived != null)
             {
-                LobbyRealtime.OnPlayerTransformReceivedAll -= onTransformReceived;
-                LobbyRealtime.OnPlayerTransformReceivedAll += onTransformReceived;
+                RealtimeEvents.OnPlayerTransformReceivedAll -= onTransformReceived;
+                RealtimeEvents.OnPlayerTransformReceivedAll += onTransformReceived;
             }
 
-            LobbyRealtime.StartListeningLobbyChanges();
+            RealtimeConnectionService.StartListeningLobbyChanges();
         }
 
         /// <summary>
@@ -35,14 +35,14 @@ namespace SKNewRoles2.Lobby
             Action onTableChanged, 
             Action<string, float, float, float, float, float, float> onTransformReceived)
         {
-            LobbyRealtime.OnLobbyTableChanged -= onTableChanged;
+            RealtimeEvents.OnLobbyTableChanged -= onTableChanged;
 
             if (onTransformReceived != null)
             {
-                LobbyRealtime.OnPlayerTransformReceivedAll -= onTransformReceived;
+                RealtimeEvents.OnPlayerTransformReceivedAll -= onTransformReceived;
             }
 
-            LobbyRealtime.StopListeningLobbyChanges();
+            RealtimeConnectionService.StopListeningLobbyChanges();
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace SKNewRoles2.Lobby
             {
                 broadcastTimer = 0.0f;
 
-                LobbyRealtime.LobbySendTransformBroadcastAll(
+                RealtimeBroadcastService.LobbySendTransformBroadcastAll(
                     targetNode.Position.X,
                     targetNode.Position.Y,
                     targetNode.Position.Z,
