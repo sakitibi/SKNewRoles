@@ -30,12 +30,12 @@ set(SOURCES
     src/Blocks/grass_block.cpp
     src/Blocks/block_registry.cpp
     src/Blocks/block_mesh_cache.cpp
-    src/Game/world/chunk_block_editor.cpp
-    src/Game/world/chunk_manager.cpp
-    src/Game/world/chunk_mesh_builder.cpp
     src/Game/world/cube_mesh_utils.cpp
-    src/Game/world/chunk_collision_builder.cpp
     src/Game/world/mca_parser.cpp
+    src/Game/world/chunk/chunk_block_editor.cpp
+    src/Game/world/chunk/chunk_manager.cpp
+    src/Game/world/chunk/chunk_mesh_builder.cpp
+    src/Game/world/chunk/chunk_collision_builder.cpp
     src/Game/world/chunk/chunk_loader.cpp
     src/Game/world/chunk/chunk_spawner.cpp
     src/Game/world/chunk/chunk_veritier.cpp

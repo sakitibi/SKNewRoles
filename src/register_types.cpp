@@ -12,9 +12,9 @@
 #include "Blocks/falling_block.h"
 #include "Blocks/grass_block.h"
 
-#include "Game/world/chunk_block_editor.h"
-#include "Game/world/chunk_manager.h"
-#include "Game/world/chunk_mesh_builder.h"
+#include "Game/world/chunk/chunk_block_editor.h"
+#include "Game/world/chunk/chunk_manager.h"
+#include "Game/world/chunk/chunk_mesh_builder.h"
 #include "Game/role_manager.h"
 #include "Game/hud_manager.h"
 #include "Game/health_component.h"

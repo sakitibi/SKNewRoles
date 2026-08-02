@@ -3,7 +3,7 @@
 #include <godot_cpp/variant/vector2i.hpp>
 #include <godot_cpp/templates/hash_map.hpp>
 #include <godot_cpp/classes/node3d.hpp>
-#include "../chunk_mesh_builder.h"
+#include "chunk_mesh_builder.h"
 
 namespace godot {
     struct ChunkLoadData {

@@ -6,7 +6,7 @@
 #include <godot_cpp/variant/vector2i.hpp>
 #include <godot_cpp/variant/node_path.hpp>
 
-#include "chunk/chunk_loader.h"
+#include "chunk_loader.h"
 
 namespace godot {
     class ChunkManager : public Node3D {
