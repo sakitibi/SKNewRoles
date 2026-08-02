@@ -1,6 +1,6 @@
 #include "block_mesh_cache.h"
 #include "block_registry.h"
-#include "../Game/world/chunk_mesh_builder.h"
+#include "../Game/world/chunk/chunk_mesh_builder.h"
 
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/packed_scene.hpp>
