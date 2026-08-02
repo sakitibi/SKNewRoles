@@ -135,6 +135,13 @@ namespace SKNewRoles2.Game
 
         private static void SetNodeAlphaRecursive(Node node, float alpha)
         {
+            if (node is GeometryInstance3D geom)
+            {
+                geom.CastShadow = alpha < 1.0f 
+                    ? GeometryInstance3D.ShadowCastingSetting.Off 
+                    : GeometryInstance3D.ShadowCastingSetting.On;
+            }
+
             if (node is MeshInstance3D meshInstance)
             {
                 int surfaceCount = meshInstance.GetSurfaceOverrideMaterialCount();
@@ -146,13 +153,25 @@ namespace SKNewRoles2.Game
                 for (int i = 0; i < surfaceCount; i++)
                 {
                     Material mat = meshInstance.GetSurfaceOverrideMaterial(i) ?? meshInstance.Mesh?.SurfaceGetMaterial(i);
+                    
                     if (mat is StandardMaterial3D stdMat)
                     {
                         StandardMaterial3D dupMat = (StandardMaterial3D)stdMat.Duplicate();
-                        dupMat.Transparency = alpha < 1.0f ? BaseMaterial3D.TransparencyEnum.Alpha : BaseMaterial3D.TransparencyEnum.Disabled;
+                        
+                        if (alpha < 1.0f)
+                        {
+                            dupMat.Transparency = BaseMaterial3D.TransparencyEnum.AlphaDepthPrePass; 
+                            dupMat.BlendMode = BaseMaterial3D.BlendModeEnum.Mix;
+                        }
+                        else
+                        {
+                            dupMat.Transparency = BaseMaterial3D.TransparencyEnum.Disabled;
+                        }
+
                         Color color = dupMat.AlbedoColor;
                         color.A = alpha;
                         dupMat.AlbedoColor = color;
+
                         meshInstance.SetSurfaceOverrideMaterial(i, dupMat);
                     }
                 }
