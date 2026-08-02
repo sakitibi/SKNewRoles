@@ -39,12 +39,6 @@ namespace SKNewRoles2.Lobby
             };
             string jsonBody = JsonSerializer.Serialize(payload);
 
-            // 🔍 【デバッグ出力】送信ヘッダーとボディの確認
-            GD.Print("\n--- 🛰️ Supabase [POST: ロビー作成] リクエスト送信 ---");
-            GD.Print($"[URL]: {url}");
-            GD.Print("[Headers]:\n" + string.Join("\n", headers));
-            GD.Print($"[Body]: {jsonBody}\n---------------------------------------------\n");
-
             var tcs = new TaskCompletionSource<(long result, long responseCode, byte[] body)>(TaskCreationOptions.RunContinuationsAsynchronously);
             HttpRequest.RequestCompletedEventHandler onCompleted = null;
             onCompleted = (result, responseCode, responseHeaders, body) =>
@@ -97,17 +91,11 @@ namespace SKNewRoles2.Lobby
                 "Prefer: return=representation"
             ];
 
-            // 🔥 【超重要】is_active だけでなく、自分の host_id も明示的に含めて送信する
             var payload = new { 
                 is_active = false,
-                host_id = SessionManager.Instance.CurrentSession.User.Id // 👈 これを追加！
+                host_id = SessionManager.Instance.CurrentSession.User.Id
             };
             string jsonBody = JsonSerializer.Serialize(payload);
-
-            GD.Print("\n--- 🛰️ Supabase [PATCH: ロビー非アクティブ化] リクエスト送信 ---");
-            GD.Print($"[URL]: {url}");
-            GD.Print("[Headers]:\n" + string.Join("\n", headers));
-            GD.Print($"[Body]: {jsonBody}\n---------------------------------------------\n");
 
             var tcs = new TaskCompletionSource<(long result, long responseCode, byte[] body)>(TaskCreationOptions.RunContinuationsAsynchronously);
             HttpRequest.RequestCompletedEventHandler onCompleted = null;
@@ -130,9 +118,6 @@ namespace SKNewRoles2.Lobby
             httpRequest.QueueFree();
 
             string resBody = bodyData != null ? Encoding.UTF8.GetString(bodyData) : "空データ";
-            GD.Print("\n--- 📥 Supabase [PATCH: ロビー非アクティブ化] レスポンス受信 ---");
-            GD.Print($"[HTTP Code]: {code}");
-            GD.Print($"[Response Body]: {resBody}\n---------------------------------------------\n");
 
             if (res == (long)HttpRequest.Result.Success && (code == 200 || code == 204))
             {

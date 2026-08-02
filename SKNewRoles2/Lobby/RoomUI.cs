@@ -1,6 +1,6 @@
 using Godot;
+using SKNewRoles2.Lobby.JOIN.Services;
 using SKNewRoles2.SessionManagerSystem;
-using SKNewRoles2.Lobby.JOIN;
 
 namespace SKNewRoles2.Lobby
 {
@@ -62,7 +62,7 @@ namespace SKNewRoles2.Lobby
             if (string.IsNullOrEmpty(currentCode)) return;
 
             GD.Print("🔄 サーバー上のロビーデータ更新をリアルタイム検知。ステータスを検証中...");
-            int lobbyStatus = await Http.CheckLobbyStatusAsync(currentCode);
+            int lobbyStatus = await LobbyQueryService.CheckLobbyStatusAsync(currentCode);
             
             if (lobbyStatus == 0)
             {
@@ -132,7 +132,7 @@ namespace SKNewRoles2.Lobby
             GD.Print($"🌐 部屋の公開設定をボタンからリクエスト中... 変更先: {targetPublicState}");
             _lobbyRoom.PrivacyToggleButton.Disabled = true;
 
-            bool success = await Http.UpdateLobbyPrivacyAsync(
+            bool success = await LobbyManagementService.UpdateLobbyPrivacyAsync(
                 SessionManager.Instance.CurrentRoomCode,
                 targetPublicState
             );

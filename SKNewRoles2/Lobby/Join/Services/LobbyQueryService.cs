@@ -5,27 +5,20 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using SKNewRoles2.SessionManagerSystem;
+using SKNewRoles2.Lobby.JOIN.Models;
 
-namespace SKNewRoles2.Lobby.JOIN
+namespace SKNewRoles2.Lobby.JOIN.Services
 {
-    public class LobbyData
-    {
-        public string RoomCode { get; set; } = "";
-        public string RoomName { get; set; } = "";
-    }
-
-    public partial class Http
+    public static class LobbyQueryService
     {
         /// <summary>
-        /// 公開されているアクティブなロビーの一覧を最大20件、作成日降順でランダム（最新順）に取得
+        /// 公開されているアクティブなロビーの一覧を取得します。
         /// </summary>
         public static async Task<List<LobbyData>> FetchRandomPublicLobbiesAsync()
         {
             List<LobbyData> resultList = [];
-            if (SessionManager.Instance.CurrentSession == null || string.IsNullOrEmpty(SessionManager.Instance.CurrentSession.AccessToken)) return resultList;
-
-            var httpRequest = new HttpRequest();
-            SessionManager.Instance.AddChild(httpRequest);
+            if (SessionManager.Instance.CurrentSession == null || string.IsNullOrEmpty(SessionManager.Instance.CurrentSession.AccessToken)) 
+                return resultList;
 
             string url = $"{SessionManager.SupabaseUrl}/rest/v1/lobbies?is_active=eq.true&is_public=eq.true&order=created_at.desc&limit=20&select=*";
             
@@ -35,26 +28,7 @@ namespace SKNewRoles2.Lobby.JOIN
                 "Accept: application/json"
             ];
 
-            var tcs = new TaskCompletionSource<(long result, long responseCode, byte[] body)>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-            void OnCompleted(long result, long responseCode, string[] responseHeaders, byte[] body)
-            {
-                httpRequest.RequestCompleted -= OnCompleted;
-                tcs.SetResult((result, responseCode, body));
-            }
-
-            // イベントに登録
-            httpRequest.RequestCompleted += OnCompleted;
-
-            Error err = httpRequest.Request(url, headers, HttpClient.Method.Get, "");
-            if (err != Error.Ok)
-            {
-                httpRequest.QueueFree();
-                return resultList;
-            }
-
-            var (res, code, bodyData) = await tcs.Task;
-            httpRequest.QueueFree();
+            var (res, code, bodyData) = await HttpRequestHelper.SendAsync(url, headers, HttpClient.Method.Get);
 
             if (res == (long)HttpRequest.Result.Success && code == 200)
             {
@@ -62,8 +36,8 @@ namespace SKNewRoles2.Lobby.JOIN
                 try
                 {
                     using JsonDocument doc = JsonDocument.Parse(jsonText);
-
                     JsonElement root = doc.RootElement;
+
                     if (root.ValueKind == JsonValueKind.Array)
                     {
                         int arrayLength = root.GetArrayLength();
@@ -72,8 +46,8 @@ namespace SKNewRoles2.Lobby.JOIN
                             JsonElement elem = root[i];
                             resultList.Add(new LobbyData
                             {
-                                RoomCode = elem.GetProperty("room_code").GetString(),
-                                RoomName = elem.GetProperty("room_name").GetString()
+                                RoomCode = elem.GetProperty("room_code").GetString() ?? "",
+                                RoomName = elem.GetProperty("room_name").GetString() ?? ""
                             });
                         }
                     }
@@ -87,11 +61,11 @@ namespace SKNewRoles2.Lobby.JOIN
         }
 
         /// <summary>
-        /// 指定された部屋コードのステータスをチェックし、ローカルのセッション情報を更新
+        /// 指定された部屋コードのステータスをチェックし、ローカルのセッション情報を更新します。
         /// </summary>
         public static async Task<int> CheckLobbyStatusAsync(string roomCode)
         {
-            GD.Print($"========================================");
+            GD.Print("========================================");
             GD.Print($"🔍 [1] CheckLobbyStatusAsync 開始 (roomCode: '{roomCode}')");
 
             if (SessionManager.Instance.CurrentSession == null || string.IsNullOrEmpty(SessionManager.Instance.CurrentSession.AccessToken))
@@ -100,49 +74,21 @@ namespace SKNewRoles2.Lobby.JOIN
                 return -1;
             }
 
-            var httpRequest = new HttpRequest();
-            SessionManager.Instance.AddChild(httpRequest);
-
             string escapedCode = Uri.EscapeDataString(roomCode.Trim());
             string url = $"{SessionManager.SupabaseUrl}/rest/v1/lobbies?room_code=eq.{escapedCode}&select=*";
             
-            GD.Print($"📡 [3] リクエスト送信先 URL: {url}");
-
             string[] headers = [
                 $"apikey: {SessionManager.SupabaseAnonKey}",
                 $"Authorization: Bearer {SessionManager.Instance.CurrentSession.AccessToken}",
                 "Accept: application/json"
             ];
 
-            var tcs = new TaskCompletionSource<(long result, long responseCode, byte[] body)>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-            void OnCompleted(long result, long responseCode, string[] responseHeaders, byte[] body)
-            {
-                httpRequest.RequestCompleted -= OnCompleted;
-                tcs.SetResult((result, responseCode, body));
-            }
-
-            httpRequest.RequestCompleted += OnCompleted;
-
-            Error err = httpRequest.Request(url, headers, HttpClient.Method.Get, "");
-            GD.Print($"⚙️ [4] Request() 戻り値: {err}");
-
-            if (err != Error.Ok)
-            {
-                httpRequest.QueueFree();
-                return -1;
-            }
-
             GD.Print("⏳ [5] Supabaseからのレスポンスを待機中...");
-            var (res, code, bodyData) = await tcs.Task;
-            httpRequest.QueueFree();
-
-            GD.Print($"📥 [6] 受信完了 - Result: {res}, HTTP Code: {code}");
+            var (res, code, bodyData) = await HttpRequestHelper.SendAsync(url, headers, HttpClient.Method.Get);
 
             if (bodyData != null && bodyData.Length > 0)
             {
                 string rawJson = Encoding.UTF8.GetString(bodyData);
-                GD.Print($"📄 [7] 生のレスポンスJSON:\n{rawJson}");
 
                 try
                 {
@@ -201,56 +147,6 @@ namespace SKNewRoles2.Lobby.JOIN
         {
             int status = await CheckLobbyStatusAsync(roomCode);
             return status == 0;
-        }
-
-        /// <summary>
-        /// サーバー側のロビーの公開/非公開（is_public）設定を更新します。
-        /// </summary>
-        public static async Task<bool> UpdateLobbyPrivacyAsync(string roomCode, bool isPublic)
-        {
-            if (SessionManager.Instance.CurrentSession == null || string.IsNullOrEmpty(SessionManager.Instance.CurrentSession.AccessToken)) return false;
-
-            var httpRequest = new HttpRequest();
-            SessionManager.Instance.AddChild(httpRequest);
-
-            string escapedCode = Uri.EscapeDataString(roomCode.Trim());
-            string url = $"{SessionManager.SupabaseUrl}/rest/v1/lobbies?room_code=eq.{escapedCode}";
-
-            string[] headers = [
-                $"apikey: {SessionManager.SupabaseAnonKey}",
-                $"Authorization: Bearer {SessionManager.Instance.CurrentSession.AccessToken}",
-                "Content-Type: application/json",
-                "Prefer: return=representation"
-            ];
-
-            var payload = new { is_public = isPublic };
-            string jsonBody = JsonSerializer.Serialize(payload);
-
-            var tcs = new TaskCompletionSource<(long result, long responseCode, byte[] body)>(TaskCreationOptions.RunContinuationsAsynchronously);
-            httpRequest.RequestCompleted += OnCompleted;
-
-            void OnCompleted(long result, long responseCode, string[] headers, byte[] body)
-            {
-                httpRequest.RequestCompleted -= OnCompleted;
-                tcs.SetResult((result, responseCode, body));
-            }
-
-            Error err = httpRequest.Request(url, headers, HttpClient.Method.Patch, jsonBody);
-            if (err != Error.Ok)
-            {
-                httpRequest.QueueFree();
-                return false;
-            }
-
-            var (res, code, _) = await tcs.Task;
-            httpRequest.QueueFree();
-
-            if (res == (long)HttpRequest.Result.Success && (code == 200 || code == 204))
-            {
-                SessionManager.Instance.IsPublic = isPublic; 
-                return true;
-            }
-            return false;
         }
     }
 }

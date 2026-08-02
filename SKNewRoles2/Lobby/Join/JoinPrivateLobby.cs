@@ -1,6 +1,6 @@
 using Godot;
 using System;
-using SKNewRoles2.Lobby.JOIN;
+using SKNewRoles2.Lobby.JOIN.Services;
 
 public partial class JoinPrivateLobby : Control
 {
@@ -40,7 +40,7 @@ public partial class JoinPrivateLobby : Control
 
         try
         {
-            bool success = await Http.JoinLobbyAsync(roomCode);
+            bool success = await LobbyQueryService.JoinLobbyAsync(roomCode);
 
             if (success)
             {

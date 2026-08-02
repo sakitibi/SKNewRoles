@@ -1,4 +1,6 @@
 using Godot;
+using SKNewRoles2.Lobby.JOIN.Models;
+using SKNewRoles2.Lobby.JOIN.Services;
 using System.Collections.Generic;
 
 namespace SKNewRoles2.Lobby.JOIN
@@ -52,19 +54,20 @@ namespace SKNewRoles2.Lobby.JOIN
             }
 
             GD.Print("🌐 Supabaseから公開ロビーを取得中...");
-            List<LobbyData> lobbies = await Http.FetchRandomPublicLobbiesAsync();
+            List<LobbyData> lobbies = await LobbyQueryService.FetchRandomPublicLobbiesAsync();
 
             if (lobbies.Count == 0)
             {
-                var noLobbyLabel = new Label();
-                noLobbyLabel.Text = "現在公開されている部屋はありません。";
-                noLobbyLabel.HorizontalAlignment = HorizontalAlignment.Center;
+                Label noLobbyLabel = new()
+                {
+                    Text = "現在公開されている部屋はありません。",
+                    HorizontalAlignment = HorizontalAlignment.Center
+                };
                 
-                // 🔍 ラベルの文字サイズとフォントを大きく調整
                 if (_cachedFont != null)
                 {
                     noLobbyLabel.AddThemeFontOverride("font", _cachedFont);
-                    noLobbyLabel.AddThemeFontSizeOverride("font_size", 40); // 読みやすい大きさ
+                    noLobbyLabel.AddThemeFontSizeOverride("font_size", 40);
                 }
 
                 _lobbyListContainer.AddChild(noLobbyLabel);
@@ -74,15 +77,16 @@ namespace SKNewRoles2.Lobby.JOIN
                 foreach (var lobby in lobbies)
                 {
                     // 部屋ごとに参加用のエントリーボタンを動的に作成
-                    var joinButton = new Button();
-                    joinButton.Text = $" 🏠  {lobby.RoomName}   [{lobby.RoomCode}]";
-                    joinButton.Alignment = HorizontalAlignment.Left;
+                    Button joinButton = new()
+                    {
+                        Text = $" 🏠  {lobby.RoomName}   [{lobby.RoomCode}]",
+                        Alignment = HorizontalAlignment.Left
+                    };
                     
-                    // 🔍 動的に生成したボタンのフォントと文字サイズを大きく調整
                     if (_cachedFont != null)
                     {
                         joinButton.AddThemeFontOverride("font", _cachedFont);
-                        joinButton.AddThemeFontSizeOverride("font_size", 45); // ★ スクリーンショットのサイズに合わせて適最適化
+                        joinButton.AddThemeFontSizeOverride("font_size", 45);
                     }
 
                     // ボタンの縦幅にある程度余裕を持たせる設定
@@ -117,7 +121,7 @@ namespace SKNewRoles2.Lobby.JOIN
         {
             GD.Print($"🔑 公開ロビー [{roomCode}] への接続を処理中...");
             
-            bool success = await Http.JoinLobbyAsync(roomCode);
+            bool success = await LobbyQueryService.JoinLobbyAsync(roomCode);
 
             if (success)
             {
