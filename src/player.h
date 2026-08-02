@@ -7,6 +7,7 @@
 
 #include "Game/health_component.h"
 #include "Game/spectator_component.h"
+#include "Game/fall_damage_component.h"
 
 namespace godot {
     class SNR2Player : public CharacterBody3D {
@@ -15,11 +16,7 @@ namespace godot {
         private:
             HealthComponent *health_component = nullptr;
             SpectatorComponent *spectator_component = nullptr;
-
-            bool was_in_air = false;
-            float fall_start_y = 0.0f;
-            const float SAFE_FALL_HEIGHT = 3.0f;
-            const int DAMAGE_PER_BLOCK = 1;
+            FallDamageComponent *fall_damage_component = nullptr;
 
             float gravity = 9.8f;
             const float SPEED = 5.0f;
@@ -43,7 +40,6 @@ namespace godot {
             void _physics_process(double delta) override;
             void _input(const Ref<InputEvent> &event) override;
 
-            // HealthComponent ラップメソッド
             void set_max_hp(int p_hp);
             int get_max_hp() const;
 
@@ -58,8 +54,8 @@ namespace godot {
             void set_spectator_mode(bool p_enable);
             bool is_spectator() const;
 
-            // シグナル受信用ハンドラ
-            void _on_health_died();
-            void _on_health_hp_changed(int p_current_hp, int p_max_hp);
+            // シグナル受信コールバック
+            void _on_hp_changed(int current_hp, int max_hp);
+            void _on_player_died();
     };
 }

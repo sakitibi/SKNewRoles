@@ -11,7 +11,6 @@ namespace godot {
         GDCLASS(SpectatorComponent, Node)
 
         private:
-            bool is_spectator = false;
             const float SPECTATOR_SPEED = 15.0f;
 
             CharacterBody3D *target_player = nullptr;
@@ -26,6 +25,8 @@ namespace godot {
         public:
             SpectatorComponent();
             ~SpectatorComponent();
+
+            bool is_spectator = false;
 
             void setup(CharacterBody3D *p_player, Camera3D *p_camera);
             void process_movement(double delta);

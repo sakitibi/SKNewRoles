@@ -40,6 +40,7 @@ set(SOURCES
     src/Game/hud_manager.cpp
     src/Game/health_component.cpp
     src/Game/spectator_component.cpp
+    src/Game/fall_damage_component.cpp
 )
 
 # 共有ライブラリとしてビルド
