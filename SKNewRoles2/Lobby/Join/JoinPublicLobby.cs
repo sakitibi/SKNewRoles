@@ -55,10 +55,12 @@ namespace SKNewRoles2.Lobby.JOIN
 
             GD.Print("🌐 Supabaseから公開ロビーを取得中...");
             List<LobbyData> lobbies = await LobbyQueryService.FetchRandomPublicLobbiesAsync();
+
             // 逆順ループの為にここで逆にする
             lobbies.Reverse();
+            int lobbiesCount = lobbies.Count;
 
-            if (lobbies.Count == 0)
+            if (lobbiesCount == 0)
             {
                 Label noLobbyLabel = new()
                 {
@@ -77,7 +79,7 @@ namespace SKNewRoles2.Lobby.JOIN
             else
             {
                 // 逆の逆は正なのでこれで最初の順番に戻る
-                for (int i = lobbies.Count - 1; i >= 0; i--)
+                for (int i = lobbiesCount - 1; i >= 0; i--)
                 {
                     // 部屋ごとに参加用のエントリーボタンを動的に作成
                     Button joinButton = new()
