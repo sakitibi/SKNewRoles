@@ -130,7 +130,7 @@ namespace SKNewRoles2.Game
             if (!visible) return;
 
             // 子ノードの MeshInstance3D に対してアルファ値を適用
-            SetNodeAlphaRecursive(playerNode, isTransparent ? 0.4f : 1.0f);
+            SetNodeAlphaRecursive(playerNode, isTransparent ? 0.2f : 1.0f);
         }
 
         private static void SetNodeAlphaRecursive(Node node, float alpha)
