@@ -25,7 +25,7 @@ namespace SKNewRoles2.Game
 
         public override async void _Ready()
         {
-            GD.Print("1️⃣ [_Ready] 開始");
+            GD.Print("[_Ready] 開始");
 
             _bgmManager = new BGMManager();
             AddChild(_bgmManager);
@@ -60,16 +60,13 @@ namespace SKNewRoles2.Game
                 SetPlayerPhysicsEnabled(false);
             }
 
-            GD.Print("2️⃣ [_Ready] チャンク読み込み待機開始");
             await WaitForInitialChunksLoaded();
 
             if (SessionManager.Instance != null && SessionManager.Instance.IsHost)
             {
-                GD.Print("3️⃣ [_Ready] ホストとして役職割り当てを実行");
                 _roleManager.AssignRolesToAllPlayers(GetMyUserId());
             }
 
-            GD.Print("4️⃣ [_Ready] 役職受諾のループ待機開始");
             bool received = await _roleManager.WaitForRoleAssignedAsync(timeoutMs: 10000);
 
             if (!received)
@@ -77,9 +74,6 @@ namespace SKNewRoles2.Game
                 GD.PrintErr("⚠️ 役職受信タイムアウトのため、デフォルト(村人)を適用します");
                 _roleManager.ApplyRole(0, 0);
             }
-
-            GD.Print("5️⃣ [_Ready] 役職データ確認完了");
-            GD.Print("6️⃣ [_Ready] ロード画面を非表示にして役職画面を表示します");
 
             _uiController.HideLoadingScene();
             await _uiController.ShowRoleRevealAsync(_roleManager.MyRole, _roleManager.MyFaction, displayTimeMs: 5000);
@@ -187,6 +181,8 @@ namespace SKNewRoles2.Game
         private void OnMyPlayerHpChanged(int currentHp, int maxHp)
         {
             _uiController?.UpdateHp(currentHp, maxHp);
+
+            _remotePlayerManager?.SetMyHp(currentHp);
 
             string myUserId = GetMyUserId();
             RealtimeBroadcaster.SendHp(_connection, myUserId, currentHp, maxHp);
