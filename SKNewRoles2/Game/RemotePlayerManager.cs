@@ -7,7 +7,7 @@ namespace SKNewRoles2.Game
     public partial class RemotePlayerManager : Node
     {
         private PackedScene _opponentScene;
-        private Dictionary<string, Node3D> _otherPlayers = new Dictionary<string, Node3D>();
+        private readonly Dictionary<string, Node3D> _otherPlayers;
         private string _myUserId;
 
         public void Initialize(PackedScene opponentScene, string myUserId)
