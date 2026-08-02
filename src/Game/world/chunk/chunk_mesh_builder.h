@@ -36,10 +36,7 @@ namespace godot {
 
     class ChunkMeshBuilder : public Object {
         GDCLASS(ChunkMeshBuilder, Object)
-
-        private:
-            static int get_palette_index(const PackedInt64Array &data, int palette_size, int x, int y, int z);
-
+        
         protected:
             static void _bind_methods();
 
