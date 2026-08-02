@@ -63,7 +63,12 @@ void SNR2Player::_on_player_died() {
 }
 
 void SNR2Player::_physics_process(double delta) {
-    if (spectator_component && spectator_component->is_spectator) {
+    if (!input) return;
+
+    if (is_spectator()) {
+        if (spectator_component) {
+            spectator_component->process_movement(delta);
+        }
         return;
     }
 
@@ -71,7 +76,7 @@ void SNR2Player::_physics_process(double delta) {
 
     // 重力の適用
     if (!is_on_floor()) {
-        velocity.y -= gravity * delta;
+        velocity.y -= gravity * static_cast<float>(delta);
     }
 
     if (fall_damage_component) {
@@ -100,10 +105,10 @@ void SNR2Player::_physics_process(double delta) {
 
         forward.y = 0.0f;
         right.y = 0.0f;
-        forward = forward.normalized();
-        right = right.normalized();
+        forward.normalize();
+        right.normalize();
 
-        Vector3 direction = (right * input_dir.x + forward * input_dir.y).normalized();
+        Vector3 direction = (forward * -input_dir.y + right * input_dir.x).normalized();
 
         velocity.x = direction.x * SPEED;
         velocity.z = direction.z * SPEED;
@@ -117,22 +122,25 @@ void SNR2Player::_physics_process(double delta) {
 }
 
 void SNR2Player::_input(const Ref<InputEvent> &event) {
-    Ref<InputEventMouseMotion> mouse_motion = event;
+    if (!input) return;
 
-    if (mouse_motion.is_valid()) {
-        Vector2 relative = mouse_motion->get_relative();
+    if (input->is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_RIGHT)) {
+        Ref<InputEventMouseMotion> mouse_motion = event;
+        if (mouse_motion.is_valid()) {
+            Vector2 delta = mouse_motion->get_relative();
 
-        // プレイヤー全体の水平回転（Y軸）
-        rotate_y(-relative.x * mouse_sensitivity);
+            // プレイヤー全体の水平回転（Y軸）
+            rotate_y(-delta.x * mouse_sensitivity);
 
-        // カメラの垂直回転（X軸）
-        camera_rotation_x -= relative.y * mouse_sensitivity;
-        camera_rotation_x = Math::clamp(camera_rotation_x, -LIMIT_ANGLE_X, LIMIT_ANGLE_X);
+            // カメラの垂直回転（X軸）
+            camera_rotation_x -= delta.y * mouse_sensitivity;
+            camera_rotation_x = Math::clamp(camera_rotation_x, -LIMIT_ANGLE_X, LIMIT_ANGLE_X);
 
-        if (camera) {
-            Vector3 rot = camera->get_rotation();
-            rot.x = camera_rotation_x;
-            camera->set_rotation(rot);
+            if (camera != nullptr) {
+                Vector3 cam_rot = camera->get_rotation();
+                cam_rot.x = camera_rotation_x;
+                camera->set_rotation(cam_rot);
+            }
         }
     }
 }
