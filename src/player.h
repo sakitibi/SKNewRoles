@@ -49,12 +49,10 @@ namespace godot {
             void take_damage(int amount);
             void heal(int amount);
 
-            // 死亡・スペクテイター操作
             void die();
             void set_spectator_mode(bool p_enable);
             bool is_spectator() const;
 
-            // シグナル受信コールバック
             void _on_hp_changed(int current_hp, int max_hp);
             void _on_player_died();
     };
