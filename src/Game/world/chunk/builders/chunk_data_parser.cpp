@@ -1,5 +1,5 @@
 #include "chunk_data_parser.h"
-#include "../../../Blocks/block_registry.h"
+#include "../../../../Blocks/block_registry.h"
 #include <godot_cpp/variant/array.hpp>
 
 using namespace godot;
