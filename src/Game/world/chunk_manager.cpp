@@ -1,6 +1,7 @@
 #include "chunk_manager.h"
-#include "mca_parser.h"
-#include "chunk_mesh_builder.h"
+#include "chunk/chunk_loader.h"
+#include "chunk/chunk_veritier.h"
+#include "chunk/chunk_spawner.h"
 #include "chunk_block_editor.h"
 #include "../../Blocks/block_mesh_cache.h"
 
@@ -8,9 +9,6 @@
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/worker_thread_pool.hpp>
-#include <godot_cpp/classes/time.hpp>
-#include <godot_cpp/classes/resource_loader.hpp>
-#include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <cmath>
 
@@ -50,21 +48,7 @@ void ChunkManager::_ready() {
 }
 
 void ChunkManager::spawn_falling_block(const Vector3 &spawn_pos, const String &block_type) {
-    Ref<PackedScene> falling_scene = ResourceLoader::get_singleton()->load("res://FallingBlock.tscn");
-    if (falling_scene.is_null()) {
-        UtilityFunctions::printerr("[ChunkManager ERROR] FallingBlock.tscn Failed to load");
-        return;
-    }
-
-    SNR2FallingBlock *block = Object::cast_to<SNR2FallingBlock>(falling_scene->instantiate());
-    if (block != nullptr) {
-        block->set_global_position(spawn_pos);
-        block->set_block_type(block_type);
-        block->connect("block_landed", Callable(this, "_on_block_landed"));
-
-        add_child(block);
-        UtilityFunctions::print(vformat("[ChunkManager] Falling block (%s) was generated: ", block_type), spawn_pos);
-    }
+    ChunkSpawner::spawn_falling_block(this, spawn_pos, block_type);
 }
 
 void ChunkManager::_on_block_landed(const Vector3 &land_pos, const String &block_type) {
@@ -73,15 +57,12 @@ void ChunkManager::_on_block_landed(const Vector3 &land_pos, const String &block
 }
 
 Node3D *ChunkManager::find_local_player() {
-    // 保存済み ID が生きているか確認して取得
     if (player_instance_id != 0) {
         if (UtilityFunctions::is_instance_id_valid(player_instance_id)) {
             Object *obj = ObjectDB::get_instance(player_instance_id);
-            if (obj) {
-                return Object::cast_to<Node3D>(obj);
-            }
+            if (obj) return Object::cast_to<Node3D>(obj);
         }
-        player_instance_id = 0; // 無効化されていたらリセット
+        player_instance_id = 0;
     }
 
     if (!player_path.is_empty()) {
@@ -122,11 +103,6 @@ void ChunkManager::_process(double delta) {
                 static_cast<int>(std::floor(p_pos.x / chunk_size)),
                 static_cast<int>(std::floor(p_pos.z / chunk_size))
             );
-            
-            UtilityFunctions::print(vformat(
-                "[ChunkManager] Player Pos: Pos(%.1f, %.1f, %.1f) -> ChunkCoord(%d, %d)", 
-                p_pos.x, p_pos.y, p_pos.z, current_chunk_coord.x, current_chunk_coord.y
-            ));
 
             update_chunks_around_player();
             first_update = false;
@@ -152,7 +128,6 @@ void ChunkManager::update_chunks_around_player() {
             keep[target] = true;
 
             if (!loaded_chunks.has(target) && !pending_tasks.has(target)) {
-                UtilityFunctions::print(vformat("[ChunkManager] Requesting load for chunk: X=%d, Z=%d", target.x, target.y));
                 load_chunk(target);
             }
         }
@@ -174,17 +149,20 @@ void ChunkManager::update_chunks_around_player() {
 void ChunkManager::load_chunk(const Vector2i &coord) {
     if (loaded_chunks.has(coord) || pending_tasks.has(coord)) return;
 
-    UtilityFunctions::print(vformat("[ChunkManager] Requesting load for chunk: X=%d, Z=%d", coord.x, coord.y));
-
     ChunkLoadData *data = new ChunkLoadData();
     data->coord = coord;
     data->region_folder_path = region_folder_path;
     data->chunk_size = chunk_size;
-    data->manager = this;
     data->is_initial_load = !initial_load_complete;
 
     int64_t task_id = WorkerThreadPool::get_singleton()->add_native_task(
-        &ChunkManager::_async_load_worker,
+        [](void *p_user) {
+            // Workerスレッドで実行
+            ChunkLoader::async_load_worker(p_user);
+            
+            // 完了したらメインスレッドの ChunkManager に通知
+            ChunkLoadData *d = static_cast<ChunkLoadData *>(p_user);
+        },
         data,
         true,
         vformat("Load Chunk (%d, %d)", coord.x, coord.y)
@@ -193,27 +171,9 @@ void ChunkManager::load_chunk(const Vector2i &coord) {
     pending_tasks[coord] = task_id;
 }
 
-void ChunkManager::_async_load_worker(void *p_userdata) {
-    ChunkLoadData *data = static_cast<ChunkLoadData *>(p_userdata);
-    if (!data || !data->manager) return;
-
-    data->categorized_positions = ChunkMeshBuilder::parse_chunk_positions(
-        MCAParser::parse_chunk(data->region_folder_path, data->coord.x, data->coord.y)
-    );
-
-    data->built_data = ChunkMeshBuilder::build_chunk_data_async(
-        data->categorized_positions,
-        data->is_initial_load
-    );
-    data->has_data = true;
-
-    data->manager->call_deferred("_on_chunk_loaded", (uint64_t)data);
-}
-
 void ChunkManager::_on_chunk_loaded(Variant p_userdata) {
     uint64_t ptr_val = p_userdata;
     ChunkLoadData *data = reinterpret_cast<ChunkLoadData *>(ptr_val);
-    
     if (!data) return;
 
     pending_tasks.erase(data->coord);
@@ -221,73 +181,23 @@ void ChunkManager::_on_chunk_loaded(Variant p_userdata) {
     if (data->has_data) {
         chunk_block_data_map[data->coord] = data->categorized_positions;
 
-        Node3D *chunk_node = memnew(Node3D);
-        chunk_node->set_name(vformat("Chunk_%d_%d", data->coord.x, data->coord.y));
-
-        Vector3 pos(
-            data->coord.x * data->chunk_size,
-            0.0f,
-            data->coord.y * data->chunk_size
-        );
-        chunk_node->set_position(pos);
-
-        ChunkMeshBuilder::apply_chunk_data_to_node(chunk_node, data->built_data);
+        Node3D *chunk_node = ChunkLoader::create_chunk_node(data->coord, data->chunk_size, data->built_data);
         add_child(chunk_node);
         loaded_chunks[data->coord] = chunk_node;
 
         UtilityFunctions::print(vformat("[ChunkManager Main] Chunk (%d, %d) Loaded Successfully", data->coord.x, data->coord.y));
-    } else {
-        UtilityFunctions::print(vformat("[ChunkManager Main] Chunk (%d, %d) Has No Data", data->coord.x, data->coord.y));
     }
 
     delete data;
 
     if (!initial_load_complete && pending_tasks.is_empty()) {
         initial_load_complete = true;
-        UtilityFunctions::print("[ChunkManager] ==========================================");
-        UtilityFunctions::print("[ChunkManager] Construction of all initial chunks complete. Initiating verification of physical space...");
-        UtilityFunctions::print("[ChunkManager] ==========================================");
-
         call_deferred("verity_initial_collisions");
     }
 }
 
 void ChunkManager::verity_initial_collisions() {
-    UtilityFunctions::print("[ChunkManager Verification] --- Chunk Hit Detection Verification Log ---");
-    
-    int total_collision_shapes = 0;
-    int total_faces = 0;
-
-    for (const auto &E : loaded_chunks) {
-        Node3D *chunk_node = E.value;
-        if (!chunk_node) continue;
-
-        for (int i = 0; i < chunk_node->get_child_count(); ++i) {
-            StaticBody3D *sb = Object::cast_to<StaticBody3D>(chunk_node->get_child(i));
-            if (!sb) continue;
-
-            for (int j = 0; j < sb->get_child_count(); ++j) {
-                CollisionShape3D *cs = Object::cast_to<CollisionShape3D>(sb->get_child(j));
-                if (!cs) continue;
-
-                total_collision_shapes++;
-                Ref<ConcavePolygonShape3D> shape = cs->get_shape();
-                if (shape.is_valid()) {
-                    PackedVector3Array faces = shape->get_faces();
-                    total_faces += faces.size() / 3;
-                }
-            }
-        }
-    }
-
-    UtilityFunctions::print(vformat("[ChunkManager Verification] Number of loaded collision shapes: %d", total_collision_shapes));
-    UtilityFunctions::print(vformat("[ChunkManager Verification] Total collision polygon count (Triangle Count): %d", total_faces));
-
-    if (total_faces == 0) {
-        UtilityFunctions::printerr("[ChunkManager ERROR] There are zero collision polygons! Collision detection has not been generated!");
-    } else {
-        UtilityFunctions::print("[ChunkManager Verification] SUCCESS: The polygons are correctly registered in the physical space.");
-    }
+    ChunkVeritier::verity_initial_collisions(loaded_chunks);
 }
 
 void ChunkManager::unload_chunk(const Vector2i &coord) {

@@ -3,31 +3,14 @@
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/templates/hash_map.hpp>
-#include <godot_cpp/templates/list.hpp>
 #include <godot_cpp/variant/vector2i.hpp>
 #include <godot_cpp/variant/node_path.hpp>
 
-#include "chunk_mesh_builder.h"
-#include "../../Blocks/falling_block.h"
+#include "chunk/chunk_loader.h"
 
 namespace godot {
-    class ChunkManager;
-
-    struct ChunkLoadData {
-        Vector2i coord;
-        String region_folder_path;
-        float chunk_size = 16.0f;
-        ChunkManager *manager = nullptr;
-
-        HashMap<String, Vector<Vector3>> categorized_positions;
-        BuiltChunkData built_data; 
-        bool has_data = false;
-        bool is_initial_load = false;
-    };
-
     class ChunkManager : public Node3D {
         GDCLASS(ChunkManager, Node3D)
-
         private:
             float chunk_size = 16.0f;
             int render_distance = 2;
@@ -35,7 +18,7 @@ namespace godot {
             bool first_update = true;
             NodePath player_path;
 
-            uint64_t player_instance_id = 0; // 生ポインタではなく ID で安全保持
+            uint64_t player_instance_id = 0;
             Vector2i current_chunk_coord = Vector2i(-999999, -999999);
 
             HashMap<Vector2i, Node3D *> loaded_chunks;
@@ -48,8 +31,6 @@ namespace godot {
             void load_chunk(const Vector2i &coord);
             void unload_chunk(const Vector2i &coord);
             Node3D *find_local_player();
-
-            static void _async_load_worker(void *p_userdata);
 
         protected:
             static void _bind_methods();

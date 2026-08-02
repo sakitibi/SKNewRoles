@@ -36,6 +36,9 @@ set(SOURCES
     src/Game/world/cube_mesh_utils.cpp
     src/Game/world/chunk_collision_builder.cpp
     src/Game/world/mca_parser.cpp
+    src/Game/world/chunk/chunk_loader.cpp
+    src/Game/world/chunk/chunk_spawner.cpp
+    src/Game/world/chunk/chunk_veritier.cpp
     src/Game/role_manager.cpp
     src/Game/hud_manager.cpp
     src/Game/health_component.cpp
