@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using SKNewRoles2.SessionManagerSystem.Services;
 
 namespace SKNewRoles2.SessionManagerSystem
 {
@@ -21,7 +22,7 @@ namespace SKNewRoles2.SessionManagerSystem
         // ==========================================
         // 4. ディスク I/O ヘルパー関数 (ローカルファイル関連)
         // ==========================================
-        private void SaveSessionToDisk()
+        public void SaveSessionToDisk()
         {
             if (CurrentSession == null) return;
 
@@ -58,7 +59,7 @@ namespace SKNewRoles2.SessionManagerSystem
                     string email = session.User?.Email ?? $"ID: {session.User?.Id ?? "Unknown"}";
                     GD.Print($"✨ セッションファイルの読み込みに成功！自動ログインしました: {email}");
                     
-                    StartUserInfoSync();
+                    UserInfoService.StartUserInfoSync();
                 }
             }
             catch (Exception ex)

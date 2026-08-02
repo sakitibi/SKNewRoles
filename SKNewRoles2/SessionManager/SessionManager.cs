@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using SKNewRoles2.SessionManagerSystem.Services;
 
 namespace SKNewRoles2.SessionManagerSystem
 {
@@ -18,7 +19,7 @@ namespace SKNewRoles2.SessionManagerSystem
         public bool IsPublic { get; set; } = true;
         public List<string> CurrentRoomPlayerIds { get; set; } = [];
 
-        public SessionData CurrentSession { get; private set; }
+        public SessionData CurrentSession { get; set; }
         public bool IsLoggedIn => CurrentSession != null;
         
         // MODがユーザー更新タイミングを検知するためのイベント
@@ -136,7 +137,7 @@ namespace SKNewRoles2.SessionManagerSystem
             GD.Print($"👤 [MOD] セッションがセットされました: {email}");
             
             SaveSessionToDisk();
-            StartUserInfoSync();
+            UserInfoService.StartUserInfoSync();
         }
 
         public void ClearSession()

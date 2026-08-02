@@ -4,14 +4,9 @@ using SKNewRoles2.SessionManagerSystem;
 
 namespace SKNewRoles2.Lobby
 {
-    public partial class RoomUI
+    public partial class RoomUI(LobbyRoom lobbyRoom)
     {
-        private readonly LobbyRoom _lobbyRoom;
-
-        public RoomUI(LobbyRoom lobbyRoom)
-        {
-            _lobbyRoom = lobbyRoom;
-        }
+        private readonly LobbyRoom _lobbyRoom = lobbyRoom;
 
         /// <summary>
         /// 現在のルーム名と部屋コードをUIラベルに即座に反映します。

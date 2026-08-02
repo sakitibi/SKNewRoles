@@ -84,7 +84,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services
             ];
 
             GD.Print("⏳ [5] Supabaseからのレスポンスを待機中...");
-            var (res, code, bodyData) = await HttpRequestHelper.SendAsync(url, headers, HttpClient.Method.Get);
+            var (_, _, bodyData) = await HttpRequestHelper.SendAsync(url, headers, HttpClient.Method.Get);
 
             if (bodyData != null && bodyData.Length > 0)
             {

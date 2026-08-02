@@ -28,48 +28,46 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
 
                     try
                     {
-                        using (JsonDocument doc = JsonDocument.Parse(message))
+                        using JsonDocument doc = JsonDocument.Parse(message);
+                        JsonElement root = doc.RootElement;
+                        
+                        if (root.TryGetProperty("event", out JsonElement evElem))
                         {
-                            JsonElement root = doc.RootElement;
-                            
-                            if (root.TryGetProperty("event", out JsonElement evElem))
+                            string ev = evElem.GetString();
+
+                            // Broadcast パケットの識別処理
+                            if (ev == "broadcast")
                             {
-                                string ev = evElem.GetString();
-
-                                // Broadcast パケットの識別処理
-                                if (ev == "broadcast")
+                                JsonElement payload = root.GetProperty("payload");
+                                if (payload.TryGetProperty("type", out JsonElement typeElem))
                                 {
-                                    JsonElement payload = root.GetProperty("payload");
-                                    if (payload.TryGetProperty("type", out JsonElement typeElem))
+                                    string type = typeElem.GetString();
+
+                                    // 位置・回転データの受信
+                                    if (type == "transform_all")
                                     {
-                                        string type = typeElem.GetString();
-
-                                        // 位置・回転データの受信
-                                        if (type == "transform_all")
-                                        {
-                                            string pId = payload.GetProperty("player_id").GetString();
-                                            
-                                            float px = (float)payload.GetProperty("px").GetDouble();
-                                            float py = (float)payload.GetProperty("py").GetDouble();
-                                            float pz = (float)payload.GetProperty("pz").GetDouble();
-                                            float rx = (float)payload.GetProperty("rx").GetDouble();
-                                            float ry = (float)payload.GetProperty("ry").GetDouble();
-                                            float rz = (float)payload.GetProperty("rz").GetDouble();
-                                            
-                                            RealtimeEvents.RaisePlayerTransformReceivedAll(pId, px, py, pz, rx, ry, rz);
-                                        }
-                                        // 役職割当データの受信
-                                        else if (type == "assign_role")
-                                        {
-                                            string targetPlayerId = payload.GetProperty("target_player_id").GetString();
-                                            int role = payload.GetProperty("role").GetInt32();
-                                            int faction = payload.GetProperty("faction").GetInt32();
-
-                                            RealtimeEvents.RaiseRoleAssignedReceived(targetPlayerId, role, faction);
-                                        }
+                                        string pId = payload.GetProperty("player_id").GetString();
+                                        
+                                        float px = (float)payload.GetProperty("px").GetDouble();
+                                        float py = (float)payload.GetProperty("py").GetDouble();
+                                        float pz = (float)payload.GetProperty("pz").GetDouble();
+                                        float rx = (float)payload.GetProperty("rx").GetDouble();
+                                        float ry = (float)payload.GetProperty("ry").GetDouble();
+                                        float rz = (float)payload.GetProperty("rz").GetDouble();
+                                        
+                                        RealtimeEvents.RaisePlayerTransformReceivedAll(pId, px, py, pz, rx, ry, rz);
                                     }
-                                    continue;
+                                    // 役職割当データの受信
+                                    else if (type == "assign_role")
+                                    {
+                                        string targetPlayerId = payload.GetProperty("target_player_id").GetString();
+                                        int role = payload.GetProperty("role").GetInt32();
+                                        int faction = payload.GetProperty("faction").GetInt32();
+
+                                        RealtimeEvents.RaiseRoleAssignedReceived(targetPlayerId, role, faction);
+                                    }
                                 }
+                                continue;
                             }
                         }
                     }

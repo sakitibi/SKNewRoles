@@ -64,7 +64,7 @@ namespace SKNewRoles2.Game
 
             if (SessionManager.Instance != null && SessionManager.Instance.IsHost)
             {
-                _roleManager.AssignRolesToAllPlayers(GetMyUserId());
+                await _roleManager.AssignRolesToAllPlayers(GetMyUserId());
             }
 
             bool received = await _roleManager.WaitForRoleAssignedAsync(timeoutMs: 10000);

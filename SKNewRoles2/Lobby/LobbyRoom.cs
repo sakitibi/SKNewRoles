@@ -1,7 +1,6 @@
 using Godot;
 using System.Collections.Generic;
 using SKNewRoles2.SessionManagerSystem;
-using SKNewRoles2.Lobby.JOIN;
 using SKNewRoles2.Lobby.JOIN.Services.Realtime;
 
 namespace SKNewRoles2.Lobby

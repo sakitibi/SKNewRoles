@@ -61,12 +61,7 @@ namespace SKNewRoles2.Lobby
 
             string resBody = bodyData != null ? Encoding.UTF8.GetString(bodyData) : "空データ";
 
-            GD.Print("\n--- 📥 Supabase [POST: ロビー作成] レスポンス受信 ---");
-            GD.Print($"[HTTP Code]: {code}");
-            GD.Print($"[Internal Result]: {res}");
-            GD.Print($"[Response Body]: {resBody}\n---------------------------------------------\n");
-
-            return (res == (long)HttpRequest.Result.Success && (code == 200 || code == 201));
+            return res == (long)HttpRequest.Result.Success && (code == 200 || code == 201);
         }
 
         /// <summary>
