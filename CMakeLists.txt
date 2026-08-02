@@ -39,9 +39,9 @@ set(SOURCES
     src/Game/world/chunk/chunk_loader.cpp
     src/Game/world/chunk/chunk_spawner.cpp
     src/Game/world/chunk/chunk_veritier.cpp
-    src/Game/world/chunk/builder/chunk_data_parser.cpp
-    src/Game/world/chunk/builder/chunk_mesh_builder_new.cpp
-    src/Game/world/chunk/builder/chunk_node_applier.cpp
+    src/Game/world/chunk/builders/chunk_data_parser.cpp
+    src/Game/world/chunk/builders/chunk_mesh_builder_new.cpp
+    src/Game/world/chunk/builders/chunk_node_applier.cpp
     src/Game/role_manager.cpp
     src/Game/hud_manager.cpp
     src/Game/health_component.cpp
