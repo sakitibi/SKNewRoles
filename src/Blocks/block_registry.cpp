@@ -12,7 +12,7 @@ void BlockRegistry::_bind_methods() {
     ClassDB::bind_static_method("BlockRegistry", D_METHOD("set_block_scene_map", "map"), &BlockRegistry::set_block_scene_map);
     ClassDB::bind_static_method("BlockRegistry", D_METHOD("get_block_scene_map"), &BlockRegistry::get_block_scene_map_dict);
     ClassDB::bind_static_method("BlockRegistry", D_METHOD("clear_block_map"), &BlockRegistry::clear_block_map);
-    ClassDB::bind_static_method("BlockRegistry", D_METHOD("has_block", "block_id"), &BlockRegistry::has_block); // 👈 追加
+    ClassDB::bind_static_method("BlockRegistry", D_METHOD("has_block", "block_id"), &BlockRegistry::has_block);
 }
 
 const HashMap<String, String>& BlockRegistry::get_block_scene_map() {
@@ -23,6 +23,8 @@ const HashMap<String, String>& BlockRegistry::get_block_scene_map() {
         block_scene_map["minecraft:dirt_path"]    = "res://Scenes/Prefabs/Blocks/DirtPath.tscn";
         block_scene_map["minecraft:stone"]        = "res://Scenes/Prefabs/Blocks/Stone.tscn";
         block_scene_map["minecraft:stone_bricks"] = "res://Scenes/Prefabs/Blocks/StoneBricks.tscn";
+        block_scene_map["minecraft:deepslate"]    = "res://Scenes/Prefabs/Blocks/Deepslate.tscn";
+        block_scene_map["minecraft:bedrock"]    = "res://Scenes/Prefabs/Blocks/Bedrock.tscn";
         block_scene_map["minecraft:andsite"]      = "res://Scenes/Prefabs/Blocks/Andsite.tscn";
         block_scene_map["minecraft:diorite"]      = "res://Scenes/Prefabs/Blocks/Diorite.tscn";
         block_scene_map["minecraft:granite"]      = "res://Scenes/Prefabs/Blocks/Granite.tscn";
