@@ -48,19 +48,19 @@ namespace SKNewRoles2.SNRSystem
             string inputCode = _codeInput.Text.Trim();
             string url = $"{SessionManager.SupabaseUrl}/rest/v1/app_links?select=*&code=eq.{inputCode}";
 
-            string[] headers = new string[]
-            {
+            string[] headers =
+            [
                 $"apikey: {SessionManager.SupabaseAnonKey}",
                 $"Authorization: Bearer {SessionManager.SupabaseAnonKey}",
                 "Accept: application/json"
-            };
+            ];
 
             // 名前付き引数を使って、GETメソッドと空のボディを確実にGodotへ伝える
             Error err = _supabaseRequest.Request(
                 url: url,
                 customHeaders: headers,
                 method: HttpClient.Method.Get,
-                requestData: "" // これを明示することで、POSTへの自動変換バグを回避します
+                requestData: ""
             );
             
             if (err != Error.Ok)
@@ -97,23 +97,22 @@ namespace SKNewRoles2.SNRSystem
                 {
                     AppLinkRecord rawRecord = records[0];
 
-                    SessionData session = new SessionData
+                    SessionData session = new()
                     {
                         AccessToken = rawRecord.AccessToken,
                         RefreshToken = rawRecord.RefreshToken,
                         TokenType = "bearer",
-                        ExpiresIn = 3600
-                    };
-
-                    session.User = new UserInfo
-                    {
-                        Id = rawRecord.UserId,
-                        Email = "Authenticating..." 
+                        ExpiresIn = 3600,
+                        User = 
+                        {
+                            Id = rawRecord.UserId,
+                            Email = "Authenticating..." 
+                        }
                     };
 
                     if (!string.IsNullOrEmpty(session.AccessToken))
                     {
-                        // グローバルセッションマネージャーへ格納（自動的にファイル保存が走る）
+                        // グローバルセッションマネージャーへ格納
                         SessionManager.Instance.SetSession(session);
 
                         // シーンの切り替え
@@ -144,7 +143,7 @@ namespace SKNewRoles2.SNRSystem
         private void ShowError(string message)
         {
             _errorMessageLabel.Text = message;
-            _submitButton.Disabled = (_codeInput.Text.Length != 8);
+            _submitButton.Disabled = _codeInput.Text.Length != 8;
             _codeInput.Editable = true;
         }
 
