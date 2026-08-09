@@ -119,10 +119,15 @@ namespace SKNewRoles2.Game
                 }
             }
 
-            // プレイヤーが存在し、かつ表示されている場合のみ位置更新を送信
-            if (_myPlayerInstance != null && _myPlayerInstance.Visible)
+            // プレイヤーが存在する場合、位置と座標UIの更新を行う
+            if (_myPlayerInstance != null)
             {
-                SendMyTransform();
+                _uiController?.UpdateCoords(_myPlayerInstance.GlobalPosition);
+
+                if (_myPlayerInstance.Visible)
+                {
+                    SendMyTransform();
+                }
             }
         }
 
@@ -183,7 +188,25 @@ namespace SKNewRoles2.Game
                 _myPlayerInstance.Connect("HpChanged", Callable.From<int, int>(OnMyPlayerHpChanged));
             }
 
-            GD.Print($"👤 [MainGameScene] 自プレイヤーを生成しました。(Pos: {spawnPos})");
+            // --- 初期HPの設定 ---
+            int currentHp = 20;
+            int maxHp = 20;
+
+            var maxHpVar = _myPlayerInstance.Get("MaxHp");
+            var curHpVar = _myPlayerInstance.Get("CurrentHp");
+
+            if (maxHpVar.VariantType == Variant.Type.Int)
+            {
+                maxHp = (int)maxHpVar;
+            }
+            if (curHpVar.VariantType == Variant.Type.Int)
+            {
+                currentHp = (int)curHpVar;
+            }
+
+            _uiController?.UpdateHp(currentHp, maxHp);
+
+            GD.Print($"👤 [MainGameScene] 自プレイヤーを生成しました。(HP: {currentHp}/{maxHp}, Pos: {spawnPos})");
         }
 
         private void SetPlayerPhysicsEnabled(bool enabled)

@@ -12,6 +12,7 @@ namespace SKNewRoles2.Game
         private Label _factionLabel;
         private Label _roleTitleLabel;
         private Label _descriptionLabel;
+        private Label _coordsLabel; // 座標表示用ラベル
 
         public void Initialize(Node parentNode)
         {
@@ -20,6 +21,7 @@ namespace SKNewRoles2.Game
             _roleRevealScene = parentNode.GetNodeOrNull<Control>("UILayer/RoleRevealScene");
             _hpBar = parentNode.GetNodeOrNull<ProgressBar>("UILayer/HPBar");
             _hpLabel = parentNode.GetNodeOrNull<Label>("UILayer/HPBar/HPLabel");
+            _coordsLabel = parentNode.GetNodeOrNull<Label>("UILayer/CoordsLabel"); // 座標表示用Labelの取得
 
             if (_roleRevealScene != null)
             {
@@ -49,6 +51,15 @@ namespace SKNewRoles2.Game
             if (_hpLabel != null)
             {
                 _hpLabel.Text = $"{currentHp} / {maxHp}";
+            }
+        }
+
+        // 座標更新用メソッドを追加
+        public void UpdateCoords(Vector3 position)
+        {
+            if (_coordsLabel != null)
+            {
+                _coordsLabel.Text = $"X: {position.X:F1} Y: {position.Y:F1} Z: {position.Z:F1}";
             }
         }
 
