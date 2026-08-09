@@ -33,19 +33,15 @@ void ChunkManager::_bind_methods() {
 
     ClassDB::bind_method(D_METHOD("is_initial_load_complete"), &ChunkManager::is_initial_load_complete);
     ClassDB::bind_method(D_METHOD("verity_initial_collisions"), &ChunkManager::verity_initial_collisions);
-    ClassDB::bind_method(D_METHOD("_on_chunk_loaded", "p_userdata"), &ChunkManager::_on_chunk_loaded);
 
     ClassDB::bind_method(D_METHOD("spawn_falling_block", "spawn_pos", "block_type"), &ChunkManager::spawn_falling_block, DEFVAL("stone"));
     ClassDB::bind_method(D_METHOD("_on_block_landed", "land_pos", "block_type"), &ChunkManager::_on_block_landed);
+
+    ClassDB::bind_method(D_METHOD("_on_chunk_loaded", "p_userdata"), &ChunkManager::_on_chunk_loaded);
 }
 
 ChunkManager::ChunkManager() {}
 ChunkManager::~ChunkManager() {}
-
-void ChunkManager::_ready() {
-    if (Engine::get_singleton()->is_editor_hint()) return;
-    BlockMeshCache::preload_block_meshes();
-}
 
 void ChunkManager::spawn_falling_block(const Vector3 &spawn_pos, const String &block_type) {
     ChunkSpawner::spawn_falling_block(this, spawn_pos, block_type);
@@ -91,58 +87,74 @@ Node3D *ChunkManager::find_local_player() {
     return nullptr;
 }
 
+void ChunkManager::_ready() {
+    if (Engine::get_singleton()->is_editor_hint()) return;
+
+    set_process(true);
+
+    UtilityFunctions::print("[ChunkManager] Ready called. Preloading Block Meshes & Regions...");
+    
+    BlockMeshCache::preload_block_meshes();
+}
+
 void ChunkManager::_process(double delta) {
     if (Engine::get_singleton()->is_editor_hint()) return;
 
-    Node3D *p_node = find_local_player();
+    Node3D *player = find_local_player();
+    if (!player) return;
 
-    if (first_update) {
-        if (p_node) {
-            Vector3 p_pos = p_node->get_global_position();
-            current_chunk_coord = Vector2i(
-                static_cast<int>(std::floor(p_pos.x / chunk_size)),
-                static_cast<int>(std::floor(p_pos.z / chunk_size))
-            );
+    Vector3 player_pos = player->get_global_position();
+    Vector2i new_chunk_coord = Vector2i(
+        std::floor(player_pos.x / chunk_size),
+        std::floor(player_pos.z / chunk_size)
+    );
 
-            update_chunks_around_player();
-            first_update = false;
-        }
-    } else if (p_node) {
-        Vector2i new_coord = Vector2i(
-            static_cast<int>(std::floor(p_node->get_global_position().x / chunk_size)),
-            static_cast<int>(std::floor(p_node->get_global_position().z / chunk_size))
-        );
-        if (new_coord != current_chunk_coord) {
-            current_chunk_coord = new_coord;
-            update_chunks_around_player();
-        }
+    if (first_update || new_chunk_coord != current_chunk_coord) {
+        first_update = false;
+        current_chunk_coord = new_chunk_coord;
+        update_chunks_around_player();
     }
 }
 
 void ChunkManager::update_chunks_around_player() {
-    HashMap<Vector2i, bool> keep;
+    Node3D *player = find_local_player();
+    if (!player) return;
+
+    Vector3 player_pos = player->get_global_position();
+    Vector2i player_coord = Vector2i(
+        std::floor(player_pos.x / chunk_size),
+        std::floor(player_pos.z / chunk_size)
+    );
+
+    HashSet<Vector2i> required_chunks;
 
     for (int x = -render_distance; x <= render_distance; ++x) {
         for (int z = -render_distance; z <= render_distance; ++z) {
-            Vector2i target = current_chunk_coord + Vector2i(x, z);
-            keep[target] = true;
-
-            if (!loaded_chunks.has(target) && !pending_tasks.has(target)) {
-                load_chunk(target);
-            }
+            required_chunks.insert(player_coord + Vector2i(x, z));
         }
     }
 
-    Array loaded_coords;
-    for (const auto &E : loaded_chunks) {
-        loaded_coords.append(E.key);
+    Vector<Vector2i> chunks_to_unload;
+    for (const KeyValue<Vector2i, Node3D *> &E : loaded_chunks) {
+        if (!required_chunks.has(E.key)) {
+            chunks_to_unload.push_back(E.key);
+        }
     }
 
-    for (int i = 0; i < loaded_coords.size(); ++i) {
-        Vector2i coord = loaded_coords[i];
-        if (!keep.has(coord)) {
-            unload_chunk(coord);
+    for (int i = 0; i < chunks_to_unload.size(); ++i) {
+        unload_chunk(chunks_to_unload[i]);
+    }
+
+    for (const Vector2i &coord : required_chunks) {
+        if (!loaded_chunks.has(coord) && !pending_tasks.has(coord)) {
+            load_chunk(coord);
         }
+    }
+
+    if (!initial_load_complete && pending_tasks.is_empty()) {
+        initial_load_complete = true;
+        call_deferred("verity_initial_collisions");
+        UtilityFunctions::print("[ChunkManager] 初期読込完了 (タスクなし)");
     }
 }
 
