@@ -23,6 +23,8 @@ namespace SKNewRoles2.Game
         private Label _pingLabel;
         private float _pingUpdateTimer = 0.0f;
 
+        private bool _isGameStarted = false;
+
         public int MyRole => _roleManager?.MyRole ?? -1;
         public int MyFaction => _roleManager?.MyFaction ?? -1;
 
@@ -31,6 +33,11 @@ namespace SKNewRoles2.Game
             GD.Print("[_Ready] 開始");
 
             _pingLabel = GetNodeOrNull<Label>("UILayer/PingLabel");
+            if (_pingLabel != null)
+            {
+                // 初期状態では PING ラベルを非表示にしておく
+                _pingLabel.Visible = false;
+            }
 
             _bgmManager = new BGMManager();
             AddChild(_bgmManager);
@@ -80,10 +87,21 @@ namespace SKNewRoles2.Game
                 _roleManager.ApplyRole(0, 0);
             }
 
+            // ローディング画面を隠す
             _uiController.HideLoadingScene();
+
+            // 役職発表画面を一定時間表示して閉じる
             await _uiController.ShowRoleRevealAsync(_roleManager.MyRole, _roleManager.MyFaction, displayTimeMs: 5000);
 
+            // プレイヤー操作を有効化
             SetPlayerPhysicsEnabled(true);
+
+            _isGameStarted = true;
+
+            if (_pingLabel != null)
+            {
+                _pingLabel.Visible = true;
+            }
         }
 
         private async Task WaitForInitialChunksLoaded()
@@ -113,15 +131,18 @@ namespace SKNewRoles2.Game
 
         public override void _Process(double delta)
         {
+            // 通信受信と送信自体は裏で行っておく
             _connection.Poll(delta);
             SendMyTransform();
 
-            // PING表示の更新 (0.5秒おき)
-            _pingUpdateTimer += (float)delta;
-            if (_pingUpdateTimer >= 0.5f)
+            if (_isGameStarted)
             {
-                _pingUpdateTimer = 0.0f;
-                UpdatePingUI();
+                _pingUpdateTimer += (float)delta;
+                if (_pingUpdateTimer >= 0.5f)
+                {
+                    _pingUpdateTimer = 0.0f;
+                    UpdatePingUI();
+                }
             }
         }
 

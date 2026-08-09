@@ -35,13 +35,15 @@ script = ExtResource("1_cakpg")
 [node name="RoleRevealScene" parent="UILayer" unique_id=1913904660 instance=ExtResource("3_pswr4")]
 
 [node name="PingLabel" type="Label" parent="UILayer" unique_id=1998877661]
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -824.0
-offset_top = 740.0
-offset_right = -587.0
-offset_bottom = 781.0
+anchors_preset = -1
+anchor_left = 0.49600002
+anchor_top = 0.95100003
+anchor_right = 0.49600002
+anchor_bottom = 0.95100003
+offset_left = -118.400024
+offset_top = -20.800049
+offset_right = 118.599976
+offset_bottom = 20.199951
 grow_horizontal = 0
 theme_override_fonts/font = ExtResource("4_pswr4")
 theme_override_font_sizes/font_size = 40
