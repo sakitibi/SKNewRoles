@@ -53,10 +53,14 @@ void ChunkManager::_on_block_landed(const Vector3 &land_pos, const String &block
 }
 
 Node3D *ChunkManager::find_local_player() {
+    // インスタンスIDキャッシュから取得
     if (player_instance_id != 0) {
         if (UtilityFunctions::is_instance_id_valid(player_instance_id)) {
             Object *obj = ObjectDB::get_instance(player_instance_id);
-            if (obj) return Object::cast_to<Node3D>(obj);
+            if (obj) {
+                Node3D *p = Object::cast_to<Node3D>(obj);
+                if (p && p->is_inside_tree()) return p;
+            }
         }
         player_instance_id = 0;
     }
@@ -82,6 +86,18 @@ Node3D *ChunkManager::find_local_player() {
                 return p;
             }
         }
+
+        Node *root = st->get_current_scene();
+        if (root) {
+            Node *p_node = root->find_child("MyPlayer", true, false);
+            if (p_node) {
+                Node3D *p = Object::cast_to<Node3D>(p_node);
+                if (p) {
+                    player_instance_id = p->get_instance_id();
+                    return p;
+                }
+            }
+        }
     }
 
     return nullptr;
@@ -93,7 +109,6 @@ void ChunkManager::_ready() {
     set_process(true);
 
     UtilityFunctions::print("[ChunkManager] Ready called. Preloading Block Meshes & Regions...");
-    
     BlockMeshCache::preload_block_meshes();
 }
 
@@ -154,7 +169,7 @@ void ChunkManager::update_chunks_around_player() {
     if (!initial_load_complete && pending_tasks.is_empty()) {
         initial_load_complete = true;
         call_deferred("verity_initial_collisions");
-        UtilityFunctions::print("[ChunkManager] 初期読込完了 (タスクなし)");
+        UtilityFunctions::print("[ChunkManager] 初期ロード完了 (タスクなし)");
     }
 }
 
