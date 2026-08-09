@@ -41,10 +41,6 @@ namespace SKNewRoles2.Game
             {
                 GD.PrintErr("❌ [Realtime] MainGameScene での WebSocket 接続に失敗しました。");
             }
-            else
-            {
-                _connection.StartPingLoop();
-            }
 
             // サブマネージャーの生成と初期化
             _uiController = new GameUIController();
@@ -118,10 +114,9 @@ namespace SKNewRoles2.Game
 
         public override void _Process(double delta)
         {
-            _connection.Poll();
+            _connection.Poll(delta);
             SendMyTransform();
 
-            // PING表示の定期的更新 (0.5秒周期)
             _pingUpdateTimer += (float)delta;
             if (_pingUpdateTimer >= 0.5f)
             {
@@ -229,7 +224,8 @@ namespace SKNewRoles2.Game
         
         public override void _ExitTree()
         {
-            GD.Print("🚪 [MainGameScene] _ExitTree: シーン破棄のためBGMを停止します。");
+            GD.Print("🚪 [MainGameScene] _ExitTree");
+            _connection?.Close();
             _bgmManager?.StopBgm();
 
             base._ExitTree();

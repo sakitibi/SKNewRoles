@@ -2,7 +2,6 @@ using Godot;
 using System;
 using System.Diagnostics;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using SKNewRoles2.SessionManagerSystem;
 
@@ -14,9 +13,11 @@ namespace SKNewRoles2.Game.Network
         private bool _isJoinedChannel = false;
         private int _refCounter = 1;
 
+        // PING計測用の変数
         private readonly Stopwatch _pingStopwatch = new();
         private bool _isWaitingPong = false;
-        private CancellationTokenSource _cts = new();
+        private float _pingTimer = 0.0f;
+        private const float PING_INTERVAL = 3.0f; // 3秒ごとにPING送信
 
         public WebSocketPeer Client => _client;
         public bool IsJoinedChannel => _isJoinedChannel;
@@ -46,7 +47,7 @@ namespace SKNewRoles2.Game.Network
             GD.Print("🌐 [Realtime] MainGame 用 WebSocket 接続を開始しました。");
 
             int timeoutCounter = 0;
-            while (timeoutCounter < 100 && !_cts.Token.IsCancellationRequested)
+            while (timeoutCounter < 100)
             {
                 _client.Poll();
                 var state = _client.GetReadyState();
@@ -76,7 +77,7 @@ namespace SKNewRoles2.Game.Network
                     return false;
                 }
 
-                await Task.Delay(100, _cts.Token).ContinueWith(_ => { });
+                await Task.Delay(100);
                 timeoutCounter++;
             }
 
@@ -84,16 +85,33 @@ namespace SKNewRoles2.Game.Network
             return false;
         }
 
-        public void Poll()
+        /// <summary>
+        /// MainGameScene の _Process から毎フレーム呼ばれます（メインスレッド）
+        /// </summary>
+        public void Poll(double delta)
         {
-            if (_client == null || _cts.IsCancellationRequested) return;
-            if (_client.GetReadyState() != WebSocketPeer.State.Open) return;
+            if (_client == null) return;
 
+            var state = _client.GetReadyState();
+            if (state != WebSocketPeer.State.Open) return;
+
+            // 受信メッセージの処理
             _client.Poll();
             while (_client.GetAvailablePacketCount() > 0)
             {
                 string message = _client.GetPacket().GetStringFromUtf8();
                 ProcessMessageAndCheckPing(message);
+            }
+
+            // メインスレッドのタイマーで安全に PING を送信
+            if (_isJoinedChannel)
+            {
+                _pingTimer += (float)delta;
+                if (_pingTimer >= PING_INTERVAL)
+                {
+                    _pingTimer = 0.0f;
+                    SendHeartbeat();
+                }
             }
         }
 
@@ -101,7 +119,7 @@ namespace SKNewRoles2.Game.Network
         {
             if (string.IsNullOrEmpty(message)) return;
 
-            // PING応答(phx_reply)のチェック
+            // PING応答(phx_reply)受信時に PING 値を確定
             if (_isWaitingPong && message.Contains("phx_reply"))
             {
                 _pingStopwatch.Stop();
@@ -109,33 +127,8 @@ namespace SKNewRoles2.Game.Network
                 _isWaitingPong = false;
             }
 
-            // 通常のメッセージDispatcher処理
+            // 通常のメッセージ配信（役職通知やTransform情報など）
             RealtimeMessageDispatcher.ProcessMessage(message, ref _isJoinedChannel);
-        }
-
-        /// <summary>
-        /// PING計測ループ
-        /// </summary>
-        public void StartPingLoop()
-        {
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    while (_client != null && !_cts.Token.IsCancellationRequested)
-                    {
-                        if (_client.GetReadyState() == WebSocketPeer.State.Open && _isJoinedChannel)
-                        {
-                            SendHeartbeat();
-                        }
-                        await Task.Delay(3000, _cts.Token);
-                    }
-                }
-                catch (TaskCanceledException)
-                {
-                    // 正常終了
-                }
-            });
         }
 
         private void SendHeartbeat()
@@ -174,8 +167,6 @@ namespace SKNewRoles2.Game.Network
         {
             try
             {
-                _cts?.Cancel();
-
                 if (_client != null && _client.GetReadyState() == WebSocketPeer.State.Open)
                 {
                     _client.Close(1000, "Scene exit");
