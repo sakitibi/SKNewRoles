@@ -20,6 +20,9 @@ namespace SKNewRoles2.Game
         private GameRoleManager _roleManager;
         private readonly RealtimeConnection _connection = new();
 
+        private Label _pingLabel;
+        private float _pingUpdateTimer = 0.0f;
+
         public int MyRole => _roleManager?.MyRole ?? -1;
         public int MyFaction => _roleManager?.MyFaction ?? -1;
 
@@ -27,124 +30,152 @@ namespace SKNewRoles2.Game
         {
             GD.Print("[_Ready] 開始");
 
+            _pingLabel = GetNodeOrNull<Label>("UILayer/PingLabel");
+
             _bgmManager = new BGMManager();
             AddChild(_bgmManager);
-            _bgmManager.PlayRandomBgm(0.0f);
 
-            bool isConnected = await _connection.EnsureConnectedAsync();
-            if (!isConnected)
-            {
-                GD.PrintErr("❌ [Realtime] MainGameScene での WebSocket 接続に失敗しました。");
-            }
-
-            // サブマネージャーの生成と初期化
             _uiController = new GameUIController();
             AddChild(_uiController);
             _uiController.Initialize(this);
 
-            _roleManager = new GameRoleManager();
-            AddChild(_roleManager);
-            _roleManager.Initialize(GetNodeOrNull<Node>("RoleManager"));
+            try
+            {
+                // ネットワーク接続
+                bool isConnected = await _connection.EnsureConnectedAsync();
+                if (!isConnected)
+                {
+                    GD.PrintErr("❌ [Realtime] MainGameScene での WebSocket 接続に失敗しました。");
+                }
 
-            _chunkManagerCpp = GetNodeOrNull<Node3D>("ChunkManager");
+                // マネージャー類の生成・初期化
+                _roleManager = new GameRoleManager();
+                AddChild(_roleManager);
+                _roleManager.Initialize(GetNodeOrNull<Node>("RoleManager"));
 
-            // リモートプレイヤーマネージャーの登録
-            _remotePlayerManager = new RemotePlayerManager();
-            AddChild(_remotePlayerManager);
-            _remotePlayerManager.Initialize(_opponentScene, GetMyUserId());
+                _chunkManagerCpp = GetNodeOrNull<Node3D>("ChunkManager");
 
-            // 自分のプレイヤーを生成
+                _remotePlayerManager = new RemotePlayerManager();
+                AddChild(_remotePlayerManager);
+                _remotePlayerManager.Initialize(_opponentScene, GetMyUserId());
+
+                await WaitForInitialChunksLoaded();
+
+                // 役職割り当ての待機
+                if (SessionManager.Instance != null && SessionManager.Instance.IsHost)
+                {
+                    await _roleManager.AssignRolesToAllPlayers(GetMyUserId());
+                }
+
+                bool received = await _roleManager.WaitForRoleAssignedAsync(timeoutMs: 10000);
+                if (!received)
+                {
+                    GD.PrintErr("⚠️ 役職受信タイムアウトのため、デフォルト(村人)を適用します");
+                    _roleManager.ApplyRole(0, 0);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                GD.PrintErr($"❌ [_Ready] 初期化処理中にエラーが発生しました: {ex.Message}");
+            }
+            finally
+            {
+                _uiController.HideLoadingScene();
+            }
+
             if (_myPlayerInstance == null)
             {
                 SpawnMyPlayer();
-                SetPlayerPhysicsEnabled(false);
             }
 
-            await WaitForInitialChunksLoaded();
+            _bgmManager.PlayRandomBgm(0.0f);
 
-            if (SessionManager.Instance != null && SessionManager.Instance.IsHost)
-            {
-                await _roleManager.AssignRolesToAllPlayers(GetMyUserId());
-            }
-
-            bool received = await _roleManager.WaitForRoleAssignedAsync(timeoutMs: 10000);
-
-            if (!received)
-            {
-                GD.PrintErr("⚠️ 役職受信タイムアウトのため、デフォルト(村人)を適用します");
-                _roleManager.ApplyRole(0, 0);
-            }
-
-            _uiController.HideLoadingScene();
-            await _uiController.ShowRoleRevealAsync(_roleManager.MyRole, _roleManager.MyFaction, displayTimeMs: 5000);
+            await _uiController.ShowRoleRevealAsync(_roleManager?.MyRole ?? 0, _roleManager?.MyFaction ?? 0, displayTimeMs: 5000);
 
             SetPlayerPhysicsEnabled(true);
-        }
-
-        private async Task WaitForInitialChunksLoaded()
-        {
-            if (_chunkManagerCpp == null) return;
-
-            int timeoutCounter = 0;
-            while (timeoutCounter < 150)
-            {
-                bool isComplete = false;
-                if (_chunkManagerCpp.HasMethod("is_initial_load_complete"))
-                {
-                    isComplete = (bool)_chunkManagerCpp.Call("is_initial_load_complete");
-                }
-
-                if (isComplete)
-                {
-                    GD.Print("✅ 初期チャンク読み込み完了");
-                    return;
-                }
-
-                await Task.Delay(100);
-                timeoutCounter++;
-            }
-
-            GD.PrintErr("⚠️ チャンク読み込み待機がタイムアウト(15秒)しました。強制続行します。");
         }
 
         public override void _Process(double delta)
         {
             _connection.Poll();
-            SendMyTransform();
+
+            // PING表示の更新 (0.5秒ごと)
+            _pingUpdateTimer += (float)delta;
+            if (_pingUpdateTimer >= 0.5f)
+            {
+                _pingUpdateTimer = 0.0f;
+                if (_pingLabel != null)
+                {
+                    int ping = _connection.PingMs;
+                    _pingLabel.Text = ping >= 0 ? $"PING: {ping} ms" : "PING: -- ms";
+                }
+            }
+
+            // プレイヤーが存在する場合のみ位置更新を送信
+            if (_myPlayerInstance != null)
+            {
+                SendMyTransform();
+            }
+        }
+
+        private async Task WaitForInitialChunksLoaded()
+        {
+            int timeoutMs = 10000;
+            int elapsedMs = 0;
+            int checkIntervalMs = 100;
+
+            while (elapsedMs < timeoutMs)
+            {
+                if (_chunkManagerCpp != null)
+                {
+                    Variant res = _chunkManagerCpp.Call("is_initial_load_complete");
+                    if (res.VariantType == Variant.Type.Bool && (bool)res)
+                    {
+                        GD.Print("✅ [MainGameScene] チャンクの初期読込が完了しました。");
+                        return;
+                    }
+                }
+                else
+                {
+                    return;
+                }
+
+                await Task.Delay(checkIntervalMs);
+                elapsedMs += checkIntervalMs;
+            }
+
+            GD.PrintErr("⚠️ [MainGameScene] チャンク初期読込がタイムアウトしました。ゲームを開始します。");
         }
 
         private void SpawnMyPlayer()
         {
-            if (_playerScene == null) return;
+            if (_playerScene == null)
+            {
+                GD.PrintErr("❌ [MainGameScene] Player.tscn のロードに失敗しています。");
+                return;
+            }
 
             _myPlayerInstance = _playerScene.Instantiate<Node3D>();
             _myPlayerInstance.Name = "MyPlayer";
-            _myPlayerInstance.AddToGroup("LocalPlayer");
-
             AddChild(_myPlayerInstance);
 
-            _myPlayerInstance.GlobalPosition = new Vector3(0, 100, 0);
+            Vector3 spawnPos = new Vector3(0, 5, 0);
+            _myPlayerInstance.GlobalPosition = spawnPos;
 
-            _myPlayerInstance.Connect("hp_changed", Callable.From<int, int>(OnMyPlayerHpChanged));
+            // スポーン直後は移動不可にしておく
+            SetPlayerPhysicsEnabled(false);
 
-            if (_myPlayerInstance.HasMethod("get_current_hp") && _myPlayerInstance.HasMethod("get_max_hp"))
+            if (_myPlayerInstance.HasSignal("HpChanged"))
             {
-                int curHp = (int)_myPlayerInstance.Call("get_current_hp");
-                int maxHp = (int)_myPlayerInstance.Call("get_max_hp");
-                OnMyPlayerHpChanged(curHp, maxHp);
+                _myPlayerInstance.Connect("HpChanged", Callable.From<int, int>(OnMyPlayerHpChanged));
             }
 
-            _chunkManagerCpp?.Set("player_path", _myPlayerInstance.GetPath());
+            GD.Print($"👤 [MainGameScene] 自プレイヤーを生成しました。(Pos: {spawnPos})");
         }
 
         private void SetPlayerPhysicsEnabled(bool enabled)
         {
             if (_myPlayerInstance == null) return;
-
-            if (_myPlayerInstance is CharacterBody3D body)
-            {
-                body.Velocity = Vector3.Zero;
-            }
 
             if (_myPlayerInstance.HasMethod("set_movement_enabled"))
             {
@@ -164,16 +195,10 @@ namespace SKNewRoles2.Game
 
         private void SendMyTransform()
         {
-            if (_myPlayerInstance == null)
-            {
-                // プレイヤーがまだロードされていない場合
-                return;
-            }
+            if (_myPlayerInstance == null) return;
 
             Vector3 pos = _myPlayerInstance.GlobalPosition;
             Vector3 rot = _myPlayerInstance.Rotation;
-
-            GD.Print($"[SendTransform] Pos: {pos}, Rot: {rot}");
 
             _ = RealtimeBroadcaster.SendTransformAsync(_connection, pos.X, pos.Y, pos.Z, rot.X, rot.Y, rot.Z);
         }
@@ -181,17 +206,17 @@ namespace SKNewRoles2.Game
         private void OnMyPlayerHpChanged(int currentHp, int maxHp)
         {
             _uiController?.UpdateHp(currentHp, maxHp);
-
             _remotePlayerManager?.SetMyHp(currentHp);
 
             string myUserId = GetMyUserId();
             _ = RealtimeBroadcaster.SendHpAsync(_connection, myUserId, currentHp, maxHp);
         }
-        
+
         public override void _ExitTree()
         {
             GD.Print("🚪 [MainGameScene] _ExitTree: シーン破棄のためBGMを停止します。");
             _bgmManager?.StopBgm();
+            _connection?.Close();
 
             base._ExitTree();
         }

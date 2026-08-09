@@ -15,6 +15,7 @@ namespace SKNewRoles2.Game
 
         public void Initialize(Node parentNode)
         {
+            // UILayer/LoadingScene を取得 (内部は StartupScene.tscn)
             _loadingScene = parentNode.GetNodeOrNull<Control>("UILayer/LoadingScene");
             _roleRevealScene = parentNode.GetNodeOrNull<Control>("UILayer/RoleRevealScene");
             _hpBar = parentNode.GetNodeOrNull<ProgressBar>("UILayer/HPBar");
@@ -31,6 +32,10 @@ namespace SKNewRoles2.Game
             if (_loadingScene != null)
             {
                 _loadingScene.Visible = true;
+            }
+            else
+            {
+                GD.PrintErr("❌ [GameUIController] UILayer/LoadingScene が見つかりませんでした。");
             }
         }
 
@@ -49,9 +54,14 @@ namespace SKNewRoles2.Game
 
         public void HideLoadingScene()
         {
-            if (_loadingScene != null)
+            if (_loadingScene != null && IsInstanceValid(_loadingScene))
             {
                 _loadingScene.Visible = false;
+                
+                _loadingScene.QueueFree();
+                _loadingScene = null;
+                
+                GD.Print("🧹 [UI] LoadingScene (StartupScene) を完全に消去・破棄しました。");
             }
         }
 
@@ -72,7 +82,7 @@ namespace SKNewRoles2.Game
             if (IsInstanceValid(_roleRevealScene))
             {
                 _roleRevealScene.Visible = false;
-                GD.Print("8️⃣ [UI] 役職画面を非表示にしました (ゲームスタート)");
+                GD.Print("8️⃣ [UI] 役職画面を非表示にしました");
             }
         }
     }

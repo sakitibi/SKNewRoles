@@ -1,5 +1,7 @@
 using Godot;
+using System;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using SKNewRoles2.SessionManagerSystem;
 
@@ -11,8 +13,13 @@ namespace SKNewRoles2.Game.Network
         private bool _isJoinedChannel = false;
         private int _refCounter = 1;
 
+        // シーン遷移時などの非同期処理キャンセル用トークン
+        private readonly CancellationTokenSource _cts = new();
+
         public WebSocketPeer Client => _client;
         public bool IsJoinedChannel => _isJoinedChannel;
+
+        public int PingMs { get; private set; } = -1;
 
         public async Task<bool> EnsureConnectedAsync()
         {
@@ -40,20 +47,16 @@ namespace SKNewRoles2.Game.Network
             int timeoutCounter = 0;
             while (timeoutCounter < 100)
             {
+                if (_cts.IsCancellationRequested) return false;
+
                 _client.Poll();
                 var state = _client.GetReadyState();
 
                 if (state == WebSocketPeer.State.Open)
                 {
-                    if (!_isJoinedChannel)
+                    if (!_isJoinedChannel && timeoutCounter % 10 == 0)
                     {
                         SendJoinChannelRequest();
-                    }
-
-                    while (_client.GetAvailablePacketCount() > 0)
-                    {
-                        string message = _client.GetPacket().GetStringFromUtf8();
-                        RealtimeMessageDispatcher.ProcessMessage(message, ref _isJoinedChannel);
                     }
 
                     if (_isJoinedChannel)
@@ -100,6 +103,27 @@ namespace SKNewRoles2.Game.Network
 
             _client.SendText(JsonSerializer.Serialize(joinPayload));
             GD.Print("📡 [Realtime] phx_join リクエストを送信しました。");
+        }
+
+        public void Close()
+        {
+            try
+            {
+                _cts?.Cancel();
+
+                if (_client != null && _client.GetReadyState() == WebSocketPeer.State.Open)
+                {
+                    _client.Close(1000, "Scene exit");
+                }
+            }
+            catch (Exception ex)
+            {
+                GD.PrintErr($"⚠️ [Realtime] Close 時に例外が発生しました: {ex.Message}");
+            }
+            finally
+            {
+                _isJoinedChannel = false;
+            }
         }
     }
 }
