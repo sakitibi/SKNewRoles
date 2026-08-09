@@ -37,6 +37,7 @@ void ChunkManager::_bind_methods() {
     ClassDB::bind_method(D_METHOD("spawn_falling_block", "spawn_pos", "block_type"), &ChunkManager::spawn_falling_block, DEFVAL("stone"));
     ClassDB::bind_method(D_METHOD("_on_block_landed", "land_pos", "block_type"), &ChunkManager::_on_block_landed);
 
+    ClassDB::bind_method(D_METHOD("_async_load_task", "p_userdata"), &ChunkManager::_async_load_task);
     ClassDB::bind_method(D_METHOD("_on_chunk_loaded", "p_userdata"), &ChunkManager::_on_chunk_loaded);
 }
 
@@ -108,9 +109,9 @@ void ChunkManager::_ready() {
 
     set_process(true);
 
-    UtilityFunctions::print("[ChunkManager] _ready() called. Starting BlockMeshCache::preload_block_meshes()...");
+    UtilityFunctions::print("[ChunkManager] _ready() called. Preloading block meshes...");
     BlockMeshCache::preload_block_meshes();
-    UtilityFunctions::print("[ChunkManager] BlockMeshCache::preload_block_meshes() completed successfully.");
+    UtilityFunctions::print("[ChunkManager] Preload completed successfully.");
 }
 
 void ChunkManager::_process(double delta) {
@@ -125,7 +126,7 @@ void ChunkManager::_process(double delta) {
         static float log_timer = 0.0f;
         log_timer += delta;
         if (log_timer >= 3.0f) {
-            UtilityFunctions::print("[ChunkManager] Searching for MyPlayer... Operating with fallback center (0,0,0)");
+            UtilityFunctions::print("[ChunkManager] Searching for player... Operating with fallback center (0,0,0)");
             log_timer = 0.0f;
         }
     }
@@ -182,7 +183,7 @@ void ChunkManager::update_chunks_around_player() {
         }
     }
 
-    UtilityFunctions::print(vformat("[ChunkManager] Chunk update: requested=%d / pending=%d / loaded=%d", 
+    UtilityFunctions::print(vformat("[ChunkManager] Chunk update status: requested=%d / pending=%d / loaded=%d", 
         requested, pending_tasks.size(), loaded_chunks.size()));
 
     if (!initial_load_complete && pending_tasks.is_empty()) {
@@ -203,16 +204,29 @@ void ChunkManager::load_chunk(const Vector2i &coord) {
     load_data->region_folder_path = region_folder_path;
     load_data->is_initial_load = !initial_load_complete;
 
+    uint64_t ptr_val = reinterpret_cast<uint64_t>(load_data);
+
     int64_t task_id = WorkerThreadPool::get_singleton()->add_task(
-        Callable(this, "_on_chunk_loaded").bind(load_data),
+        Callable(this, "_async_load_task").bind(ptr_val),
         true
     );
 
     pending_tasks[coord] = task_id;
 }
 
+void ChunkManager::_async_load_task(Variant p_userdata) {
+    uint64_t ptr_val = p_userdata;
+    ChunkLoadData *data = reinterpret_cast<ChunkLoadData *>(ptr_val);
+    if (!data) return;
+
+    ChunkLoader::async_load_worker(data);
+
+    call_deferred("_on_chunk_loaded", ptr_val);
+}
+
 void ChunkManager::_on_chunk_loaded(Variant p_userdata) {
-    ChunkLoadData *data = (ChunkLoadData *)p_userdata.operator uint64_t();
+    uint64_t ptr_val = p_userdata;
+    ChunkLoadData *data = reinterpret_cast<ChunkLoadData *>(ptr_val);
     if (!data) return;
 
     Vector2i coord = data->coord;
@@ -221,10 +235,10 @@ void ChunkManager::_on_chunk_loaded(Variant p_userdata) {
     if (data->has_data) {
         Node3D *chunk_node = ChunkLoader::create_chunk_node(coord, chunk_size, data->built_data);
         if (chunk_node) {
-            call_deferred("add_child", chunk_node);
+            add_child(chunk_node);
             loaded_chunks[coord] = chunk_node;
             chunk_block_data_map[coord] = data->categorized_positions;
-            UtilityFunctions::print(vformat("[ChunkManager] Chunk (%d, %d) loaded successfully.", coord.x, coord.y));
+            UtilityFunctions::print(vformat("[ChunkManager] Chunk (%d, %d) created and added to scene.", coord.x, coord.y));
         }
     }
 
@@ -233,7 +247,7 @@ void ChunkManager::_on_chunk_loaded(Variant p_userdata) {
     if (!initial_load_complete && pending_tasks.is_empty()) {
         initial_load_complete = true;
         call_deferred("verity_initial_collisions");
-        UtilityFunctions::print("[ChunkManager] All pending chunk tasks completed. Initial load complete set to true.");
+        UtilityFunctions::print("[ChunkManager] All pending chunk tasks finished.");
     }
 }
 

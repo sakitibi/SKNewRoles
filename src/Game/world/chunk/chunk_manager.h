@@ -34,6 +34,7 @@ namespace godot {
 
         protected:
             static void _bind_methods();
+            void _async_load_task(Variant p_userdata);
 
         public:
             ChunkManager();
