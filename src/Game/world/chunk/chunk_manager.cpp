@@ -53,7 +53,6 @@ void ChunkManager::_on_block_landed(const Vector3 &land_pos, const String &block
 }
 
 Node3D *ChunkManager::find_local_player() {
-    // インスタンスIDキャッシュから取得
     if (player_instance_id != 0) {
         if (UtilityFunctions::is_instance_id_valid(player_instance_id)) {
             Object *obj = ObjectDB::get_instance(player_instance_id);
@@ -90,6 +89,7 @@ Node3D *ChunkManager::find_local_player() {
         Node *root = st->get_current_scene();
         if (root) {
             Node *p_node = root->find_child("MyPlayer", true, false);
+            if (!p_node) p_node = root->find_child("Player", true, false);
             if (p_node) {
                 Node3D *p = Object::cast_to<Node3D>(p_node);
                 if (p) {
@@ -108,20 +108,31 @@ void ChunkManager::_ready() {
 
     set_process(true);
 
-    UtilityFunctions::print("[ChunkManager] Ready called. Preloading Block Meshes & Regions...");
+    UtilityFunctions::print("🧱 [ChunkManager] _ready() 実行。ブロックメッシュをプリロードします...");
     BlockMeshCache::preload_block_meshes();
+    UtilityFunctions::print("✅ [ChunkManager] メッシュプリロード完了。");
 }
 
 void ChunkManager::_process(double delta) {
     if (Engine::get_singleton()->is_editor_hint()) return;
 
+    Vector3 center_pos = Vector3(0, 0, 0);
     Node3D *player = find_local_player();
-    if (!player) return;
+    
+    if (player) {
+        center_pos = player->get_global_position();
+    } else {
+        static float log_timer = 0.0f;
+        log_timer += delta;
+        if (log_timer >= 3.0f) {
+            UtilityFunctions::print("⚠️ [ChunkManager] プレイヤー(MyPlayer)の検索中... 現在地(0,0,0)で処理します");
+            log_timer = 0.0f;
+        }
+    }
 
-    Vector3 player_pos = player->get_global_position();
     Vector2i new_chunk_coord = Vector2i(
-        std::floor(player_pos.x / chunk_size),
-        std::floor(player_pos.z / chunk_size)
+        std::floor(center_pos.x / chunk_size),
+        std::floor(center_pos.z / chunk_size)
     );
 
     if (first_update || new_chunk_coord != current_chunk_coord) {
@@ -132,13 +143,15 @@ void ChunkManager::_process(double delta) {
 }
 
 void ChunkManager::update_chunks_around_player() {
+    Vector3 center_pos = Vector3(0, 0, 0);
     Node3D *player = find_local_player();
-    if (!player) return;
+    if (player) {
+        center_pos = player->get_global_position();
+    }
 
-    Vector3 player_pos = player->get_global_position();
     Vector2i player_coord = Vector2i(
-        std::floor(player_pos.x / chunk_size),
-        std::floor(player_pos.z / chunk_size)
+        std::floor(center_pos.x / chunk_size),
+        std::floor(center_pos.z / chunk_size)
     );
 
     HashSet<Vector2i> required_chunks;
@@ -160,16 +173,21 @@ void ChunkManager::update_chunks_around_player() {
         unload_chunk(chunks_to_unload[i]);
     }
 
+    int requested = 0;
     for (const Vector2i &coord : required_chunks) {
         if (!loaded_chunks.has(coord) && !pending_tasks.has(coord)) {
             load_chunk(coord);
+            requested++;
         }
     }
 
+    UtilityFunctions::print(vformat("🧱 [ChunkManager] ロード更新: 要求%d件 / 残タスク%d件", requested, pending_tasks.size()));
+
+    // ロード完了判定
     if (!initial_load_complete && pending_tasks.is_empty()) {
         initial_load_complete = true;
         call_deferred("verity_initial_collisions");
-        UtilityFunctions::print("[ChunkManager] 初期ロード完了 (タスクなし)");
+        UtilityFunctions::print("✅ [ChunkManager] 初期チャンクの読み込みが完了しました！");
     }
 }
 

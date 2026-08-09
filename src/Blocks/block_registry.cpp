@@ -24,7 +24,7 @@ const HashMap<String, String>& BlockRegistry::get_block_scene_map() {
         block_scene_map["minecraft:stone"]        = "res://Scenes/Prefabs/Blocks/Stone.tscn";
         block_scene_map["minecraft:stone_bricks"] = "res://Scenes/Prefabs/Blocks/StoneBricks.tscn";
         block_scene_map["minecraft:deepslate"]    = "res://Scenes/Prefabs/Blocks/Deepslate.tscn";
-        block_scene_map["minecraft:bedrock"]    = "res://Scenes/Prefabs/Blocks/Bedrock.tscn";
+        block_scene_map["minecraft:bedrock"]      = "res://Scenes/Prefabs/Blocks/Bedrock.tscn";
         block_scene_map["minecraft:andsite"]      = "res://Scenes/Prefabs/Blocks/Andsite.tscn";
         block_scene_map["minecraft:diorite"]      = "res://Scenes/Prefabs/Blocks/Diorite.tscn";
         block_scene_map["minecraft:granite"]      = "res://Scenes/Prefabs/Blocks/Granite.tscn";
