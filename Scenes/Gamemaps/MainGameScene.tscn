@@ -34,6 +34,20 @@ script = ExtResource("1_cakpg")
 
 [node name="RoleRevealScene" parent="UILayer" unique_id=1913904660 instance=ExtResource("3_pswr4")]
 
+[node name="PingLabel" type="Label" parent="UILayer" unique_id=1998877661]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -824.0
+offset_top = 740.0
+offset_right = -587.0
+offset_bottom = 781.0
+grow_horizontal = 0
+theme_override_fonts/font = ExtResource("4_pswr4")
+theme_override_font_sizes/font_size = 40
+text = "PING: -- ms"
+horizontal_alignment = 2
+
 [node name="HPBar" type="ProgressBar" parent="UILayer" unique_id=1030434168]
 offset_left = 329.0
 offset_top = 617.0

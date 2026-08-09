@@ -20,12 +20,17 @@ namespace SKNewRoles2.Game
         private GameRoleManager _roleManager;
         private readonly RealtimeConnection _connection = new();
 
+        private Label _pingLabel;
+        private float _pingUpdateTimer = 0.0f;
+
         public int MyRole => _roleManager?.MyRole ?? -1;
         public int MyFaction => _roleManager?.MyFaction ?? -1;
 
         public override async void _Ready()
         {
             GD.Print("[_Ready] 開始");
+
+            _pingLabel = GetNodeOrNull<Label>("UILayer/PingLabel");
 
             _bgmManager = new BGMManager();
             AddChild(_bgmManager);
@@ -35,6 +40,11 @@ namespace SKNewRoles2.Game
             if (!isConnected)
             {
                 GD.PrintErr("❌ [Realtime] MainGameScene での WebSocket 接続に失敗しました。");
+            }
+            else
+            {
+                // PING計測ループ開始
+                _ = _connection.StartPingLoopAsync();
             }
 
             // サブマネージャーの生成と初期化
@@ -111,6 +121,38 @@ namespace SKNewRoles2.Game
         {
             _connection.Poll();
             SendMyTransform();
+
+            // PING表示の定期的更新 (0.5秒周期)
+            _pingUpdateTimer += (float)delta;
+            if (_pingUpdateTimer >= 0.5f)
+            {
+                _pingUpdateTimer = 0.0f;
+                UpdatePingUI();
+            }
+        }
+
+        private void UpdatePingUI()
+        {
+            if (_pingLabel == null || _connection == null) return;
+
+            int ping = _connection.PingMs;
+            if (ping < 0)
+            {
+                _pingLabel.Text = "PING: -- ms";
+                _pingLabel.Modulate = Colors.White;
+            }
+            else
+            {
+                _pingLabel.Text = $"PING: {ping} ms";
+                
+                // 遅延に応じた色分け
+                if (ping < 60)
+                    _pingLabel.Modulate = Colors.Green;
+                else if (ping < 130)
+                    _pingLabel.Modulate = Colors.Yellow;
+                else
+                    _pingLabel.Modulate = Colors.Red;
+            }
         }
 
         private void SpawnMyPlayer()
@@ -172,8 +214,6 @@ namespace SKNewRoles2.Game
 
             Vector3 pos = _myPlayerInstance.GlobalPosition;
             Vector3 rot = _myPlayerInstance.Rotation;
-
-            GD.Print($"[SendTransform] Pos: {pos}, Rot: {rot}");
 
             _ = RealtimeBroadcaster.SendTransformAsync(_connection, pos.X, pos.Y, pos.Z, rot.X, rot.Y, rot.Z);
         }

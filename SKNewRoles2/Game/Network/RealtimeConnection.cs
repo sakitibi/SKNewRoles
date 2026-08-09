@@ -1,4 +1,5 @@
 using Godot;
+using System.Diagnostics;
 using System.Text.Json;
 using System.Threading.Tasks;
 using SKNewRoles2.SessionManagerSystem;
@@ -11,8 +12,12 @@ namespace SKNewRoles2.Game.Network
         private bool _isJoinedChannel = false;
         private int _refCounter = 1;
 
+        private readonly Stopwatch _pingStopwatch = new();
+        private bool _isWaitingPong = false;
+
         public WebSocketPeer Client => _client;
         public bool IsJoinedChannel => _isJoinedChannel;
+        public int PingMs { get; private set; } = -1;
 
         public async Task<bool> EnsureConnectedAsync()
         {
@@ -53,7 +58,7 @@ namespace SKNewRoles2.Game.Network
                     while (_client.GetAvailablePacketCount() > 0)
                     {
                         string message = _client.GetPacket().GetStringFromUtf8();
-                        RealtimeMessageDispatcher.ProcessMessage(message, ref _isJoinedChannel);
+                        ProcessMessageAndCheckPing(message);
                     }
 
                     if (_isJoinedChannel)
@@ -84,8 +89,47 @@ namespace SKNewRoles2.Game.Network
             while (_client.GetAvailablePacketCount() > 0)
             {
                 string message = _client.GetPacket().GetStringFromUtf8();
-                RealtimeMessageDispatcher.ProcessMessage(message, ref _isJoinedChannel);
+                ProcessMessageAndCheckPing(message);
             }
+        }
+
+        private void ProcessMessageAndCheckPing(string message)
+        {
+            RealtimeMessageDispatcher.ProcessMessage(message, ref _isJoinedChannel);
+
+            if (_isWaitingPong && message.Contains("phx_reply"))
+            {
+                _pingStopwatch.Stop();
+                PingMs = (int)_pingStopwatch.ElapsedMilliseconds;
+                _isWaitingPong = false;
+            }
+        }
+
+        public async Task StartPingLoopAsync()
+        {
+            while (_client != null && _client.GetReadyState() == WebSocketPeer.State.Open)
+            {
+                SendHeartbeat();
+                await Task.Delay(3000); // 3秒ごとにPING計測
+            }
+        }
+
+        private void SendHeartbeat()
+        {
+            if (_client == null || _client.GetReadyState() != WebSocketPeer.State.Open) return;
+
+            _pingStopwatch.Restart();
+            _isWaitingPong = true;
+
+            var heartbeatPayload = new
+            {
+                topic = "phoenix",
+                @event = "heartbeat",
+                payload = new { },
+                @ref = _refCounter++.ToString()
+            };
+
+            _client.SendText(JsonSerializer.Serialize(heartbeatPayload));
         }
 
         private void SendJoinChannelRequest()
