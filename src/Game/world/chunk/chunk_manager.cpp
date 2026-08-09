@@ -48,7 +48,7 @@ void ChunkManager::spawn_falling_block(const Vector3 &spawn_pos, const String &b
 }
 
 void ChunkManager::_on_block_landed(const Vector3 &land_pos, const String &block_type) {
-    UtilityFunctions::print(vformat("🧱 [ChunkManager] block (%s) has landed: ", block_type), land_pos);
+    UtilityFunctions::print(vformat("[ChunkManager] Block (%s) landed at: ", block_type), land_pos);
     ChunkBlockEditor::add_block_at_world_pos(loaded_chunks, chunk_block_data_map, chunk_size, land_pos, block_type);
 }
 
@@ -108,9 +108,9 @@ void ChunkManager::_ready() {
 
     set_process(true);
 
-    UtilityFunctions::print("🧱 [ChunkManager] _ready() 実行。ブロックメッシュをプリロードします...");
+    UtilityFunctions::print("[ChunkManager] _ready() called. Starting BlockMeshCache::preload_block_meshes()...");
     BlockMeshCache::preload_block_meshes();
-    UtilityFunctions::print("✅ [ChunkManager] メッシュプリロード完了。");
+    UtilityFunctions::print("[ChunkManager] BlockMeshCache::preload_block_meshes() completed successfully.");
 }
 
 void ChunkManager::_process(double delta) {
@@ -125,7 +125,7 @@ void ChunkManager::_process(double delta) {
         static float log_timer = 0.0f;
         log_timer += delta;
         if (log_timer >= 3.0f) {
-            UtilityFunctions::print("⚠️ [ChunkManager] プレイヤー(MyPlayer)の検索中... 現在地(0,0,0)で処理します");
+            UtilityFunctions::print("[ChunkManager] Searching for MyPlayer... Operating with fallback center (0,0,0)");
             log_timer = 0.0f;
         }
     }
@@ -138,6 +138,7 @@ void ChunkManager::_process(double delta) {
     if (first_update || new_chunk_coord != current_chunk_coord) {
         first_update = false;
         current_chunk_coord = new_chunk_coord;
+        UtilityFunctions::print(vformat("[ChunkManager] Player position updated -> Chunk Coord: (%d, %d)", new_chunk_coord.x, new_chunk_coord.y));
         update_chunks_around_player();
     }
 }
@@ -181,56 +182,50 @@ void ChunkManager::update_chunks_around_player() {
         }
     }
 
-    UtilityFunctions::print(vformat("🧱 [ChunkManager] ロード更新: 要求%d件 / 残タスク%d件", requested, pending_tasks.size()));
+    UtilityFunctions::print(vformat("[ChunkManager] Chunk update: requested=%d / pending=%d / loaded=%d", 
+        requested, pending_tasks.size(), loaded_chunks.size()));
 
-    // ロード完了判定
     if (!initial_load_complete && pending_tasks.is_empty()) {
         initial_load_complete = true;
         call_deferred("verity_initial_collisions");
-        UtilityFunctions::print("✅ [ChunkManager] 初期チャンクの読み込みが完了しました！");
+        UtilityFunctions::print("[ChunkManager] Initial chunk loading completed.");
     }
 }
 
 void ChunkManager::load_chunk(const Vector2i &coord) {
     if (loaded_chunks.has(coord) || pending_tasks.has(coord)) return;
 
-    ChunkLoadData *data = new ChunkLoadData();
-    data->coord = coord;
-    data->region_folder_path = region_folder_path;
-    data->chunk_size = chunk_size;
-    data->is_initial_load = !initial_load_complete;
+    UtilityFunctions::print(vformat("[ChunkManager] Queueing chunk task for coord: (%d, %d)", coord.x, coord.y));
 
-    int64_t task_id = WorkerThreadPool::get_singleton()->add_native_task(
-        [](void *p_user) {
-            // Workerスレッドで実行
-            ChunkLoader::async_load_worker(p_user);
-            
-            // 完了したらメインスレッドの ChunkManager に通知
-            ChunkLoadData *d = static_cast<ChunkLoadData *>(p_user);
-        },
-        data,
-        true,
-        vformat("Load Chunk (%d, %d)", coord.x, coord.y)
+    ChunkLoadData *load_data = new ChunkLoadData();
+    load_data->coord = coord;
+    load_data->chunk_size = chunk_size;
+    load_data->region_folder_path = region_folder_path;
+    load_data->is_initial_load = !initial_load_complete;
+
+    int64_t task_id = WorkerThreadPool::get_singleton()->add_task(
+        Callable(this, "_on_chunk_loaded").bind(load_data),
+        true
     );
 
     pending_tasks[coord] = task_id;
 }
 
 void ChunkManager::_on_chunk_loaded(Variant p_userdata) {
-    uint64_t ptr_val = p_userdata;
-    ChunkLoadData *data = reinterpret_cast<ChunkLoadData *>(ptr_val);
+    ChunkLoadData *data = (ChunkLoadData *)p_userdata.operator uint64_t();
     if (!data) return;
 
-    pending_tasks.erase(data->coord);
+    Vector2i coord = data->coord;
+    pending_tasks.erase(coord);
 
     if (data->has_data) {
-        chunk_block_data_map[data->coord] = data->categorized_positions;
-
-        Node3D *chunk_node = ChunkLoader::create_chunk_node(data->coord, data->chunk_size, data->built_data);
-        add_child(chunk_node);
-        loaded_chunks[data->coord] = chunk_node;
-
-        UtilityFunctions::print(vformat("[ChunkManager Main] Chunk (%d, %d) Loaded Successfully", data->coord.x, data->coord.y));
+        Node3D *chunk_node = ChunkLoader::create_chunk_node(coord, chunk_size, data->built_data);
+        if (chunk_node) {
+            call_deferred("add_child", chunk_node);
+            loaded_chunks[coord] = chunk_node;
+            chunk_block_data_map[coord] = data->categorized_positions;
+            UtilityFunctions::print(vformat("[ChunkManager] Chunk (%d, %d) loaded successfully.", coord.x, coord.y));
+        }
     }
 
     delete data;
@@ -238,10 +233,12 @@ void ChunkManager::_on_chunk_loaded(Variant p_userdata) {
     if (!initial_load_complete && pending_tasks.is_empty()) {
         initial_load_complete = true;
         call_deferred("verity_initial_collisions");
+        UtilityFunctions::print("[ChunkManager] All pending chunk tasks completed. Initial load complete set to true.");
     }
 }
 
 void ChunkManager::verity_initial_collisions() {
+    UtilityFunctions::print("[ChunkManager] Verifying initial collisions...");
     ChunkVeritier::verity_initial_collisions(loaded_chunks);
 }
 
@@ -250,11 +247,12 @@ void ChunkManager::unload_chunk(const Vector2i &coord) {
 
     Node3D *chunk_node = loaded_chunks[coord];
     loaded_chunks.erase(coord);
+    chunk_block_data_map.erase(coord);
 
     if (chunk_node) {
         chunk_node->queue_free();
     }
-    UtilityFunctions::print(vformat("[ChunkManager] Chunk (%d, %d) Unloaded", coord.x, coord.y));
+    UtilityFunctions::print(vformat("[ChunkManager] Chunk (%d, %d) unloaded.", coord.x, coord.y));
 }
 
 void ChunkManager::set_chunk_size(float p_size) { chunk_size = p_size; }
