@@ -44,7 +44,7 @@ namespace SKNewRoles2.Game
             {
                 SpawnMyPlayer();
                 SetPlayerPhysicsEnabled(false);
-                _myPlayerInstance.Visible = false; // ⭕ 画面にはまだ表示しない
+                _myPlayerInstance.Visible = false;
             }
 
             try
@@ -77,32 +77,29 @@ namespace SKNewRoles2.Game
                 bool received = await _roleManager.WaitForRoleAssignedAsync(timeoutMs: 10000);
                 if (!received)
                 {
+                    GD.PrintErr("⚠️ 役職受信タイムアウトのため、デフォルト(村人)を適用します");
                     _roleManager.ApplyRole(0, 0);
                 }
             }
             catch (System.Exception ex)
             {
-                GD.PrintErr($"❌ [_Ready] 初期化エラー: {ex.Message}");
+                GD.PrintErr($"❌ [_Ready] 初期化待機中にエラーが発生しました: {ex.Message}");
             }
             finally
             {
-                // 読み込み完了後にローディング画面を破棄
                 _uiController.HideLoadingScene();
             }
 
-            // ロード完了後にプレイヤーを表示する
             if (_myPlayerInstance != null)
             {
                 _myPlayerInstance.Visible = true;
             }
 
-            // BGMの再生
+            // BGM再生開始
             _bgmManager.PlayRandomBgm(0.0f);
 
-            // 役職公開画面を表示
             await _uiController.ShowRoleRevealAsync(_roleManager?.MyRole ?? 0, _roleManager?.MyFaction ?? 0, displayTimeMs: 5000);
 
-            // 物理・移動処理を有効化してゲーム開始
             SetPlayerPhysicsEnabled(true);
         }
 
@@ -110,7 +107,7 @@ namespace SKNewRoles2.Game
         {
             _connection.Poll();
 
-            // PING表示の更新 (0.5秒ごと)
+            // PING表示の更新
             _pingUpdateTimer += (float)delta;
             if (_pingUpdateTimer >= 0.5f)
             {
@@ -122,8 +119,8 @@ namespace SKNewRoles2.Game
                 }
             }
 
-            // プレイヤーが存在する場合のみ位置更新を送信
-            if (_myPlayerInstance != null)
+            // プレイヤーが存在し、かつ表示されている場合のみ位置更新を送信
+            if (_myPlayerInstance != null && _myPlayerInstance.Visible)
             {
                 SendMyTransform();
             }
@@ -137,25 +134,23 @@ namespace SKNewRoles2.Game
 
             if (_chunkManagerCpp == null)
             {
-                GD.PrintErr("❌ [MainGameScene] _chunkManagerCpp が null です。ChunkManager ノードが存在するか確認してください。");
+                GD.PrintErr("❌ [MainGameScene] ChunkManager ノードが見つかりません。");
                 return;
             }
 
-            // C++側に該当メソッドが存在するか確認
             if (!_chunkManagerCpp.HasMethod("is_initial_load_complete"))
             {
-                GD.PrintErr("❌ [MainGameScene] ChunkManager に 'is_initial_load_complete' メソッドがバインドされていません！");
+                GD.PrintErr("❌ [MainGameScene] ChunkManager に 'is_initial_load_complete' メソッドがバインドされていません。");
                 return;
             }
 
             while (elapsedMs < timeoutMs)
             {
                 Variant res = _chunkManagerCpp.Call("is_initial_load_complete");
-                
-                // 戻り値のログを出力して状態を確認
+
                 if (res.VariantType == Variant.Type.Bool && (bool)res)
                 {
-                    GD.Print($"✅ [MainGameScene] チャンクの初期読込が完了しました。({elapsedMs}ms経過)");
+                    GD.Print($"✅ [MainGameScene] チャンクの初期読込が完了しました ({elapsedMs}ms経過)。");
                     return;
                 }
 
@@ -163,7 +158,7 @@ namespace SKNewRoles2.Game
                 elapsedMs += checkIntervalMs;
             }
 
-            GD.PrintErr("⚠️ [MainGameScene] チャンク初期読込がタイムアウトしました。ゲームをそのまま開始します。");
+            GD.PrintErr("⚠️ [MainGameScene] チャンク初期読込がタイムアウトしました。処理を続行します。");
         }
 
         private void SpawnMyPlayer()
@@ -178,10 +173,9 @@ namespace SKNewRoles2.Game
             _myPlayerInstance.Name = "MyPlayer";
             AddChild(_myPlayerInstance);
 
-            Vector3 spawnPos = new Vector3(0, 5, 0);
+            Vector3 spawnPos = new(0, 100, 0);
             _myPlayerInstance.GlobalPosition = spawnPos;
 
-            // スポーン直後は移動不可にしておく
             SetPlayerPhysicsEnabled(false);
 
             if (_myPlayerInstance.HasSignal("HpChanged"))
