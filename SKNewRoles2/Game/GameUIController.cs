@@ -12,7 +12,7 @@ namespace SKNewRoles2.Game
         private Label _factionLabel;
         private Label _roleTitleLabel;
         private Label _descriptionLabel;
-        private Label _coordsLabel; // PositionTextノードを保持
+        private Label _coordsLabel;
 
         public void Initialize(Node parentNode)
         {
