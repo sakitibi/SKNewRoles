@@ -72,7 +72,7 @@ namespace SKNewRoles2.Game
                 await _roleManager.AssignRolesToAllPlayers(GetMyUserId());
             }
 
-            bool received = await _roleManager.WaitForRoleAssignedAsync(timeoutMs: 5000);
+            bool received = await _roleManager.WaitForRoleAssignedAsync(timeoutMs: 10000);
 
             if (!received)
             {
@@ -101,7 +101,6 @@ namespace SKNewRoles2.Game
 
                 if (isComplete)
                 {
-                    GD.Print("✅ 初期チャンク読み込み完了");
                     return;
                 }
 
@@ -109,7 +108,7 @@ namespace SKNewRoles2.Game
                 timeoutCounter++;
             }
 
-            GD.PrintErr("⚠️ チャンク読み込み待機がタイムアウト(15秒)しました。強制続行します。");
+            GD.PrintErr("⚠️ チャンク初期読み込み待機がタイムアウト(15秒)しました。");
         }
 
         public override void _Process(double delta)
@@ -117,6 +116,7 @@ namespace SKNewRoles2.Game
             _connection.Poll(delta);
             SendMyTransform();
 
+            // PING表示の更新 (0.5秒おき)
             _pingUpdateTimer += (float)delta;
             if (_pingUpdateTimer >= 0.5f)
             {
@@ -138,8 +138,7 @@ namespace SKNewRoles2.Game
             else
             {
                 _pingLabel.Text = $"PING: {ping} ms";
-                
-                // 遅延に応じた色分け
+
                 if (ping < 60)
                     _pingLabel.Modulate = Colors.Green;
                 else if (ping < 130)
@@ -200,11 +199,7 @@ namespace SKNewRoles2.Game
 
         private void SendMyTransform()
         {
-            if (_myPlayerInstance == null)
-            {
-                // プレイヤーがまだロードされていない場合
-                return;
-            }
+            if (_myPlayerInstance == null) return;
 
             Vector3 pos = _myPlayerInstance.GlobalPosition;
             Vector3 rot = _myPlayerInstance.Rotation;
@@ -224,7 +219,7 @@ namespace SKNewRoles2.Game
         
         public override void _ExitTree()
         {
-            GD.Print("🚪 [MainGameScene] _ExitTree");
+            GD.Print("🚪 [MainGameScene] _ExitTree: シーン破棄のため通信とBGMを停止します。");
             _connection?.Close();
             _bgmManager?.StopBgm();
 

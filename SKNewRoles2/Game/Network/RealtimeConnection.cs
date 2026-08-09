@@ -17,10 +17,14 @@ namespace SKNewRoles2.Game.Network
         private readonly Stopwatch _pingStopwatch = new();
         private bool _isWaitingPong = false;
         private float _pingTimer = 0.0f;
-        private const float PING_INTERVAL = 3.0f; // 3秒ごとにPING送信
+        private const float PING_INTERVAL = 3.0f; // 3秒周期
 
         public WebSocketPeer Client => _client;
         public bool IsJoinedChannel => _isJoinedChannel;
+
+        /// <summary>
+        /// 直近の PING 応答時間
+        /// </summary>
         public int PingMs { get; private set; } = -1;
 
         public async Task<bool> EnsureConnectedAsync()
@@ -85,9 +89,6 @@ namespace SKNewRoles2.Game.Network
             return false;
         }
 
-        /// <summary>
-        /// MainGameScene の _Process から毎フレーム呼ばれます（メインスレッド）
-        /// </summary>
         public void Poll(double delta)
         {
             if (_client == null) return;
@@ -95,7 +96,6 @@ namespace SKNewRoles2.Game.Network
             var state = _client.GetReadyState();
             if (state != WebSocketPeer.State.Open) return;
 
-            // 受信メッセージの処理
             _client.Poll();
             while (_client.GetAvailablePacketCount() > 0)
             {
@@ -103,7 +103,7 @@ namespace SKNewRoles2.Game.Network
                 ProcessMessageAndCheckPing(message);
             }
 
-            // メインスレッドのタイマーで安全に PING を送信
+            // PING 定期送信
             if (_isJoinedChannel)
             {
                 _pingTimer += (float)delta;
@@ -119,7 +119,7 @@ namespace SKNewRoles2.Game.Network
         {
             if (string.IsNullOrEmpty(message)) return;
 
-            // PING応答(phx_reply)受信時に PING 値を確定
+            // Heartbeat応答(phx_reply)受信時に PING 値更新
             if (_isWaitingPong && message.Contains("phx_reply"))
             {
                 _pingStopwatch.Stop();
@@ -127,7 +127,6 @@ namespace SKNewRoles2.Game.Network
                 _isWaitingPong = false;
             }
 
-            // 通常のメッセージ配信（役職通知やTransform情報など）
             RealtimeMessageDispatcher.ProcessMessage(message, ref _isJoinedChannel);
         }
 
@@ -163,6 +162,9 @@ namespace SKNewRoles2.Game.Network
             GD.Print("📡 [Realtime] phx_join リクエストを送信しました。");
         }
 
+        /// <summary>
+        /// シーン破棄時などに通信を安全に閉じます
+        /// </summary>
         public void Close()
         {
             try
