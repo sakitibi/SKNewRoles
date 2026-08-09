@@ -35,9 +35,17 @@ namespace SKNewRoles2.Game
             _bgmManager = new BGMManager();
             AddChild(_bgmManager);
 
+            // UIの初期化
             _uiController = new GameUIController();
             AddChild(_uiController);
             _uiController.Initialize(this);
+
+            if (_myPlayerInstance == null)
+            {
+                SpawnMyPlayer();
+                SetPlayerPhysicsEnabled(false);
+                _myPlayerInstance.Visible = false; // ⭕ 画面にはまだ表示しない
+            }
 
             try
             {
@@ -48,7 +56,6 @@ namespace SKNewRoles2.Game
                     GD.PrintErr("❌ [Realtime] MainGameScene での WebSocket 接続に失敗しました。");
                 }
 
-                // マネージャー類の生成・初期化
                 _roleManager = new GameRoleManager();
                 AddChild(_roleManager);
                 _roleManager.Initialize(GetNodeOrNull<Node>("RoleManager"));
@@ -70,28 +77,32 @@ namespace SKNewRoles2.Game
                 bool received = await _roleManager.WaitForRoleAssignedAsync(timeoutMs: 10000);
                 if (!received)
                 {
-                    GD.PrintErr("⚠️ 役職受信タイムアウトのため、デフォルト(村人)を適用します");
                     _roleManager.ApplyRole(0, 0);
                 }
             }
             catch (System.Exception ex)
             {
-                GD.PrintErr($"❌ [_Ready] 初期化処理中にエラーが発生しました: {ex.Message}");
+                GD.PrintErr($"❌ [_Ready] 初期化エラー: {ex.Message}");
             }
             finally
             {
+                // 読み込み完了後にローディング画面を破棄
                 _uiController.HideLoadingScene();
             }
 
-            if (_myPlayerInstance == null)
+            // ロード完了後にプレイヤーを表示する
+            if (_myPlayerInstance != null)
             {
-                SpawnMyPlayer();
+                _myPlayerInstance.Visible = true;
             }
 
+            // BGMの再生
             _bgmManager.PlayRandomBgm(0.0f);
 
+            // 役職公開画面を表示
             await _uiController.ShowRoleRevealAsync(_roleManager?.MyRole ?? 0, _roleManager?.MyFaction ?? 0, displayTimeMs: 5000);
 
+            // 物理・移動処理を有効化してゲーム開始
             SetPlayerPhysicsEnabled(true);
         }
 
