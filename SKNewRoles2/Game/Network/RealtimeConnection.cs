@@ -1,6 +1,8 @@
 using Godot;
+using System;
 using System.Diagnostics;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using SKNewRoles2.SessionManagerSystem;
 
@@ -12,11 +14,19 @@ namespace SKNewRoles2.Game.Network
         private bool _isJoinedChannel = false;
         private int _refCounter = 1;
 
+        // PING計測用の変数
         private readonly Stopwatch _pingStopwatch = new();
         private bool _isWaitingPong = false;
 
+        // シーン遷移時などの非同期処理キャンセル用トークン
+        private CancellationTokenSource _cts = new();
+
         public WebSocketPeer Client => _client;
         public bool IsJoinedChannel => _isJoinedChannel;
+
+        /// <summary>
+        /// 直近で計測された PING (ms) の値。未計測時は -1
+        /// </summary>
         public int PingMs { get; private set; } = -1;
 
         public async Task<bool> EnsureConnectedAsync()
@@ -43,7 +53,7 @@ namespace SKNewRoles2.Game.Network
             GD.Print("🌐 [Realtime] MainGame 用 WebSocket 接続を開始しました。");
 
             int timeoutCounter = 0;
-            while (timeoutCounter < 100)
+            while (timeoutCounter < 100 && !_cts.Token.IsCancellationRequested)
             {
                 _client.Poll();
                 var state = _client.GetReadyState();
@@ -73,17 +83,17 @@ namespace SKNewRoles2.Game.Network
                     return false;
                 }
 
-                await Task.Delay(100);
+                await Task.Delay(100, _cts.Token).ContinueWith(_ => { });
                 timeoutCounter++;
             }
 
-            GD.PrintErr("⚠️ [Realtime] WebSocket 接続待機がタイムアウト(10秒)しました。");
+            GD.PrintErr("⚠️ [Realtime] WebSocket 接続待機がタイムアウト(10秒)またはキャンセルされました。");
             return false;
         }
 
         public void Poll()
         {
-            if (_client == null) return;
+            if (_client == null || _cts.IsCancellationRequested) return;
 
             _client.Poll();
             while (_client.GetAvailablePacketCount() > 0)
@@ -97,6 +107,7 @@ namespace SKNewRoles2.Game.Network
         {
             RealtimeMessageDispatcher.ProcessMessage(message, ref _isJoinedChannel);
 
+            // Phoenix Channel の Heartbeat 応答(phx_reply)受信時に PING 計測完了
             if (_isWaitingPong && message.Contains("phx_reply"))
             {
                 _pingStopwatch.Stop();
@@ -105,12 +116,24 @@ namespace SKNewRoles2.Game.Network
             }
         }
 
+        /// <summary>
+        /// 定期的に PING (Heartbeat) を送信して応答時間を測定します。
+        /// </summary>
         public async Task StartPingLoopAsync()
         {
-            while (_client != null && _client.GetReadyState() == WebSocketPeer.State.Open)
+            try
             {
-                SendHeartbeat();
-                await Task.Delay(3000); // 3秒ごとにPING計測
+                while (_client != null && 
+                       _client.GetReadyState() == WebSocketPeer.State.Open && 
+                       !_cts.Token.IsCancellationRequested)
+                {
+                    SendHeartbeat();
+                    await Task.Delay(3000, _cts.Token); // 3秒周期で計測
+                }
+            }
+            catch (TaskCanceledException)
+            {
+                // シーン離脱によるキャンセルの場合は正常終了
             }
         }
 
@@ -144,6 +167,30 @@ namespace SKNewRoles2.Game.Network
 
             _client.SendText(JsonSerializer.Serialize(joinPayload));
             GD.Print("📡 [Realtime] phx_join リクエストを送信しました。");
+        }
+
+        /// <summary>
+        /// シーン破棄時などに非同期処理とWebSocket接続を安全に終了させます。
+        /// </summary>
+        public void Close()
+        {
+            try
+            {
+                _cts?.Cancel();
+
+                if (_client != null && _client.GetReadyState() == WebSocketPeer.State.Open)
+                {
+                    _client.Close(1000, "Scene exit");
+                }
+            }
+            catch (Exception ex)
+            {
+                GD.PrintErr($"⚠️ [Realtime] Close 時に例外が発生しました: {ex.Message}");
+            }
+            finally
+            {
+                _isJoinedChannel = false;
+            }
         }
     }
 }
