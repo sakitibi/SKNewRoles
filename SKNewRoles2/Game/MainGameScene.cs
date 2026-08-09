@@ -20,24 +20,12 @@ namespace SKNewRoles2.Game
         private GameRoleManager _roleManager;
         private readonly RealtimeConnection _connection = new();
 
-        private Label _pingLabel;
-        private float _pingUpdateTimer = 0.0f;
-
-        private bool _isGameStarted = false;
-
         public int MyRole => _roleManager?.MyRole ?? -1;
         public int MyFaction => _roleManager?.MyFaction ?? -1;
 
         public override async void _Ready()
         {
             GD.Print("[_Ready] 開始");
-
-            _pingLabel = GetNodeOrNull<Label>("UILayer/PingLabel");
-            if (_pingLabel != null)
-            {
-                // 初期状態では PING ラベルを非表示にしておく
-                _pingLabel.Visible = false;
-            }
 
             _bgmManager = new BGMManager();
             AddChild(_bgmManager);
@@ -87,21 +75,10 @@ namespace SKNewRoles2.Game
                 _roleManager.ApplyRole(0, 0);
             }
 
-            // ローディング画面を隠す
             _uiController.HideLoadingScene();
-
-            // 役職発表画面を一定時間表示して閉じる
             await _uiController.ShowRoleRevealAsync(_roleManager.MyRole, _roleManager.MyFaction, displayTimeMs: 5000);
 
-            // プレイヤー操作を有効化
             SetPlayerPhysicsEnabled(true);
-
-            _isGameStarted = true;
-
-            if (_pingLabel != null)
-            {
-                _pingLabel.Visible = true;
-            }
         }
 
         private async Task WaitForInitialChunksLoaded()
@@ -119,6 +96,7 @@ namespace SKNewRoles2.Game
 
                 if (isComplete)
                 {
+                    GD.Print("✅ 初期チャンク読み込み完了");
                     return;
                 }
 
@@ -126,47 +104,13 @@ namespace SKNewRoles2.Game
                 timeoutCounter++;
             }
 
-            GD.PrintErr("⚠️ チャンク初期読み込み待機がタイムアウト(15秒)しました。");
+            GD.PrintErr("⚠️ チャンク読み込み待機がタイムアウト(15秒)しました。強制続行します。");
         }
 
         public override void _Process(double delta)
         {
-            // 通信受信と送信自体は裏で行っておく
-            _connection.Poll(delta);
+            _connection.Poll();
             SendMyTransform();
-
-            if (_isGameStarted)
-            {
-                _pingUpdateTimer += (float)delta;
-                if (_pingUpdateTimer >= 0.5f)
-                {
-                    _pingUpdateTimer = 0.0f;
-                    UpdatePingUI();
-                }
-            }
-        }
-
-        private void UpdatePingUI()
-        {
-            if (_pingLabel == null || _connection == null) return;
-
-            int ping = _connection.PingMs;
-            if (ping < 0)
-            {
-                _pingLabel.Text = "PING: -- ms";
-                _pingLabel.Modulate = Colors.White;
-            }
-            else
-            {
-                _pingLabel.Text = $"PING: {ping} ms";
-
-                if (ping < 60)
-                    _pingLabel.Modulate = Colors.Green;
-                else if (ping < 130)
-                    _pingLabel.Modulate = Colors.Yellow;
-                else
-                    _pingLabel.Modulate = Colors.Red;
-            }
         }
 
         private void SpawnMyPlayer()
@@ -220,10 +164,16 @@ namespace SKNewRoles2.Game
 
         private void SendMyTransform()
         {
-            if (_myPlayerInstance == null) return;
+            if (_myPlayerInstance == null)
+            {
+                // プレイヤーがまだロードされていない場合
+                return;
+            }
 
             Vector3 pos = _myPlayerInstance.GlobalPosition;
             Vector3 rot = _myPlayerInstance.Rotation;
+
+            GD.Print($"[SendTransform] Pos: {pos}, Rot: {rot}");
 
             _ = RealtimeBroadcaster.SendTransformAsync(_connection, pos.X, pos.Y, pos.Z, rot.X, rot.Y, rot.Z);
         }
@@ -240,8 +190,7 @@ namespace SKNewRoles2.Game
         
         public override void _ExitTree()
         {
-            GD.Print("🚪 [MainGameScene] _ExitTree: シーン破棄のため通信とBGMを停止します。");
-            _connection?.Close();
+            GD.Print("🚪 [MainGameScene] _ExitTree: シーン破棄のためBGMを停止します。");
             _bgmManager?.StopBgm();
 
             base._ExitTree();

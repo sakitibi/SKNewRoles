@@ -1,6 +1,4 @@
 using Godot;
-using System;
-using System.Diagnostics;
 using System.Text.Json;
 using System.Threading.Tasks;
 using SKNewRoles2.SessionManagerSystem;
@@ -13,19 +11,8 @@ namespace SKNewRoles2.Game.Network
         private bool _isJoinedChannel = false;
         private int _refCounter = 1;
 
-        // PING計測用の変数
-        private readonly Stopwatch _pingStopwatch = new();
-        private bool _isWaitingPong = false;
-        private float _pingTimer = 0.0f;
-        private const float PING_INTERVAL = 3.0f; // 3秒周期
-
         public WebSocketPeer Client => _client;
         public bool IsJoinedChannel => _isJoinedChannel;
-
-        /// <summary>
-        /// 直近の PING 応答時間
-        /// </summary>
-        public int PingMs { get; private set; } = -1;
 
         public async Task<bool> EnsureConnectedAsync()
         {
@@ -66,7 +53,7 @@ namespace SKNewRoles2.Game.Network
                     while (_client.GetAvailablePacketCount() > 0)
                     {
                         string message = _client.GetPacket().GetStringFromUtf8();
-                        ProcessMessageAndCheckPing(message);
+                        RealtimeMessageDispatcher.ProcessMessage(message, ref _isJoinedChannel);
                     }
 
                     if (_isJoinedChannel)
@@ -89,63 +76,16 @@ namespace SKNewRoles2.Game.Network
             return false;
         }
 
-        public void Poll(double delta)
+        public void Poll()
         {
             if (_client == null) return;
-
-            var state = _client.GetReadyState();
-            if (state != WebSocketPeer.State.Open) return;
 
             _client.Poll();
             while (_client.GetAvailablePacketCount() > 0)
             {
                 string message = _client.GetPacket().GetStringFromUtf8();
-                ProcessMessageAndCheckPing(message);
+                RealtimeMessageDispatcher.ProcessMessage(message, ref _isJoinedChannel);
             }
-
-            // PING 定期送信
-            if (_isJoinedChannel)
-            {
-                _pingTimer += (float)delta;
-                if (_pingTimer >= PING_INTERVAL)
-                {
-                    _pingTimer = 0.0f;
-                    SendHeartbeat();
-                }
-            }
-        }
-
-        private void ProcessMessageAndCheckPing(string message)
-        {
-            if (string.IsNullOrEmpty(message)) return;
-
-            // Heartbeat応答(phx_reply)受信時に PING 値更新
-            if (_isWaitingPong && message.Contains("phx_reply"))
-            {
-                _pingStopwatch.Stop();
-                PingMs = (int)_pingStopwatch.ElapsedMilliseconds;
-                _isWaitingPong = false;
-            }
-
-            RealtimeMessageDispatcher.ProcessMessage(message, ref _isJoinedChannel);
-        }
-
-        private void SendHeartbeat()
-        {
-            if (_client == null || _client.GetReadyState() != WebSocketPeer.State.Open) return;
-
-            _pingStopwatch.Restart();
-            _isWaitingPong = true;
-
-            var heartbeatPayload = new
-            {
-                topic = "phoenix",
-                @event = "heartbeat",
-                payload = new { },
-                @ref = _refCounter++.ToString()
-            };
-
-            _client.SendText(JsonSerializer.Serialize(heartbeatPayload));
         }
 
         private void SendJoinChannelRequest()
@@ -160,28 +100,6 @@ namespace SKNewRoles2.Game.Network
 
             _client.SendText(JsonSerializer.Serialize(joinPayload));
             GD.Print("📡 [Realtime] phx_join リクエストを送信しました。");
-        }
-
-        /// <summary>
-        /// シーン破棄時などに通信を安全に閉じます
-        /// </summary>
-        public void Close()
-        {
-            try
-            {
-                if (_client != null && _client.GetReadyState() == WebSocketPeer.State.Open)
-                {
-                    _client.Close(1000, "Scene exit");
-                }
-            }
-            catch (Exception ex)
-            {
-                GD.PrintErr($"⚠️ [Realtime] Close 時に例外が発生しました: {ex.Message}");
-            }
-            finally
-            {
-                _isJoinedChannel = false;
-            }
         }
     }
 }
