@@ -1,4 +1,5 @@
 using Godot;
+using System;
 using System.Threading.Tasks;
 using SKNewRoles2.SessionManagerSystem;
 using SKNewRoles2.Game.Network;
@@ -102,7 +103,14 @@ namespace SKNewRoles2.Game
 
         public override void _Process(double delta)
         {
-            _connection?.Poll();
+            try
+            {
+                _connection?.Poll();
+            }
+            catch (Exception ex)
+            {
+                GD.PrintErr($"⚠️ [Realtime] Poll 例外: {ex.Message}");
+            }
 
             if (_myPlayerInstance != null && IsInstanceValid(_myPlayerInstance))
             {
@@ -168,7 +176,6 @@ namespace SKNewRoles2.Game
                 }
             }
 
-            // Max HP の読み取り
             string[] maxHpKeys = ["MaxHp", "max_hp", "max_health", "MaxHealth"];
             foreach (var key in maxHpKeys)
             {
@@ -210,7 +217,19 @@ namespace SKNewRoles2.Game
             _remotePlayerManager?.SetMyHp(currentHp);
 
             string myUserId = GetMyUserId();
-            _ = RealtimeBroadcaster.SendHpAsync(_connection, myUserId, currentHp, maxHp);
+            _ = SafeSendHpAsync(myUserId, currentHp, maxHp);
+        }
+
+        private async Task SafeSendHpAsync(string userId, int currentHp, int maxHp)
+        {
+            try
+            {
+                await RealtimeBroadcaster.SendHpAsync(_connection, userId, currentHp, maxHp);
+            }
+            catch (System.Exception ex)
+            {
+                GD.PrintErr($"⚠️ [Realtime] HP送信時例外 (送信スキップ): {ex.Message}");
+            }
         }
 
         private async Task WaitForInitialChunksLoaded()
@@ -275,14 +294,31 @@ namespace SKNewRoles2.Game
             Vector3 pos = _myPlayerInstance.GlobalPosition;
             Vector3 rot = _myPlayerInstance.Rotation;
 
-            _ = RealtimeBroadcaster.SendTransformAsync(_connection, pos.X, pos.Y, pos.Z, rot.X, rot.Y, rot.Z);
+            try
+            {
+                _ = RealtimeBroadcaster.SendTransformAsync(_connection, pos.X, pos.Y, pos.Z, rot.X, rot.Y, rot.Z);
+            }
+            catch (Exception ex)
+            {
+                GD.PrintErr($"⚠️ [Realtime] Transform送信時例外: {ex.Message}");
+            }
         }
 
         public override void _ExitTree()
         {
-            GD.Print("🚪 [MainGameScene] _ExitTree: シーン破棄のためBGMを停止します。");
+            SetProcess(false);
+
+            GD.Print("🚪 [MainGameScene] _ExitTree: シーン破棄のため通信とBGMを安全に停止します。");
             _bgmManager?.StopBgm();
-            _connection?.Close();
+
+            try
+            {
+                _connection?.Close();
+            }
+            catch (Exception ex)
+            {
+                GD.PrintErr($"⚠️ [MainGameScene] 通信切断エラー (無視): {ex.Message}");
+            }
 
             base._ExitTree();
         }
