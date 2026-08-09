@@ -1,7 +1,6 @@
 using Godot;
 using System;
 using System.Threading.Tasks;
-using SKNewRoles2.Game.Network;
 
 namespace SKNewRoles2.SNRSystem
 {
@@ -16,7 +15,6 @@ namespace SKNewRoles2.SNRSystem
         private Label _statusLabel;
         private Label _percentLabel;
         private ColorRect _background;
-        private readonly RealtimeConnection _connection = new();
 
         private Tween _progressTween;
 
@@ -24,7 +22,7 @@ namespace SKNewRoles2.SNRSystem
         public Label StatusLabel => _statusLabel;
         public ColorRect BackgroundRect => _background;
 
-        public override async void _Ready()
+        public override void _Ready()
         {
             _background = GetNode<ColorRect>("Background");
             _statusLabel = GetNode<Label>("CenterContainer/VBoxContainer/LoadingLabel");
@@ -48,74 +46,87 @@ namespace SKNewRoles2.SNRSystem
 
         private async Task RunStartupSequenceAsync()
         {
-            // 基本システムの準備
-            UpdateProgress(10, "セッション情報を準備中...");
-            await Task.Delay(200);
-            if (!IsInstanceValid(this) || !IsInsideTree()) return;
-
-            UpdateProgress(30, "ネットワーク接続を確保中...");
-            bool isConnected = await _connection.EnsureConnectedAsync();
-            if (!IsInstanceValid(this) || !IsInsideTree()) return;
-
-            UpdateProgress(50, "コアモジュールをロード中...");
-            await Task.Delay(200);
-            if (!IsInstanceValid(this) || !IsInsideTree()) return;
-
-            // Mod/拡張機能のロードシーケンス実行
-            if (OnModLoadingSequence != null)
+            try
             {
-                Delegate[] invocationList = OnModLoadingSequence.GetInvocationList();
-                for (int i = 0; i < invocationList.Length; i++)
+                // 基本システムの準備
+                UpdateProgress(10, "セッション情報を準備中...");
+                await Task.Delay(200);
+                if (!IsInstanceValid(this) || !IsInsideTree()) return;
+
+                // 起動時の初期チェック
+                UpdateProgress(30, "システム環境を確認中...");
+                await Task.Delay(200);
+                if (!IsInstanceValid(this) || !IsInsideTree()) return;
+
+                UpdateProgress(50, "コアモジュールをロード中...");
+                await Task.Delay(200);
+                if (!IsInstanceValid(this) || !IsInsideTree()) return;
+
+                // Mod/拡張機能のロードシーケンス実行
+                if (OnModLoadingSequence != null)
                 {
-                    try
+                    Delegate[] invocationList = OnModLoadingSequence.GetInvocationList();
+                    for (int i = 0; i < invocationList.Length; i++)
                     {
-                        if (invocationList[i] is Func<Action<float, string>, Task> modTask)
+                        try
                         {
-                            await modTask.Invoke((val, text) => {
-                                float mappedVal = 55f + (val * 0.35f); 
-                                UpdateProgress(mappedVal, text);
-                            });
+                            if (invocationList[i] is Func<Action<float, string>, Task> modTask)
+                            {
+                                await modTask.Invoke((val, text) => {
+                                    float mappedVal = 55f + (val * 0.35f); 
+                                    UpdateProgress(mappedVal, text);
+                                });
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            GD.PrintErr($"❌ [Mod Load Error] インデックス {i}: {ex.Message}");
                         }
                     }
-                    catch (Exception ex)
+                }
+
+                // 起動完了フェーズ
+                UpdateProgress(95, "ゲーム環境を構築中...");
+                await Task.Delay(300);
+
+                if (!IsInstanceValid(this) || !IsInsideTree())
+                {
+                    GD.Print("[Startup] バックグラウンドロード中断（既に別の画面へ遷移済み）。");
+                    return;
+                }
+
+                UpdateProgress(100, "準備完了！");
+                
+                await Task.Delay(300);
+
+                if (!IsInstanceValid(this) || !IsInsideTree())
+                {
+                    GD.Print("[Startup] 画面遷移をスキップ（既に別の画面へ遷移済み）。");
+                    return;
+                }
+
+                if (GetTree() != null && GetTree().CurrentScene == this)
+                {
+                    GD.Print("[Startup] 全てのロードが完了しました。タイトル画面(Home.tscn)へ遷移します。");
+                    Error error = GetTree().ChangeSceneToFile("res://Scenes/Home.tscn");
+                    if (error != Error.Ok)
                     {
-                        GD.PrintErr($"❌ [Mod Load Error] インデックス {i}: {ex.Message}");
+                        GD.PrintErr("❌ タイトル画面(Home.tscn)への遷移に失敗しました: " + error);
                     }
                 }
-            }
-
-            // 起動完了フェーズ
-            UpdateProgress(95, "ゲーム環境を構築中...");
-            await Task.Delay(400);
-
-            if (!IsInstanceValid(this) || !IsInsideTree())
-            {
-                GD.Print("[Startup] バックグラウンドロード中断（既に別の画面へ遷移済み）。");
-                return;
-            }
-
-            UpdateProgress(100, "準備完了！");
-            
-            await Task.Delay(400);
-
-            if (!IsInstanceValid(this) || !IsInsideTree())
-            {
-                GD.Print("[Startup] 画面遷移をスキップ（既に別の画面へ遷移済み）。");
-                return;
-            }
-
-            if (GetTree() != null && GetTree().CurrentScene == this)
-            {
-                GD.Print("[Startup] 全てのロードが完了しました。タイトル画面(Home.tscn)へ遷移します。");
-                Error error = GetTree().ChangeSceneToFile("res://Scenes/Home.tscn");
-                if (error != Error.Ok)
+                else
                 {
-                    GD.PrintErr("❌ タイトル画面(Home.tscn)への遷移に失敗しました: " + error);
+                    GD.Print("[Startup] 他のシーンの子ノード(UI)として実行されたため、画面遷移をスキップします。");
                 }
             }
-            else
+            catch (Exception ex)
             {
-                GD.Print("[Startup] 他のシーンの子ノード(UI)として実行されたため、画面遷移をスキップします。");
+                GD.PrintErr($"❌ [Startup] シーケンス実行中にエラーが発生しました: {ex.Message}\n{ex.StackTrace}");
+                // エラーが発生してもタイトル画面へ強制遷移を試みる
+                if (GetTree() != null && GetTree().CurrentScene == this)
+                {
+                    GetTree().ChangeSceneToFile("res://Scenes/Home.tscn");
+                }
             }
         }
 
@@ -159,6 +170,15 @@ namespace SKNewRoles2.SNRSystem
                      .SetEase(Tween.EaseType.Out);
                 }
             }
+        }
+
+        public override void _ExitTree()
+        {
+            if (_progressTween != null && _progressTween.IsValid())
+            {
+                _progressTween.Kill();
+            }
+            base._ExitTree();
         }
     }
 }

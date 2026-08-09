@@ -124,19 +124,27 @@ namespace SKNewRoles2.Game
             int elapsedMs = 0;
             int checkIntervalMs = 100;
 
+            if (_chunkManagerCpp == null)
+            {
+                GD.PrintErr("❌ [MainGameScene] _chunkManagerCpp が null です。ChunkManager ノードが存在するか確認してください。");
+                return;
+            }
+
+            // C++側に該当メソッドが存在するか確認
+            if (!_chunkManagerCpp.HasMethod("is_initial_load_complete"))
+            {
+                GD.PrintErr("❌ [MainGameScene] ChunkManager に 'is_initial_load_complete' メソッドがバインドされていません！");
+                return;
+            }
+
             while (elapsedMs < timeoutMs)
             {
-                if (_chunkManagerCpp != null)
+                Variant res = _chunkManagerCpp.Call("is_initial_load_complete");
+                
+                // 戻り値のログを出力して状態を確認
+                if (res.VariantType == Variant.Type.Bool && (bool)res)
                 {
-                    Variant res = _chunkManagerCpp.Call("is_initial_load_complete");
-                    if (res.VariantType == Variant.Type.Bool && (bool)res)
-                    {
-                        GD.Print("✅ [MainGameScene] チャンクの初期読込が完了しました。");
-                        return;
-                    }
-                }
-                else
-                {
+                    GD.Print($"✅ [MainGameScene] チャンクの初期読込が完了しました。({elapsedMs}ms経過)");
                     return;
                 }
 
@@ -144,7 +152,7 @@ namespace SKNewRoles2.Game
                 elapsedMs += checkIntervalMs;
             }
 
-            GD.PrintErr("⚠️ [MainGameScene] チャンク初期読込がタイムアウトしました。ゲームを開始します。");
+            GD.PrintErr("⚠️ [MainGameScene] チャンク初期読込がタイムアウトしました。ゲームをそのまま開始します。");
         }
 
         private void SpawnMyPlayer()
