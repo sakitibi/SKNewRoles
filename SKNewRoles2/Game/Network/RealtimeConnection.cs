@@ -14,19 +14,12 @@ namespace SKNewRoles2.Game.Network
         private bool _isJoinedChannel = false;
         private int _refCounter = 1;
 
-        // PING計測用の変数
         private readonly Stopwatch _pingStopwatch = new();
         private bool _isWaitingPong = false;
-
-        // シーン遷移時などの非同期処理キャンセル用トークン
         private CancellationTokenSource _cts = new();
 
         public WebSocketPeer Client => _client;
         public bool IsJoinedChannel => _isJoinedChannel;
-
-        /// <summary>
-        /// 直近で計測された PING (ms) の値。未計測時は -1
-        /// </summary>
         public int PingMs { get; private set; } = -1;
 
         public async Task<bool> EnsureConnectedAsync()
@@ -87,13 +80,14 @@ namespace SKNewRoles2.Game.Network
                 timeoutCounter++;
             }
 
-            GD.PrintErr("⚠️ [Realtime] WebSocket 接続待機がタイムアウト(10秒)またはキャンセルされました。");
+            GD.PrintErr("⚠️ [Realtime] WebSocket 接続待機がタイムアウト(10秒)しました。");
             return false;
         }
 
         public void Poll()
         {
             if (_client == null || _cts.IsCancellationRequested) return;
+            if (_client.GetReadyState() != WebSocketPeer.State.Open) return;
 
             _client.Poll();
             while (_client.GetAvailablePacketCount() > 0)
@@ -105,36 +99,43 @@ namespace SKNewRoles2.Game.Network
 
         private void ProcessMessageAndCheckPing(string message)
         {
-            RealtimeMessageDispatcher.ProcessMessage(message, ref _isJoinedChannel);
+            if (string.IsNullOrEmpty(message)) return;
 
-            // Phoenix Channel の Heartbeat 応答(phx_reply)受信時に PING 計測完了
+            // PING応答(phx_reply)のチェック
             if (_isWaitingPong && message.Contains("phx_reply"))
             {
                 _pingStopwatch.Stop();
                 PingMs = (int)_pingStopwatch.ElapsedMilliseconds;
                 _isWaitingPong = false;
             }
+
+            // 通常のメッセージDispatcher処理
+            RealtimeMessageDispatcher.ProcessMessage(message, ref _isJoinedChannel);
         }
 
         /// <summary>
-        /// 定期的に PING (Heartbeat) を送信して応答時間を測定します。
+        /// PING計測ループ
         /// </summary>
-        public async Task StartPingLoopAsync()
+        public void StartPingLoop()
         {
-            try
+            _ = Task.Run(async () =>
             {
-                while (_client != null && 
-                       _client.GetReadyState() == WebSocketPeer.State.Open && 
-                       !_cts.Token.IsCancellationRequested)
+                try
                 {
-                    SendHeartbeat();
-                    await Task.Delay(3000, _cts.Token); // 3秒周期で計測
+                    while (_client != null && !_cts.Token.IsCancellationRequested)
+                    {
+                        if (_client.GetReadyState() == WebSocketPeer.State.Open && _isJoinedChannel)
+                        {
+                            SendHeartbeat();
+                        }
+                        await Task.Delay(3000, _cts.Token);
+                    }
                 }
-            }
-            catch (TaskCanceledException)
-            {
-                // シーン離脱によるキャンセルの場合は正常終了
-            }
+                catch (TaskCanceledException)
+                {
+                    // 正常終了
+                }
+            });
         }
 
         private void SendHeartbeat()
@@ -169,9 +170,6 @@ namespace SKNewRoles2.Game.Network
             GD.Print("📡 [Realtime] phx_join リクエストを送信しました。");
         }
 
-        /// <summary>
-        /// シーン破棄時などに非同期処理とWebSocket接続を安全に終了させます。
-        /// </summary>
         public void Close()
         {
             try

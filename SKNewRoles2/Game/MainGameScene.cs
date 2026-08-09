@@ -43,8 +43,7 @@ namespace SKNewRoles2.Game
             }
             else
             {
-                // PING計測ループ開始
-                _ = _connection.StartPingLoopAsync();
+                _connection.StartPingLoop();
             }
 
             // サブマネージャーの生成と初期化
@@ -77,7 +76,7 @@ namespace SKNewRoles2.Game
                 await _roleManager.AssignRolesToAllPlayers(GetMyUserId());
             }
 
-            bool received = await _roleManager.WaitForRoleAssignedAsync(timeoutMs: 10000);
+            bool received = await _roleManager.WaitForRoleAssignedAsync(timeoutMs: 5000);
 
             if (!received)
             {
