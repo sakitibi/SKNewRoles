@@ -20,17 +20,12 @@ namespace SKNewRoles2.Game
         private GameRoleManager _roleManager;
         private readonly RealtimeConnection _connection = new();
 
-        private Label _pingLabel;
-        private float _pingUpdateTimer = 0.0f;
-
         public int MyRole => _roleManager?.MyRole ?? -1;
         public int MyFaction => _roleManager?.MyFaction ?? -1;
 
         public override async void _Ready()
         {
             GD.Print("[_Ready] 開始");
-
-            _pingLabel = GetNodeOrNull<Label>("UILayer/PingLabel");
 
             _bgmManager = new BGMManager();
             AddChild(_bgmManager);
@@ -107,28 +102,36 @@ namespace SKNewRoles2.Game
         {
             _connection.Poll();
 
-            // PING表示の更新
-            _pingUpdateTimer += (float)delta;
-            if (_pingUpdateTimer >= 0.5f)
-            {
-                _pingUpdateTimer = 0.0f;
-                if (_pingLabel != null)
-                {
-                    int ping = _connection.PingMs;
-                    _pingLabel.Text = ping >= 0 ? $"PING: {ping} ms" : "PING: -- ms";
-                }
-            }
-
-            // プレイヤーが存在する場合、位置と座標UIの更新を行う
-            if (_myPlayerInstance != null)
+            if (_myPlayerInstance != null && IsInstanceValid(_myPlayerInstance))
             {
                 _uiController?.UpdateCoords(_myPlayerInstance.GlobalPosition);
+
+                UpdateHpUIFromPlayer();
 
                 if (_myPlayerInstance.Visible)
                 {
                     SendMyTransform();
                 }
             }
+        }
+
+        private void UpdateHpUIFromPlayer()
+        {
+            if (_myPlayerInstance == null || _uiController == null) return;
+
+            int currentHp = 20;
+            int maxHp = 20;
+
+            var curHpVar = _myPlayerInstance.Get("CurrentHp");
+            if (curHpVar.VariantType == Variant.Type.Nil) curHpVar = _myPlayerInstance.Get("current_hp");
+            if (curHpVar.VariantType == Variant.Type.Nil) curHpVar = _myPlayerInstance.Get("hp");
+            if (curHpVar.VariantType == Variant.Type.Int) currentHp = (int)curHpVar;
+
+            var maxHpVar = _myPlayerInstance.Get("MaxHp");
+            if (maxHpVar.VariantType == Variant.Type.Nil) maxHpVar = _myPlayerInstance.Get("max_hp");
+            if (maxHpVar.VariantType == Variant.Type.Int) maxHp = (int)maxHpVar;
+
+            _uiController.UpdateHp(currentHp, maxHp);
         }
 
         private async Task WaitForInitialChunksLoaded()
@@ -187,26 +190,15 @@ namespace SKNewRoles2.Game
             {
                 _myPlayerInstance.Connect("HpChanged", Callable.From<int, int>(OnMyPlayerHpChanged));
             }
-
-            // --- 初期HPの設定 ---
-            int currentHp = 20;
-            int maxHp = 20;
-
-            var maxHpVar = _myPlayerInstance.Get("MaxHp");
-            var curHpVar = _myPlayerInstance.Get("CurrentHp");
-
-            if (maxHpVar.VariantType == Variant.Type.Int)
+            else if (_myPlayerInstance.HasSignal("hp_changed"))
             {
-                maxHp = (int)maxHpVar;
-            }
-            if (curHpVar.VariantType == Variant.Type.Int)
-            {
-                currentHp = (int)curHpVar;
+                _myPlayerInstance.Connect("hp_changed", Callable.From<int, int>(OnMyPlayerHpChanged));
             }
 
-            _uiController?.UpdateHp(currentHp, maxHp);
+            // 初回のHP反映
+            UpdateHpUIFromPlayer();
 
-            GD.Print($"👤 [MainGameScene] 自プレイヤーを生成しました。(HP: {currentHp}/{maxHp}, Pos: {spawnPos})");
+            GD.Print($"👤 [MainGameScene] 自プレイヤーを生成しました。(Pos: {spawnPos})");
         }
 
         private void SetPlayerPhysicsEnabled(bool enabled)
