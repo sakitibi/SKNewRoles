@@ -12,22 +12,36 @@ namespace SKNewRoles2.Game
         private Label _factionLabel;
         private Label _roleTitleLabel;
         private Label _descriptionLabel;
-        private Label _coordsLabel; // 座標表示用ラベル
+        private Label _coordsLabel; // PositionTextノードを保持
 
         public void Initialize(Node parentNode)
         {
-            // UILayer/LoadingScene を取得 (内部は StartupScene.tscn)
+            if (parentNode == null)
+            {
+                GD.PrintErr("❌ [GameUIController] parentNode が null です。");
+                return;
+            }
+
             _loadingScene = parentNode.GetNodeOrNull<Control>("UILayer/LoadingScene");
             _roleRevealScene = parentNode.GetNodeOrNull<Control>("UILayer/RoleRevealScene");
             _hpBar = parentNode.GetNodeOrNull<ProgressBar>("UILayer/HPBar");
             _hpLabel = parentNode.GetNodeOrNull<Label>("UILayer/HPBar/HPLabel");
-            _coordsLabel = parentNode.GetNodeOrNull<Label>("UILayer/CoordsLabel"); // 座標表示用Labelの取得
+
+            // 座標表示用ラベル
+            _coordsLabel = parentNode.GetNodeOrNull<Label>("HUDManager/PositionText");
+
+            // --- ノード取得チェックログ ---
+            GD.Print($"🔍 [UI Check] LoadingScene: {(_loadingScene != null ? "✅ Found" : "❌ Not Found")}");
+            GD.Print($"🔍 [UI Check] HPBar: {(_hpBar != null ? "✅ Found" : "❌ Not Found")}");
+            GD.Print($"🔍 [UI Check] HPLabel: {(_hpLabel != null ? "✅ Found" : "❌ Not Found")}");
+            GD.Print($"🔍 [UI Check] PositionText (Coords): {(_coordsLabel != null ? "✅ Found" : "❌ Not Found")}");
 
             if (_roleRevealScene != null)
             {
                 _factionLabel = _roleRevealScene.GetNodeOrNull<Label>("MainContainer/VBoxContainer/FactionLabel");
                 _roleTitleLabel = _roleRevealScene.GetNodeOrNull<Label>("MainContainer/VBoxContainer/RoleTitleLabel");
                 _descriptionLabel = _roleRevealScene.GetNodeOrNull<Label>("MainContainer/VBoxContainer/DescriptionLabel");
+
                 _roleRevealScene.Visible = false;
             }
 
@@ -37,7 +51,7 @@ namespace SKNewRoles2.Game
             }
             else
             {
-                GD.PrintErr("❌ [GameUIController] UILayer/LoadingScene が見つかりませんでした。");
+                GD.PrintErr("❌ [GameUIController] LoadingScene が見つかりませんでした。");
             }
         }
 
@@ -54,7 +68,6 @@ namespace SKNewRoles2.Game
             }
         }
 
-        // 座標更新用メソッドを追加
         public void UpdateCoords(Vector3 position)
         {
             if (_coordsLabel != null)
@@ -68,11 +81,9 @@ namespace SKNewRoles2.Game
             if (_loadingScene != null && IsInstanceValid(_loadingScene))
             {
                 _loadingScene.Visible = false;
-                
                 _loadingScene.QueueFree();
                 _loadingScene = null;
-                
-                GD.Print("🧹 [UI] LoadingScene (StartupScene) を完全に消去・破棄しました。");
+                GD.Print("🧹 [UI] LoadingScene を破棄しました。");
             }
         }
 
@@ -87,7 +98,7 @@ namespace SKNewRoles2.Game
             _roleRevealScene.Visible = true;
             _roleRevealScene.MoveToFront();
 
-            GD.Print($"7️⃣ [UI] 役職画面を表示しました ({displayTimeMs / 1000}秒カウント開始)");
+            GD.Print($"7️⃣ [UI] 役職画面を表示しました ({displayTimeMs / 1000}秒表示)");
             await Task.Delay(displayTimeMs);
 
             if (IsInstanceValid(_roleRevealScene))

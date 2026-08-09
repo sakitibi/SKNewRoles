@@ -75,7 +75,7 @@ void SNR2Player::_on_hp_changed(int current_hp, int max_hp) {
 }
 
 void SNR2Player::_on_player_died() {
-    UtilityFunctions::print("[SNR2Player] 死亡通知を受信。スペクテイターモードに移行します。");
+    UtilityFunctions::print("[SNR2Player] Death notification received. Switching to Spectator Mode.");
     emit_signal("player_died");
     die();
 }
