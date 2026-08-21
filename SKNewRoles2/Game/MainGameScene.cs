@@ -13,15 +13,26 @@ namespace SKNewRoles2.Game
         private PackedScene _playerScene = GD.Load<PackedScene>("res://Scenes/Prefabs/Player.tscn");
         private PackedScene _opponentScene = GD.Load<PackedScene>("res://Scenes/Prefabs/LobbyPlayerDummy.tscn");
 
+        public Node3D MyPlayerInstance => _myPlayerInstance;
         private Node3D _myPlayerInstance;
+        public Node HealthComponent => _healthComponent;
         private Node _healthComponent;
+        
         private RemotePlayerManager _remotePlayerManager;
         private BGMManager _bgmManager;
 
+        public GameUIController UIController => _uiController;
         private GameUIController _uiController;
         private GameRoleManager _roleManager;
+        
+        public RealtimeConnection Connection => _connection;
         private readonly RealtimeConnection _connection = new();
+        
+        private MainGameSceneNetwork _networkHandler;
+
+        public int CurrentHp { get => _currentHp; set => _currentHp = value; }
         private int _currentHp = 20;
+        public int MaxHp { get => _maxHp; set => _maxHp = value; }
         private int _maxHp = 20;
 
         public int MyRole => _roleManager?.MyRole ?? -1;
@@ -30,6 +41,8 @@ namespace SKNewRoles2.Game
         public override async void _Ready()
         {
             GD.Print("[_Ready] 開始");
+
+            _networkHandler = new MainGameSceneNetwork(this);
 
             _bgmManager = new BGMManager();
             AddChild(_bgmManager);
@@ -77,7 +90,7 @@ namespace SKNewRoles2.Game
                     _roleManager.ApplyRole(0, 0);
                 }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 GD.PrintErr($"❌ [_Ready] 初期化待機中にエラーが発生しました: {ex.Message}");
             }
@@ -116,11 +129,11 @@ namespace SKNewRoles2.Game
             {
                 _uiController?.UpdateCoords(_myPlayerInstance.GlobalPosition);
 
-                UpdateHpUIFromPlayer();
+                _networkHandler?.UpdateHpUIFromPlayer();
 
                 if (_myPlayerInstance.Visible)
                 {
-                    SendMyTransform();
+                    _networkHandler?.SendMyTransform();
                 }
             }
         }
@@ -150,86 +163,13 @@ namespace SKNewRoles2.Game
             {
                 if (targetNode.HasSignal(sig))
                 {
-                    targetNode.Connect(sig, Callable.From<int, int>(OnMyPlayerHpChanged));
+                    targetNode.Connect(sig, Callable.From<int, int>(_networkHandler.OnMyPlayerHpChanged));
                     break;
                 }
             }
 
-            UpdateHpUIFromPlayer();
+            _networkHandler?.UpdateHpUIFromPlayer();
             GD.Print($"👤 [MainGameScene] 自プレイヤーを生成しました。(Pos: {spawnPos})");
-        }
-
-        private void UpdateHpUIFromPlayer()
-        {
-            if (_myPlayerInstance == null || !IsInstanceValid(_myPlayerInstance) || _uiController == null) return;
-
-            Node targetNode = (_healthComponent != null && IsInstanceValid(_healthComponent)) ? _healthComponent : _myPlayerInstance;
-
-            string[] curHpKeys = ["CurrentHp", "current_hp", "hp", "Health", "health", "CurrentHealth"];
-            foreach (var key in curHpKeys)
-            {
-                var val = targetNode.Get(key);
-                if (TryConvertToInt(val, out int hpVal))
-                {
-                    _currentHp = hpVal;
-                    break;
-                }
-            }
-
-            string[] maxHpKeys = ["MaxHp", "max_hp", "max_health", "MaxHealth"];
-            foreach (var key in maxHpKeys)
-            {
-                var val = targetNode.Get(key);
-                if (TryConvertToInt(val, out int maxVal))
-                {
-                    _maxHp = maxVal;
-                    break;
-                }
-            }
-
-            _uiController.UpdateHp(_currentHp, _maxHp);
-        }
-
-        private static bool TryConvertToInt(Variant variant, out int result)
-        {
-            result = 0;
-            if (variant.VariantType == Variant.Type.Nil) return false;
-
-            switch (variant.VariantType)
-            {
-                case Variant.Type.Int:
-                    result = (int)variant;
-                    return true;
-                case Variant.Type.Float:
-                    result = Mathf.RoundToInt((float)variant);
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-        private void OnMyPlayerHpChanged(int currentHp, int maxHp)
-        {
-            _currentHp = currentHp;
-            _maxHp = maxHp;
-
-            _uiController?.UpdateHp(currentHp, maxHp);
-            _remotePlayerManager?.SetMyHp(currentHp);
-
-            string myUserId = GetMyUserId();
-            _ = SafeSendHpAsync(myUserId, currentHp, maxHp);
-        }
-
-        private async Task SafeSendHpAsync(string userId, int currentHp, int maxHp)
-        {
-            try
-            {
-                await RealtimeBroadcaster.SendHpAsync(_connection, userId, currentHp, maxHp);
-            }
-            catch (System.Exception ex)
-            {
-                GD.PrintErr($"⚠️ [Realtime] HP送信時例外 (送信スキップ): {ex.Message}");
-            }
         }
 
         private async Task WaitForInitialChunksLoaded()
@@ -277,7 +217,7 @@ namespace SKNewRoles2.Game
             }
         }
 
-        private static string GetMyUserId()
+        public string GetMyUserId()
         {
             string myUserId = SessionManager.Instance?.CurrentSession?.User?.Id;
             if (string.IsNullOrEmpty(myUserId))
@@ -285,23 +225,6 @@ namespace SKNewRoles2.Game
                 myUserId = $"Guest_{SessionManager.Instance?.CurrentRoomCode ?? "SingleTest"}";
             }
             return myUserId;
-        }
-
-        private void SendMyTransform()
-        {
-            if (_myPlayerInstance == null || !IsInstanceValid(_myPlayerInstance)) return;
-
-            Vector3 pos = _myPlayerInstance.GlobalPosition;
-            Vector3 rot = _myPlayerInstance.Rotation;
-
-            try
-            {
-                _ = RealtimeBroadcaster.SendTransformAsync(_connection, pos.X, pos.Y, pos.Z, rot.X, rot.Y, rot.Z);
-            }
-            catch (Exception ex)
-            {
-                GD.PrintErr($"⚠️ [Realtime] Transform送信時例外: {ex.Message}");
-            }
         }
 
         public override void _ExitTree()
@@ -326,6 +249,11 @@ namespace SKNewRoles2.Game
         public void StopBGM()
         {
             _bgmManager?.StopBgm();
+        }
+
+        public void SetRemotePlayerHp(int currentHp)
+        {
+            _remotePlayerManager?.SetMyHp(currentHp);
         }
     }
 }
