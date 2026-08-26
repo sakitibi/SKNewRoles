@@ -68,6 +68,42 @@ namespace SKNewRoles2.Game.Network
             });
         }
 
+        public static async Task SendHotbarSlotAsync(RealtimeConnection connection, string playerId, int slotIndex)
+        {
+            if (!IsReady(connection)) return;
+
+            await Task.Run(() =>
+            {
+                var payload = new
+                {
+                    topic = "realtime:public:lobbies",
+                    @event = "broadcast",
+                    payload = new { type = "hotbar_slot", player_id = playerId, slot_index = slotIndex },
+                    @ref = (string)null
+                };
+
+                connection.Client.SendText(JsonSerializer.Serialize(payload));
+            });
+        }
+
+        public static async Task SendHotbarItemAsync(RealtimeConnection connection, string playerId, int slotIndex, int itemId, int count)
+        {
+            if (!IsReady(connection)) return;
+
+            await Task.Run(() =>
+            {
+                var payload = new
+                {
+                    topic = "realtime:public:lobbies",
+                    @event = "broadcast",
+                    payload = new { type = "hotbar_item", player_id = playerId, slot_index = slotIndex, item_id = itemId, count },
+                    @ref = (string)null
+                };
+
+                connection.Client.SendText(JsonSerializer.Serialize(payload));
+            });
+        }
+
         private static bool IsReady(RealtimeConnection connection)
         {
             return connection?.Client != null && 

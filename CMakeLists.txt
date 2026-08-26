@@ -47,6 +47,7 @@ set(SOURCES
     src/Game/health_component.cpp
     src/Game/spectator_component.cpp
     src/Game/fall_damage_component.cpp
+    src/Game/hotbar.cpp
 )
 
 # 共有ライブラリとしてビルド
