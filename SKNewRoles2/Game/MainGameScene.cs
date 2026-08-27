@@ -25,9 +25,7 @@ namespace SKNewRoles2.Game
         public GameUIController UIController => _uiController;
         private GameUIController _uiController;
         private GameRoleManager _roleManager;
-        
-        // HotbarManager への参照を追加
-        [Export] private HotbarManager _hotbarManager;
+        private HotbarManager _hotbarManager;
 
         public RealtimeConnection Connection => _connection;
         private readonly RealtimeConnection _connection = new();
@@ -72,12 +70,12 @@ namespace SKNewRoles2.Game
 
                 _roleManager = new GameRoleManager();
                 AddChild(_roleManager);
-                _roleManager.Initialize(GetNodeOrNull<Node>("RoleManager"));
+                _roleManager.Initialize(GetNode<Node>("RoleManager"));
 
-                _chunkManagerCpp = GetNodeOrNull<Node3D>("ChunkManager");
+                _chunkManagerCpp = GetNode<Node3D>("ChunkManager");
 
                 // HotbarManager が未割り当ての場合はノードを検索
-                _hotbarManager ??= GetNodeOrNull<HotbarManager>("HotbarManager");
+                _hotbarManager = GetNode<HotbarManager>("HotbarManager");
 
                 _remotePlayerManager = new RemotePlayerManager();
                 AddChild(_remotePlayerManager);
