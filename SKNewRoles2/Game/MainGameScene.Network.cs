@@ -64,7 +64,7 @@ namespace SKNewRoles2.Game
             scene.UIController?.UpdateHp(currentHp, maxHp);
             scene.SetRemotePlayerHp(currentHp);
 
-            string myUserId = scene.GetMyUserId();
+            string myUserId = MainGameScene.GetMyUserId();
             _ = SafeSendHpAsync(myUserId, currentHp, maxHp);
         }
 
