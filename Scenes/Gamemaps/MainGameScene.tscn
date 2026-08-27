@@ -43,7 +43,7 @@ script = ExtResource("1_cakpg")
 
 [node name="ChunkManager" type="ChunkManager" parent="." unique_id=1572612915]
 
-[node name="Hotbar" type="HotbarCpp" parent="." unique_id=2091823746]
+[node name="Hotbar" type="Hotbar" parent="." unique_id=2091823746]
 
 [node name="UILayer" type="CanvasLayer" parent="." unique_id=217740970]
 

@@ -11,8 +11,8 @@ namespace godot {
         int count = 0;
     };
 
-    class HotbarCpp : public Node {
-        GDCLASS(HotbarCpp, Node)
+    class Hotbar : public Node {
+        GDCLASS(Hotbar, Node)
 
         private:
             std::array<HotbarSlotData, 9> slots_{};
@@ -22,8 +22,8 @@ namespace godot {
             static void _bind_methods();
 
         public:
-            HotbarCpp();
-            ~HotbarCpp();
+            Hotbar();
+            ~Hotbar();
 
             void select_slot(int index);
             int get_selected_slot() const;

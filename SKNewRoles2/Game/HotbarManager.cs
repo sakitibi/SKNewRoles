@@ -7,23 +7,23 @@ namespace SKNewRoles2.Game
 {
     public partial class HotbarManager(MainGameScene scene) : Node
     {
-        private Node _hotbarCppNode;
+        private Node _HotbarNode;
         private int _currentSlotIndex = 0;
 
-        public void Initialize(Node hotbarCppNode)
+        public void Initialize(Node HotbarNode)
         {
-            _hotbarCppNode = hotbarCppNode;
+            _HotbarNode = HotbarNode;
 
             // C++ノードからのシグナル接続
-            if (_hotbarCppNode != null && IsInstanceValid(_hotbarCppNode))
+            if (_HotbarNode != null && IsInstanceValid(_HotbarNode))
             {
-                if (_hotbarCppNode.HasSignal("slot_changed"))
+                if (_HotbarNode.HasSignal("slot_changed"))
                 {
-                    _hotbarCppNode.Connect("slot_changed", Callable.From<int>(OnSlotChanged));
+                    _HotbarNode.Connect("slot_changed", Callable.From<int>(OnSlotChanged));
                 }
-                if (_hotbarCppNode.HasSignal("item_changed"))
+                if (_HotbarNode.HasSignal("item_changed"))
                 {
-                    _hotbarCppNode.Connect("item_changed", Callable.From<int, int, int>(OnItemChanged));
+                    _HotbarNode.Connect("item_changed", Callable.From<int, int, int>(OnItemChanged));
                 }
             }
         }
@@ -47,9 +47,9 @@ namespace SKNewRoles2.Game
             _currentSlotIndex = index;
 
             // C++ 側のスロット選択メソッドを呼び出し
-            if (_hotbarCppNode != null && IsInstanceValid(_hotbarCppNode) && _hotbarCppNode.HasMethod("select_slot"))
+            if (_HotbarNode != null && IsInstanceValid(_HotbarNode) && _HotbarNode.HasMethod("select_slot"))
             {
-                _hotbarCppNode.Call("select_slot", index);
+                _HotbarNode.Call("select_slot", index);
             }
 
             // 選択変更を他プレイヤーへ送信

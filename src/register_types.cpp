@@ -20,6 +20,7 @@
 #include "Game/health_component.h"
 #include "Game/spectator_component.h"
 #include "Game/fall_damage_component.h"
+#include "Game/hotbar.h"
 
 #ifndef GDEXTENSION_API_CC
 #define GDEXTENSION_API_CC
@@ -47,6 +48,7 @@ void initialize_player_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<HealthComponent>();
     ClassDB::register_class<SpectatorComponent>();
     ClassDB::register_class<FallDamageComponent>();
+    ClassDB::register_class<Hotbar>();
 }
 
 void uninitialize_player_module(ModuleInitializationLevel p_level) {
