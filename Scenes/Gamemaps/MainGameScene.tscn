@@ -1,10 +1,47 @@
 [gd_scene format=3 uid="uid://cf1k5bv4rvny"]
 
 [ext_resource type="Script" uid="uid://drrtl1i136xpt" path="res://SKNewRoles2/Game/MainGameScene.cs" id="1_cakpg"]
+[ext_resource type="Script" uid="uid://bav27wqrjrcfq" path="res://SKNewRoles2/Game/Inventory/Item/ItemDatabase.cs" id="2_247uh"]
 [ext_resource type="PackedScene" uid="uid://b42xncvhtc3l5" path="res://Scenes/Gamemaps/StartupScene.tscn" id="2_vg2oi"]
+[ext_resource type="Script" uid="uid://d0xldisbft3j5" path="res://SKNewRoles2/Game/Inventory/Item/ItemData.cs" id="3_pspun"]
 [ext_resource type="PackedScene" uid="uid://bgybqu4t6omyp" path="res://Scenes/Gamemaps/RoleRevealScene.tscn" id="3_pswr4"]
 [ext_resource type="FontFile" uid="uid://bnpuryk64ipb5" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="4_pswr4"]
+[ext_resource type="Texture2D" uid="uid://s87bvqfdhl8c" path="res://Resources/Items/gold_ingot.png" id="4_tdlc4"]
+[ext_resource type="Texture2D" uid="uid://c64o4wnspcxay" path="res://Resources/Items/iron_axe.png" id="5_fe0dp"]
 [ext_resource type="FontFile" uid="uid://dh2srjx51onl7" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="5_o3sw3"]
+[ext_resource type="Texture2D" uid="uid://dr34prvo6j2xt" path="res://Resources/Items/iron_pickaxe.png" id="6_wrt32"]
+[ext_resource type="Texture2D" uid="uid://cmiw2yimcdm7e" path="res://Resources/Items/iron_sword.png" id="7_r7ao7"]
+
+[sub_resource type="Resource" id="Resource_247uh"]
+script = ExtResource("3_pspun")
+ItemId = "gold_ingot"
+ItemName = "金の延べ棒"
+Icon = ExtResource("4_tdlc4")
+metadata/_custom_type_script = "uid://d0xldisbft3j5"
+
+[sub_resource type="Resource" id="Resource_pspun"]
+script = ExtResource("3_pspun")
+ItemId = "iron_axe"
+ItemName = "鉄の斧"
+Icon = ExtResource("5_fe0dp")
+MaxStack = 1
+metadata/_custom_type_script = "uid://d0xldisbft3j5"
+
+[sub_resource type="Resource" id="Resource_hx67e"]
+script = ExtResource("3_pspun")
+ItemId = "iron_pickaxe"
+ItemName = "鉄のツルハシ"
+Icon = ExtResource("6_wrt32")
+MaxStack = 1
+metadata/_custom_type_script = "uid://d0xldisbft3j5"
+
+[sub_resource type="Resource" id="Resource_7yt2m"]
+script = ExtResource("3_pspun")
+ItemId = "iron_sword"
+ItemName = "鉄の剣"
+Icon = ExtResource("7_r7ao7")
+MaxStack = 1
+metadata/_custom_type_script = "uid://d0xldisbft3j5"
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0iane"]
 bg_color = Color(0, 0, 0, 0)
@@ -46,6 +83,8 @@ script = ExtResource("1_cakpg")
 [node name="Hotbar" type="Hotbar" parent="." unique_id=223182373]
 
 [node name="ItemDatabase" type="Node" parent="." unique_id=1868778557]
+script = ExtResource("2_247uh")
+_itemList = Array[ExtResource("3_pspun")]([SubResource("Resource_247uh"), SubResource("Resource_pspun"), SubResource("Resource_hx67e"), SubResource("Resource_7yt2m")])
 
 [node name="UILayer" type="CanvasLayer" parent="." unique_id=217740970]
 
