@@ -1,19 +1,10 @@
 [gd_scene format=3 uid="uid://cf1k5bv4rvny"]
 
 [ext_resource type="Script" uid="uid://drrtl1i136xpt" path="res://SKNewRoles2/Game/MainGameScene.cs" id="1_cakpg"]
-[ext_resource type="Script" uid="uid://bav27wqrjrcfq" path="res://SKNewRoles2/Game/Inventory/Item/ItemDatabase.cs" id="2_247uh"]
 [ext_resource type="PackedScene" uid="uid://b42xncvhtc3l5" path="res://Scenes/Gamemaps/StartupScene.tscn" id="2_vg2oi"]
-[ext_resource type="Script" uid="uid://d0xldisbft3j5" path="res://SKNewRoles2/Game/Inventory/Item/ItemData.cs" id="3_pspun"]
 [ext_resource type="PackedScene" uid="uid://bgybqu4t6omyp" path="res://Scenes/Gamemaps/RoleRevealScene.tscn" id="3_pswr4"]
 [ext_resource type="FontFile" uid="uid://bnpuryk64ipb5" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="4_pswr4"]
-[ext_resource type="Texture2D" uid="uid://s87bvqfdhl8c" path="res://Resources/Items/gold_ingot.png" id="4_tdlc4"]
 [ext_resource type="FontFile" uid="uid://dh2srjx51onl7" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="5_o3sw3"]
-
-[sub_resource type="Resource" id="Resource_0pcrf"]
-script = ExtResource("3_pspun")
-ItemName = "金の延べ棒"
-Icon = ExtResource("4_tdlc4")
-metadata/_custom_type_script = "uid://d0xldisbft3j5"
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0iane"]
 bg_color = Color(0, 0, 0, 0)
@@ -55,8 +46,6 @@ script = ExtResource("1_cakpg")
 [node name="Hotbar" type="Hotbar" parent="." unique_id=223182373]
 
 [node name="ItemDatabase" type="Node" parent="." unique_id=1868778557]
-script = ExtResource("2_247uh")
-_itemList = Array[ExtResource("3_pspun")]([SubResource("Resource_0pcrf")])
 
 [node name="UILayer" type="CanvasLayer" parent="." unique_id=217740970]
 
