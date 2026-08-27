@@ -16,7 +16,24 @@ namespace SKNewRoles2.Game.Inventory
 
         public override void _Ready()
         {
-            if (_slotContainer == null) return;
+            // ノードの組み立て完了後に確実にスロット初期化を実行
+            Callable.From(InitializeSlots).CallDeferred();
+        }
+
+        private void InitializeSlots()
+        {
+            // 未割当の場合は親や周辺から自動検索
+            _slotContainer ??= GetNodeOrNull<Control>("../SlotContainer");
+
+            if (_slotContainer == null)
+            {
+                GD.PrintErr("❌ [HotbarUIController] _slotContainer が見つかりませんでした。");
+                return;
+            }
+
+            _slotPanels.Clear();
+            _iconRects.Clear();
+            _countLabels.Clear();
 
             foreach (Node child in _slotContainer.GetChildren())
             {
@@ -28,6 +45,7 @@ namespace SKNewRoles2.Game.Inventory
                 }
             }
 
+            GD.Print($"✅ [HotbarUIController] スロット初期化完了: {_slotPanels.Count} 個のスロットを登録しました。");
             UpdateSelectedSlot(0);
         }
 
@@ -45,7 +63,11 @@ namespace SKNewRoles2.Game.Inventory
 
         public void UpdateSlotItem(int slotIndex, Texture2D iconTexture, int count)
         {
-            if (slotIndex < 0 || slotIndex >= _slotPanels.Count) return;
+            if (slotIndex < 0 || slotIndex >= _slotPanels.Count)
+            {
+                GD.PrintErr($"⚠️ [HotbarUIController] 範囲外のスロットインデックス: {slotIndex}");
+                return;
+            }
 
             if (_iconRects[slotIndex] != null)
             {
@@ -56,7 +78,7 @@ namespace SKNewRoles2.Game.Inventory
             if (_countLabels[slotIndex] != null)
             {
                 _countLabels[slotIndex].Text = count > 1 ? count.ToString() : "";
-                _countLabels[slotIndex].Visible = count > 0;
+                _countLabels[slotIndex].Visible = (count > 0);
             }
         }
     }

@@ -74,8 +74,18 @@ namespace SKNewRoles2.Game
 
                 _chunkManagerCpp = GetNode<Node3D>("ChunkManager");
 
-                // HotbarManager が未割り当ての場合はノードを検索
-                _hotbarManager = GetNode<HotbarManager>("HotbarManager");
+                // HotbarManager の取得と初期化
+                _hotbarManager = GetNodeOrNull<HotbarManager>("HotbarManager");
+                var hotbarNode = GetNodeOrNull<Node>("Hotbar");
+                
+                if (_hotbarManager != null)
+                {
+                    _hotbarManager.Initialize(this, hotbarNode);
+                }
+                else
+                {
+                    GD.PrintErr("❌ [MainGameScene] HotbarManager ノードが見つかりません。");
+                }
 
                 _remotePlayerManager = new RemotePlayerManager();
                 AddChild(_remotePlayerManager);

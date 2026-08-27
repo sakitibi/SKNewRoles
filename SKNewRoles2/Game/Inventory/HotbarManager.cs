@@ -24,14 +24,22 @@ namespace SKNewRoles2.Game.Inventory
             // C++ノードからのシグナル接続
             if (_hotbarNode != null && IsInstanceValid(_hotbarNode))
             {
+                GD.Print("✅ [HotbarManager] Hotbar ノードとの連携を開始しました。");
+
                 if (_hotbarNode.HasSignal("slot_changed"))
                 {
-                    _hotbarNode.Connect("slot_changed", Callable.From<int>(OnSlotChanged));
+                    if (!_hotbarNode.IsConnected("slot_changed", Callable.From<int>(OnSlotChanged)))
+                        _hotbarNode.Connect("slot_changed", Callable.From<int>(OnSlotChanged));
                 }
                 if (_hotbarNode.HasSignal("item_changed"))
                 {
-                    _hotbarNode.Connect("item_changed", Callable.From<int, string, int>(OnItemChanged));
+                    if (!_hotbarNode.IsConnected("item_changed", Callable.From<int, string, int>(OnItemChanged)))
+                        _hotbarNode.Connect("item_changed", Callable.From<int, string, int>(OnItemChanged));
                 }
+            }
+            else
+            {
+                GD.PrintErr("❌ [HotbarManager] Hotbar ノードが null です。接続に失敗しました。");
             }
         }
 
@@ -86,8 +94,15 @@ namespace SKNewRoles2.Game.Inventory
 
         private void OnItemChanged(int slotIndex, string itemId, int count)
         {
+            GD.Print($"📦 [HotbarManager] ItemChanged 受信: Slot={slotIndex}, Item={itemId}, Count={count}");
+
             ItemData data = _itemDatabase?.GetItem(itemId);
             Texture2D iconTexture = data?.Icon;
+
+            if (data == null && !string.IsNullOrEmpty(itemId))
+            {
+                GD.PrintErr($"⚠️ [HotbarManager] ItemDatabase に '{itemId}' のデータが存在しません。");
+            }
 
             _uiController?.UpdateSlotItem(slotIndex, iconTexture, count);
             _ = SendHotbarItemAsync(slotIndex, itemId, count);
