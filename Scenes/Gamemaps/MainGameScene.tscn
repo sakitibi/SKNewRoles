@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://cf1k5bv4rvny"]
 
 [ext_resource type="Script" uid="uid://drrtl1i136xpt" path="res://SKNewRoles2/Game/MainGameScene.cs" id="1_cakpg"]
+[ext_resource type="Script" uid="uid://bav27wqrjrcfq" path="res://SKNewRoles2/Game/Inventory/Item/ItemDatabase.cs" id="2_247uh"]
 [ext_resource type="PackedScene" uid="uid://b42xncvhtc3l5" path="res://Scenes/Gamemaps/StartupScene.tscn" id="2_vg2oi"]
 [ext_resource type="PackedScene" uid="uid://bgybqu4t6omyp" path="res://Scenes/Gamemaps/RoleRevealScene.tscn" id="3_pswr4"]
 [ext_resource type="FontFile" uid="uid://bnpuryk64ipb5" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="4_pswr4"]
@@ -43,7 +44,10 @@ script = ExtResource("1_cakpg")
 
 [node name="ChunkManager" type="ChunkManager" parent="." unique_id=1572612915]
 
-[node name="Hotbar" type="Hotbar" parent="." unique_id=2091823746]
+[node name="Hotbar" type="Hotbar" parent="." unique_id=223182373]
+
+[node name="ItemDatabase" type="Node" parent="." unique_id=1868778557]
+script = ExtResource("2_247uh")
 
 [node name="UILayer" type="CanvasLayer" parent="." unique_id=217740970]
 
@@ -101,12 +105,12 @@ layout_mode = 2
 theme_override_constants/separation = 4
 alignment = 1
 
-[node name="Slot0" type="Panel" parent="UILayer/HotbarUI/SlotContainer"]
+[node name="Slot0" type="Panel" parent="UILayer/HotbarUI/SlotContainer" unique_id=1736776325]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_slot_normal")
 
-[node name="Icon" type="TextureRect" parent="UILayer/HotbarUI/SlotContainer/Slot0"]
+[node name="Icon" type="TextureRect" parent="UILayer/HotbarUI/SlotContainer/Slot0" unique_id=499163130]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -115,7 +119,7 @@ grow_horizontal = 2
 grow_vertical = 2
 expand_mode = 1
 
-[node name="Count" type="Label" parent="UILayer/HotbarUI/SlotContainer/Slot0"]
+[node name="Count" type="Label" parent="UILayer/HotbarUI/SlotContainer/Slot0" unique_id=615582834]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -130,12 +134,12 @@ theme_override_fonts/font = ExtResource("5_o3sw3")
 theme_override_font_sizes/font_size = 14
 horizontal_alignment = 2
 
-[node name="Slot1" type="Panel" parent="UILayer/HotbarUI/SlotContainer"]
+[node name="Slot1" type="Panel" parent="UILayer/HotbarUI/SlotContainer" unique_id=1752282284]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_slot_normal")
 
-[node name="Icon" type="TextureRect" parent="UILayer/HotbarUI/SlotContainer/Slot1"]
+[node name="Icon" type="TextureRect" parent="UILayer/HotbarUI/SlotContainer/Slot1" unique_id=1168511901]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -144,7 +148,7 @@ grow_horizontal = 2
 grow_vertical = 2
 expand_mode = 1
 
-[node name="Count" type="Label" parent="UILayer/HotbarUI/SlotContainer/Slot1"]
+[node name="Count" type="Label" parent="UILayer/HotbarUI/SlotContainer/Slot1" unique_id=1489317723]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -159,12 +163,12 @@ theme_override_fonts/font = ExtResource("5_o3sw3")
 theme_override_font_sizes/font_size = 14
 horizontal_alignment = 2
 
-[node name="Slot2" type="Panel" parent="UILayer/HotbarUI/SlotContainer"]
+[node name="Slot2" type="Panel" parent="UILayer/HotbarUI/SlotContainer" unique_id=59012465]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_slot_normal")
 
-[node name="Icon" type="TextureRect" parent="UILayer/HotbarUI/SlotContainer/Slot2"]
+[node name="Icon" type="TextureRect" parent="UILayer/HotbarUI/SlotContainer/Slot2" unique_id=451606130]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -173,7 +177,7 @@ grow_horizontal = 2
 grow_vertical = 2
 expand_mode = 1
 
-[node name="Count" type="Label" parent="UILayer/HotbarUI/SlotContainer/Slot2"]
+[node name="Count" type="Label" parent="UILayer/HotbarUI/SlotContainer/Slot2" unique_id=2106538053]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -188,12 +192,12 @@ theme_override_fonts/font = ExtResource("5_o3sw3")
 theme_override_font_sizes/font_size = 14
 horizontal_alignment = 2
 
-[node name="Slot3" type="Panel" parent="UILayer/HotbarUI/SlotContainer"]
+[node name="Slot3" type="Panel" parent="UILayer/HotbarUI/SlotContainer" unique_id=745468753]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_slot_normal")
 
-[node name="Icon" type="TextureRect" parent="UILayer/HotbarUI/SlotContainer/Slot3"]
+[node name="Icon" type="TextureRect" parent="UILayer/HotbarUI/SlotContainer/Slot3" unique_id=88654586]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -202,7 +206,7 @@ grow_horizontal = 2
 grow_vertical = 2
 expand_mode = 1
 
-[node name="Count" type="Label" parent="UILayer/HotbarUI/SlotContainer/Slot3"]
+[node name="Count" type="Label" parent="UILayer/HotbarUI/SlotContainer/Slot3" unique_id=1398891392]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -217,12 +221,12 @@ theme_override_fonts/font = ExtResource("5_o3sw3")
 theme_override_font_sizes/font_size = 14
 horizontal_alignment = 2
 
-[node name="Slot4" type="Panel" parent="UILayer/HotbarUI/SlotContainer"]
+[node name="Slot4" type="Panel" parent="UILayer/HotbarUI/SlotContainer" unique_id=1315328740]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_slot_normal")
 
-[node name="Icon" type="TextureRect" parent="UILayer/HotbarUI/SlotContainer/Slot4"]
+[node name="Icon" type="TextureRect" parent="UILayer/HotbarUI/SlotContainer/Slot4" unique_id=386661939]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -231,7 +235,7 @@ grow_horizontal = 2
 grow_vertical = 2
 expand_mode = 1
 
-[node name="Count" type="Label" parent="UILayer/HotbarUI/SlotContainer/Slot4"]
+[node name="Count" type="Label" parent="UILayer/HotbarUI/SlotContainer/Slot4" unique_id=1966552777]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -246,12 +250,12 @@ theme_override_fonts/font = ExtResource("5_o3sw3")
 theme_override_font_sizes/font_size = 14
 horizontal_alignment = 2
 
-[node name="Slot5" type="Panel" parent="UILayer/HotbarUI/SlotContainer"]
+[node name="Slot5" type="Panel" parent="UILayer/HotbarUI/SlotContainer" unique_id=187010344]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_slot_normal")
 
-[node name="Icon" type="TextureRect" parent="UILayer/HotbarUI/SlotContainer/Slot5"]
+[node name="Icon" type="TextureRect" parent="UILayer/HotbarUI/SlotContainer/Slot5" unique_id=937160018]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -260,7 +264,7 @@ grow_horizontal = 2
 grow_vertical = 2
 expand_mode = 1
 
-[node name="Count" type="Label" parent="UILayer/HotbarUI/SlotContainer/Slot5"]
+[node name="Count" type="Label" parent="UILayer/HotbarUI/SlotContainer/Slot5" unique_id=122387114]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -275,12 +279,12 @@ theme_override_fonts/font = ExtResource("5_o3sw3")
 theme_override_font_sizes/font_size = 14
 horizontal_alignment = 2
 
-[node name="Slot6" type="Panel" parent="UILayer/HotbarUI/SlotContainer"]
+[node name="Slot6" type="Panel" parent="UILayer/HotbarUI/SlotContainer" unique_id=939485196]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_slot_normal")
 
-[node name="Icon" type="TextureRect" parent="UILayer/HotbarUI/SlotContainer/Slot6"]
+[node name="Icon" type="TextureRect" parent="UILayer/HotbarUI/SlotContainer/Slot6" unique_id=443791727]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -289,7 +293,7 @@ grow_horizontal = 2
 grow_vertical = 2
 expand_mode = 1
 
-[node name="Count" type="Label" parent="UILayer/HotbarUI/SlotContainer/Slot6"]
+[node name="Count" type="Label" parent="UILayer/HotbarUI/SlotContainer/Slot6" unique_id=1475143061]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -304,12 +308,12 @@ theme_override_fonts/font = ExtResource("5_o3sw3")
 theme_override_font_sizes/font_size = 14
 horizontal_alignment = 2
 
-[node name="Slot7" type="Panel" parent="UILayer/HotbarUI/SlotContainer"]
+[node name="Slot7" type="Panel" parent="UILayer/HotbarUI/SlotContainer" unique_id=791606019]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_slot_normal")
 
-[node name="Icon" type="TextureRect" parent="UILayer/HotbarUI/SlotContainer/Slot7"]
+[node name="Icon" type="TextureRect" parent="UILayer/HotbarUI/SlotContainer/Slot7" unique_id=1531717642]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -318,7 +322,7 @@ grow_horizontal = 2
 grow_vertical = 2
 expand_mode = 1
 
-[node name="Count" type="Label" parent="UILayer/HotbarUI/SlotContainer/Slot7"]
+[node name="Count" type="Label" parent="UILayer/HotbarUI/SlotContainer/Slot7" unique_id=138295543]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
@@ -333,12 +337,12 @@ theme_override_fonts/font = ExtResource("5_o3sw3")
 theme_override_font_sizes/font_size = 14
 horizontal_alignment = 2
 
-[node name="Slot8" type="Panel" parent="UILayer/HotbarUI/SlotContainer"]
+[node name="Slot8" type="Panel" parent="UILayer/HotbarUI/SlotContainer" unique_id=1238881474]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_slot_normal")
 
-[node name="Icon" type="TextureRect" parent="UILayer/HotbarUI/SlotContainer/Slot8"]
+[node name="Icon" type="TextureRect" parent="UILayer/HotbarUI/SlotContainer/Slot8" unique_id=1724247226]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -347,7 +351,7 @@ grow_horizontal = 2
 grow_vertical = 2
 expand_mode = 1
 
-[node name="Count" type="Label" parent="UILayer/HotbarUI/SlotContainer/Slot8"]
+[node name="Count" type="Label" parent="UILayer/HotbarUI/SlotContainer/Slot8" unique_id=1175055481]
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0

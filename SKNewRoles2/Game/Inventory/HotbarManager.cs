@@ -2,13 +2,16 @@ using Godot;
 using System;
 using System.Threading.Tasks;
 using SKNewRoles2.Game.Network;
+using SKNewRoles2.Game.Inventory.Item;
 
-namespace SKNewRoles2.Game
+namespace SKNewRoles2.Game.Inventory
 {
     public partial class HotbarManager(MainGameScene scene) : Node
     {
         private Node _HotbarNode;
         private int _currentSlotIndex = 0;
+        [Export] private ItemDatabase _itemDatabase;
+        [Export] private HotbarUIController _uiController;
 
         public void Initialize(Node HotbarNode)
         {
@@ -64,7 +67,14 @@ namespace SKNewRoles2.Game
 
         private void OnItemChanged(int slotIndex, int itemId, int count)
         {
-            // スロット内のアイテム変更を他プレイヤーへ同期
+            // アイテムデータリソースからテクスチャを取得
+            ItemData data = _itemDatabase?.GetItem(itemId);
+            Texture2D iconTexture = data?.Icon;
+
+            // UIを更新
+            _uiController?.UpdateSlotItem(slotIndex, iconTexture, count);
+
+            // ネットワーク同期を送信
             _ = SendHotbarItemAsync(slotIndex, itemId, count);
         }
 

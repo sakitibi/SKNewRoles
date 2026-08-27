@@ -65,26 +65,37 @@ Dictionary Hotbar::get_slot_item(int index) const {
 bool Hotbar::add_item(int item_id, int count) {
     if (item_id <= 0 || count <= 0) return false;
 
-    // 既存の同じアイテムが存在するスロットへ加算
+    const int max_stack = 64; 
+
     for (int i = 0; i < 9; ++i) {
-        if (slots_[i].item_id == item_id) {
-            slots_[i].count += count;
+        if (slots_[i].item_id == item_id && slots_[i].count < max_stack) {
+            int available_space = max_stack - slots_[i].count;
+            int add_amount = (count <= available_space) ? count : available_space;
+
+            slots_[i].count += add_amount;
             emit_signal("item_changed", i, slots_[i].item_id, slots_[i].count);
-            return true;
+
+            count -= add_amount;
+            if (count <= 0) return true; // 全て収まった場合
         }
     }
 
+    // 残りがある場合は空きスロットへ割り当て
     for (int i = 0; i < 9; ++i) {
         if (slots_[i].item_id == 0) {
+            int add_amount = (count <= max_stack) ? count : max_stack;
+
             slots_[i].item_id = item_id;
-            slots_[i].count = count;
+            slots_[i].count = add_amount;
             emit_signal("item_changed", i, slots_[i].item_id, slots_[i].count);
-            return true;
+
+            count -= add_amount;
+            if (count <= 0) return true;
         }
     }
 
-    // ホットバーが満杯の場合
-    return false;
+    // ホットバーが満杯で入りきらなかった場合
+    return count == 0;
 }
 
 bool Hotbar::consume_item(int index, int amount) {
