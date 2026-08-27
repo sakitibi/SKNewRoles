@@ -6,27 +6,31 @@ using SKNewRoles2.Game.Inventory.Item;
 
 namespace SKNewRoles2.Game.Inventory
 {
-    public partial class HotbarManager(MainGameScene scene) : Node
+    [GlobalClass]
+    public partial class HotbarManager : Node
     {
-        private Node _HotbarNode;
+        private MainGameScene _scene;
+        private Node _hotbarNode;
         private int _currentSlotIndex = 0;
+
         [Export] private ItemDatabase _itemDatabase;
         [Export] private HotbarUIController _uiController;
 
-        public void Initialize(Node HotbarNode)
+        public void Initialize(MainGameScene scene, Node hotbarNode)
         {
-            _HotbarNode = HotbarNode;
+            _scene = scene;
+            _hotbarNode = hotbarNode;
 
             // C++ノードからのシグナル接続
-            if (_HotbarNode != null && IsInstanceValid(_HotbarNode))
+            if (_hotbarNode != null && IsInstanceValid(_hotbarNode))
             {
-                if (_HotbarNode.HasSignal("slot_changed"))
+                if (_hotbarNode.HasSignal("slot_changed"))
                 {
-                    _HotbarNode.Connect("slot_changed", Callable.From<int>(OnSlotChanged));
+                    _hotbarNode.Connect("slot_changed", Callable.From<int>(OnSlotChanged));
                 }
-                if (_HotbarNode.HasSignal("item_changed"))
+                if (_hotbarNode.HasSignal("item_changed"))
                 {
-                    _HotbarNode.Connect("item_changed", Callable.From<int, string, int>(OnItemChanged));
+                    _hotbarNode.Connect("item_changed", Callable.From<int, string, int>(OnItemChanged));
                 }
             }
         }
@@ -44,24 +48,39 @@ namespace SKNewRoles2.Game.Inventory
             }
         }
 
+        /// <summary>
+        /// アイテム入手・配布時に外部から呼び出す処理
+        /// </summary>
+        public bool PickupItem(string itemId, int count = 1)
+        {
+            if (_hotbarNode != null && IsInstanceValid(_hotbarNode) && _hotbarNode.HasMethod("add_item"))
+            {
+                Variant result = _hotbarNode.Call("add_item", itemId, count);
+                return (bool)result;
+            }
+            return false;
+        }
+
         public void SelectSlot(int index)
         {
             if (index < 0 || index >= 9) return;
             _currentSlotIndex = index;
 
             // C++ 側のスロット選択メソッドを呼び出し
-            if (_HotbarNode != null && IsInstanceValid(_HotbarNode) && _HotbarNode.HasMethod("select_slot"))
+            if (_hotbarNode != null && IsInstanceValid(_hotbarNode) && _hotbarNode.HasMethod("select_slot"))
             {
-                _HotbarNode.Call("select_slot", index);
+                _hotbarNode.Call("select_slot", index);
             }
-
-            // 選択変更を他プレイヤーへ送信
-            _ = SendHotbarSlotAsync(index);
         }
 
         private void OnSlotChanged(int newIndex)
         {
             _currentSlotIndex = newIndex;
+
+            // UI 側のハイライト表示を更新
+            _uiController?.UpdateSelectedSlot(newIndex);
+
+            // 選択変更を他プレイヤーへ送信
             _ = SendHotbarSlotAsync(newIndex);
         }
 
@@ -73,24 +92,28 @@ namespace SKNewRoles2.Game.Inventory
             _uiController?.UpdateSlotItem(slotIndex, iconTexture, count);
             _ = SendHotbarItemAsync(slotIndex, itemId, count);
         }
+
         private async Task SendHotbarSlotAsync(int slotIndex)
         {
             try
             {
-                string userId = scene.GetMyUserId();
-                await RealtimeBroadcaster.SendHotbarSlotAsync(scene.Connection, userId, slotIndex);
+                if (_scene == null) return;
+                string userId = MainGameScene.GetMyUserId();
+                await RealtimeBroadcaster.SendHotbarSlotAsync(_scene.Connection, userId, slotIndex);
             }
             catch (Exception ex)
             {
                 GD.PrintErr($"⚠️ [Hotbar] スロット同期送信エラー: {ex.Message}");
             }
         }
+
         private async Task SendHotbarItemAsync(int slotIndex, string itemId, int count)
         {
             try
             {
-                string userId = scene.GetMyUserId();
-                await RealtimeBroadcaster.SendHotbarItemAsync(scene.Connection, userId, slotIndex, itemId, count);
+                if (_scene == null) return;
+                string userId = MainGameScene.GetMyUserId();
+                await RealtimeBroadcaster.SendHotbarItemAsync(_scene.Connection, userId, slotIndex, itemId, count);
             }
             catch (Exception ex)
             {

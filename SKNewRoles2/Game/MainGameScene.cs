@@ -3,6 +3,7 @@ using System;
 using System.Threading.Tasks;
 using SKNewRoles2.SessionManagerSystem;
 using SKNewRoles2.Game.Network;
+using SKNewRoles2.Game.Inventory;
 
 namespace SKNewRoles2.Game
 {
@@ -25,6 +26,9 @@ namespace SKNewRoles2.Game
         private GameUIController _uiController;
         private GameRoleManager _roleManager;
         
+        // HotbarManager への参照を追加
+        [Export] private HotbarManager _hotbarManager;
+
         public RealtimeConnection Connection => _connection;
         private readonly RealtimeConnection _connection = new();
         
@@ -72,6 +76,9 @@ namespace SKNewRoles2.Game
 
                 _chunkManagerCpp = GetNodeOrNull<Node3D>("ChunkManager");
 
+                // HotbarManager が未割り当ての場合はノードを検索
+                _hotbarManager ??= GetNodeOrNull<HotbarManager>("HotbarManager");
+
                 _remotePlayerManager = new RemotePlayerManager();
                 AddChild(_remotePlayerManager);
                 _remotePlayerManager.Initialize(_opponentScene, GetMyUserId());
@@ -106,12 +113,32 @@ namespace SKNewRoles2.Game
 
             _bgmManager?.PlayRandomBgm(0.0f);
 
+            // 初期アイテムの配布
+            GrantInitialItems();
+
             if (_uiController != null)
             {
                 await _uiController.ShowRoleRevealAsync(_roleManager?.MyRole ?? 0, _roleManager?.MyFaction ?? 0, displayTimeMs: 5000);
             }
 
             SetPlayerPhysicsEnabled(true);
+        }
+
+        /// <summary>
+        /// ゲーム開始時に全員（自クライアント）に初期ツールを配布する
+        /// </summary>
+        private void GrantInitialItems()
+        {
+            if (_hotbarManager != null)
+            {
+                _hotbarManager.PickupItem("iron_axe", 1);
+                _hotbarManager.PickupItem("iron_pickaxe", 1);
+                GD.Print("🎒 [MainGameScene] 初期アイテム (iron_axe, iron_pickaxe) を配布しました。");
+            }
+            else
+            {
+                GD.PrintErr("⚠️ [MainGameScene] HotbarManager が見つからないため、初期アイテムを配布できませんでした。");
+            }
         }
 
         public override void _Process(double delta)
@@ -217,7 +244,7 @@ namespace SKNewRoles2.Game
             }
         }
 
-        public string GetMyUserId()
+        public static string GetMyUserId()
         {
             string myUserId = SessionManager.Instance?.CurrentSession?.User?.Id;
             if (string.IsNullOrEmpty(myUserId))
