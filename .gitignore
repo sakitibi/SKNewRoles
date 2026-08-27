@@ -10,6 +10,7 @@ build
 *.app
 *.command
 Resources/Blocks/*
+Resources/Items/*
 Resources/Audio/BGM/*
 bin/libgodot_player_extension.dylib
 bin/libgodot_player_extension.so
