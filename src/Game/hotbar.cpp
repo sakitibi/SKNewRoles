@@ -9,6 +9,7 @@ void HotbarCpp::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_selected_slot"), &HotbarCpp::get_selected_slot);
     ClassDB::bind_method(D_METHOD("set_slot_item", "index", "item_id", "count"), &HotbarCpp::set_slot_item);
     ClassDB::bind_method(D_METHOD("get_slot_item", "index"), &HotbarCpp::get_slot_item);
+    ClassDB::bind_method(D_METHOD("add_item", "item_id", "count"), &HotbarCpp::add_item, DEFVAL(1));
     ClassDB::bind_method(D_METHOD("consume_item", "index", "amount"), &HotbarCpp::consume_item, DEFVAL(1));
 
     // シグナルの定義
@@ -59,6 +60,31 @@ Dictionary HotbarCpp::get_slot_item(int index) const {
     result["item_id"] = slots_[index].item_id;
     result["count"] = slots_[index].count;
     return result;
+}
+
+bool HotbarCpp::add_item(int item_id, int count) {
+    if (item_id <= 0 || count <= 0) return false;
+
+    // 既存の同じアイテムが存在するスロットへ加算
+    for (int i = 0; i < 9; ++i) {
+        if (slots_[i].item_id == item_id) {
+            slots_[i].count += count;
+            emit_signal("item_changed", i, slots_[i].item_id, slots_[i].count);
+            return true;
+        }
+    }
+
+    for (int i = 0; i < 9; ++i) {
+        if (slots_[i].item_id == 0) {
+            slots_[i].item_id = item_id;
+            slots_[i].count = count;
+            emit_signal("item_changed", i, slots_[i].item_id, slots_[i].count);
+            return true;
+        }
+    }
+
+    // ホットバーが満杯の場合
+    return false;
 }
 
 bool HotbarCpp::consume_item(int index, int amount) {
