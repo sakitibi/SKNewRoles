@@ -26,7 +26,7 @@ namespace SKNewRoles2.Game.Inventory
                 }
                 if (_HotbarNode.HasSignal("item_changed"))
                 {
-                    _HotbarNode.Connect("item_changed", Callable.From<int, int, int>(OnItemChanged));
+                    _HotbarNode.Connect("item_changed", Callable.From<int, string, int>(OnItemChanged));
                 }
             }
         }
@@ -65,19 +65,14 @@ namespace SKNewRoles2.Game.Inventory
             _ = SendHotbarSlotAsync(newIndex);
         }
 
-        private void OnItemChanged(int slotIndex, int itemId, int count)
+        private void OnItemChanged(int slotIndex, string itemId, int count)
         {
-            // アイテムデータリソースからテクスチャを取得
             ItemData data = _itemDatabase?.GetItem(itemId);
             Texture2D iconTexture = data?.Icon;
 
-            // UIを更新
             _uiController?.UpdateSlotItem(slotIndex, iconTexture, count);
-
-            // ネットワーク同期を送信
             _ = SendHotbarItemAsync(slotIndex, itemId, count);
         }
-
         private async Task SendHotbarSlotAsync(int slotIndex)
         {
             try
@@ -90,8 +85,7 @@ namespace SKNewRoles2.Game.Inventory
                 GD.PrintErr($"⚠️ [Hotbar] スロット同期送信エラー: {ex.Message}");
             }
         }
-
-        private async Task SendHotbarItemAsync(int slotIndex, int itemId, int count)
+        private async Task SendHotbarItemAsync(int slotIndex, string itemId, int count)
         {
             try
             {

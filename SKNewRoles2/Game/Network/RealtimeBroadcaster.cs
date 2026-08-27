@@ -86,7 +86,7 @@ namespace SKNewRoles2.Game.Network
             });
         }
 
-        public static async Task SendHotbarItemAsync(RealtimeConnection connection, string playerId, int slotIndex, int itemId, int count)
+        public static async Task SendHotbarItemAsync(RealtimeConnection connection, string playerId, int slotIndex, string itemId, int count)
         {
             if (!IsReady(connection)) return;
 
