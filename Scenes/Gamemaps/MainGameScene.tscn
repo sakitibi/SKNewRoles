@@ -145,9 +145,10 @@ grow_horizontal = 2
 grow_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_hotbar_bg")
 
-[node name="HotbarUIController" type="Control" parent="UILayer/HotbarUI" unique_id=336542986]
+[node name="HotbarUIController" type="Control" parent="UILayer/HotbarUI" unique_id=336542986 node_paths=PackedStringArray("_slotContainer")]
 layout_mode = 2
 script = ExtResource("13_hx67e")
+_slotContainer = NodePath("../SlotContainer")
 metadata/_custom_type_script = "uid://brci21yawpcln"
 
 [node name="SlotContainer" type="HBoxContainer" parent="UILayer/HotbarUI" unique_id=1827491023]

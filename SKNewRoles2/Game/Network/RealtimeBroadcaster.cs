@@ -7,106 +7,97 @@ namespace SKNewRoles2.Game.Network
 {
     public static class RealtimeBroadcaster
     {
-        public static async Task SendTransformAsync(RealtimeConnection connection, float px, float py, float pz, float rx, float ry, float rz)
+        public static Task SendTransformAsync(RealtimeConnection connection, float px, float py, float pz, float rx, float ry, float rz)
         {
-            if (!IsReady(connection)) return;
+            if (!IsReady(connection)) return Task.CompletedTask;
 
-            await Task.Run(() =>
+            string senderId = SessionManager.Instance?.CurrentSession?.User?.Id ?? $"Guest_{SessionManager.Instance?.CurrentRoomCode}";
+
+            var payload = new
             {
-                string senderId = SessionManager.Instance?.CurrentSession?.User?.Id ?? $"Guest_{SessionManager.Instance?.CurrentRoomCode}";
+                topic = "realtime:public:lobbies",
+                @event = "broadcast",
+                payload = new { type = "transform_all", player_id = senderId, px, py, pz, rx, ry, rz },
+                @ref = (string)null
+            };
 
-                var payload = new
-                {
-                    topic = "realtime:public:lobbies",
-                    @event = "broadcast",
-                    payload = new { type = "transform_all", player_id = senderId, px, py, pz, rx, ry, rz },
-                    @ref = (string)null
-                };
-
-                connection.Client.SendText(JsonSerializer.Serialize(payload));
-            });
+            connection.Client.SendText(JsonSerializer.Serialize(payload));
+            return Task.CompletedTask;
         }
 
-        public static async Task SendRoleAsync(RealtimeConnection connection, string targetPlayerId, int role, int faction)
+        public static Task SendRoleAsync(RealtimeConnection connection, string targetPlayerId, int role, int faction)
         {
             if (!IsReady(connection))
             {
                 GD.PrintErr("❌ [Realtime] チャンネル参加が完了していないため SendRoleBroadcast を送信できませんでした。");
-                return;
+                return Task.CompletedTask;
             }
 
-            await Task.Run(() =>
+            var payload = new
             {
-                var payload = new
-                {
-                    topic = "realtime:public:lobbies",
-                    @event = "broadcast",
-                    payload = new { type = "assign_role", target_player_id = targetPlayerId, role, faction },
-                    @ref = (string)null
-                };
+                topic = "realtime:public:lobbies",
+                @event = "broadcast",
+                payload = new { type = "assign_role", target_player_id = targetPlayerId, role, faction },
+                @ref = (string)null
+            };
 
-                connection.Client.SendText(JsonSerializer.Serialize(payload));
-                GD.Print($"📡 [Realtime] 役職データ送信成功: Target={targetPlayerId}, Role={role}, Faction={faction}");
-            });
+            connection.Client.SendText(JsonSerializer.Serialize(payload));
+            GD.Print($"📡 [Realtime] 役職データ送信成功: Target={targetPlayerId}, Role={role}, Faction={faction}");
+            return Task.CompletedTask;
         }
 
-        public static async Task SendHpAsync(RealtimeConnection connection, string playerId, int currentHp, int maxHp)
+        public static Task SendHpAsync(RealtimeConnection connection, string playerId, int currentHp, int maxHp)
         {
-            if (!IsReady(connection)) return;
+            if (!IsReady(connection)) return Task.CompletedTask;
 
-            await Task.Run(() =>
+            var payload = new
             {
-                var payload = new
-                {
-                    topic = "realtime:public:lobbies",
-                    @event = "broadcast",
-                    payload = new { type = "player_hp", player_id = playerId, current_hp = currentHp, max_hp = maxHp },
-                    @ref = (string)null
-                };
+                topic = "realtime:public:lobbies",
+                @event = "broadcast",
+                payload = new { type = "player_hp", player_id = playerId, current_hp = currentHp, max_hp = maxHp },
+                @ref = (string)null
+            };
 
-                connection.Client.SendText(JsonSerializer.Serialize(payload));
-            });
+            connection.Client.SendText(JsonSerializer.Serialize(payload));
+            return Task.CompletedTask;
         }
 
-        public static async Task SendHotbarSlotAsync(RealtimeConnection connection, string playerId, int slotIndex)
+        public static Task SendHotbarSlotAsync(RealtimeConnection connection, string playerId, int slotIndex)
         {
-            if (!IsReady(connection)) return;
+            if (!IsReady(connection)) return Task.CompletedTask;
 
-            await Task.Run(() =>
+            var payload = new
             {
-                var payload = new
-                {
-                    topic = "realtime:public:lobbies",
-                    @event = "broadcast",
-                    payload = new { type = "hotbar_slot", player_id = playerId, slot_index = slotIndex },
-                    @ref = (string)null
-                };
+                topic = "realtime:public:lobbies",
+                @event = "broadcast",
+                payload = new { type = "hotbar_slot", player_id = playerId, slot_index = slotIndex },
+                @ref = (string)null
+            };
 
-                connection.Client.SendText(JsonSerializer.Serialize(payload));
-            });
+            connection.Client.SendText(JsonSerializer.Serialize(payload));
+            return Task.CompletedTask;
         }
 
-        public static async Task SendHotbarItemAsync(RealtimeConnection connection, string playerId, int slotIndex, string itemId, int count)
+        public static Task SendHotbarItemAsync(RealtimeConnection connection, string playerId, int slotIndex, string itemId, int count)
         {
-            if (!IsReady(connection)) return;
+            if (!IsReady(connection)) return Task.CompletedTask;
 
-            await Task.Run(() =>
+            var payload = new
             {
-                var payload = new
-                {
-                    topic = "realtime:public:lobbies",
-                    @event = "broadcast",
-                    payload = new { type = "hotbar_item", player_id = playerId, slot_index = slotIndex, item_id = itemId, count },
-                    @ref = (string)null
-                };
+                topic = "realtime:public:lobbies",
+                @event = "broadcast",
+                payload = new { type = "hotbar_item", player_id = playerId, slot_index = slotIndex, item_id = itemId, count },
+                @ref = (string)null
+            };
 
-                connection.Client.SendText(JsonSerializer.Serialize(payload));
-            });
+            connection.Client.SendText(JsonSerializer.Serialize(payload));
+            return Task.CompletedTask;
         }
 
         private static bool IsReady(RealtimeConnection connection)
         {
-            return connection?.Client != null && 
+            return connection != null && 
+                   connection.Client != null && 
                    connection.Client.GetReadyState() == WebSocketPeer.State.Open && 
                    connection.IsJoinedChannel;
         }
