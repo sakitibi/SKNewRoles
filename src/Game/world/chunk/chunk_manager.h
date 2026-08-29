@@ -32,13 +32,12 @@ namespace godot {
             void unload_chunk(const Vector2i &coord);
             Node3D *find_local_player();
 
+            // メインスレッド安全呼び出し用内部メソッド
+            void _safe_preload_block_meshes();
+
         protected:
             static void _bind_methods();
             void _async_load_task(Variant p_userdata);
-
-            // 非同期化のために追加したプライベート/バインドメソッド
-            void _async_preload_task(Variant p_userdata);
-            void _async_verity_collisions_task(Variant p_userdata);
 
         public:
             ChunkManager();
