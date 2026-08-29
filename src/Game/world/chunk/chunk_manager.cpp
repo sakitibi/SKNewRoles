@@ -23,6 +23,24 @@ void ChunkManager::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_render_distance", "p_dist"), &ChunkManager::set_render_distance);
     ADD_PROPERTY(PropertyInfo(Variant::INT, "render_distance"), "set_render_distance", "get_render_distance");
 
+    // 相対高度プロパティ
+    ClassDB::bind_method(D_METHOD("get_chunk_height"), &ChunkManager::get_chunk_height);
+    ClassDB::bind_method(D_METHOD("set_chunk_height", "p_height"), &ChunkManager::set_chunk_height);
+    ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "chunk_height"), "set_chunk_height", "get_chunk_height");
+
+    ClassDB::bind_method(D_METHOD("get_base_y_position"), &ChunkManager::get_base_y_position);
+    ClassDB::bind_method(D_METHOD("set_base_y_position", "p_y"), &ChunkManager::set_base_y_position);
+    ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "base_y_position"), "set_base_y_position", "get_base_y_position");
+
+    // 絶対高度制限プロパティ
+    ClassDB::bind_method(D_METHOD("get_min_height"), &ChunkManager::get_min_height);
+    ClassDB::bind_method(D_METHOD("set_min_height", "p_height"), &ChunkManager::set_min_height);
+    ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_height"), "set_min_height", "get_min_height");
+
+    ClassDB::bind_method(D_METHOD("get_max_height"), &ChunkManager::get_max_height);
+    ClassDB::bind_method(D_METHOD("set_max_height", "p_height"), &ChunkManager::set_max_height);
+    ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_height"), "set_max_height", "get_max_height");
+
     ClassDB::bind_method(D_METHOD("get_player_path"), &ChunkManager::get_player_path);
     ClassDB::bind_method(D_METHOD("set_player_path", "p_path"), &ChunkManager::set_player_path);
     ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "player_path"), "set_player_path", "get_player_path");
@@ -111,7 +129,6 @@ void ChunkManager::_ready() {
     set_process(true);
 
     UtilityFunctions::print("[ChunkManager] _ready() called. Preloading block meshes...");
-    
     call_deferred("_safe_preload_block_meshes");
 }
 
@@ -207,6 +224,15 @@ void ChunkManager::load_chunk(const Vector2i &coord) {
     ChunkLoadData *load_data = new ChunkLoadData();
     load_data->coord = coord;
     load_data->chunk_size = chunk_size;
+    
+    // 相対値の受け渡し
+    load_data->chunk_height = chunk_height;
+    load_data->base_y_position = base_y_position;
+
+    // 絶対制限値の受け渡し
+    load_data->min_height = min_height;
+    load_data->max_height = max_height;
+
     load_data->region_folder_path = region_folder_path;
     load_data->is_initial_load = !initial_load_complete;
 
@@ -282,6 +308,18 @@ bool ChunkManager::is_initial_load_complete() const { return initial_load_comple
 
 void ChunkManager::set_render_distance(int p_dist) { render_distance = p_dist; }
 int ChunkManager::get_render_distance() const { return render_distance; }
+
+void ChunkManager::set_chunk_height(float p_height) { chunk_height = p_height; }
+float ChunkManager::get_chunk_height() const { return chunk_height; }
+
+void ChunkManager::set_base_y_position(float p_y) { base_y_position = p_y; }
+float ChunkManager::get_base_y_position() const { return base_y_position; }
+
+void ChunkManager::set_min_height(float p_height) { min_height = p_height; }
+float ChunkManager::get_min_height() const { return min_height; }
+
+void ChunkManager::set_max_height(float p_height) { max_height = p_height; }
+float ChunkManager::get_max_height() const { return max_height; }
 
 void ChunkManager::set_player_path(const NodePath &p_path) { player_path = p_path; }
 NodePath ChunkManager::get_player_path() const { return player_path; }
