@@ -1,6 +1,5 @@
 using Godot;
 using System;
-using System.Threading.Tasks;
 using SKNewRoles2.SessionManagerSystem;
 using SKNewRoles2.Game.Network;
 using SKNewRoles2.Game.Inventory;
@@ -10,12 +9,11 @@ namespace SKNewRoles2.Game
     public partial class MainGameScene : Node3D
     {
         private Node3D _chunkManagerCpp;
-
-        private PackedScene _playerScene = GD.Load<PackedScene>("res://Scenes/Prefabs/Player.tscn");
-        private PackedScene _opponentScene = GD.Load<PackedScene>("res://Scenes/Prefabs/LobbyPlayerDummy.tscn");
+        private readonly PackedScene _opponentScene = GD.Load<PackedScene>("res://Scenes/Prefabs/LobbyPlayerDummy.tscn");
 
         public Node3D MyPlayerInstance => _myPlayerInstance;
         private Node3D _myPlayerInstance;
+
         public Node HealthComponent => _healthComponent;
         private Node _healthComponent;
         
@@ -31,6 +29,8 @@ namespace SKNewRoles2.Game
         private readonly RealtimeConnection _connection = new();
         
         private MainGameSceneNetwork _networkHandler;
+        private readonly PlayerSpawner _playerSpawner = new();
+        private readonly ChunkLoader _chunkLoader = new();
 
         public int CurrentHp { get => _currentHp; set => _currentHp = value; }
         private int _currentHp = 20;
@@ -55,9 +55,9 @@ namespace SKNewRoles2.Game
 
             if (_myPlayerInstance == null)
             {
-                SpawnMyPlayer();
-                SetPlayerPhysicsEnabled(false);
-                _myPlayerInstance.Visible = false;
+                (_myPlayerInstance, _healthComponent) = _playerSpawner.SpawnMyPlayer(this, _networkHandler);
+                _playerSpawner.SetPlayerPhysicsEnabled(_myPlayerInstance, false);
+                if (_myPlayerInstance != null) _myPlayerInstance.Visible = false;
             }
 
             try
@@ -74,7 +74,6 @@ namespace SKNewRoles2.Game
 
                 _chunkManagerCpp = GetNode<Node3D>("ChunkManager");
 
-                // HotbarManager の取得と初期化
                 _hotbarManager = GetNodeOrNull<HotbarManager>("HotbarManager");
                 var hotbarNode = GetNodeOrNull<Node>("Hotbar");
                 
@@ -91,7 +90,7 @@ namespace SKNewRoles2.Game
                 AddChild(_remotePlayerManager);
                 _remotePlayerManager.Initialize(_opponentScene, GetMyUserId());
 
-                await WaitForInitialChunksLoaded();
+                await _chunkLoader.WaitForInitialChunksLoadedAsync(_chunkManagerCpp);
 
                 if (SessionManager.Instance != null && SessionManager.Instance.IsHost)
                 {
@@ -120,8 +119,6 @@ namespace SKNewRoles2.Game
             }
 
             _bgmManager?.PlayRandomBgm(0.0f);
-
-            // 初期アイテムの配布
             GrantInitialItems();
 
             if (_uiController != null)
@@ -129,12 +126,9 @@ namespace SKNewRoles2.Game
                 await _uiController.ShowRoleRevealAsync(_roleManager?.MyRole ?? 0, _roleManager?.MyFaction ?? 0, displayTimeMs: 5000);
             }
 
-            SetPlayerPhysicsEnabled(true);
+            _playerSpawner.SetPlayerPhysicsEnabled(_myPlayerInstance, true);
         }
 
-        /// <summary>
-        /// ゲーム開始時に全員（自クライアント）に初期ツールを配布する
-        /// </summary>
         private void GrantInitialItems()
         {
             if (_hotbarManager != null)
@@ -173,85 +167,6 @@ namespace SKNewRoles2.Game
             }
         }
 
-        private void SpawnMyPlayer()
-        {
-            if (_playerScene == null)
-            {
-                GD.PrintErr("❌ [MainGameScene] Player.tscn のロードに失敗しています。");
-                return;
-            }
-
-            _myPlayerInstance = _playerScene.Instantiate<Node3D>();
-            _myPlayerInstance.Name = "MyPlayer";
-            AddChild(_myPlayerInstance);
-
-            Vector3 spawnPos = new(0, 100, 0);
-            _myPlayerInstance.GlobalPosition = spawnPos;
-
-            SetPlayerPhysicsEnabled(false);
-
-            _healthComponent = _myPlayerInstance.GetNodeOrNull<Node>("HealthComponent");
-            Node targetNode = _healthComponent ?? _myPlayerInstance;
-
-            string[] signalNames = ["HpChanged", "hp_changed", "HealthChanged", "health_changed"];
-            foreach (var sig in signalNames)
-            {
-                if (targetNode.HasSignal(sig))
-                {
-                    targetNode.Connect(sig, Callable.From<int, int>(_networkHandler.OnMyPlayerHpChanged));
-                    break;
-                }
-            }
-
-            _networkHandler?.UpdateHpUIFromPlayer();
-            GD.Print($"👤 [MainGameScene] 自プレイヤーを生成しました。(Pos: {spawnPos})");
-        }
-
-        private async Task WaitForInitialChunksLoaded()
-        {
-            int timeoutMs = 10000;
-            int elapsedMs = 0;
-            int checkIntervalMs = 100;
-
-            if (_chunkManagerCpp == null)
-            {
-                GD.PrintErr("❌ [MainGameScene] ChunkManager ノードが見つかりません。");
-                return;
-            }
-
-            if (!_chunkManagerCpp.HasMethod("is_initial_load_complete"))
-            {
-                GD.PrintErr("❌ [MainGameScene] ChunkManager に 'is_initial_load_complete' メソッドがバインドされていません。");
-                return;
-            }
-
-            while (elapsedMs < timeoutMs)
-            {
-                Variant res = _chunkManagerCpp.Call("is_initial_load_complete");
-
-                if (res.VariantType == Variant.Type.Bool && (bool)res)
-                {
-                    GD.Print($"✅ [MainGameScene] チャンクの初期読込が完了しました ({elapsedMs}ms経過)。");
-                    return;
-                }
-
-                await Task.Delay(checkIntervalMs);
-                elapsedMs += checkIntervalMs;
-            }
-
-            GD.PrintErr("⚠️ [MainGameScene] チャンク初期読込がタイムアウトしました。処理を続行します。");
-        }
-
-        private void SetPlayerPhysicsEnabled(bool enabled)
-        {
-            if (_myPlayerInstance == null || !IsInstanceValid(_myPlayerInstance)) return;
-
-            if (_myPlayerInstance.HasMethod("set_movement_enabled"))
-            {
-                _myPlayerInstance.Call("set_movement_enabled", enabled);
-            }
-        }
-
         public static string GetMyUserId()
         {
             string myUserId = SessionManager.Instance?.CurrentSession?.User?.Id;
@@ -281,14 +196,8 @@ namespace SKNewRoles2.Game
             base._ExitTree();
         }
 
-        public void StopBGM()
-        {
-            _bgmManager?.StopBgm();
-        }
+        public void StopBGM() => _bgmManager?.StopBgm();
 
-        public void SetRemotePlayerHp(int currentHp)
-        {
-            _remotePlayerManager?.SetMyHp(currentHp);
-        }
+        public void SetRemotePlayerHp(int currentHp) => _remotePlayerManager?.SetMyHp(currentHp);
     }
 }
