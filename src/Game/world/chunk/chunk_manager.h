@@ -36,6 +36,10 @@ namespace godot {
             static void _bind_methods();
             void _async_load_task(Variant p_userdata);
 
+            // 非同期化のために追加したプライベート/バインドメソッド
+            void _async_preload_task(Variant p_userdata);
+            void _async_verity_collisions_task(Variant p_userdata);
+
         public:
             ChunkManager();
             ~ChunkManager();

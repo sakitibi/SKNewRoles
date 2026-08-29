@@ -38,6 +38,8 @@ void ChunkManager::_bind_methods() {
     ClassDB::bind_method(D_METHOD("_on_block_landed", "land_pos", "block_type"), &ChunkManager::_on_block_landed);
 
     ClassDB::bind_method(D_METHOD("_async_load_task", "p_userdata"), &ChunkManager::_async_load_task);
+    ClassDB::bind_method(D_METHOD("_async_preload_task", "p_userdata"), &ChunkManager::_async_preload_task);
+    ClassDB::bind_method(D_METHOD("_async_verity_collisions_task", "p_userdata"), &ChunkManager::_async_verity_collisions_task);
     ClassDB::bind_method(D_METHOD("_on_chunk_loaded", "p_userdata"), &ChunkManager::_on_chunk_loaded);
 }
 
@@ -109,9 +111,18 @@ void ChunkManager::_ready() {
 
     set_process(true);
 
-    UtilityFunctions::print("[ChunkManager] _ready() called. Preloading block meshes...");
+    UtilityFunctions::print("[ChunkManager] _ready() called. Preloading block meshes asynchronously...");
+    
+    // WorkerThreadPool で非同期実行
+    WorkerThreadPool::get_singleton()->add_task(
+        Callable(this, "_async_preload_task"),
+        true
+    );
+}
+
+void ChunkManager::_async_preload_task(Variant p_userdata) {
     BlockMeshCache::preload_block_meshes();
-    UtilityFunctions::print("[ChunkManager] Preload completed successfully.");
+    UtilityFunctions::print("[ChunkManager] Async mesh preload completed successfully.");
 }
 
 void ChunkManager::_process(double delta) {
@@ -188,7 +199,7 @@ void ChunkManager::update_chunks_around_player() {
 
     if (!initial_load_complete && pending_tasks.is_empty()) {
         initial_load_complete = true;
-        call_deferred("verity_initial_collisions");
+        verity_initial_collisions();
         UtilityFunctions::print("[ChunkManager] Initial chunk loading completed.");
     }
 }
@@ -246,14 +257,23 @@ void ChunkManager::_on_chunk_loaded(Variant p_userdata) {
 
     if (!initial_load_complete && pending_tasks.is_empty()) {
         initial_load_complete = true;
-        call_deferred("verity_initial_collisions");
+        verity_initial_collisions();
         UtilityFunctions::print("[ChunkManager] All pending chunk tasks finished.");
     }
 }
 
 void ChunkManager::verity_initial_collisions() {
-    UtilityFunctions::print("[ChunkManager] Verifying initial collisions...");
+    UtilityFunctions::print("[ChunkManager] Veritying initial collisions asynchronously...");
+    
+    WorkerThreadPool::get_singleton()->add_task(
+        Callable(this, "_async_verity_collisions_task"),
+        true
+    );
+}
+
+void ChunkManager::_async_verity_collisions_task(Variant p_userdata) {
     ChunkVeritier::verity_initial_collisions(loaded_chunks);
+    UtilityFunctions::print("[ChunkManager] Initial collision verification finished.");
 }
 
 void ChunkManager::unload_chunk(const Vector2i &coord) {
