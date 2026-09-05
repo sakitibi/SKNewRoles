@@ -29,16 +29,15 @@ namespace SKNewRoles2.SNRSystem
         /// </summary>
         private void SetupButtonAnimation(Button button)
         {
-            // 拡大縮小の中心（ピボット）をボタンの中央に設定
             button.PivotOffset = button.Size / 2;
 
-            // マウスホバー時（少し拡大）
+            // マウスホバー時
             button.MouseEntered += () => AnimateScale(button, new Vector2(1.08f, 1.08f), 0.1f);
-            // マウス離脱時（元のサイズに戻す）
+            // マウス離脱時
             button.MouseExited += () => AnimateScale(button, Vector2.One, 0.1f);
-            // ボタンを押した瞬間（少し凹ませる）
+            // ボタンを押した瞬間
             button.ButtonDown += () => AnimateScale(button, new Vector2(0.95f, 0.95f), 0.05f);
-            // ボタンを離した時（ホバー時のサイズに戻す）
+            // ボタンを離した時
             button.ButtonUp += () => AnimateScale(button, new Vector2(1.08f, 1.08f), 0.05f);
         }
 
@@ -53,8 +52,9 @@ namespace SKNewRoles2.SNRSystem
 
         private void OnStartButtonPressed()
         {
-            // ロビー選択画面へシーンを切り替え
-            Error error = GetTree().ChangeSceneToFile("res://Scenes/LobbySelect.tscn");
+            string storyScenePath = "res://Scenes/StoryReader.tscn";
+
+            Error error = GetTree().ChangeSceneToFile(storyScenePath);
             
             if (error != Error.Ok)
             {

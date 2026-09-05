@@ -1,0 +1,123 @@
+[gd_scene format=3 uid="uid://ck1y7dmff0gd"]
+
+[ext_resource type="Script" uid="uid://casib2a8n3k3e" path="res://SKNewRoles2/System/StoryReader.cs" id="1_story_reader"]
+[ext_resource type="FontFile" uid="uid://bnpuryk64ipb5" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="2_27n8y"]
+[ext_resource type="FontFile" uid="uid://dh2srjx51onl7" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="3_fc8g7"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0iane"]
+bg_color = Color(0, 0.6754706, 0.7593185, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1fclr"]
+bg_color = Color(0, 0.50980395, 0.79607844, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hs5rb"]
+bg_color = Color(0, 0.83137256, 0.84705883, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_27n8y"]
+bg_color = Color(0, 0.6440618, 0.34929883, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fc8g7"]
+bg_color = Color(0, 0.5686275, 0.27058825, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cy6aj"]
+bg_color = Color(0, 0.8784314, 0.31764707, 1)
+
+[node name="StoryReader" type="Control" unique_id=400905262]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_story_reader")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=545605419]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.08, 0.08, 0.1, 1)
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1764669465]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 40
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=1501522635]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="StoryPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer" unique_id=2023418478]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/VBoxContainer/StoryPanel" unique_id=1104889094]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="StoryLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer/StoryPanel/MarginContainer" unique_id=419947336]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_fonts/normal_font = ExtResource("2_27n8y")
+theme_override_fonts/bold_font = ExtResource("3_fc8g7")
+theme_override_fonts/bold_italics_font = ExtResource("3_fc8g7")
+theme_override_fonts/italics_font = ExtResource("2_27n8y")
+theme_override_fonts/mono_font = ExtResource("2_27n8y")
+theme_override_font_sizes/normal_font_size = 30
+theme_override_font_sizes/bold_font_size = 30
+theme_override_font_sizes/bold_italics_font_size = 30
+theme_override_font_sizes/italics_font_size = 30
+theme_override_font_sizes/mono_font_size = 30
+bbcode_enabled = true
+text = "ストーリーテキストがここに表示されます..."
+
+[node name="ButtonContainer" type="Panel" parent="MarginContainer/VBoxContainer" unique_id=1520769906]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+
+[node name="SkipButton" type="Button" parent="MarginContainer/VBoxContainer/ButtonContainer" unique_id=1523188487]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 0
+offset_top = -72.0
+offset_right = 277.0
+offset_bottom = 60.0
+theme_override_fonts/font = ExtResource("3_fc8g7")
+theme_override_font_sizes/font_size = 40
+theme_override_styles/normal = SubResource("StyleBoxFlat_0iane")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_1fclr")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hs5rb")
+text = "スキップ"
+
+[node name="Control" type="Control" parent="MarginContainer/VBoxContainer/ButtonContainer" unique_id=1005238926]
+anchors_preset = 0
+offset_left = 170.0
+offset_right = 1150.0
+offset_bottom = 60.0
+size_flags_horizontal = 3
+
+[node name="NextButton" type="Button" parent="MarginContainer/VBoxContainer/ButtonContainer" unique_id=923759620]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 0
+offset_left = 1077.0
+offset_top = -56.0
+offset_right = 1320.0
+offset_bottom = 60.0
+theme_override_fonts/font = ExtResource("3_fc8g7")
+theme_override_font_sizes/font_size = 40
+theme_override_styles/normal = SubResource("StyleBoxFlat_27n8y")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_fc8g7")
+theme_override_styles/hover = SubResource("StyleBoxFlat_cy6aj")
+text = "次へ"
