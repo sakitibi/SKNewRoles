@@ -1,29 +1,24 @@
-[gd_scene format=3 uid="uid://6llaatunfapt"]
+[gd_scene load_steps=3 format=3 uid="uid://6llaatunfapt"]
 
-[ext_resource type="Texture2D" uid="uid://dug73qf46v87s" path="res://Resources/Charactors/sakitibi.png" id="1_fiu32"]
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_42ksm"]
-albedo_texture = ExtResource("1_fiu32")
-
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_0iane"]
-lightmap_size_hint = Vector2i(17, 14)
-material = SubResource("StandardMaterial3D_42ksm")
+[ext_resource type="PackedScene" uid="uid://character_model_id" path="res://Resources/Models/steve.gltf" id="1_model"]
+[ext_resource type="Texture2D" uid="uid://dug73qf46v87s" path="res://Resources/Charactors/sakitibi.png" id="2_skin"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1fclr"]
+radius = 0.4
+height = 1.8
 
 [node name="Player" type="SNR2Player" unique_id=378689782]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -140.59203, 0.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 velocity = Vector3(0, 0, 0)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1291165692]
-mesh = SubResource("CapsuleMesh_0iane")
+[node name="CharacterModel" parent="." instance=ExtResource("1_model")]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1237376772]
-transform = Transform3D(0.9, 0, 0, 0, 0.9, 0, 0, 0, 0.9, 0, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("CapsuleShape3D_1fclr")
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=1739803627]
-transform = Transform3D(1, 0, 0, 0, 0.9659258, 0.25881904, 0, -0.25881904, 0.9659258, 0, 0.5, 0)
+transform = Transform3D(1, 0, 0, 0, 0.9659258, 0.25881904, 0, -0.25881904, 0.9659258, 0, 1.5, 0)
 current = true
 
 [node name="HealthComponent" type="HealthComponent" parent="." unique_id=280545807]
