@@ -7,6 +7,10 @@
 using namespace godot;
 
 void SNR2Player::_bind_methods() {
+    ClassDB::bind_method(D_METHOD("get_physics_enabled"), &SNR2Player::get_physics_enabled);
+    ClassDB::bind_method(D_METHOD("set_physics_enabled", "p_enabled"), &SNR2Player::set_physics_enabled);
+    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_physics_enabled"), "set_physics_enabled", "get_physics_enabled");
+
     ClassDB::bind_method(D_METHOD("get_max_hp"), &SNR2Player::get_max_hp);
     ClassDB::bind_method(D_METHOD("set_max_hp", "p_hp"), &SNR2Player::set_max_hp);
     ADD_PROPERTY(PropertyInfo(Variant::INT, "max_hp"), "set_max_hp", "get_max_hp");
@@ -70,6 +74,17 @@ void SNR2Player::_ready() {
     }
 }
 
+void SNR2Player::set_physics_enabled(bool p_enabled) {
+    is_physics_enabled = p_enabled;
+    if (!p_enabled) {
+        set_velocity(Vector3(0, 0, 0));
+    }
+}
+
+bool SNR2Player::get_physics_enabled() const {
+    return is_physics_enabled;
+}
+
 void SNR2Player::_on_hp_changed(int current_hp, int max_hp) {
     emit_signal("hp_changed", current_hp, max_hp);
 }
@@ -82,6 +97,11 @@ void SNR2Player::_on_player_died() {
 
 void SNR2Player::_physics_process(double delta) {
     if (!input) return;
+
+    if (!is_physics_enabled) {
+        set_velocity(Vector3(0, 0, 0));
+        return;
+    }
 
     // スペクテイター状態の処理
     if (is_spectator()) {
@@ -96,6 +116,9 @@ void SNR2Player::_physics_process(double delta) {
     // 重力の適用
     if (!is_on_floor()) {
         velocity.y -= gravity * static_cast<float>(delta);
+        if (velocity.y < TERMINAL_VELOCITY) {
+            velocity.y = TERMINAL_VELOCITY;
+        }
     }
 
     if (fall_damage_component) {

@@ -1,17 +1,18 @@
-[gd_scene load_steps=3 format=3 uid="uid://6llaatunfapt"]
+[gd_scene format=3 uid="uid://6llaatunfapt"]
 
-[ext_resource type="PackedScene" uid="uid://character_model_id" path="res://Resources/Models/steve.gltf" id="1_model"]
-[ext_resource type="Texture2D" uid="uid://dug73qf46v87s" path="res://Resources/Charactors/sakitibi.png" id="2_skin"]
+[ext_resource type="PackedScene" uid="uid://d3duy50sme0fl" path="res://Resources/Models/Player.glb" id="1_model"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1fclr"]
 radius = 0.4
 height = 1.8
 
-[node name="Player" type="SNR2Player" unique_id=378689782]
+[node name="Player" type="SNR2Player" unique_id=1433742504]
+max_hp = 20
+current_hp = 20
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 velocity = Vector3(0, 0, 0)
 
-[node name="CharacterModel" parent="." instance=ExtResource("1_model")]
+[node name="CharacterModel" parent="." unique_id=1483172880 instance=ExtResource("1_model")]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1237376772]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)

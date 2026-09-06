@@ -46,7 +46,11 @@ namespace SKNewRoles2.Game
         {
             if (playerInstance == null || !GodotObject.IsInstanceValid(playerInstance)) return;
 
-            if (playerInstance.HasMethod("set_movement_enabled"))
+            if (playerInstance.HasMethod("set_physics_enabled"))
+            {
+                playerInstance.Call("set_physics_enabled", enabled);
+            }
+            else if (playerInstance.HasMethod("set_movement_enabled"))
             {
                 playerInstance.Call("set_movement_enabled", enabled);
             }
