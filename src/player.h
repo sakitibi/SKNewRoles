@@ -22,9 +22,6 @@ namespace godot {
             const float SPEED = 5.0f;
             const float JUMP_VELOCITY = 4.5f;
 
-            bool is_physics_enabled = false;
-            const float TERMINAL_VELOCITY = -50.0f;
-
             float mouse_sensitivity = 0.003f;
             float camera_rotation_x = 0.0f;
             const float LIMIT_ANGLE_X = 1.48f;
@@ -42,9 +39,6 @@ namespace godot {
             void _ready() override;
             void _physics_process(double delta) override;
             void _input(const Ref<InputEvent> &event) override;
-
-            void set_physics_enabled(bool p_enabled);
-            bool get_physics_enabled() const;
 
             void set_max_hp(int p_hp);
             int get_max_hp() const;

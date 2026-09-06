@@ -90,14 +90,7 @@ namespace SKNewRoles2.Game
                 AddChild(_remotePlayerManager);
                 _remotePlayerManager.Initialize(_opponentScene, GetMyUserId());
 
-                // チャンク（床データ）の生成完了を待機
                 await _chunkLoader.WaitForInitialChunksLoadedAsync(_chunkManagerCpp);
-
-                if (_myPlayerInstance != null && IsInstanceValid(_myPlayerInstance))
-                {
-                    _myPlayerInstance.GlobalPosition = new Vector3(0, 100.0f, 0);
-                    _playerSpawner.SetPlayerPhysicsEnabled(_myPlayerInstance, true);
-                }
 
                 if (SessionManager.Instance != null && SessionManager.Instance.IsHost)
                 {
@@ -132,6 +125,8 @@ namespace SKNewRoles2.Game
             {
                 await _uiController.ShowRoleRevealAsync(_roleManager?.MyRole ?? 0, _roleManager?.MyFaction ?? 0, displayTimeMs: 5000);
             }
+
+            _playerSpawner.SetPlayerPhysicsEnabled(_myPlayerInstance, true);
         }
 
         private void GrantInitialItems()

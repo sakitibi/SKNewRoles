@@ -84,13 +84,6 @@ theme_override_font_sizes/mono_font_size = 30
 bbcode_enabled = true
 text = "ストーリーテキストがここに表示されます..."
 
-[node name="StoryImageDisplay" type="TextureRect" parent="MarginContainer/VBoxContainer" unique_id=309482019]
-visible = false
-custom_minimum_size = Vector2(0, 350)
-layout_mode = 2
-expand_mode = 1
-stretch_mode = 5
-
 [node name="ButtonContainer" type="Panel" parent="MarginContainer/VBoxContainer" unique_id=1520769906]
 custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
