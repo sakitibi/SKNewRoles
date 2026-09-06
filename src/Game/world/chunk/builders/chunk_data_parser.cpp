@@ -8,15 +8,12 @@ using namespace godot;
 int ChunkDataParser::get_palette_index(const PackedInt64Array &data, int palette_size, int x, int y, int z) {
     if (palette_size <= 1) return 0;
 
-    // パレットサイズに応じたビット数を計算（最低4ビット）
     int bits_per_entry = 4;
     while ((1 << bits_per_entry) < palette_size) {
         bits_per_entry++;
     }
 
-    // セクション内での 3D インデックス (Y -> Z -> X)
     int block_index = y * 256 + z * 16 + x;
-
     int entries_per_long = 64 / bits_per_entry;
     
     int long_index = block_index / entries_per_long;
@@ -44,6 +41,11 @@ HashMap<String, Vector<Vector3>> ChunkDataParser::parse_chunk_positions(
         if (!section.has("block_states") || !section.has("Y")) continue;
 
         int section_y = static_cast<int>(section["Y"]);
+
+        if (section_y > 127) {
+            section_y -= 256;
+        }
+
         if (section_y < min_section_y || section_y > max_section_y) continue;
 
         Dictionary block_states = section["block_states"];

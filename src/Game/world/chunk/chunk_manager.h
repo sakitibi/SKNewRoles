@@ -15,13 +15,13 @@ namespace godot {
             float chunk_size = 16.0f;
             int render_distance = 2;
 
-            // チャンク相対高度
-            float chunk_height;
-            float base_y_position;
+            // チャンク相対高度 
+            float chunk_height = 0.0f;
+            float base_y_position = 0.0f;
 
             // ワールド絶対高度制限
-            float min_height;
-            float max_height;
+            float min_height = -64.0f;
+            float max_height = 320.0f;
 
             bool initial_load_complete = false;
             bool first_update = true;
@@ -68,14 +68,12 @@ namespace godot {
             void set_render_distance(int p_dist);
             int get_render_distance() const;
 
-            // 相対高度設定
             void set_chunk_height(float p_height);
             float get_chunk_height() const;
 
             void set_base_y_position(float p_y);
             float get_base_y_position() const;
 
-            // 絶対高度制限設定
             void set_min_height(float p_height);
             float get_min_height() const;
 

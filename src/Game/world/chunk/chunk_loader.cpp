@@ -13,7 +13,6 @@ void ChunkLoader::async_load_worker(void *p_userdata) {
         MCAParser::parse_chunk(data->region_folder_path, data->coord.x, data->coord.y)
     );
 
-    // 高度制限（絶対 ＆ 相対）のフィルタリング処理
     HashMap<String, Vector<Vector3>> filtered_positions;
 
     for (const KeyValue<String, Vector<Vector3>> &entry : raw_positions) {
@@ -25,11 +24,8 @@ void ChunkLoader::async_load_worker(void *p_userdata) {
             Vector3 block_pos = pos_list[i];
 
             float world_y = data->base_y_position + block_pos.y;
+            
             if (world_y < data->min_height || world_y > data->max_height) {
-                continue;
-            }
-
-            if (data->chunk_height > 0.0f && block_pos.y >= data->chunk_height) {
                 continue;
             }
 
