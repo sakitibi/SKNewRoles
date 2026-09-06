@@ -7,7 +7,7 @@ namespace SKNewRoles2.Game
     {
         public async Task WaitForInitialChunksLoadedAsync(Node3D chunkManagerCpp)
         {
-            int timeoutMs = 10000;
+            int timeoutMs = 15000;
             int elapsedMs = 0;
             int checkIntervalMs = 100;
 
@@ -22,6 +22,8 @@ namespace SKNewRoles2.Game
                 GD.PrintErr("❌ [ChunkLoader] ChunkManager に 'is_initial_load_complete' メソッドがバインドされていません。");
                 return;
             }
+
+            GD.Print("⏳ [ChunkLoader] チャンク初期読込の完了を待機中...");
 
             while (elapsedMs < timeoutMs)
             {

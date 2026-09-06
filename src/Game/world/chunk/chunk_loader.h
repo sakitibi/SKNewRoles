@@ -12,8 +12,8 @@ namespace godot {
         float chunk_size = 16.0f;
 
         // チャンク相対高度
-        float chunk_height = 256.0f;   // 1チャンクの相対的な高さ
-        float base_y_position = 0.0f;  // 基準Y座標（オフセット）
+        float chunk_height = 0.0f;     
+        float base_y_position = 0.0f;  // 基準Y座標
 
         // ワールド絶対高度制限
         float min_height = -64.0f;     // ワールド全体の最小Y座標

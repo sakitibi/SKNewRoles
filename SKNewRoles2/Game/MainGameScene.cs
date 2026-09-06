@@ -53,11 +53,23 @@ namespace SKNewRoles2.Game
             AddChild(_uiController);
             _uiController.Initialize(this);
 
+            _chunkManagerCpp = GetNodeOrNull<Node3D>("ChunkManager");
+
             if (_myPlayerInstance == null)
             {
                 (_myPlayerInstance, _healthComponent) = _playerSpawner.SpawnMyPlayer(this, _networkHandler);
                 _playerSpawner.SetPlayerPhysicsEnabled(_myPlayerInstance, false);
-                if (_myPlayerInstance != null) _myPlayerInstance.Visible = false;
+                if (_myPlayerInstance != null)
+                {
+                    _myPlayerInstance.Visible = false;
+
+                    // チャンクマネージャーに生成したプレイヤーのNodePathを設定
+                    if (_chunkManagerCpp != null && IsInstanceValid(_chunkManagerCpp))
+                    {
+                        _chunkManagerCpp.Call("set_player_path", _myPlayerInstance.GetPath());
+                        GD.Print($"✅ [MainGameScene] ChunkManager に PlayerPath ({_myPlayerInstance.GetPath()}) を設定しました。");
+                    }
+                }
             }
 
             try
@@ -71,8 +83,6 @@ namespace SKNewRoles2.Game
                 _roleManager = new GameRoleManager();
                 AddChild(_roleManager);
                 _roleManager.Initialize(GetNode<Node>("RoleManager"));
-
-                _chunkManagerCpp = GetNode<Node3D>("ChunkManager");
 
                 _hotbarManager = GetNodeOrNull<HotbarManager>("HotbarManager");
                 var hotbarNode = GetNodeOrNull<Node>("Hotbar");
@@ -90,6 +100,7 @@ namespace SKNewRoles2.Game
                 AddChild(_remotePlayerManager);
                 _remotePlayerManager.Initialize(_opponentScene, GetMyUserId());
 
+                // チャンク読み込み完了の待機
                 await _chunkLoader.WaitForInitialChunksLoadedAsync(_chunkManagerCpp);
 
                 if (SessionManager.Instance != null && SessionManager.Instance.IsHost)
