@@ -19,6 +19,10 @@ namespace godot {
         private:
             static HashMap<String, BlockMeshData> mesh_cache;
             static HashMap<String, Ref<Material>> material_dedup_map;
+            static Ref<Material> default_material;
+
+            static BlockMeshData load_single_block_mesh(const String &scene_path);
+
         protected:
             static void _bind_methods();
 
@@ -29,6 +33,7 @@ namespace godot {
             static const char* FACE_NODE_NAMES[6];
             static void preload_block_meshes();
             static BlockMeshData get_block_mesh_data(const String &scene_path);
+            static Ref<Material> get_default_material();
             static void clear_cache();
     };
 }

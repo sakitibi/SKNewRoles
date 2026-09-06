@@ -74,9 +74,14 @@ BuiltChunkDataNew ChunkMeshBuilderNew::build_chunk_data_async(
         String block_id = E.key;
         const Vector<Vector3> &positions = E.value;
 
+        // 1. レジストリキー検索（minecraft: プレフィックスのフォールバック対応）
+        String lookup_id = block_id.replace("minecraft:", "");
         String scene_path = "";
+
         if (registry_map.has(block_id)) {
             scene_path = registry_map[block_id];
+        } else if (registry_map.has(lookup_id)) {
+            scene_path = registry_map[lookup_id];
         } else if (registry_map.has("default")) {
             scene_path = registry_map["default"];
         }
@@ -84,7 +89,6 @@ BuiltChunkDataNew ChunkMeshBuilderNew::build_chunk_data_async(
         float height = is_dirt_path_id(block_id) ? 0.938f : 1.0f;
 
         Vector<CubeFaceData> faces = CubeMeshUtils::get_cube_faces(height);
-        
         BlockMeshData mesh_data = BlockMeshCache::get_block_mesh_data(scene_path);
 
         HashMap<Ref<Material>, SurfaceMeshDataNew> surface_map;
@@ -101,6 +105,14 @@ BuiltChunkDataNew ChunkMeshBuilderNew::build_chunk_data_async(
                 }
 
                 Ref<Material> face_mat = resolve_face_material(mesh_data, f);
+
+                if (face_mat.is_null()) {
+                    face_mat = BlockMeshCache::get_default_material();
+                }
+
+                if (face_mat.is_null()) {
+                    continue;
+                }
 
                 SurfaceMeshDataNew &surf = surface_map[face_mat];
                 surf.material = face_mat;
@@ -141,6 +153,7 @@ BuiltChunkDataNew ChunkMeshBuilderNew::build_chunk_data_async(
             int surf_idx = array_mesh->get_surface_count();
             array_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surface_arrays);
 
+            // 3. 有効なマテリアルのみ割り当て
             if (surf.material.is_valid()) {
                 Ref<BaseMaterial3D> base_mat = surf.material;
                 if (base_mat.is_valid()) {
