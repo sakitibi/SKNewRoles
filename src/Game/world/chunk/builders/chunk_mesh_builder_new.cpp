@@ -74,12 +74,17 @@ BuiltChunkDataNew ChunkMeshBuilderNew::build_chunk_data_async(
         String block_id = E.key;
         const Vector<Vector3> &positions = E.value;
 
-        if (!registry_map.has(block_id)) continue;
-        String scene_path = registry_map[block_id];
+        String scene_path = "";
+        if (registry_map.has(block_id)) {
+            scene_path = registry_map[block_id];
+        } else if (registry_map.has("default")) {
+            scene_path = registry_map["default"];
+        }
 
         float height = is_dirt_path_id(block_id) ? 0.938f : 1.0f;
 
         Vector<CubeFaceData> faces = CubeMeshUtils::get_cube_faces(height);
+        
         BlockMeshData mesh_data = BlockMeshCache::get_block_mesh_data(scene_path);
 
         HashMap<Ref<Material>, SurfaceMeshDataNew> surface_map;

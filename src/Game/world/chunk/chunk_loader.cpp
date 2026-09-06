@@ -49,6 +49,9 @@ void ChunkLoader::async_load_worker(void *p_userdata) {
         data->is_initial_load
     );
     data->has_data = true;
+    
+    UtilityFunctions::print(vformat("[ChunkLoader] Coord (%d, %d) parsed blocks count: %d", 
+    data->coord.x, data->coord.y, data->categorized_positions.size()));
 }
 
 Node3D *ChunkLoader::create_chunk_node(const Vector2i &coord, float chunk_size, const BuiltChunkData &built_data) {
