@@ -2,16 +2,71 @@
 
 [ext_resource type="Texture2D" uid="uid://dug73qf46v87s" path="res://Resources/Charactors/sakitibi.png" id="1_2abaq"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2abaq"]
+[sub_resource type="StandardMaterial3D" id="Mat_Head"]
 albedo_texture = ExtResource("1_2abaq")
-texture_filter = 4
+texture_filter = 0
+uv1_scale = Vector3(0.25, 0.25, 0.25)
+uv1_offset = Vector3(0, 0, 0)
 
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_0iane"]
-lightmap_size_hint = Vector2i(17, 14)
+[sub_resource type="BoxMesh" id="BoxMesh_Head"]
+material = SubResource("Mat_Head")
+size = Vector3(0.5, 0.5, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Body"]
+albedo_texture = ExtResource("1_2abaq")
+texture_filter = 0
+uv1_scale = Vector3(0.25, 0.375, 0.25)
+uv1_offset = Vector3(0.25, 0.375, 0)
+
+[sub_resource type="BoxMesh" id="BoxMesh_Body"]
+material = SubResource("Mat_Body")
+size = Vector3(0.5, 0.75, 0.25)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Arm"]
+albedo_texture = ExtResource("1_2abaq")
+texture_filter = 0
+uv1_scale = Vector3(0.25, 0.375, 0.25)
+uv1_offset = Vector3(0.625, 0.375, 0)
+
+[sub_resource type="BoxMesh" id="BoxMesh_Arm"]
+material = SubResource("Mat_Arm")
+size = Vector3(0.25, 0.75, 0.25)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Leg"]
+albedo_texture = ExtResource("1_2abaq")
+texture_filter = 0
+uv1_scale = Vector3(0.25, 0.375, 0.25)
+uv1_offset = Vector3(0, 0.375, 0)
+
+[sub_resource type="BoxMesh" id="BoxMesh_Leg"]
+material = SubResource("Mat_Leg")
+size = Vector3(0.25, 0.75, 0.25)
 
 [node name="LobbyPlayerDummy" type="RemotePlayer" unique_id=1645808363]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.9999998, 0)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=143247768]
-material_override = SubResource("StandardMaterial3D_2abaq")
-mesh = SubResource("CapsuleMesh_0iane")
+[node name="SkinModel" type="Node3D" parent="."]
+
+[node name="Head" type="MeshInstance3D" parent="SkinModel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.625, 0)
+mesh = SubResource("BoxMesh_Head")
+
+[node name="Body" type="MeshInstance3D" parent="SkinModel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("BoxMesh_Body")
+
+[node name="RightArm" type="MeshInstance3D" parent="SkinModel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.375, 0, 0)
+mesh = SubResource("BoxMesh_Arm")
+
+[node name="LeftArm" type="MeshInstance3D" parent="SkinModel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.375, 0, 0)
+mesh = SubResource("BoxMesh_Arm")
+
+[node name="RightLeg" type="MeshInstance3D" parent="SkinModel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.125, -0.75, 0)
+mesh = SubResource("BoxMesh_Leg")
+
+[node name="LeftLeg" type="MeshInstance3D" parent="SkinModel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.125, -0.75, 0)
+mesh = SubResource("BoxMesh_Leg")

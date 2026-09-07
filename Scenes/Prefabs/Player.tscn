@@ -2,28 +2,84 @@
 
 [ext_resource type="Texture2D" uid="uid://dug73qf46v87s" path="res://Resources/Charactors/sakitibi.png" id="1_fiu32"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_42ksm"]
+[sub_resource type="StandardMaterial3D" id="Mat_Head"]
 albedo_texture = ExtResource("1_fiu32")
+texture_filter = 0
+uv1_scale = Vector3(0.25, 0.25, 0.25)
+uv1_offset = Vector3(0, 0, 0)
 
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_0iane"]
-lightmap_size_hint = Vector2i(17, 14)
-material = SubResource("StandardMaterial3D_42ksm")
+[sub_resource type="BoxMesh" id="BoxMesh_Head"]
+material = SubResource("Mat_Head")
+size = Vector3(0.5, 0.5, 0.5)
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1fclr"]
+[sub_resource type="StandardMaterial3D" id="Mat_Body"]
+albedo_texture = ExtResource("1_fiu32")
+texture_filter = 0
+uv1_scale = Vector3(0.25, 0.375, 0.25)
+uv1_offset = Vector3(0.25, 0.375, 0)
+
+[sub_resource type="BoxMesh" id="BoxMesh_Body"]
+material = SubResource("Mat_Body")
+size = Vector3(0.5, 0.75, 0.25)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Arm"]
+albedo_texture = ExtResource("1_fiu32")
+texture_filter = 0
+uv1_scale = Vector3(0.25, 0.375, 0.25)
+uv1_offset = Vector3(0.625, 0.375, 0)
+
+[sub_resource type="BoxMesh" id="BoxMesh_Arm"]
+material = SubResource("Mat_Arm")
+size = Vector3(0.25, 0.75, 0.25)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Leg"]
+albedo_texture = ExtResource("1_fiu32")
+texture_filter = 0
+uv1_scale = Vector3(0.25, 0.375, 0.25)
+uv1_offset = Vector3(0, 0.375, 0)
+
+[sub_resource type="BoxMesh" id="BoxMesh_Leg"]
+material = SubResource("Mat_Leg")
+size = Vector3(0.25, 0.75, 0.25)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_player"]
+size = Vector3(0.6, 1.8, 0.6)
 
 [node name="Player" type="SNR2Player" unique_id=378689782]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -140.59203, 0.25)
 velocity = Vector3(0, 0, 0)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1291165692]
-mesh = SubResource("CapsuleMesh_0iane")
+[node name="SkinModel" type="Node3D" parent="."]
+
+[node name="Head" type="MeshInstance3D" parent="SkinModel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.625, 0)
+mesh = SubResource("BoxMesh_Head")
+
+[node name="Body" type="MeshInstance3D" parent="SkinModel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("BoxMesh_Body")
+
+[node name="RightArm" type="MeshInstance3D" parent="SkinModel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.375, 0, 0)
+mesh = SubResource("BoxMesh_Arm")
+
+[node name="LeftArm" type="MeshInstance3D" parent="SkinModel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.375, 0, 0)
+mesh = SubResource("BoxMesh_Arm")
+
+[node name="RightLeg" type="MeshInstance3D" parent="SkinModel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.125, -0.75, 0)
+mesh = SubResource("BoxMesh_Leg")
+
+[node name="LeftLeg" type="MeshInstance3D" parent="SkinModel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.125, -0.75, 0)
+mesh = SubResource("BoxMesh_Leg")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1237376772]
-transform = Transform3D(0.9, 0, 0, 0, 0.9, 0, 0, 0, 0.9, 0, 0, 0)
-shape = SubResource("CapsuleShape3D_1fclr")
+shape = SubResource("BoxShape3D_player")
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=1739803627]
-transform = Transform3D(1, 0, 0, 0, 0.9659258, 0.25881904, 0, -0.25881904, 0.9659258, 0, 0.5, 0)
+transform = Transform3D(1, 0, 0, 0, 0.9659258, 0.25881904, 0, -0.25881904, 0.9659258, 0, 0.6, 0)
 current = true
 
 [node name="HealthComponent" type="HealthComponent" parent="." unique_id=280545807]
