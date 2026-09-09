@@ -1,8 +1,9 @@
 [gd_scene format=3 uid="uid://x6a0w15otf3e"]
 
-[ext_resource type="Script" uid="uid://fw80cjy6b2bf" path="res://SKNewRoles2/System/Home.cs" id="1_maaha"]
-[ext_resource type="FontFile" uid="uid://dh2srjx51onl7" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="2_hf3nf"]
+[ext_resource type="Script" uid="uid://c5gh3g7xxp6a2" path="res://SKNewRoles2/System/Home.cs" id="1_maaha"]
+[ext_resource type="FontFile" uid="uid://bcuxsq3rxn1b4" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="2_hf3nf"]
 [ext_resource type="Texture2D" uid="uid://d2oqkqps0e80m" path="res://Resources/HomeBackground.png" id="2_maaha"]
+[ext_resource type="FontFile" uid="uid://br5t7n57fruc7" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="4_vtlm0"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3me4c"]
 bg_color = Color(0, 0.5793735, 0.80830514, 1)
@@ -86,10 +87,10 @@ layout_mode = 2
 
 [node name="StartButton" type="Button" parent="MarginContainer/VBoxContainer/HomePanel" unique_id=1883100645]
 layout_mode = 0
-offset_left = -362.0
-offset_top = -143.0
-offset_right = -98.0
-offset_bottom = -43.0
+offset_left = -363.0
+offset_top = -265.0
+offset_right = -99.0
+offset_bottom = -165.0
 offset_transform_enabled = true
 theme_override_fonts/font = ExtResource("2_hf3nf")
 theme_override_font_sizes/font_size = 40
@@ -100,10 +101,10 @@ text = "ゲームを開始"
 
 [node name="ExitButton" type="Button" parent="MarginContainer/VBoxContainer/HomePanel" unique_id=1178413019]
 layout_mode = 0
-offset_left = 196.0
-offset_top = -147.0
-offset_right = 456.0
-offset_bottom = -47.0
+offset_left = 199.0
+offset_top = -257.0
+offset_right = 459.0
+offset_bottom = -157.0
 theme_override_fonts/font = ExtResource("2_hf3nf")
 theme_override_font_sizes/font_size = 40
 theme_override_styles/normal = SubResource("StyleBoxFlat_cdeat")
@@ -111,7 +112,7 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_maaha")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hf3nf")
 text = "ゲームを終了"
 
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/HomePanel" unique_id=419465441]
+[node name="TitleLabel" type="Label" parent="MarginContainer/VBoxContainer/HomePanel" unique_id=419465441]
 layout_mode = 0
 offset_left = -436.0
 offset_top = -800.0
@@ -120,3 +121,15 @@ offset_bottom = -671.0
 theme_override_fonts/font = ExtResource("2_hf3nf")
 theme_override_font_sizes/font_size = 128
 text = "SKNewRoles2!"
+
+[node name="CopyRightLabel" type="Label" parent="MarginContainer/VBoxContainer/HomePanel" unique_id=2075611947]
+layout_mode = 0
+offset_left = -452.0
+offset_top = -120.0
+offset_right = 533.0
+offset_bottom = -17.0
+theme_override_fonts/font = ExtResource("4_vtlm0")
+theme_override_font_sizes/font_size = 50
+text = "Copyright 2023~2026 SKNewRoles, Inc
+All Rights Reserved."
+horizontal_alignment = 1

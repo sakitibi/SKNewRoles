@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bgybqu4t6omyp"]
 
-[ext_resource type="FontFile" uid="uid://dh2srjx51onl7" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="1_4a5q1"]
-[ext_resource type="FontFile" uid="uid://bnpuryk64ipb5" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="2_d86sw"]
+[ext_resource type="FontFile" uid="uid://bcuxsq3rxn1b4" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="1_4a5q1"]
+[ext_resource type="FontFile" uid="uid://br5t7n57fruc7" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="2_d86sw"]
 
 [node name="RoleRevealScene" type="Control" unique_id=1913904660]
 layout_mode = 3
