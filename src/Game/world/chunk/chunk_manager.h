@@ -11,15 +11,14 @@
 namespace godot {
     class ChunkManager : public Node3D {
         GDCLASS(ChunkManager, Node3D)
+
         private:
             float chunk_size = 16.0f;
             int render_distance = 2;
 
-            // チャンク相対高度 
             float chunk_height = 0.0f;
             float base_y_position = 0.0f;
 
-            // ワールド絶対高度制限
             float min_height = -64.0f;
             float max_height = 320.0f;
 
@@ -36,16 +35,11 @@ namespace godot {
 
             String region_folder_path = "res://regions/";
 
-            void update_chunks_around_player();
-            void load_chunk(const Vector2i &coord);
-            void unload_chunk(const Vector2i &coord);
             Node3D *find_local_player();
-
             void _safe_preload_block_meshes();
 
         protected:
             static void _bind_methods();
-            void _async_load_task(Variant p_userdata);
 
         public:
             ChunkManager();
@@ -54,6 +48,7 @@ namespace godot {
             void _ready() override;
             void _process(double delta) override;
 
+            void _async_load_task(Variant p_userdata);
             void _on_chunk_loaded(Variant p_userdata);
 
             void spawn_falling_block(const Vector3 &spawn_pos, const String &block_type = "stone");
@@ -61,9 +56,17 @@ namespace godot {
 
             void verity_initial_collisions();
 
+            HashMap<Vector2i, Node3D *> &get_loaded_chunks() { return loaded_chunks; }
+            HashMap<Vector2i, int64_t> &get_pending_tasks() { return pending_tasks; }
+            HashMap<Vector2i, HashMap<String, Vector<Vector3>>> &get_chunk_block_data_map() { return chunk_block_data_map; }
+
+            void unload_chunk(const Vector2i &coord);
+
             void set_chunk_size(float p_size);
             float get_chunk_size() const;
+
             bool is_initial_load_complete() const;
+            void set_initial_load_complete(bool complete);
 
             void set_render_distance(int p_dist);
             int get_render_distance() const;

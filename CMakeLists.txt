@@ -36,11 +36,13 @@ set(SOURCES
     src/Game/world/mca_parser.cpp
     src/Game/world/chunk/chunk_block_editor.cpp
     src/Game/world/chunk/chunk_manager.cpp
+    src/Game/world/chunk/chunk_updater.cpp
     src/Game/world/chunk/chunk_mesh_builder.cpp
     src/Game/world/chunk/chunk_collision_builder.cpp
     src/Game/world/chunk/chunk_loader.cpp
     src/Game/world/chunk/chunk_spawner.cpp
     src/Game/world/chunk/chunk_veritier.cpp
+    src/Game/world/chunk/player_finder.cpp
     src/Game/world/chunk/builders/chunk_data_parser.cpp
     src/Game/world/chunk/builders/chunk_mesh_builder_new.cpp
     src/Game/world/chunk/builders/chunk_node_applier.cpp

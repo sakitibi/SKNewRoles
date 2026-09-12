@@ -3,12 +3,12 @@
 #include "chunk_veritier.h"
 #include "chunk_spawner.h"
 #include "chunk_block_editor.h"
+#include "player_finder.h"
+#include "chunk_updater.h"
 #include "../../../Blocks/block_mesh_cache.h"
 
 #include <godot_cpp/core/object.hpp>
 #include <godot_cpp/classes/engine.hpp>
-#include <godot_cpp/classes/scene_tree.hpp>
-#include <godot_cpp/classes/worker_thread_pool.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <cmath>
 
@@ -23,7 +23,6 @@ void ChunkManager::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_render_distance", "p_dist"), &ChunkManager::set_render_distance);
     ADD_PROPERTY(PropertyInfo(Variant::INT, "render_distance"), "set_render_distance", "get_render_distance");
 
-    // 相対高度プロパティ
     ClassDB::bind_method(D_METHOD("get_chunk_height"), &ChunkManager::get_chunk_height);
     ClassDB::bind_method(D_METHOD("set_chunk_height", "p_height"), &ChunkManager::set_chunk_height);
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "chunk_height"), "set_chunk_height", "get_chunk_height");
@@ -32,7 +31,6 @@ void ChunkManager::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_base_y_position", "p_y"), &ChunkManager::set_base_y_position);
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "base_y_position"), "set_base_y_position", "get_base_y_position");
 
-    // 絶対高度制限プロパティ
     ClassDB::bind_method(D_METHOD("get_min_height"), &ChunkManager::get_min_height);
     ClassDB::bind_method(D_METHOD("set_min_height", "p_height"), &ChunkManager::set_min_height);
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_height"), "set_min_height", "get_min_height");
@@ -73,54 +71,7 @@ void ChunkManager::_on_block_landed(const Vector3 &land_pos, const String &block
 }
 
 Node3D *ChunkManager::find_local_player() {
-    if (player_instance_id != 0) {
-        if (UtilityFunctions::is_instance_id_valid(player_instance_id)) {
-            Object *obj = ObjectDB::get_instance(player_instance_id);
-            if (obj) {
-                Node3D *p = Object::cast_to<Node3D>(obj);
-                if (p && p->is_inside_tree()) return p;
-            }
-        }
-        player_instance_id = 0;
-    }
-
-    if (!player_path.is_empty()) {
-        Node *node = get_node_or_null(player_path);
-        if (node) {
-            Node3D *p = Object::cast_to<Node3D>(node);
-            if (p) {
-                player_instance_id = p->get_instance_id();
-                return p;
-            }
-        }
-    }
-
-    SceneTree *st = get_tree();
-    if (st) {
-        Array players = st->get_nodes_in_group("player");
-        if (players.size() > 0) {
-            Node3D *p = Object::cast_to<Node3D>(players[0]);
-            if (p) {
-                player_instance_id = p->get_instance_id();
-                return p;
-            }
-        }
-
-        Node *root = st->get_current_scene();
-        if (root) {
-            Node *p_node = root->find_child("MyPlayer", true, false);
-            if (!p_node) p_node = root->find_child("Player", true, false);
-            if (p_node) {
-                Node3D *p = Object::cast_to<Node3D>(p_node);
-                if (p) {
-                    player_instance_id = p->get_instance_id();
-                    return p;
-                }
-            }
-        }
-    }
-
-    return nullptr;
+    return PlayerFinder::find_local_player(this, player_path, player_instance_id);
 }
 
 void ChunkManager::_ready() {
@@ -163,87 +114,22 @@ void ChunkManager::_process(double delta) {
         first_update = false;
         current_chunk_coord = new_chunk_coord;
         UtilityFunctions::print(vformat("[ChunkManager] Player position updated -> Chunk Coord: (%d, %d)", new_chunk_coord.x, new_chunk_coord.y));
-        update_chunks_around_player();
+        
+        ChunkUpdater::update_chunks_around_player(this, center_pos);
     }
 }
 
-void ChunkManager::update_chunks_around_player() {
-    Vector3 center_pos = Vector3(0, 0, 0);
-    Node3D *player = find_local_player();
-    if (player) {
-        center_pos = player->get_global_position();
+void ChunkManager::unload_chunk(const Vector2i &coord) {
+    if (!loaded_chunks.has(coord)) return;
+
+    Node3D *chunk_node = loaded_chunks[coord];
+    loaded_chunks.erase(coord);
+    chunk_block_data_map.erase(coord);
+
+    if (chunk_node) {
+        chunk_node->queue_free();
     }
-
-    Vector2i player_coord = Vector2i(
-        std::floor(center_pos.x / chunk_size),
-        std::floor(center_pos.z / chunk_size)
-    );
-
-    HashSet<Vector2i> required_chunks;
-
-    for (int x = -render_distance; x <= render_distance; ++x) {
-        for (int z = -render_distance; z <= render_distance; ++z) {
-            required_chunks.insert(player_coord + Vector2i(x, z));
-        }
-    }
-
-    Vector<Vector2i> chunks_to_unload;
-    for (const KeyValue<Vector2i, Node3D *> &E : loaded_chunks) {
-        if (!required_chunks.has(E.key)) {
-            chunks_to_unload.push_back(E.key);
-        }
-    }
-
-    for (int i = 0; i < chunks_to_unload.size(); ++i) {
-        unload_chunk(chunks_to_unload[i]);
-    }
-
-    int requested = 0;
-    for (const Vector2i &coord : required_chunks) {
-        if (!loaded_chunks.has(coord) && !pending_tasks.has(coord)) {
-            load_chunk(coord);
-            requested++;
-        }
-    }
-
-    UtilityFunctions::print(vformat("[ChunkManager] Chunk update status: requested=%d / pending=%d / loaded=%d", 
-        requested, pending_tasks.size(), loaded_chunks.size()));
-
-    if (!initial_load_complete && pending_tasks.is_empty()) {
-        initial_load_complete = true;
-        call_deferred("verity_initial_collisions");
-        UtilityFunctions::print("[ChunkManager] Initial chunk loading completed.");
-    }
-}
-
-void ChunkManager::load_chunk(const Vector2i &coord) {
-    if (loaded_chunks.has(coord) || pending_tasks.has(coord)) return;
-
-    UtilityFunctions::print(vformat("[ChunkManager] Queueing chunk task for coord: (%d, %d)", coord.x, coord.y));
-
-    ChunkLoadData *load_data = new ChunkLoadData();
-    load_data->coord = coord;
-    load_data->chunk_size = chunk_size;
-    
-    // 相対値の受け渡し
-    load_data->chunk_height = chunk_height;
-    load_data->base_y_position = base_y_position;
-
-    // 絶対制限値の受け渡し
-    load_data->min_height = min_height;
-    load_data->max_height = max_height;
-
-    load_data->region_folder_path = region_folder_path;
-    load_data->is_initial_load = !initial_load_complete;
-
-    uint64_t ptr_val = reinterpret_cast<uint64_t>(load_data);
-
-    int64_t task_id = WorkerThreadPool::get_singleton()->add_task(
-        Callable(this, "_async_load_task").bind(ptr_val),
-        true
-    );
-
-    pending_tasks[coord] = task_id;
+    UtilityFunctions::print(vformat("[ChunkManager] Chunk (%d, %d) unloaded.", coord.x, coord.y));
 }
 
 void ChunkManager::_async_load_task(Variant p_userdata) {
@@ -288,23 +174,11 @@ void ChunkManager::verity_initial_collisions() {
     ChunkVeritier::verity_initial_collisions(loaded_chunks);
 }
 
-void ChunkManager::unload_chunk(const Vector2i &coord) {
-    if (!loaded_chunks.has(coord)) return;
-
-    Node3D *chunk_node = loaded_chunks[coord];
-    loaded_chunks.erase(coord);
-    chunk_block_data_map.erase(coord);
-
-    if (chunk_node) {
-        chunk_node->queue_free();
-    }
-    UtilityFunctions::print(vformat("[ChunkManager] Chunk (%d, %d) unloaded.", coord.x, coord.y));
-}
-
 void ChunkManager::set_chunk_size(float p_size) { chunk_size = p_size; }
 float ChunkManager::get_chunk_size() const { return chunk_size; }
 
 bool ChunkManager::is_initial_load_complete() const { return initial_load_complete; }
+void ChunkManager::set_initial_load_complete(bool complete) { initial_load_complete = complete; }
 
 void ChunkManager::set_render_distance(int p_dist) { render_distance = p_dist; }
 int ChunkManager::get_render_distance() const { return render_distance; }
