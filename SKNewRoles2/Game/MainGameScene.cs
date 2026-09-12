@@ -11,11 +11,11 @@ namespace SKNewRoles2.Game
         private Node3D _chunkManagerCpp;
         private readonly PackedScene _opponentScene = GD.Load<PackedScene>("res://Scenes/Prefabs/LobbyPlayerDummy.tscn");
 
-        public Node3D MyPlayerInstance => _myPlayerInstance;
-        private Node3D _myPlayerInstance;
+        private readonly PlayerManager _playerManager = new();
+        private readonly GameInitializer _initializer = new();
 
-        public Node HealthComponent => _healthComponent;
-        private Node _healthComponent;
+        public Node3D MyPlayerInstance => _playerManager.MyPlayerInstance;
+        public Node HealthComponent => _playerManager.HealthComponent;
         
         private RemotePlayerManager _remotePlayerManager;
         private BGMManager _bgmManager;
@@ -29,8 +29,6 @@ namespace SKNewRoles2.Game
         private readonly RealtimeConnection _connection = new();
         
         private MainGameSceneNetwork _networkHandler;
-        private readonly PlayerSpawner _playerSpawner = new();
-        private readonly ChunkLoader _chunkLoader = new();
 
         public int CurrentHp { get => _currentHp; set => _currentHp = value; }
         private int _currentHp = 20;
@@ -53,105 +51,50 @@ namespace SKNewRoles2.Game
             AddChild(_uiController);
             _uiController.Initialize(this);
 
+            _roleManager = new GameRoleManager();
+            AddChild(_roleManager);
+
+            _remotePlayerManager = new RemotePlayerManager();
+            AddChild(_remotePlayerManager);
+
             _chunkManagerCpp = GetNodeOrNull<Node3D>("ChunkManager");
 
-            if (_myPlayerInstance == null)
-            {
-                (_myPlayerInstance, _healthComponent) = _playerSpawner.SpawnMyPlayer(this, _networkHandler);
-                _playerSpawner.SetPlayerPhysicsEnabled(_myPlayerInstance, false);
-                if (_myPlayerInstance != null)
-                {
-                    _myPlayerInstance.Visible = false;
+            _playerManager.SpawnPlayer(this, _networkHandler, _chunkManagerCpp);
 
-                    // チャンクマネージャーに生成したプレイヤーのNodePathを設定
-                    if (_chunkManagerCpp != null && IsInstanceValid(_chunkManagerCpp))
-                    {
-                        _chunkManagerCpp.Call("set_player_path", _myPlayerInstance.GetPath());
-                        GD.Print($"✅ [MainGameScene] ChunkManager に PlayerPath ({_myPlayerInstance.GetPath()}) を設定しました。");
-                    }
-                }
+            _hotbarManager = GetNodeOrNull<HotbarManager>("HotbarManager");
+            var hotbarNode = GetNodeOrNull<Node>("Hotbar");
+            
+            if (_hotbarManager != null)
+            {
+                _hotbarManager.Initialize(this, hotbarNode);
+            }
+            else
+            {
+                GD.PrintErr("❌ [MainGameScene] HotbarManager ノードが見つかりません。");
             }
 
-            try
-            {
-                bool isConnected = await _connection.EnsureConnectedAsync();
-                if (!isConnected)
-                {
-                    GD.PrintErr("❌ [Realtime] MainGameScene での WebSocket 接続に失敗しました。");
-                }
+            // 非同期初期化処理の実行
+            await _initializer.InitializeAsync(
+                this,
+                _connection,
+                _roleManager,
+                _remotePlayerManager,
+                _opponentScene,
+                _chunkManagerCpp,
+                _uiController
+            );
 
-                _roleManager = new GameRoleManager();
-                AddChild(_roleManager);
-                _roleManager.Initialize(GetNode<Node>("RoleManager"));
-
-                _hotbarManager = GetNodeOrNull<HotbarManager>("HotbarManager");
-                var hotbarNode = GetNodeOrNull<Node>("Hotbar");
-                
-                if (_hotbarManager != null)
-                {
-                    _hotbarManager.Initialize(this, hotbarNode);
-                }
-                else
-                {
-                    GD.PrintErr("❌ [MainGameScene] HotbarManager ノードが見つかりません。");
-                }
-
-                _remotePlayerManager = new RemotePlayerManager();
-                AddChild(_remotePlayerManager);
-                _remotePlayerManager.Initialize(_opponentScene, GetMyUserId());
-
-                // チャンク読み込み完了の待機
-                await _chunkLoader.WaitForInitialChunksLoadedAsync(_chunkManagerCpp);
-
-                if (SessionManager.Instance != null && SessionManager.Instance.IsHost)
-                {
-                    await _roleManager.AssignRolesToAllPlayers(GetMyUserId());
-                }
-
-                bool received = await _roleManager.WaitForRoleAssignedAsync(timeoutMs: 10000);
-                if (!received)
-                {
-                    GD.PrintErr("⚠️ 役職受信タイムアウトのため、デフォルト(村人)を適用します");
-                    _roleManager.ApplyRole(0, 0);
-                }
-            }
-            catch (Exception ex)
-            {
-                GD.PrintErr($"❌ [_Ready] 初期化待機中にエラーが発生しました: {ex.Message}");
-            }
-            finally
-            {
-                _uiController?.HideLoadingScene();
-            }
-
-            if (_myPlayerInstance != null && IsInstanceValid(_myPlayerInstance))
-            {
-                _myPlayerInstance.Visible = true;
-            }
+            _playerManager.SetVisible(true);
 
             _bgmManager?.PlayRandomBgm(0.0f);
-            GrantInitialItems();
+            _playerManager.GrantInitialItems(_hotbarManager);
 
             if (_uiController != null)
             {
                 await _uiController.ShowRoleRevealAsync(_roleManager?.MyRole ?? 0, _roleManager?.MyFaction ?? 0, displayTimeMs: 5000);
             }
 
-            _playerSpawner.SetPlayerPhysicsEnabled(_myPlayerInstance, true);
-        }
-
-        private void GrantInitialItems()
-        {
-            if (_hotbarManager != null)
-            {
-                _hotbarManager.PickupItem("iron_axe", 1);
-                _hotbarManager.PickupItem("iron_pickaxe", 1);
-                GD.Print("🎒 [MainGameScene] 初期アイテム (iron_axe, iron_pickaxe) を配布しました。");
-            }
-            else
-            {
-                GD.PrintErr("⚠️ [MainGameScene] HotbarManager が見つからないため、初期アイテムを配布できませんでした。");
-            }
+            _playerManager.EnablePhysics();
         }
 
         public override void _Process(double delta)
@@ -165,13 +108,14 @@ namespace SKNewRoles2.Game
                 GD.PrintErr($"⚠️ [Realtime] Poll 例外: {ex.Message}");
             }
 
-            if (_myPlayerInstance != null && IsInstanceValid(_myPlayerInstance))
+            var player = MyPlayerInstance;
+            if (player != null && IsInstanceValid(player))
             {
-                _uiController?.UpdateCoords(_myPlayerInstance.GlobalPosition);
+                _uiController?.UpdateCoords(player.GlobalPosition);
 
                 _networkHandler?.UpdateHpUIFromPlayer();
 
-                if (_myPlayerInstance.Visible)
+                if (player.Visible)
                 {
                     _networkHandler?.SendMyTransform();
                 }
