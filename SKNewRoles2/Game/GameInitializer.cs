@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Godot;
 using SKNewRoles2.Game.Network;
+using SKNewRoles2.Game.Player;
 
 namespace SKNewRoles2.Game
 {

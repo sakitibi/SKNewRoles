@@ -1,7 +1,7 @@
 using Godot;
 using SKNewRoles2.Game.Inventory;
 
-namespace SKNewRoles2.Game
+namespace SKNewRoles2.Game.Player
 {
     public class PlayerManager
     {

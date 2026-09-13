@@ -2,7 +2,7 @@ using Godot;
 using SKNewRoles2.Game.Network;
 using System.Collections.Generic;
 
-namespace SKNewRoles2.Game
+namespace SKNewRoles2.Game.Player
 {
     public partial class RemotePlayerManager : Node
     {

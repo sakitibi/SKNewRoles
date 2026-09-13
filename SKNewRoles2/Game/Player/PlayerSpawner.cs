@@ -1,6 +1,6 @@
 using Godot;
 
-namespace SKNewRoles2.Game
+namespace SKNewRoles2.Game.Player
 {
     public class PlayerSpawner
     {
