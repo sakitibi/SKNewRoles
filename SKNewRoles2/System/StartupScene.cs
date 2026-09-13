@@ -48,6 +48,10 @@ namespace SKNewRoles2.SNRSystem
         {
             try
             {
+                UpdateProgress(0, "Minecraftをロード中...");
+                await Task.Delay(200);
+                if (!IsInstanceValid(this) || !IsInsideTree()) return;
+                
                 // 基本システムの準備
                 UpdateProgress(10, "セッション情報を準備中...");
                 await Task.Delay(200);
@@ -58,7 +62,11 @@ namespace SKNewRoles2.SNRSystem
                 await Task.Delay(200);
                 if (!IsInstanceValid(this) || !IsInsideTree()) return;
 
-                UpdateProgress(50, "コアモジュールをロード中...");
+                UpdateProgress(40, "コアモジュールをロード中...");
+                await Task.Delay(200);
+                if (!IsInstanceValid(this) || !IsInsideTree()) return;
+
+                UpdateProgress(50, "マイクラ人狼クエスト.frameworkをロード中...");
                 await Task.Delay(200);
                 if (!IsInstanceValid(this) || !IsInsideTree()) return;
 
