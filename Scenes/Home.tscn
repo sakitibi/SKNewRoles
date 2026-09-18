@@ -1,9 +1,9 @@
 [gd_scene format=3 uid="uid://x6a0w15otf3e"]
 
 [ext_resource type="Script" uid="uid://c5gh3g7xxp6a2" path="res://SKNewRoles2/System/Home.cs" id="1_maaha"]
-[ext_resource type="FontFile" uid="uid://bcuxsq3rxn1b4" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="2_hf3nf"]
+[ext_resource type="FontFile" uid="uid://bcuxsq3rxn1b4" path="user://Fonts/UDDigiKyokashoProN-Bold.ttf" id="2_hf3nf"]
 [ext_resource type="Texture2D" uid="uid://d2oqkqps0e80m" path="res://Resources/HomeBackground.png" id="2_maaha"]
-[ext_resource type="FontFile" uid="uid://br5t7n57fruc7" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="4_vtlm0"]
+[ext_resource type="FontFile" uid="uid://br5t7n57fruc7" path="user://Fonts/UDDigiKyokashoProN-Regular.ttf" id="4_vtlm0"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3me4c"]
 bg_color = Color(0, 0.5793735, 0.80830514, 1)
