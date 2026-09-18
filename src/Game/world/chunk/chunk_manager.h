@@ -33,7 +33,7 @@ namespace godot {
             HashMap<Vector2i, int64_t> pending_tasks;
             HashMap<Vector2i, HashMap<String, Vector<Vector3>>> chunk_block_data_map;
 
-            String region_folder_path = "res://regions/";
+            String region_folder_path = "user://game_asset/regions/";
 
             Node3D *find_local_player();
             void _safe_preload_block_meshes();
