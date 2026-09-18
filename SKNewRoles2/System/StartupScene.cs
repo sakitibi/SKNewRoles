@@ -28,7 +28,6 @@ namespace SKNewRoles2.SNRSystem
             _statusLabel = GetNode<Label>("CenterContainer/VBoxContainer/LoadingLabel");
             _progressBar = GetNode<TextureProgressBar>("CenterContainer/VBoxContainer/StartupProgressBar");
 
-            // PercentLabel の参照を取得
             if (_progressBar.HasNode("PercentLabel"))
             {
                 _percentLabel = _progressBar.GetNode<Label>("PercentLabel");
@@ -48,25 +47,18 @@ namespace SKNewRoles2.SNRSystem
         {
             try
             {
-                UpdateProgress(0, "Minecraftをロード中...");
+                UpdateProgress(0, "システム環境を確認中...");
                 await Task.Delay(200);
-                if (!IsInstanceValid(this) || !IsInsideTree()) return;
-                
-                // 基本システムの準備
-                UpdateProgress(10, "セッション情報を準備中...");
-                await Task.Delay(200);
+
+                await AssetDownloader.EnsureAssetsDownloadedAsync((ratio, text) =>
+                {
+                    float mappedVal = 10f + (ratio * 40f);
+                    UpdateProgress(mappedVal, text);
+                });
+
                 if (!IsInstanceValid(this) || !IsInsideTree()) return;
 
-                // 起動時の初期チェック
-                UpdateProgress(30, "システム環境を確認中...");
-                await Task.Delay(200);
-                if (!IsInstanceValid(this) || !IsInsideTree()) return;
-
-                UpdateProgress(40, "コアモジュールをロード中...");
-                await Task.Delay(200);
-                if (!IsInstanceValid(this) || !IsInsideTree()) return;
-
-                UpdateProgress(50, "マイクラ人狼クエスト.frameworkをロード中...");
+                UpdateProgress(50, "コアモジュールをロード中...");
                 await Task.Delay(200);
                 if (!IsInstanceValid(this) || !IsInsideTree()) return;
 
@@ -97,21 +89,10 @@ namespace SKNewRoles2.SNRSystem
                 UpdateProgress(95, "ゲーム環境を構築中...");
                 await Task.Delay(300);
 
-                if (!IsInstanceValid(this) || !IsInsideTree())
-                {
-                    GD.Print("[Startup] バックグラウンドロード中断（既に別の画面へ遷移済み）。");
-                    return;
-                }
+                if (!IsInstanceValid(this) || !IsInsideTree()) return;
 
                 UpdateProgress(100, "準備完了！");
-                
                 await Task.Delay(300);
-
-                if (!IsInstanceValid(this) || !IsInsideTree())
-                {
-                    GD.Print("[Startup] 画面遷移をスキップ（既に別の画面へ遷移済み）。");
-                    return;
-                }
 
                 if (GetTree() != null && GetTree().CurrentScene == this)
                 {
@@ -122,15 +103,10 @@ namespace SKNewRoles2.SNRSystem
                         GD.PrintErr("❌ タイトル画面(Home.tscn)への遷移に失敗しました: " + error);
                     }
                 }
-                else
-                {
-                    GD.Print("[Startup] 他のシーンの子ノード(UI)として実行されたため、画面遷移をスキップします。");
-                }
             }
             catch (Exception ex)
             {
                 GD.PrintErr($"❌ [Startup] シーケンス実行中にエラーが発生しました: {ex.Message}\n{ex.StackTrace}");
-                // エラーが発生してもタイトル画面へ強制遷移を試みる
                 if (GetTree() != null && GetTree().CurrentScene == this)
                 {
                     GetTree().ChangeSceneToFile("res://Scenes/Home.tscn");
@@ -138,9 +114,6 @@ namespace SKNewRoles2.SNRSystem
             }
         }
 
-        /// <summary>
-        /// 進捗バーとパーセンテージのテキストをTweenで滑らかにアニメーション更新
-        /// </summary>
         private void UpdateProgress(float targetValue, string statusText)
         {
             if (_statusLabel != null)
@@ -152,13 +125,11 @@ namespace SKNewRoles2.SNRSystem
             {
                 float startValue = (float)_progressBar.Value;
 
-                // 進行中の既存Tweenがあればキャンセル
                 if (_progressTween != null && _progressTween.IsValid())
                 {
                     _progressTween.Kill();
                 }
 
-                // 新しいTweenを開始
                 _progressTween = CreateTween();
                 
                 _progressTween.TweenProperty(_progressBar, "value", targetValue, 0.25f)
