@@ -12,7 +12,7 @@ namespace SKNewRoles2.Lobby.JOIN
         private Button _backButton;
 
         // 🎨 読み込むカスタムフォントのパス
-        private const string FontPath = "user://Fonts/UDDigiKyokashoProN-Bold.ttf";
+        private const string FontPath = "res:///Fonts/UDDigiKyokashoProN-Bold.ttf";
         private FontFile _cachedFont;
 
         // 生成される部屋選択ボタンのカラー設定

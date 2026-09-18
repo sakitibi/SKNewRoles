@@ -109,19 +109,22 @@ namespace SKNewRoles2.SNRSystem
                     }
                 }
 
+                // アーカイブの構造どおり user:// に展開 (game_asset/ フォルダ配下へ書き込まれる)
                 if (File.Exists(Save7zPath))
                 {
-                    using var stream = File.OpenRead(Save7zPath);
-                    using var archive = ArchiveFactory.OpenArchive(stream);
-                    foreach (var entry in archive.Entries)
                     {
-                        if (!entry.IsDirectory)
+                        using var stream = File.OpenRead(Save7zPath);
+                        using var archive = ArchiveFactory.OpenArchive(stream);
+                        foreach (var entry in archive.Entries)
                         {
-                            entry.WriteToDirectory(TargetDir, new SharpCompress.Common.ExtractionOptions
+                            if (!entry.IsDirectory)
                             {
-                                ExtractFullPath = true,
-                                Overwrite = true
-                            });
+                                entry.WriteToDirectory(TargetDir, new SharpCompress.Common.ExtractionOptions
+                                {
+                                    ExtractFullPath = true,
+                                    Overwrite = true
+                                });
+                            }
                         }
                     }
                 }

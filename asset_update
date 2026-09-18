@@ -1,0 +1,1 @@
+shasum -a 512 /Applications/game_asset.7z | awk '{ print $1 }' > /Applications/game_asset.7z.sha512
