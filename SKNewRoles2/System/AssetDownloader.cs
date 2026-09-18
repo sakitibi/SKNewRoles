@@ -61,7 +61,6 @@ namespace SKNewRoles2.SNRSystem
                 GD.Print("[AssetDownloader] リモートアセットの更新（ハッシュ不一致）を検知しました。再ダウンロードを実行します。");
             }
 
-            // アセットアーカイブの取得処理
             progressCallback?.Invoke(0.0f, "フォント・アセットのダウンロードを開始中...");
 
             using HttpResponseMessage response = await client.GetAsync(DirectDownloadUrl, HttpCompletionOption.ResponseHeadersRead);
@@ -95,7 +94,6 @@ namespace SKNewRoles2.SNRSystem
                 }
             }
 
-            // アーカイブの展開およびハッシュ検証値の保存
             progressCallback?.Invoke(0.75f, "ファイルを展開中 (7z)...");
             await Task.Run(() =>
             {
@@ -104,12 +102,14 @@ namespace SKNewRoles2.SNRSystem
                 if (File.Exists(Save7zPath))
                 {
                     using var sha512 = SHA512.Create();
-                    using var archiveStream = File.OpenRead(Save7zPath);
-                    byte[] hashBytes = sha512.ComputeHash(archiveStream);
-                    calculatedHash = Convert.ToHexString(hashBytes);
+                    {
+                        using var archiveStream = File.OpenRead(Save7zPath);
+                        byte[] hashBytes = sha512.ComputeHash(archiveStream);
+                        calculatedHash = Convert.ToHexString(hashBytes);
+                    }
                 }
 
-                // 解凍実行スコープ
+                if (File.Exists(Save7zPath))
                 {
                     using var stream = File.OpenRead(Save7zPath);
                     using var archive = ArchiveFactory.OpenArchive(stream);
@@ -126,7 +126,6 @@ namespace SKNewRoles2.SNRSystem
                     }
                 }
 
-                // SHA-512ハッシュ値を保存して一時ファイルをクリア
                 if (!string.IsNullOrEmpty(calculatedHash))
                 {
                     File.WriteAllText(HashTxtPath, calculatedHash, Encoding.UTF8);
