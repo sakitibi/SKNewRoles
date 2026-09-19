@@ -3,10 +3,16 @@
 #include <godot_cpp/classes/input_event_mouse_motion.hpp>
 #include <godot_cpp/classes/camera3d.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include <godot_cpp/classes/file_access.hpp>
+#include <godot_cpp/classes/image.hpp>
+#include <godot_cpp/classes/image_texture.hpp>
+#include <godot_cpp/classes/mesh.hpp>
 
 using namespace godot;
 
 void SNR2Player::_bind_methods() {
+    ClassDB::bind_method(D_METHOD("apply_custom_skins"), &SNR2Player::apply_custom_skins);
+
     ClassDB::bind_method(D_METHOD("get_max_hp"), &SNR2Player::get_max_hp);
     ClassDB::bind_method(D_METHOD("set_max_hp", "p_hp"), &SNR2Player::set_max_hp);
     ADD_PROPERTY(PropertyInfo(Variant::INT, "max_hp"), "set_max_hp", "get_max_hp");
@@ -35,6 +41,9 @@ SNR2Player::~SNR2Player() {}
 void SNR2Player::_ready() {
     input = Input::get_singleton();
     camera = Object::cast_to<Camera3D>(get_node_or_null(NodePath("Camera3D")));
+
+    // カスタムスキンの読み込みを実行
+    apply_custom_skins();
 
     // コンポーネントの取得または生成
     health_component = Object::cast_to<HealthComponent>(get_node_or_null(NodePath("HealthComponent")));
@@ -70,135 +79,39 @@ void SNR2Player::_ready() {
     }
 }
 
-void SNR2Player::_on_hp_changed(int current_hp, int max_hp) {
-    emit_signal("hp_changed", current_hp, max_hp);
+// 全部位のスキン適用処理
+void SNR2Player::apply_custom_skins() {
+    apply_part_skin("SkinModel/Head", "head_atlas.png");
+    apply_part_skin("SkinModel/Body", "body_atlas.png");
+    apply_part_skin("SkinModel/RightArm", "rightarm_atlas.png");
+    apply_part_skin("SkinModel/LeftArm", "leftarm_atlas.png");
+    apply_part_skin("SkinModel/RightLeg", "rightleg_atlas.png");
+    apply_part_skin("SkinModel/LeftLeg", "leftleg_atlas.png");
 }
 
-void SNR2Player::_on_player_died() {
-    UtilityFunctions::print("[SNR2Player] Death notification received. Switching to Spectator Mode.");
-    emit_signal("player_died");
-    die();
-}
+// 部位ごとのテクスチャ適用処理
+void SNR2Player::apply_part_skin(const String &node_path, const String &file_name) {
+    MeshInstance3D *mesh_instance = Object::cast_to<MeshInstance3D>(get_node_or_null(NodePath(node_path)));
+    if (!mesh_instance || !mesh_instance->get_mesh().is_valid()) return;
 
-void SNR2Player::_physics_process(double delta) {
-    if (!input) return;
+    ProjectSettings *settings = ProjectSettings::get_singleton();
+    String relative_path = "user://game_asset/Skins/" + file_name;
+    String full_path = settings->globalize_path(relative_path);
 
-    // スペクテイター状態の処理
-    if (is_spectator()) {
-        if (spectator_component) {
-            spectator_component->process_movement(delta);
-        }
-        return;
-    }
+    // 画像ファイルが存在するか判定
+    if (FileAccess::file_exists(full_path)) {
+        Ref<Image> image = Image::load_from_file(full_path);
+        if (image.is_valid()) {
+            Ref<ImageTexture> texture = ImageTexture::create_from_image(image);
 
-    Vector3 velocity = get_velocity();
+            Ref<Material> base_mat = mesh_instance->get_mesh()->surface_get_material(0);
+            Ref<ShaderMaterial> shader_mat = base_mat;
 
-    // 重力の適用
-    if (!is_on_floor()) {
-        velocity.y -= gravity * static_cast<float>(delta);
-    }
-
-    if (fall_damage_component) {
-        fall_damage_component->process_fall_damage(this);
-    }
-
-    // ジャンプ処理
-    bool is_jump_pressed = input->is_key_pressed(KEY_SPACE) || input->is_action_pressed("ui_accept");
-    if (is_jump_pressed && is_on_floor()) {
-        velocity.y = JUMP_VELOCITY;
-    }
-
-    // 移動入力処理
-    Vector2 input_dir = Vector2(0, 0);
-    if (input->is_key_pressed(KEY_D) || input->is_action_pressed("ui_right")) input_dir.x += 1.0f;
-    if (input->is_key_pressed(KEY_A) || input->is_action_pressed("ui_left")) input_dir.x -= 1.0f;
-    if (input->is_key_pressed(KEY_S) || input->is_action_pressed("ui_down")) input_dir.y += 1.0f;
-    if (input->is_key_pressed(KEY_W) || input->is_action_pressed("ui_up")) input_dir.y -= 1.0f;
-
-    if (input_dir.length_squared() > 0.0f) {
-        input_dir = input_dir.normalized();
-
-        Basis basis = get_global_transform().basis;
-        Vector3 forward = -basis.get_column(2);
-        Vector3 right = basis.get_column(0);
-
-        forward.y = 0.0f;
-        right.y = 0.0f;
-        forward.normalize();
-        right.normalize();
-
-        Vector3 direction = (forward * -input_dir.y + right * input_dir.x).normalized();
-
-        velocity.x = direction.x * SPEED;
-        velocity.z = direction.z * SPEED;
-    } else {
-        velocity.x = 0.0f;
-        velocity.z = 0.0f;
-    }
-
-    set_velocity(velocity);
-    move_and_slide();
-}
-
-void SNR2Player::_input(const Ref<InputEvent> &event) {
-    if (!input) return;
-
-    // 右クリック中のみカメラ回転を行う
-    if (input->is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_RIGHT)) {
-        Ref<InputEventMouseMotion> mouse_motion = event;
-        if (mouse_motion.is_valid()) {
-            Vector2 delta = mouse_motion->get_relative();
-
-            // プレイヤー全体の水平回転（Y軸）
-            rotate_y(-delta.x * mouse_sensitivity);
-
-            // カメラの垂直回転（X軸）
-            camera_rotation_x -= delta.y * mouse_sensitivity;
-            camera_rotation_x = Math::clamp(camera_rotation_x, -LIMIT_ANGLE_X, LIMIT_ANGLE_X);
-
-            if (camera != nullptr) {
-                Vector3 cam_rot = camera->get_rotation();
-                cam_rot.x = camera_rotation_x;
-                camera->set_rotation(cam_rot);
+            if (shader_mat.is_valid()) {
+                Ref<ShaderMaterial> unique_mat = shader_mat->duplicate();
+                unique_mat->set_shader_parameter("texture_albedo", texture);
+                mesh_instance->set_material_override(unique_mat);
             }
         }
     }
-}
-
-void SNR2Player::set_max_hp(int p_hp) {
-    if (health_component) health_component->set_max_hp(p_hp);
-}
-
-int SNR2Player::get_max_hp() const {
-    return health_component ? health_component->get_max_hp() : 0;
-}
-
-void SNR2Player::set_current_hp(int p_hp) {
-    if (health_component) health_component->set_current_hp(p_hp);
-}
-
-int SNR2Player::get_current_hp() const {
-    return health_component ? health_component->get_current_hp() : 0;
-}
-
-void SNR2Player::take_damage(int amount) {
-    if (health_component) health_component->take_damage(amount);
-}
-
-void SNR2Player::heal(int amount) {
-    if (health_component) health_component->heal(amount);
-}
-
-void SNR2Player::die() {
-    set_spectator_mode(true);
-}
-
-void SNR2Player::set_spectator_mode(bool p_enable) {
-    if (spectator_component) {
-        spectator_component->set_spectator_mode(p_enable);
-    }
-}
-
-bool SNR2Player::is_spectator() const {
-    return spectator_component ? spectator_component->get_is_spectator() : false;
 }

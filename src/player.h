@@ -4,6 +4,8 @@
 #include <godot_cpp/classes/camera3d.hpp>
 #include <godot_cpp/classes/input_event.hpp>
 #include <godot_cpp/classes/input.hpp>
+#include <godot_cpp/classes/mesh_instance3d.hpp>
+#include <godot_cpp/classes/shader_material.hpp>
 
 #include "Game/health_component.h"
 #include "Game/spectator_component.h"
@@ -29,6 +31,9 @@ namespace godot {
             Camera3D *camera = nullptr;
             Input *input = nullptr;
 
+            // スキン適用用のヘルパーメソッド
+            void apply_part_skin(const String &node_path, const String &file_name);
+
         protected:
             static void _bind_methods();
 
@@ -39,6 +44,9 @@ namespace godot {
             void _ready() override;
             void _physics_process(double delta) override;
             void _input(const Ref<InputEvent> &event) override;
+
+            // カスタムスキン適用関数
+            void apply_custom_skins();
 
             void set_max_hp(int p_hp);
             int get_max_hp() const;

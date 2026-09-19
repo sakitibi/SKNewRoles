@@ -11,6 +11,7 @@ namespace SKNewRoles2.Lobby.JOIN
         private Button _createRoomButton;
         private Button _joinPublicRoomButton;
         private Button _joinPrivateRoomButton;
+        private Button _skinEditButton;
         private Label _emailLabel;
 
         public override void _Ready()
@@ -23,6 +24,7 @@ namespace SKNewRoles2.Lobby.JOIN
             _createRoomButton = GetNode<Button>($"{basePath}CreateRoomButton");
             _joinPublicRoomButton = GetNode<Button>($"{basePath}JoinPublicRoomButton");
             _joinPrivateRoomButton = GetNode<Button>($"{basePath}JoinPrivateRoomButton");
+            _skinEditButton = GetNode<Button>($"{basePath}SkinEditButton");
             _emailLabel = GetNode<Label>($"{basePath}EmailLabel");
 
             // イベントの接続
@@ -32,6 +34,7 @@ namespace SKNewRoles2.Lobby.JOIN
             _createRoomButton.Pressed += OnCreateRoomButtonPressed;
             _joinPublicRoomButton.Pressed += OnJoinPublicRoomButtonPressed;
             _joinPrivateRoomButton.Pressed += OnJoinPrivateRoomButtonPressed;
+            _skinEditButton.Pressed += OnSkinEditButtonPressed;
 
             SessionManager.Instance.UserInfoUpdated += OnUserInfoUpdated;
 
@@ -124,6 +127,15 @@ namespace SKNewRoles2.Lobby.JOIN
         private void OnJoinPrivateRoomButtonPressed()
         {
             Error error = GetTree().ChangeSceneToFile("res://Scenes/JoinPrivateLobby.tscn");
+            if (error != Error.Ok)
+            {
+                GD.PrintErr("シーンの切り替えに失敗しました: " + error);
+            }
+        }
+
+        private void OnSkinEditButtonPressed()
+        {
+            Error error = GetTree().ChangeSceneToFile("res://Scenes/SkinEditScene.tscn");
             if (error != Error.Ok)
             {
                 GD.PrintErr("シーンの切り替えに失敗しました: " + error);

@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://52lmevfxe8hp"]
 
-[ext_resource type="FontFile" uid="uid://bcuxsq3rxn1b4" path="res:///Fonts/UDDigiKyokashoProN-Bold.ttf" id="1_4a7xb"]
+[ext_resource type="FontFile" uid="uid://bcuxsq3rxn1b4" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="1_4a7xb"]
 [ext_resource type="Script" uid="uid://be05vt5csq1n" path="res://SKNewRoles2/Lobby/Join/LobbySelect.cs" id="1_jrcml"]
-[ext_resource type="FontFile" uid="uid://br5t7n57fruc7" path="res:///Fonts/UDDigiKyokashoProN-Regular.ttf" id="3_411oe"]
+[ext_resource type="FontFile" uid="uid://br5t7n57fruc7" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="3_411oe"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jrcml"]
 bg_color = Color(0, 0.6509804, 0, 1)
@@ -102,6 +102,20 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_jrcml")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_411oe")
 theme_override_styles/hover = SubResource("StyleBoxFlat_lceui")
 text = "部屋を作成する"
+
+[node name="SkinEditButton" type="Button" parent="MarginContainer/VBoxContainer/LobbySelectPanel" unique_id=1704071077]
+layout_mode = 0
+offset_left = 867.0
+offset_top = 420.0
+offset_right = 1131.0
+offset_bottom = 520.0
+offset_transform_enabled = true
+theme_override_fonts/font = ExtResource("1_4a7xb")
+theme_override_font_sizes/font_size = 40
+theme_override_styles/normal = SubResource("StyleBoxFlat_jrcml")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_411oe")
+theme_override_styles/hover = SubResource("StyleBoxFlat_lceui")
+text = "スキン編集"
 
 [node name="LogoutButton" type="Button" parent="MarginContainer/VBoxContainer/LobbySelectPanel" unique_id=2139914990]
 layout_mode = 0

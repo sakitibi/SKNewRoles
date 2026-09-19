@@ -36,7 +36,7 @@ namespace SKNewRoles2.SNRSystem
         private void OnInputTextChanged(string newText)
         {
             _errorMessageLabel.Text = "";
-            _submitButton.Disabled = (newText.Length != 8);
+            _submitButton.Disabled = newText.Length != 8;
         }
 
         private void OnSubmitButtonPressed()
@@ -55,7 +55,6 @@ namespace SKNewRoles2.SNRSystem
                 "Accept: application/json"
             ];
 
-            // 名前付き引数を使って、GETメソッドと空のボディを確実にGodotへ伝える
             Error err = _supabaseRequest.Request(
                 url: url,
                 customHeaders: headers,

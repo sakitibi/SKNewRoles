@@ -1,37 +1,49 @@
 [gd_scene format=3 uid="uid://6llaatunfapt"]
 
-[ext_resource type="Texture2D" uid="uid://dug73qf46v87s" path="res://Resources/Charactors/sakitibi.png" id="4_leg"]
+; 展開図用シェーダー
+[ext_resource type="Shader" path="res://Shaders/box_uv_atlas.gdshader" id="1_shader"]
 
-[sub_resource type="StandardMaterial3D" id="Mat_Head"]
-albedo_texture = ExtResource("4_leg")
-texture_filter = 0
+; 各部位のデフォルト（初期）アトラス画像
+[ext_resource type="Texture2D" uid="uid://head_tex_id" path="res://Resources/Charactors/sakitibi.png" id="2_head"]
+[ext_resource type="Texture2D" uid="uid://body_tex_id" path="res://Resources/Charactors/sakitibi.png" id="3_body"]
+[ext_resource type="Texture2D" uid="uid://arm_tex_id" path="res://Resources/Charactors/sakitibi.png" id="4_arm"]
+[ext_resource type="Texture2D" uid="uid://leg_tex_id" path="res://Resources/Charactors/sakitibi.png" id="5_leg"]
+
+; 各部位用の ShaderMaterial
+[sub_resource type="ShaderMaterial" id="ShaderMat_Head"]
+render_priority = 0
+shader = ExtResource("1_shader")
+shader_parameter/texture_albedo = ExtResource("2_head")
 
 [sub_resource type="BoxMesh" id="BoxMesh_Head"]
-material = SubResource("Mat_Head")
+material = SubResource("ShaderMat_Head")
 size = Vector3(0.5, 0.5, 0.5)
 
-[sub_resource type="StandardMaterial3D" id="Mat_Body"]
-albedo_texture = ExtResource("4_leg")
-texture_filter = 0
+[sub_resource type="ShaderMaterial" id="ShaderMat_Body"]
+render_priority = 0
+shader = ExtResource("1_shader")
+shader_parameter/texture_albedo = ExtResource("3_body")
 
 [sub_resource type="BoxMesh" id="BoxMesh_Body"]
-material = SubResource("Mat_Body")
+material = SubResource("ShaderMat_Body")
 size = Vector3(0.5, 0.75, 0.25)
 
-[sub_resource type="StandardMaterial3D" id="Mat_Arm"]
-albedo_texture = ExtResource("4_leg")
-texture_filter = 0
+[sub_resource type="ShaderMaterial" id="ShaderMat_Arm"]
+render_priority = 0
+shader = ExtResource("1_shader")
+shader_parameter/texture_albedo = ExtResource("4_arm")
 
 [sub_resource type="BoxMesh" id="BoxMesh_Arm"]
-material = SubResource("Mat_Arm")
+material = SubResource("ShaderMat_Arm")
 size = Vector3(0.25, 0.75, 0.25)
 
-[sub_resource type="StandardMaterial3D" id="Mat_Leg"]
-albedo_texture = ExtResource("4_leg")
-texture_filter = 0
+[sub_resource type="ShaderMaterial" id="ShaderMat_Leg"]
+render_priority = 0
+shader = ExtResource("1_shader")
+shader_parameter/texture_albedo = ExtResource("5_leg")
 
 [sub_resource type="BoxMesh" id="BoxMesh_Leg"]
-material = SubResource("Mat_Leg")
+material = SubResource("ShaderMat_Leg")
 size = Vector3(0.25, 0.75, 0.25)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_player"]

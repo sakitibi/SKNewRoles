@@ -109,7 +109,6 @@ namespace SKNewRoles2.SNRSystem
                     }
                 }
 
-                // アーカイブの構造どおり user:// に展開 (game_asset/ フォルダ配下へ書き込まれる)
                 if (File.Exists(Save7zPath))
                 {
                     {
