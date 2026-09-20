@@ -11,6 +11,7 @@ namespace SKNewRoles2.Game
         private readonly Dictionary<string, ImageTexture> _partTextures = [];
         private readonly Dictionary<string, ShaderMaterial> _partMaterials = [];
 
+        // 各部位のテクスチャ解像度 (px)
         private static readonly Dictionary<string, Vector2I> PartResolutionMap = new()
         {
             { "Head",     new Vector2I(32, 16) },
@@ -19,6 +20,16 @@ namespace SKNewRoles2.Game
             { "LeftArm",  new Vector2I(16, 16) },
             { "RightLeg", new Vector2I(16, 16) },
             { "LeftLeg",  new Vector2I(16, 16) }
+        };
+
+        private static readonly Dictionary<string, Vector2> PartBoxSizeMap = new()
+        {
+            { "Head",     new Vector2(8f, 8f) },
+            { "Body",     new Vector2(4f, 8f) },
+            { "RightArm", new Vector2(4f, 4f) },
+            { "LeftArm",  new Vector2(4f, 4f) },
+            { "RightLeg", new Vector2(4f, 4f) },
+            { "LeftLeg",  new Vector2(4f, 4f) }
         };
 
         public void Initialize(Node3D targetModel)
@@ -37,7 +48,8 @@ namespace SKNewRoles2.Game
             if (meshInstance == null) return;
 
             string partName = meshInstance.Name;
-            Vector2I res = PartResolutionMap.GetValueOrDefault(partName, new Vector2I(64, 64));
+            Vector2I res = PartResolutionMap.GetValueOrDefault(partName, new Vector2I(32, 16));
+            Vector2 boxSize = PartBoxSizeMap.GetValueOrDefault(partName, new Vector2(8f, 8f));
 
             Image image = Image.CreateEmpty(res.X, res.Y, false, Image.Format.Rgba8);
             image.Fill(Colors.White);
@@ -62,6 +74,9 @@ namespace SKNewRoles2.Game
             if (mat != null)
             {
                 mat.SetShaderParameter("texture_albedo", dynTexture);
+                mat.SetShaderParameter("texture_size", new Vector2(res.X, res.Y));
+                mat.SetShaderParameter("box_size", boxSize);
+
                 meshInstance.MaterialOverride = mat;
 
                 _partImages[partName] = image;
@@ -96,14 +111,31 @@ namespace SKNewRoles2.Game
             }
 
             Image loadedImage = texture.GetImage();
-            Vector2I targetRes = PartResolutionMap.GetValueOrDefault(partName, new Vector2I(64, 64));
+            
+            if (loadedImage.GetFormat() != Image.Format.Rgba8)
+            {
+                loadedImage.Convert(Image.Format.Rgba8);
+            }
+
+            Vector2I targetRes = PartResolutionMap.GetValueOrDefault(partName, new Vector2I(32, 16));
+            Vector2 boxSize = PartBoxSizeMap.GetValueOrDefault(partName, new Vector2(8f, 8f));
+
             if (loadedImage.GetWidth() != targetRes.X || loadedImage.GetHeight() != targetRes.Y)
             {
                 loadedImage.Resize(targetRes.X, targetRes.Y, Image.Interpolation.Nearest);
             }
 
+            ImageTexture newTexture = ImageTexture.CreateFromImage(loadedImage);
+
             _partImages[partName] = loadedImage;
-            _partTextures[partName].Update(loadedImage);
+            _partTextures[partName] = newTexture;
+
+            if (_partMaterials.TryGetValue(partName, out var mat) && mat != null)
+            {
+                mat.SetShaderParameter("texture_albedo", newTexture);
+                mat.SetShaderParameter("texture_size", new Vector2(targetRes.X, targetRes.Y));
+                mat.SetShaderParameter("box_size", boxSize);
+            }
 
             GD.Print($"[SkinPainter] {partName} にプリセットを適用しました: {resPath}");
             return true;
