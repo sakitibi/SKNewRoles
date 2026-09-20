@@ -2,6 +2,8 @@
 
 [ext_resource type="Script" uid="uid://b64jmas7aigau" path="res://SKNewRoles2/Game/SkinEditScene.cs" id="1_script"]
 [ext_resource type="FontFile" uid="uid://bcuxsq3rxn1b4" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="2_w0jo3"]
+[ext_resource type="Shader" path="res://Shaders/box_uv_atlas.gdshader" id="3_shader"]
+[ext_resource type="Script" path="res://SKNewRoles2/Game/SkinPainter.cs" id="4_painter"]
 
 [node name="SkinEditScene" type="Node3D" unique_id=362765023]
 script = ExtResource("1_script")
@@ -16,6 +18,10 @@ shadow_enabled = true
 
 [node name="SkinModelContainer" type="Node3D" parent="." unique_id=255342988]
 
+[node name="SkinPainter" type="Node3D" parent="." unique_id=987654321]
+script = ExtResource("4_painter")
+_atlasShader = ExtResource("3_shader")
+
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=446115870]
 
 [node name="Control" type="Control" parent="CanvasLayer" unique_id=666617933]
@@ -26,50 +32,122 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
+; 左下パネル（保存・戻る）
 [node name="MarginContainer" type="Panel" parent="CanvasLayer/Control" unique_id=588184237]
 layout_mode = 1
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_top = -285.0
-offset_right = 446.0
+offset_top = -320.0
+offset_right = 360.0
 grow_vertical = 0
 
-[node name="VBoxContainer" type="Panel" parent="CanvasLayer/Control/MarginContainer" unique_id=401474831]
-layout_mode = 0
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/MarginContainer" unique_id=401474831]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 offset_left = 20.0
-offset_right = 369.0
-offset_bottom = 265.0
+offset_top = 15.0
+offset_right = -20.0
+offset_bottom = -15.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="TitleLabel" type="Label" parent="CanvasLayer/Control/MarginContainer/VBoxContainer" unique_id=668123279]
-layout_mode = 0
-offset_left = 24.0
-offset_top = 7.0
-offset_right = 347.0
-offset_bottom = 68.0
+layout_mode = 2
 theme_override_fonts/font = ExtResource("2_w0jo3")
 theme_override_font_sizes/font_size = 40
 text = "スキン編集"
 horizontal_alignment = 1
 
 [node name="SaveButton" type="Button" parent="CanvasLayer/Control/MarginContainer/VBoxContainer" unique_id=514916508]
-custom_minimum_size = Vector2(0, 40)
-layout_mode = 0
-offset_left = 67.0
-offset_top = 79.0
-offset_right = 289.0
-offset_bottom = 146.0
+custom_minimum_size = Vector2(0, 65)
+layout_mode = 2
 theme_override_fonts/font = ExtResource("2_w0jo3")
-theme_override_font_sizes/font_size = 50
+theme_override_font_sizes/font_size = 36
 text = "保存"
 
 [node name="BackButton" type="Button" parent="CanvasLayer/Control/MarginContainer/VBoxContainer" unique_id=1767392943]
-custom_minimum_size = Vector2(0, 40)
-layout_mode = 0
-offset_left = 64.0
-offset_top = 175.0
-offset_right = 290.0
-offset_bottom = 245.0
+custom_minimum_size = Vector2(0, 65)
+layout_mode = 2
 theme_override_fonts/font = ExtResource("2_w0jo3")
-theme_override_font_sizes/font_size = 50
+theme_override_font_sizes/font_size = 36
 text = "戻る"
+
+; 右下パネル（部位別ボタン）
+[node name="PartSelectPanel" type="Panel" parent="CanvasLayer/Control" unique_id=112233445]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -340.0
+offset_top = -500.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="PartVBox" type="VBoxContainer" parent="CanvasLayer/Control/PartSelectPanel" unique_id=556677889]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 15.0
+offset_top = 15.0
+offset_right = -15.0
+offset_bottom = -15.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HeadButton" type="Button" parent="CanvasLayer/Control/PartSelectPanel/PartVBox" unique_id=101]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_w0jo3")
+theme_override_font_sizes/font_size = 30
+text = "頭 (32x16)"
+
+[node name="BodyButton" type="Button" parent="CanvasLayer/Control/PartSelectPanel/PartVBox" unique_id=102]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_w0jo3")
+theme_override_font_sizes/font_size = 30
+text = "胴体 (24x16)"
+
+[node name="RightArmButton" type="Button" parent="CanvasLayer/Control/PartSelectPanel/PartVBox" unique_id=103]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_w0jo3")
+theme_override_font_sizes/font_size = 30
+text = "右腕 (16x16)"
+
+[node name="LeftArmButton" type="Button" parent="CanvasLayer/Control/PartSelectPanel/PartVBox" unique_id=104]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_w0jo3")
+theme_override_font_sizes/font_size = 30
+text = "左腕 (16x16)"
+
+[node name="RightLegButton" type="Button" parent="CanvasLayer/Control/PartSelectPanel/PartVBox" unique_id=105]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_w0jo3")
+theme_override_font_sizes/font_size = 30
+text = "右脚 (16x16)"
+
+[node name="LeftLegButton" type="Button" parent="CanvasLayer/Control/PartSelectPanel/PartVBox" unique_id=106]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_w0jo3")
+theme_override_font_sizes/font_size = 30
+text = "左脚 (16x16)"
+
+; ファイルダイアログ
+[node name="FileDialog" type="FileDialog" parent="CanvasLayer/Control" unique_id=998877665]
+title = "画像を選択"
+size = Vector2i(700, 500)
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.png ; PNG Images")

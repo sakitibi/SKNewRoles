@@ -10,9 +10,18 @@ namespace SKNewRoles2.Game
         private readonly Dictionary<string, Image> _partImages = [];
         private readonly Dictionary<string, ImageTexture> _partTextures = [];
         private readonly Dictionary<string, ShaderMaterial> _partMaterials = [];
+        private static readonly Dictionary<string, Vector2I> PartResolutionMap = new()
+        {
+            { "Head",     new Vector2I(32, 16) },
+            { "Body",     new Vector2I(24, 16) },
+            { "RightArm", new Vector2I(16, 16) },
+            { "LeftArm",  new Vector2I(16, 16) },
+            { "RightLeg", new Vector2I(16, 16) },
+            { "LeftLeg",  new Vector2I(16, 16) }
+        };
 
         /// <summary>
-        /// 外部から読み込んだモデルを渡して初期化する
+        /// 読み込んだモデルの各部位に個別のマテリアルと初期テクスチャを割り当てる
         /// </summary>
         public void Initialize(Node3D targetModel)
         {
@@ -29,47 +38,63 @@ namespace SKNewRoles2.Game
             var meshInstance = root.GetNodeOrNull<MeshInstance3D>(nodePath);
             if (meshInstance == null) return;
 
-            Image image = Image.CreateEmpty(64, 64, false, Image.Format.Rgba8);
+            string partName = meshInstance.Name;
+            Vector2I res = PartResolutionMap.GetValueOrDefault(partName, new Vector2I(64, 64));
+
+            // 部位別サイズの初期画像を作成
+            Image image = Image.CreateEmpty(res.X, res.Y, false, Image.Format.Rgba8);
             image.Fill(Colors.White);
 
             ImageTexture dynTexture = ImageTexture.CreateFromImage(image);
 
-            ShaderMaterial mat = new();
-            mat.Shader = _atlasShader;
+            ShaderMaterial mat = new()
+            {
+                Shader = _atlasShader
+            };
             mat.SetShaderParameter("texture_albedo", dynTexture);
 
             // インスタンスごとに独立したマテリアルを上書き設定
             meshInstance.MaterialOverride = mat;
 
-            string partName = meshInstance.Name;
             _partImages[partName] = image;
             _partTextures[partName] = dynTexture;
             _partMaterials[partName] = mat;
         }
 
-        public void PaintAt(string partName, Vector2 uv, Color color, int brushSize = 1)
+        /// <summary>
+        /// 指定した部位に個別のカスタム画像ファイルを適用する
+        /// </summary>
+        public bool ApplyCustomImageToPart(string partName, string imagePath)
         {
-            if (!_partImages.TryGetValue(partName, out var image)) return;
-
-            int width = image.GetWidth();
-            int height = image.GetHeight();
-
-            int x = (int)(uv.X * width);
-            int y = (int)(uv.Y * height);
-
-            for (int bx = -brushSize + 1; bx < brushSize; bx++)
+            if (!_partImages.ContainsKey(partName))
             {
-                for (int by = -brushSize + 1; by < brushSize; by++)
-                {
-                    int px = Mathf.Clamp(x + bx, 0, width - 1);
-                    int py = Mathf.Clamp(y + by, 0, height - 1);
-                    image.SetPixel(px, py, color);
-                }
+                GD.PrintErr($"[SkinPainter] 未登録の部位です: {partName}");
+                return false;
             }
 
-            _partTextures[partName].Update(image);
+            var loadedImage = Image.LoadFromFile(imagePath);
+            if (loadedImage == null)
+            {
+                GD.PrintErr($"[SkinPainter] 画像の読み込みに失敗しました: {imagePath}");
+                return false;
+            }
+
+            Vector2I targetRes = PartResolutionMap.GetValueOrDefault(partName, new Vector2I(64, 64));
+            if (loadedImage.GetWidth() != targetRes.X || loadedImage.GetHeight() != targetRes.Y)
+            {
+                loadedImage.Resize(targetRes.X, targetRes.Y, Image.Interpolation.Nearest);
+            }
+
+            _partImages[partName] = loadedImage;
+            _partTextures[partName].Update(loadedImage);
+
+            GD.Print($"[SkinPainter] {partName} に画像を適用しました ({targetRes.X}x{targetRes.Y}): {imagePath}");
+            return true;
         }
 
+        /// <summary>
+        /// 指定部位のテクスチャをpng保存
+        /// </summary>
         public void SavePartSkin(string partName)
         {
             if (!_partImages.TryGetValue(partName, out var image)) return;
@@ -87,6 +112,17 @@ namespace SKNewRoles2.Game
             else
             {
                 GD.PrintErr($"[SkinPainter] 保存失敗: {err}");
+            }
+        }
+
+        /// <summary>
+        /// 編集中の全部位スキンを一括保存
+        /// </summary>
+        public void SaveAllSkins()
+        {
+            foreach (var partName in _partImages.Keys)
+            {
+                SavePartSkin(partName);
             }
         }
     }
