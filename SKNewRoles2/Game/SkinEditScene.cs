@@ -34,19 +34,12 @@ namespace SKNewRoles2.Game
             {
                 var dummyInstance = dummyScene.Instantiate<Node3D>();
 
+                dummyInstance.Call("set_process_movement", false);
+
+                dummyInstance.Position = Vector3.Zero;
+
                 _skinModelContainer.AddChild(dummyInstance);
 
-                dummyInstance.Call("set_target_transform", 0f, 0f, 0f, 0f, 0f, 0f);
-
-                // 現在の物理位置・回転も直接 0 に強制リセット
-                dummyInstance.GlobalPosition = Vector3.Zero;
-                dummyInstance.GlobalRotation = Vector3.Zero;
-
-                // 念のため物理処理を無効化
-                dummyInstance.SetPhysicsProcess(false);
-                dummyInstance.SetProcess(false);
-
-                // SkinPainterの初期化
                 GetNodeOrNull<SkinPainter>("SkinPainter")?.Initialize(dummyInstance);
             }
             else

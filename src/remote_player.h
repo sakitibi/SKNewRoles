@@ -11,6 +11,7 @@ namespace godot {
             Vector3 target_position;
             Quaternion target_rotation;
             float lerp_speed;
+            bool process_movement = true;
 
         protected:
             static void _bind_methods();
@@ -21,5 +22,9 @@ namespace godot {
 
             void _physics_process(double delta) override;
             void set_target_transform(float px, float py, float pz, float rx, float ry, float rz);
+
+            // フラン制御用メソッド
+            void set_process_movement(bool p_enable);
+            bool get_process_movement() const;
     };
 }
