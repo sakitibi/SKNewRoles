@@ -10,6 +10,7 @@ namespace SKNewRoles2.Game
         private readonly Dictionary<string, Image> _partImages = [];
         private readonly Dictionary<string, ImageTexture> _partTextures = [];
         private readonly Dictionary<string, ShaderMaterial> _partMaterials = [];
+
         private static readonly Dictionary<string, Vector2I> PartResolutionMap = new()
         {
             { "Head",     new Vector2I(32, 16) },
@@ -20,9 +21,6 @@ namespace SKNewRoles2.Game
             { "LeftLeg",  new Vector2I(16, 16) }
         };
 
-        /// <summary>
-        /// 読み込んだモデルの各部位に個別のマテリアルと初期テクスチャを割り当てる
-        /// </summary>
         public void Initialize(Node3D targetModel)
         {
             SetupPart(targetModel, "SkinModel/Head");
@@ -41,30 +39,42 @@ namespace SKNewRoles2.Game
             string partName = meshInstance.Name;
             Vector2I res = PartResolutionMap.GetValueOrDefault(partName, new Vector2I(64, 64));
 
-            // 部位別サイズの初期画像を作成
             Image image = Image.CreateEmpty(res.X, res.Y, false, Image.Format.Rgba8);
             image.Fill(Colors.White);
 
             ImageTexture dynTexture = ImageTexture.CreateFromImage(image);
 
-            ShaderMaterial mat = new()
+            ShaderMaterial mat = null;
+
+            if (meshInstance.MaterialOverride is ShaderMaterial overrideMat)
             {
-                Shader = _atlasShader
-            };
-            mat.SetShaderParameter("texture_albedo", dynTexture);
+                mat = (ShaderMaterial)overrideMat.Duplicate();
+            }
+            else if (meshInstance.GetActiveMaterial(0) is ShaderMaterial activeMat)
+            {
+                mat = (ShaderMaterial)activeMat.Duplicate();
+            }
+            else if (_atlasShader != null)
+            {
+                mat = new ShaderMaterial { Shader = _atlasShader };
+            }
 
-            // インスタンスごとに独立したマテリアルを上書き設定
-            meshInstance.MaterialOverride = mat;
+            if (mat != null)
+            {
+                mat.SetShaderParameter("texture_albedo", dynTexture);
+                meshInstance.MaterialOverride = mat;
 
-            _partImages[partName] = image;
-            _partTextures[partName] = dynTexture;
-            _partMaterials[partName] = mat;
+                _partImages[partName] = image;
+                _partTextures[partName] = dynTexture;
+                _partMaterials[partName] = mat;
+            }
+            else
+            {
+                GD.PrintErr($"[SkinPainter] {partName} の ShaderMaterial 取得に失敗しました。");
+            }
         }
 
-        /// <summary>
-        /// 指定した部位に個別のカスタム画像ファイルを適用する
-        /// </summary>
-        public bool ApplyCustomImageToPart(string partName, string imagePath)
+        public bool ApplyPresetToPart(string partName, string resPath)
         {
             if (!_partImages.ContainsKey(partName))
             {
@@ -72,13 +82,20 @@ namespace SKNewRoles2.Game
                 return false;
             }
 
-            var loadedImage = Image.LoadFromFile(imagePath);
-            if (loadedImage == null)
+            if (!ResourceLoader.Exists(resPath))
             {
-                GD.PrintErr($"[SkinPainter] 画像の読み込みに失敗しました: {imagePath}");
+                GD.PrintErr($"[SkinPainter] プリセット画像が見つかりません: {resPath}");
                 return false;
             }
 
+            var texture = GD.Load<Texture2D>(resPath);
+            if (texture == null)
+            {
+                GD.PrintErr($"[SkinPainter] テクスチャのロードに失敗しました: {resPath}");
+                return false;
+            }
+
+            Image loadedImage = texture.GetImage();
             Vector2I targetRes = PartResolutionMap.GetValueOrDefault(partName, new Vector2I(64, 64));
             if (loadedImage.GetWidth() != targetRes.X || loadedImage.GetHeight() != targetRes.Y)
             {
@@ -88,41 +105,19 @@ namespace SKNewRoles2.Game
             _partImages[partName] = loadedImage;
             _partTextures[partName].Update(loadedImage);
 
-            GD.Print($"[SkinPainter] {partName} に画像を適用しました ({targetRes.X}x{targetRes.Y}): {imagePath}");
+            GD.Print($"[SkinPainter] {partName} にプリセットを適用しました: {resPath}");
             return true;
         }
 
         /// <summary>
-        /// 指定部位のテクスチャをpng保存
+        /// 部位ごとのプリセット設定マップを元に全部位へ適用する
         /// </summary>
-        public void SavePartSkin(string partName)
+        public void ApplyPresetToAllParts(Dictionary<string, string> equippedPresets)
         {
-            if (!_partImages.TryGetValue(partName, out var image)) return;
-
-            string dirPath = ProjectSettings.GlobalizePath("user://game_asset/Skins/");
-            System.IO.Directory.CreateDirectory(dirPath);
-
-            string filePath = System.IO.Path.Combine(dirPath, $"{partName.ToLower()}_atlas.png");
-            Error err = image.SavePng(filePath);
-
-            if (err == Error.Ok)
+            foreach (var (partName, presetId) in equippedPresets)
             {
-                GD.Print($"[SkinPainter] 保存成功: {filePath}");
-            }
-            else
-            {
-                GD.PrintErr($"[SkinPainter] 保存失敗: {err}");
-            }
-        }
-
-        /// <summary>
-        /// 編集中の全部位スキンを一括保存
-        /// </summary>
-        public void SaveAllSkins()
-        {
-            foreach (var partName in _partImages.Keys)
-            {
-                SavePartSkin(partName);
+                string resPath = $"res://Resources/Skins/{presetId}/{partName.ToLower()}.png";
+                ApplyPresetToPart(partName, resPath);
             }
         }
     }
