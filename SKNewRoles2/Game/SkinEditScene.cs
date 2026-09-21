@@ -10,7 +10,7 @@ namespace SKNewRoles2.Game
         private Node3D _skinModelContainer;
 
         // 利用可能なプリセットIDのリスト
-        private readonly string[] _availablePresets = ["preset_1", "preset_2", "preset_3"];
+        private readonly string[] _availablePresets = ["preset_1"];
 
         // 部位ごとに適用しているプリセットIDを独立管理
         private readonly Dictionary<string, string> _equippedPresets = new()
