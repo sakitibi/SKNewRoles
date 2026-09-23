@@ -51,19 +51,14 @@ namespace SKNewRoles2.Game
         /// </summary>
         public void PlayBgm(float volumeDb = 0.0f, int index = -1)
         {
-            int randomIndex;
             if (BgmPaths == null || BgmPaths.Count == 0)
             {
                 GD.PrintErr("⚠️ [BGMManager] BGMのパスが設定されていません。");
                 return;
             }
 
-            // リストからランダムに1曲選択
-            if (
-                index == -1 ||
-                BgmPaths.Count == 0 ||
-                BgmPaths.Count <= index
-            )
+            int randomIndex;
+            if (index == -1 || index >= BgmPaths.Count)
             {
                 randomIndex = (int)(GD.Randi() % (uint)BgmPaths.Count);
             }
@@ -74,7 +69,8 @@ namespace SKNewRoles2.Game
             
             string selectedPath = BgmPaths[randomIndex];
 
-            AudioStream stream = GD.Load<AudioStream>(selectedPath);
+            AudioStream stream = LoadAudioStream(selectedPath);
+            
             if (stream == null)
             {
                 GD.PrintErr($"⚠️ [BGMManager] BGMファイルのロードに失敗しました: {selectedPath}");
@@ -107,6 +103,44 @@ namespace SKNewRoles2.Game
             _bgmPlayer.Play();
 
             GD.Print($"🎵 [BGMManager] BGM再生開始: {selectedPath} (Index: {randomIndex})");
+        }
+
+        /// <summary>
+        /// パスに応じてリソースをロードする内部ヘルパー
+        /// </summary>
+        private static AudioStream LoadAudioStream(string path)
+        {
+            if (path.StartsWith("res://"))
+            {
+                return GD.Load<AudioStream>(path);
+            }
+
+            if (!FileAccess.FileExists(path))
+            {
+                GD.PrintErr($"⚠️ [BGMManager] ファイルが存在しません: {path}");
+                return null;
+            }
+
+            using var file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
+            if (file == null)
+            {
+                GD.PrintErr($"⚠️ [BGMManager] ファイルを開けませんでした: {path}");
+                return null;
+            }
+
+            byte[] buffer = file.GetBuffer((long)file.GetLength());
+
+            if (path.EndsWith(".mp3", System.StringComparison.OrdinalIgnoreCase))
+            {
+                AudioStreamMP3 mp3Stream = new()
+                {
+                    Data = buffer
+                };
+                return mp3Stream;
+            }
+
+            GD.PrintErr($"⚠️ [BGMManager] サポートされていない音声形式です: {path}");
+            return null;
         }
 
         /// <summary>
