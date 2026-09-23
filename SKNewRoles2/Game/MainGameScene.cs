@@ -87,7 +87,7 @@ namespace SKNewRoles2.Game
 
             _playerManager.SetVisible(true);
 
-            _bgmManager?.PlayRandomBgm(0.0f);
+            _bgmManager?.PlayBgm(0.0f);
             _playerManager.GrantInitialItems(_hotbarManager);
 
             if (_uiController != null)

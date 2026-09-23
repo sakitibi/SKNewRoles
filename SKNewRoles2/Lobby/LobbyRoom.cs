@@ -2,6 +2,7 @@ using Godot;
 using System.Collections.Generic;
 using SKNewRoles2.SessionManagerSystem;
 using SKNewRoles2.Lobby.JOIN.Services.Realtime;
+using SKNewRoles2.Game;
 
 namespace SKNewRoles2.Lobby
 {
@@ -21,6 +22,7 @@ namespace SKNewRoles2.Lobby
 
         private bool _isTransitioning = false;
         private float _broadcastTimer = 0.0f;
+        private readonly BGMManager _bgmManager = new();
 
         public Color GrassBlockColor { get; set; } = new Color(0.3f, 0.85f, 0.15f, 1.0f);
 
@@ -70,6 +72,8 @@ namespace SKNewRoles2.Lobby
             LobbyMeshUtility.ApplyTriplanarToAllMeshes(this);
 
             await SpawnPlayerPrefab();
+
+            _bgmManager?.StopBgm();
         }
 
         public override void _Process(double delta)

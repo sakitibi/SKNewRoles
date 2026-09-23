@@ -46,7 +46,7 @@ namespace SKNewRoles2.Game
         /// <summary>
         /// ランダムにBGMを選択して再生を開始する
         /// </summary>
-        public void PlayRandomBgm(float volumeDb = 0.0f, int index = -1)
+        public void PlayBgm(float volumeDb = 0.0f, int index = -1)
         {
             int randomIndex;
             if (BgmPaths == null || BgmPaths.Count == 0)

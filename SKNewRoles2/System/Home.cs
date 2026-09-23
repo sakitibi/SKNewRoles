@@ -1,4 +1,5 @@
 using Godot;
+using SKNewRoles2.Game;
 
 namespace SKNewRoles2.SNRSystem
 {
@@ -6,6 +7,7 @@ namespace SKNewRoles2.SNRSystem
     {
         private Button _startButton;
         private Button _exitButton;
+        private readonly BGMManager _bgmManager = new();
 
         public override void _Ready()
         {
@@ -22,6 +24,8 @@ namespace SKNewRoles2.SNRSystem
             // ボタンのクリックイベントを紐付け
             _startButton.Pressed += OnStartButtonPressed;
             _exitButton.Pressed += QuitGame;
+
+            _bgmManager.PlayBgm(1.0f, 0);
         }
 
         /// <summary>
