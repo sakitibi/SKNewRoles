@@ -25,7 +25,7 @@ namespace SKNewRoles2.SNRSystem
             _startButton.Pressed += OnStartButtonPressed;
             _exitButton.Pressed += QuitGame;
 
-            _bgmManager.PlayBgm(1.0f, 0);
+            _bgmManager.PlayBgm(1.0f, GD.RandRange(1, 2));
         }
 
         /// <summary>

@@ -6,9 +6,12 @@ namespace SKNewRoles2.Game
     public partial class BGMManager : Node
     {
         private AudioStreamPlayer _bgmPlayer;
+        private readonly static string BgmPathBases = "user://game_asset/Audio/BGM/";
         public List<string> BgmPaths { get; set; } =
         [
-            "user://game_asset/Audio/BGM/game_bgm1.mp3",
+            $"{BgmPathBases}game_bgm1.mp3",
+            $"{BgmPathBases}title_bgm1.mp3",
+            $"{BgmPathBases}title_bgm2.mp3"
         ];
 
         /// <summary>
