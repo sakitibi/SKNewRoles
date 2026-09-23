@@ -11,8 +11,6 @@ build
 *.command
 Resources/Blocks/*
 Resources/Items/*
-Resources/Audio/BGM/*
-!Resources/Audio/BGM/amaoto.mp3
 bin/libgodot_player_extension.dylib
 bin/libgodot_player_extension.so
 bin/godot_player_extension.dll

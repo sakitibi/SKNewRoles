@@ -8,7 +8,7 @@ namespace SKNewRoles2.Game
         private AudioStreamPlayer _bgmPlayer;
         public List<string> BgmPaths { get; set; } =
         [
-            "res://Resources/Audio/BGM/game_bgm1.mp3",
+            "user://game_asset/Audio/BGM/game_bgm1.mp3",
         ];
 
         /// <summary>
