@@ -46,8 +46,9 @@ namespace SKNewRoles2.Game
         /// <summary>
         /// ランダムにBGMを選択して再生を開始する
         /// </summary>
-        public void PlayRandomBgm(float volumeDb = 0.0f)
+        public void PlayRandomBgm(float volumeDb = 0.0f, int index = -1)
         {
+            int randomIndex;
             if (BgmPaths == null || BgmPaths.Count == 0)
             {
                 GD.PrintErr("⚠️ [BGMManager] BGMのパスが設定されていません。");
@@ -55,7 +56,19 @@ namespace SKNewRoles2.Game
             }
 
             // リストからランダムに1曲選択
-            int randomIndex = (int)(GD.Randi() % (uint)BgmPaths.Count);
+            if (
+                index == -1 ||
+                BgmPaths.Count == 0 ||
+                BgmPaths.Count <= index
+            )
+            {
+                randomIndex = (int)(GD.Randi() % (uint)BgmPaths.Count);
+            }
+            else
+            {
+                randomIndex = index;
+            }
+            
             string selectedPath = BgmPaths[randomIndex];
 
             AudioStream stream = GD.Load<AudioStream>(selectedPath);
