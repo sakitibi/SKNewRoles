@@ -2,7 +2,7 @@ using Godot;
 using System.Collections.Generic;
 using SKNewRoles2.SessionManagerSystem;
 using SKNewRoles2.Lobby.JOIN.Services.Realtime;
-using SKNewRoles2.Game;
+using SKNewRoles2.Game.BGM;
 
 namespace SKNewRoles2.Lobby
 {
