@@ -4,6 +4,8 @@ using SKNewRoles2.SessionManagerSystem;
 using SKNewRoles2.Game.Network;
 using SKNewRoles2.Game.Inventory;
 using SKNewRoles2.Game.Player;
+using SKNewRoles2.Game.BGM;
+using System.Collections.Generic;
 
 namespace SKNewRoles2.Game
 {
@@ -38,6 +40,9 @@ namespace SKNewRoles2.Game
 
         public int MyRole => _roleManager?.MyRole ?? -1;
         public int MyFaction => _roleManager?.MyFaction ?? -1;
+        private readonly List<int> BGMList = [
+            0
+        ];
 
         public override async void _Ready()
         {
@@ -87,7 +92,9 @@ namespace SKNewRoles2.Game
 
             _playerManager.SetVisible(true);
 
-            _bgmManager?.PlayBgm(0.0f);
+            _bgmManager?.PlayBgm(
+                0.0f, -1, BGMList
+            );
             _playerManager.GrantInitialItems(_hotbarManager);
 
             if (_uiController != null)

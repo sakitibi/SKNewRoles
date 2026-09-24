@@ -1,5 +1,6 @@
+using System.Collections.Generic;
 using Godot;
-using SKNewRoles2.Game;
+using SKNewRoles2.Game.BGM;
 
 namespace SKNewRoles2.SNRSystem
 {
@@ -8,6 +9,9 @@ namespace SKNewRoles2.SNRSystem
         private Button _startButton;
         private Button _exitButton;
         private readonly BGMManager _bgmManager = new();
+        private readonly List<int> BGMList = [
+            1, 2, 3,
+        ];
 
         public override void _Ready()
         {
@@ -27,7 +31,7 @@ namespace SKNewRoles2.SNRSystem
 
             AddChild(_bgmManager);
 
-            _bgmManager.PlayBgm(1.0f, GD.RandRange(1, 2));
+            _bgmManager.PlayBgm(1.0f, -1, BGMList);
         }
 
         /// <summary>
