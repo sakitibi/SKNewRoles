@@ -22,6 +22,10 @@ namespace SKNewRoles2.SNRSystem
         private static readonly string Save7zPath = ProjectSettings.GlobalizePath("user://assets.7z");
         private static readonly string HashTxtPath = ProjectSettings.GlobalizePath("user://assets_sha512.txt");
 
+        // 高速化設定
+        private const int BufferSize = 1024 * 1024;
+        private const ulong ProgressUpdateIntervalMs = 50;
+
         public static async Task EnsureAssetsDownloadedAsync(Action<float, string> progressCallback)
         {
             progressCallback?.Invoke(0.0f, "リモートハッシュ値を取得中...");
@@ -71,20 +75,24 @@ namespace SKNewRoles2.SNRSystem
 
             {
                 using FileStream fileStream = new(
-                    Save7zPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true
+                    Save7zPath, FileMode.Create, FileAccess.Write, FileShare.None, BufferSize, true
                 );
 
-                byte[] buffer = new byte[8192];
+                byte[] buffer = new byte[BufferSize];
                 long totalReadBytes = 0;
                 int readBytes;
+                ulong lastReportTime = Time.GetTicksMsec();
 
                 while ((readBytes = await contentStream.ReadAsync(buffer.AsMemory())) > 0)
                 {
                     await fileStream.WriteAsync(buffer.AsMemory(0, readBytes));
                     totalReadBytes += readBytes;
 
-                    if (totalBytes.HasValue && totalBytes.Value > 0)
+                    ulong currentTime = Time.GetTicksMsec();
+                    // UIコールバック頻度を制限してオーバーヘッドを軽減
+                    if (totalBytes.HasValue && totalBytes.Value > 0 && (currentTime - lastReportTime >= ProgressUpdateIntervalMs))
                     {
+                        lastReportTime = currentTime;
                         float downloadProgress = (float)totalReadBytes / totalBytes.Value;
                         string mbRead = (totalReadBytes / 1024f / 1024f).ToString("F1");
                         string mbTotal = (totalBytes.Value / 1024f / 1024f).ToString("F1");
@@ -103,7 +111,7 @@ namespace SKNewRoles2.SNRSystem
                 {
                     using var sha512 = SHA512.Create();
                     {
-                        using var archiveStream = File.OpenRead(Save7zPath);
+                        using var archiveStream = new FileStream(Save7zPath, FileMode.Open, FileAccess.Read, FileShare.Read, BufferSize);
                         byte[] hashBytes = sha512.ComputeHash(archiveStream);
                         calculatedHash = Convert.ToHexString(hashBytes);
                     }
@@ -112,7 +120,7 @@ namespace SKNewRoles2.SNRSystem
                 if (File.Exists(Save7zPath))
                 {
                     {
-                        using var stream = File.OpenRead(Save7zPath);
+                        using var stream = new FileStream(Save7zPath, FileMode.Open, FileAccess.Read, FileShare.Read, BufferSize);
                         using var archive = ArchiveFactory.OpenArchive(stream);
                         foreach (var entry in archive.Entries)
                         {
