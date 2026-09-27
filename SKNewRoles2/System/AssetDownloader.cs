@@ -4,7 +4,6 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using SharpCompress.Readers;
 
 using HttpClient = System.Net.Http.HttpClient;
 using HttpClientHandler = System.Net.Http.HttpClientHandler;
@@ -12,6 +11,8 @@ using HttpCompletionOption = System.Net.Http.HttpCompletionOption;
 using HttpResponseMessage = System.Net.Http.HttpResponseMessage;
 using FileAccess = System.IO.FileAccess;
 using SharpCompress.Common;
+using SharpCompress.Archives.SevenZip;
+using SharpCompress.Archives;
 
 namespace SKNewRoles2.SNRSystem
 {
@@ -107,9 +108,9 @@ namespace SKNewRoles2.SNRSystem
             {
                 string calculatedHash = string.Empty;
 
+                // ハッシュ計算
                 if (File.Exists(Save7zPath))
                 {
-                    // ハッシュ計算を高速ストリーム処理
                     using var sha512 = SHA512.Create();
                     using var archiveStream = new FileStream(Save7zPath, FileMode.Open, FileAccess.Read, FileShare.Read, BufferSize);
                     byte[] hashBytes = sha512.ComputeHash(archiveStream);
@@ -118,24 +119,34 @@ namespace SKNewRoles2.SNRSystem
 
                 if (File.Exists(Save7zPath))
                 {
-                    using var stream = new FileStream(Save7zPath, FileMode.Open, FileAccess.Read, FileShare.Read, BufferSize);
-                    using var reader = ReaderFactory.OpenReader(stream);
-
-                    var extractionOptions = new ExtractionOptions
+                    try
                     {
-                        ExtractFullPath = true,
-                        Overwrite = true
-                    };
+                        using var stream = new FileStream(Save7zPath, FileMode.Open, FileAccess.Read, FileShare.Read, BufferSize);
+                        using var archive = SevenZipArchive.OpenArchive(stream);
 
-                    while (reader.MoveToNextEntry())
-                    {
-                        if (!reader.Entry.IsDirectory)
+                        var extractionOptions = new ExtractionOptions
                         {
-                            reader.WriteEntryToDirectory(TargetDir, extractionOptions);
+                            ExtractFullPath = true,
+                            Overwrite = true
+                        };
+
+                        foreach (var entry in archive.Entries)
+                        {
+                            if (!entry.IsDirectory)
+                            {
+                                entry.WriteToDirectory(TargetDir, extractionOptions);
+                            }
                         }
+
+                        GD.Print("[AssetDownloader] 7zファイルの解凍が正常に完了しました。");
+                    }
+                    catch (Exception ex)
+                    {
+                        GD.PrintErr($"[AssetDownloader] 解凍中にエラーが発生しました: {ex.Message}");
                     }
                 }
 
+                // ハッシュ値の書き込みと一時ファイルの削除
                 if (!string.IsNullOrEmpty(calculatedHash))
                 {
                     File.WriteAllText(HashTxtPath, calculatedHash, Encoding.UTF8);
