@@ -4,25 +4,26 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using SharpCompress.Archives;
+using SharpCompress.Readers;
 
 using HttpClient = System.Net.Http.HttpClient;
 using HttpClientHandler = System.Net.Http.HttpClientHandler;
 using HttpCompletionOption = System.Net.Http.HttpCompletionOption;
 using HttpResponseMessage = System.Net.Http.HttpResponseMessage;
 using FileAccess = System.IO.FileAccess;
+using SharpCompress.Common;
 
 namespace SKNewRoles2.SNRSystem
 {
     public static class AssetDownloader
     {
-        private const string DirectDownloadUrl = "https://github.com/sakitibi/SKNewRoles/releases/download/v4.0.0.0/game_asset.7z";
-        private const string RemoteHashUrl = "https://github.com/sakitibi/SKNewRoles/releases/download/v4.0.0.0/game_asset.7z.sha512";
+        private const string GHUrlBase = "https://github.com/sakitibi/SKNewRoles/releases/download/v4.0.0.0/";
+        private static readonly string DirectDownloadUrl = $"{GHUrlBase}game_asset.7z";
+        private static readonly string RemoteHashUrl = $"{GHUrlBase}game_asset.7z.sha512";
         private static readonly string TargetDir = ProjectSettings.GlobalizePath("user://");
         private static readonly string Save7zPath = ProjectSettings.GlobalizePath("user://assets.7z");
         private static readonly string HashTxtPath = ProjectSettings.GlobalizePath("user://assets_sha512.txt");
 
-        // 高速化設定
         private const int BufferSize = 1024 * 1024;
         private const ulong ProgressUpdateIntervalMs = 50;
 
@@ -89,7 +90,6 @@ namespace SKNewRoles2.SNRSystem
                     totalReadBytes += readBytes;
 
                     ulong currentTime = Time.GetTicksMsec();
-                    // UIコールバック頻度を制限してオーバーヘッドを軽減
                     if (totalBytes.HasValue && totalBytes.Value > 0 && (currentTime - lastReportTime >= ProgressUpdateIntervalMs))
                     {
                         lastReportTime = currentTime;
@@ -102,36 +102,36 @@ namespace SKNewRoles2.SNRSystem
                 }
             }
 
-            progressCallback?.Invoke(0.75f, "ファイルを展開中 (7z)...");
+            progressCallback?.Invoke(0.75f, "ファイルを高速展開中 (7z)...");
             await Task.Run(() =>
             {
                 string calculatedHash = string.Empty;
 
                 if (File.Exists(Save7zPath))
                 {
+                    // ハッシュ計算を高速ストリーム処理
                     using var sha512 = SHA512.Create();
-                    {
-                        using var archiveStream = new FileStream(Save7zPath, FileMode.Open, FileAccess.Read, FileShare.Read, BufferSize);
-                        byte[] hashBytes = sha512.ComputeHash(archiveStream);
-                        calculatedHash = Convert.ToHexString(hashBytes);
-                    }
+                    using var archiveStream = new FileStream(Save7zPath, FileMode.Open, FileAccess.Read, FileShare.Read, BufferSize);
+                    byte[] hashBytes = sha512.ComputeHash(archiveStream);
+                    calculatedHash = Convert.ToHexString(hashBytes).ToLower();
                 }
 
                 if (File.Exists(Save7zPath))
                 {
+                    using var stream = new FileStream(Save7zPath, FileMode.Open, FileAccess.Read, FileShare.Read, BufferSize);
+                    using var reader = ReaderFactory.OpenReader(stream);
+
+                    var extractionOptions = new ExtractionOptions
                     {
-                        using var stream = new FileStream(Save7zPath, FileMode.Open, FileAccess.Read, FileShare.Read, BufferSize);
-                        using var archive = ArchiveFactory.OpenArchive(stream);
-                        foreach (var entry in archive.Entries)
+                        ExtractFullPath = true,
+                        Overwrite = true
+                    };
+
+                    while (reader.MoveToNextEntry())
+                    {
+                        if (!reader.Entry.IsDirectory)
                         {
-                            if (!entry.IsDirectory)
-                            {
-                                entry.WriteToDirectory(TargetDir, new SharpCompress.Common.ExtractionOptions
-                                {
-                                    ExtractFullPath = true,
-                                    Overwrite = true
-                                });
-                            }
+                            reader.WriteEntryToDirectory(TargetDir, extractionOptions);
                         }
                     }
                 }
