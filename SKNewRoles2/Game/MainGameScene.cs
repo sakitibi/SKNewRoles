@@ -92,9 +92,7 @@ namespace SKNewRoles2.Game
 
             _playerManager.SetVisible(true);
 
-            _bgmManager?.PlayBgm(
-                0.0f, -1, BGMList
-            );
+            _bgmManager?.PlayBgm(0.0f, -1, BGMList);
             _playerManager.GrantInitialItems(_hotbarManager);
 
             if (_uiController != null)
@@ -119,9 +117,16 @@ namespace SKNewRoles2.Game
             var player = MyPlayerInstance;
             if (player != null && IsInstanceValid(player))
             {
-                _uiController?.UpdateCoords(player.GlobalPosition);
+                Vector3 playerPos = player.GlobalPosition;
 
+                _uiController?.UpdateCoords(playerPos);
                 _networkHandler?.UpdateHpUIFromPlayer();
+
+                // ★ C++ 側の ChunkManager へプレイヤーの最新座標(LOD判定用)を送信
+                if (_chunkManagerCpp != null && IsInstanceValid(_chunkManagerCpp))
+                {
+                    _chunkManagerCpp.Call("set_player_position", playerPos);
+                }
 
                 if (player.Visible)
                 {

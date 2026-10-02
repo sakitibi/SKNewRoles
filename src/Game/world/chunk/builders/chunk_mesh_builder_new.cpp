@@ -50,7 +50,9 @@ static Ref<Material> resolve_face_material(const BlockMeshData &mesh_data, int f
 
 BuiltChunkDataNew ChunkMeshBuilderNew::build_chunk_data_async(
     const HashMap<String, Vector<Vector3>> &categorized_positions,
-    bool p_is_initial_load
+    bool p_is_initial_load,
+    Vector3 player_pos,
+    float lod_distance
 ) {
     BuiltChunkDataNew result;
 
@@ -69,12 +71,12 @@ BuiltChunkDataNew ChunkMeshBuilderNew::build_chunk_data_async(
     }
 
     const HashMap<String, String> &registry_map = BlockRegistry::get_block_scene_map();
+    float lod_distance_sq = lod_distance * lod_distance; // 二乗比較で高速化
 
     for (const auto &E : categorized_positions) {
         String block_id = E.key;
         const Vector<Vector3> &positions = E.value;
 
-        // 1. レジストリキー検索（minecraft: プレフィックスのフォールバック対応）
         String lookup_id = block_id.replace("minecraft:", "");
         String scene_path = "";
 
@@ -96,8 +98,17 @@ BuiltChunkDataNew ChunkMeshBuilderNew::build_chunk_data_async(
         for (const Vector3 &pos : positions) {
             Vector3i grid_pos = to_grid_pos(pos);
 
+            // LOD判定: プレイヤー座標からの距離を計算
+            float dist_sq = pos.distance_squared_to(player_pos);
+            bool is_far_lod = (dist_sq > lod_distance_sq);
+
             for (int f = 0; f < 6; ++f) {
                 const CubeFaceData &face = faces[f];
+
+                if (is_far_lod && face.dir.y <= 0) {
+                    continue;
+                }
+
                 Vector3i neighbor_pos = grid_pos + face.dir;
 
                 if (occupied_blocks.has(neighbor_pos) && !dirt_path_blocks.has(neighbor_pos)) {
@@ -153,7 +164,6 @@ BuiltChunkDataNew ChunkMeshBuilderNew::build_chunk_data_async(
             int surf_idx = array_mesh->get_surface_count();
             array_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surface_arrays);
 
-            // 3. 有効なマテリアルのみ割り当て
             if (surf.material.is_valid()) {
                 Ref<BaseMaterial3D> base_mat = surf.material;
                 if (base_mat.is_valid()) {
