@@ -35,9 +35,7 @@ namespace godot {
 
             static BuiltChunkDataNew build_chunk_data_async(
                 const HashMap<String, Vector<Vector3>> &categorized_positions,
-                bool p_is_initial_load = false,
-                Vector3 player_pos = Vector3(0, 0, 0),
-                float lod_distance = 32.0f 
+                bool p_is_initial_load = false
             );
     };
 }

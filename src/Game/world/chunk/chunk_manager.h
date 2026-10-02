@@ -28,8 +28,6 @@ namespace godot {
 
             uint64_t player_instance_id = 0;
             Vector2i current_chunk_coord = Vector2i(-999999, -999999);
-            Vector3 current_player_pos = Vector3(0, 0, 0);
-            float lod_distance = 32.0f;
 
             HashMap<Vector2i, Node3D *> loaded_chunks;
             HashMap<Vector2i, int64_t> pending_tasks;
@@ -63,12 +61,6 @@ namespace godot {
             HashMap<Vector2i, HashMap<String, Vector<Vector3>>> &get_chunk_block_data_map() { return chunk_block_data_map; }
 
             void unload_chunk(const Vector2i &coord);
-
-            void set_player_position(const Vector3 &p_pos);
-            Vector3 get_player_position() const { return current_player_pos; }
-
-            void set_lod_distance(float p_dist) { lod_distance = p_dist; }
-            float get_lod_distance() const { return lod_distance; }
 
             void set_chunk_size(float p_size);
             float get_chunk_size() const;

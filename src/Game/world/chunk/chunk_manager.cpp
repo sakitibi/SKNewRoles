@@ -23,13 +23,6 @@ void ChunkManager::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_render_distance", "p_dist"), &ChunkManager::set_render_distance);
     ADD_PROPERTY(PropertyInfo(Variant::INT, "render_distance"), "set_render_distance", "get_render_distance");
 
-    ClassDB::bind_method(D_METHOD("set_player_position", "p_pos"), &ChunkManager::set_player_position);
-    ClassDB::bind_method(D_METHOD("get_player_position"), &ChunkManager::get_player_position);
-
-    ClassDB::bind_method(D_METHOD("set_lod_distance", "p_dist"), &ChunkManager::set_lod_distance);
-    ClassDB::bind_method(D_METHOD("get_lod_distance"), &ChunkManager::get_lod_distance);
-    ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_distance"), "set_lod_distance", "get_lod_distance");
-
     ClassDB::bind_method(D_METHOD("get_chunk_height"), &ChunkManager::get_chunk_height);
     ClassDB::bind_method(D_METHOD("set_chunk_height", "p_height"), &ChunkManager::set_chunk_height);
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "chunk_height"), "set_chunk_height", "get_chunk_height");
@@ -68,10 +61,6 @@ void ChunkManager::_bind_methods() {
 ChunkManager::ChunkManager() {}
 ChunkManager::~ChunkManager() {}
 
-void ChunkManager::set_player_position(const Vector3 &p_pos) {
-    current_player_pos = p_pos;
-}
-
 void ChunkManager::spawn_falling_block(const Vector3 &spawn_pos, const String &block_type) {
     ChunkSpawner::spawn_falling_block(this, spawn_pos, block_type);
 }
@@ -102,12 +91,11 @@ void ChunkManager::_safe_preload_block_meshes() {
 void ChunkManager::_process(double delta) {
     if (Engine::get_singleton()->is_editor_hint()) return;
 
-    Vector3 center_pos = current_player_pos;
+    Vector3 center_pos = Vector3(0, 0, 0);
     Node3D *player = find_local_player();
     
     if (player) {
         center_pos = player->get_global_position();
-        current_player_pos = center_pos;
     } else {
         static float log_timer = 0.0f;
         log_timer += delta;
