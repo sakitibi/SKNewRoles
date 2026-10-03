@@ -1,11 +1,12 @@
 using Godot;
+using System;
 
 namespace SKNewRoles2.Game.BGM
 {
     public static class BGMAudioLoader
     {
         /// <summary>
-        /// 指定パスから AudioStream を読み込む
+        /// 指定パスから AudioStream (.mp3, .ogg, .wav) を読み込む
         /// </summary>
         public static AudioStream LoadAudioStream(string path)
         {
@@ -29,9 +30,28 @@ namespace SKNewRoles2.Game.BGM
 
             byte[] buffer = file.GetBuffer((long)file.GetLength());
 
-            if (path.EndsWith(".mp3", System.StringComparison.OrdinalIgnoreCase))
+            // MP3
+            if (path.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase))
             {
                 return new AudioStreamMP3 { Data = buffer };
+            }
+
+            // OGG (Ogg Vorbis)
+            if (path.EndsWith(".ogg", StringComparison.OrdinalIgnoreCase))
+            {
+                return AudioStreamOggVorbis.LoadFromBuffer(buffer);
+            }
+
+            // WAV
+            if (path.EndsWith(".wav", StringComparison.OrdinalIgnoreCase))
+            {
+                var wavStream = new AudioStreamWav
+                {
+                    Data = buffer,
+                    Format = AudioStreamWav.FormatEnum.Format16Bits
+                };
+
+                return wavStream;
             }
 
             GD.PrintErr($"⚠️ [BGMAudioLoader] サポートされていない音声形式です: {path}");

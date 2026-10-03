@@ -17,6 +17,7 @@ namespace SKNewRoles2.Game.BGM
         public List<string> BgmPaths { get; set; } =
         [
             $"{BgmPathBases}game_bgm1.mp3",
+            $"{BgmPathBases}game_bgm2.ogg",
             $"{BgmPathBases}title_bgm1.mp3",
             $"{BgmPathBases}title_bgm2.mp3",
             $"{BgmPathBases}title_bgm3.mp3"
@@ -104,6 +105,14 @@ namespace SKNewRoles2.Game.BGM
             if (stream is AudioStreamMP3 mp3Stream)
             {
                 mp3Stream.Loop = false;
+            }
+            else if (stream is AudioStreamOggVorbis oggStream)
+            {
+                oggStream.Loop = false;
+            }
+            else if (stream is AudioStreamWav wavStream)
+            {
+                wavStream.LoopMode = AudioStreamWav.LoopModeEnum.Disabled;
             }
 
             EnsurePlayerExists();
