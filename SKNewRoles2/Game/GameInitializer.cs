@@ -31,7 +31,7 @@ namespace SKNewRoles2.Game
                 remotePlayerManager.Initialize(opponentScene, MainGameScene.GetMyUserId());
 
                 // チャンク読み込み完了の待機
-                await _chunkLoader.WaitForInitialChunksLoadedAsync(chunkManager);
+                await ChunkLoader.WaitForInitialChunksLoadedAsync(chunkManager);
 
                 if (SessionManagerSystem.SessionManager.Instance != null && SessionManagerSystem.SessionManager.Instance.IsHost)
                 {
