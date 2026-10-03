@@ -1,65 +1,69 @@
 [gd_scene format=3 uid="uid://6llaatunfapt"]
 
-; 展開図用シェーダー
-[ext_resource type="Shader" path="res://Shaders/box_uv_atlas.gdshader" id="1_shader"]
+[ext_resource type="Shader" uid="uid://c21xdmd5vv6y8" path="res://Shaders/box_uv_atlas.gdshader" id="1_shader"]
+[ext_resource type="Texture2D" uid="uid://dug73qf46v87s" path="res://Resources/Charactors/sakitibi.png" id="5_leg"]
 
-; 各部位のデフォルト（初期）アトラス画像
-[ext_resource type="Texture2D" uid="uid://head_tex_id" path="res://Resources/Charactors/sakitibi.png" id="2_head"]
-[ext_resource type="Texture2D" uid="uid://body_tex_id" path="res://Resources/Charactors/sakitibi.png" id="3_body"]
-[ext_resource type="Texture2D" uid="uid://arm_tex_id" path="res://Resources/Charactors/sakitibi.png" id="4_arm"]
-[ext_resource type="Texture2D" uid="uid://leg_tex_id" path="res://Resources/Charactors/sakitibi.png" id="5_leg"]
-
-; --- 各部位専用の ShaderMaterial ---
 [sub_resource type="ShaderMaterial" id="ShaderMat_Head"]
 render_priority = 0
 shader = ExtResource("1_shader")
-shader_parameter/texture_albedo = ExtResource("2_head")
+shader_parameter/texture_albedo = ExtResource("5_leg")
+shader_parameter/texture_size = Vector2(32, 16)
+shader_parameter/box_size = Vector2(8, 8)
+
+[sub_resource type="BoxMesh" id="BoxMesh_Head"]
+material = SubResource("ShaderMat_Head")
+size = Vector3(0.5, 0.5, 0.5)
 
 [sub_resource type="ShaderMaterial" id="ShaderMat_Body"]
 render_priority = 0
 shader = ExtResource("1_shader")
-shader_parameter/texture_albedo = ExtResource("3_body")
-
-[sub_resource type="ShaderMaterial" id="ShaderMat_RightArm"]
-render_priority = 0
-shader = ExtResource("1_shader")
-shader_parameter/texture_albedo = ExtResource("4_arm")
-
-[sub_resource type="ShaderMaterial" id="ShaderMat_LeftArm"]
-render_priority = 0
-shader = ExtResource("1_shader")
-shader_parameter/texture_albedo = ExtResource("4_arm")
-
-[sub_resource type="ShaderMaterial" id="ShaderMat_RightLeg"]
-render_priority = 0
-shader = ExtResource("1_shader")
 shader_parameter/texture_albedo = ExtResource("5_leg")
-
-[sub_resource type="ShaderMaterial" id="ShaderMat_LeftLeg"]
-render_priority = 0
-shader = ExtResource("1_shader")
-shader_parameter/texture_albedo = ExtResource("5_leg")
-
-; --- 各部位専用の BoxMesh ---
-[sub_resource type="BoxMesh" id="BoxMesh_Head"]
-material = SubResource("ShaderMat_Head")
-size = Vector3(0.5, 0.5, 0.5)
+shader_parameter/texture_size = Vector2(32, 16)
+shader_parameter/box_size = Vector2(8, 8)
 
 [sub_resource type="BoxMesh" id="BoxMesh_Body"]
 material = SubResource("ShaderMat_Body")
 size = Vector3(0.5, 0.75, 0.25)
 
+[sub_resource type="ShaderMaterial" id="ShaderMat_RightArm"]
+render_priority = 0
+shader = ExtResource("1_shader")
+shader_parameter/texture_albedo = ExtResource("5_leg")
+shader_parameter/texture_size = Vector2(32, 16)
+shader_parameter/box_size = Vector2(8, 8)
+
 [sub_resource type="BoxMesh" id="BoxMesh_RightArm"]
 material = SubResource("ShaderMat_RightArm")
 size = Vector3(0.25, 0.75, 0.25)
+
+[sub_resource type="ShaderMaterial" id="ShaderMat_LeftArm"]
+render_priority = 0
+shader = ExtResource("1_shader")
+shader_parameter/texture_albedo = ExtResource("5_leg")
+shader_parameter/texture_size = Vector2(32, 16)
+shader_parameter/box_size = Vector2(8, 8)
 
 [sub_resource type="BoxMesh" id="BoxMesh_LeftArm"]
 material = SubResource("ShaderMat_LeftArm")
 size = Vector3(0.25, 0.75, 0.25)
 
+[sub_resource type="ShaderMaterial" id="ShaderMat_RightLeg"]
+render_priority = 0
+shader = ExtResource("1_shader")
+shader_parameter/texture_albedo = ExtResource("5_leg")
+shader_parameter/texture_size = Vector2(32, 16)
+shader_parameter/box_size = Vector2(8, 8)
+
 [sub_resource type="BoxMesh" id="BoxMesh_RightLeg"]
 material = SubResource("ShaderMat_RightLeg")
 size = Vector3(0.25, 0.75, 0.25)
+
+[sub_resource type="ShaderMaterial" id="ShaderMat_LeftLeg"]
+render_priority = 0
+shader = ExtResource("1_shader")
+shader_parameter/texture_albedo = ExtResource("5_leg")
+shader_parameter/texture_size = Vector2(32, 16)
+shader_parameter/box_size = Vector2(8, 8)
 
 [sub_resource type="BoxMesh" id="BoxMesh_LeftLeg"]
 material = SubResource("ShaderMat_LeftLeg")
@@ -72,7 +76,7 @@ size = Vector3(0.6, 1.8, 0.6)
 max_hp = 20
 current_hp = 20
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
-velocity = Vector3(0, 0, 5)
+velocity = Vector3(0, 0, 0)
 
 [node name="SkinModel" type="Node3D" parent="." unique_id=1261360679]
 
@@ -105,6 +109,7 @@ shape = SubResource("BoxShape3D_player")
 [node name="Camera3D" type="Camera3D" parent="." unique_id=1739803627]
 transform = Transform3D(1, 0, 0, 0, 0.9659258, 0.25881904, 0, -0.25881904, 0.9659258, 0, 0.6, -0.5)
 current = true
+far = 64.0
 
 [node name="HealthComponent" type="HealthComponent" parent="." unique_id=280545807]
 
