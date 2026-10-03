@@ -122,12 +122,6 @@ namespace SKNewRoles2.Game
                 _uiController?.UpdateCoords(playerPos);
                 _networkHandler?.UpdateHpUIFromPlayer();
 
-                // ★ C++ 側の ChunkManager へプレイヤーの最新座標(LOD判定用)を送信
-                if (_chunkManagerCpp != null && IsInstanceValid(_chunkManagerCpp))
-                {
-                    _chunkManagerCpp.Call("set_player_position", playerPos);
-                }
-
                 if (player.Visible)
                 {
                     _networkHandler?.SendMyTransform();
