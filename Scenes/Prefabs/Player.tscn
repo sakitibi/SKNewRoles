@@ -72,7 +72,7 @@ size = Vector3(0.25, 0.75, 0.25)
 [sub_resource type="BoxShape3D" id="BoxShape3D_player"]
 size = Vector3(0.6, 1.8, 0.6)
 
-[node name="Player" type="SNR2Player" unique_id=2046960299]
+[node name="Player" type="SNR2Player" unique_id=1566311114]
 max_hp = 20
 current_hp = 20
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
@@ -107,7 +107,7 @@ mesh = SubResource("BoxMesh_LeftLeg")
 shape = SubResource("BoxShape3D_player")
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=1739803627]
-transform = Transform3D(1, 0, 0, 0, 0.9659258, 0.25881904, 0, -0.25881904, 0.9659258, 0, 0.6, -0.5)
+transform = Transform3D(1, 0, 0, 0, 0.9659258, 0.25881904, 0, -0.25881904, 0.9659258, 0, 0.6, -0.4)
 current = true
 far = 64.0
 
