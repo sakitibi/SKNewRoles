@@ -41,7 +41,7 @@ namespace SKNewRoles2.Game
         public int MyRole => _roleManager?.MyRole ?? -1;
         public int MyFaction => _roleManager?.MyFaction ?? -1;
         private readonly List<int> BGMList = [
-            0
+            0, 1
         ];
 
         public override async void _Ready()
