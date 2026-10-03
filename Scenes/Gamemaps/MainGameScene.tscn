@@ -76,9 +76,10 @@ background_mode = 2
 sky = SubResource("Sky_fd3aw")
 fog_enabled = true
 fog_mode = 1
+fog_light_color = Color(0, 0.89411765, 1, 1)
 fog_density = 1.0
-fog_depth_begin = 30.0
-fog_depth_end = 60.0
+fog_depth_begin = 60.0
+fog_depth_end = 90.0
 
 [node name="MainGameScene" type="Node3D" unique_id=1746155919]
 script = ExtResource("1_cakpg")
