@@ -13,6 +13,7 @@ namespace SKNewRoles2.Game
         private Label _roleTitleLabel;
         private Label _descriptionLabel;
         private Label _coordsLabel;
+        private Node _hudManager;
 
         public void Initialize(Node parentNode)
         {
@@ -22,19 +23,22 @@ namespace SKNewRoles2.Game
                 return;
             }
 
-            _loadingScene = parentNode.GetNodeOrNull<Control>("UILayer/LoadingScene");
-            _roleRevealScene = parentNode.GetNodeOrNull<Control>("UILayer/RoleRevealScene");
-            _hpBar = parentNode.GetNodeOrNull<ProgressBar>("UILayer/HPBar");
-            _hpLabel = parentNode.GetNodeOrNull<Label>("UILayer/HPBar/HPLabel");
+            _loadingScene = parentNode.GetNode<Control>("UILayer/LoadingScene");
+            _roleRevealScene = parentNode.GetNode<Control>("UILayer/RoleRevealScene");
+            _hpBar = parentNode.GetNode<ProgressBar>("UILayer/HPBar");
+            _hpLabel = parentNode.GetNode<Label>("UILayer/HPBar/HPLabel");
 
             // 座標表示用ラベル
-            _coordsLabel = parentNode.GetNodeOrNull<Label>("HUDManager/PositionText");
+            _coordsLabel = parentNode.GetNode<Label>("HUDManager/PositionText");
+
+            _hudManager = parentNode.GetNodeOrNull<Node>("HUDManager");
 
             // --- ノード取得チェックログ ---
             GD.Print($"🔍 [UI Check] LoadingScene: {(_loadingScene != null ? "✅ Found" : "❌ Not Found")}");
             GD.Print($"🔍 [UI Check] HPBar: {(_hpBar != null ? "✅ Found" : "❌ Not Found")}");
             GD.Print($"🔍 [UI Check] HPLabel: {(_hpLabel != null ? "✅ Found" : "❌ Not Found")}");
             GD.Print($"🔍 [UI Check] PositionText (Coords): {(_coordsLabel != null ? "✅ Found" : "❌ Not Found")}");
+            GD.Print($"🔍 [UI Check] HUDManager (C++): {(_hudManager != null ? "✅ Found" : "❌ Not Found")}");
 
             if (_roleRevealScene != null)
             {
@@ -52,6 +56,34 @@ namespace SKNewRoles2.Game
             else
             {
                 GD.PrintErr("❌ [GameUIController] LoadingScene が見つかりませんでした。");
+            }
+        }
+
+        // ★ HUDManager (C++) のメソッドを呼び出す例
+        public void SetPlayerPathToHud(NodePath playerPath)
+        {
+            if (_hudManager != null && IsInstanceValid(_hudManager))
+            {
+                // C++ で bind_method された set_player_path を呼び出す
+                _hudManager.Call("set_player_path", playerPath);
+            }
+        }
+
+        public void SetLabelPathToHud(NodePath labelPath)
+        {
+            if (_hudManager != null && IsInstanceValid(_hudManager))
+            {
+                // C++ で bind_method された set_label_path を呼び出す
+                _hudManager.Call("set_label_path", labelPath);
+            }
+        }
+
+        public void SetFpsLabelPathToHud(NodePath fpsLabelPath)
+        {
+            if (_hudManager != null && IsInstanceValid(_hudManager))
+            {
+                // C++ で bind_method された set_fps_label_path を呼び出す
+                _hudManager.Call("set_fps_label_path", fpsLabelPath);
             }
         }
 
