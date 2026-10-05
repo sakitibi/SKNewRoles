@@ -12,9 +12,11 @@ namespace godot {
     private:
         NodePath player_path;
         NodePath label_path;
+        NodePath fps_label_path;
 
         Node3D *player_node = nullptr;
         Label *position_label = nullptr;
+        Label *fps_label = nullptr;
 
         Node3D *find_local_player();
 
@@ -28,11 +30,13 @@ namespace godot {
         void _ready() override;
         void _process(double delta) override;
 
-        // Getter / Setter
         void set_player_path(const NodePath &p_path);
         NodePath get_player_path() const;
 
         void set_label_path(const NodePath &p_path);
         NodePath get_label_path() const;
+
+        void set_fps_label_path(const NodePath &p_path);
+        NodePath get_fps_label_path() const;
     };
 }
