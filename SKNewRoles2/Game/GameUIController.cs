@@ -59,12 +59,10 @@ namespace SKNewRoles2.Game
             }
         }
 
-        // ★ HUDManager (C++) のメソッドを呼び出す例
         public void SetPlayerPathToHud(NodePath playerPath)
         {
             if (_hudManager != null && IsInstanceValid(_hudManager))
             {
-                // C++ で bind_method された set_player_path を呼び出す
                 _hudManager.Call("set_player_path", playerPath);
             }
         }
@@ -73,7 +71,6 @@ namespace SKNewRoles2.Game
         {
             if (_hudManager != null && IsInstanceValid(_hudManager))
             {
-                // C++ で bind_method された set_label_path を呼び出す
                 _hudManager.Call("set_label_path", labelPath);
             }
         }
@@ -82,7 +79,6 @@ namespace SKNewRoles2.Game
         {
             if (_hudManager != null && IsInstanceValid(_hudManager))
             {
-                // C++ で bind_method された set_fps_label_path を呼び出す
                 _hudManager.Call("set_fps_label_path", fpsLabelPath);
             }
         }
@@ -94,18 +90,13 @@ namespace SKNewRoles2.Game
                 _hpBar.MaxValue = maxHp;
                 _hpBar.Value = currentHp;
             }
-            if (_hpLabel != null)
-            {
-                _hpLabel.Text = $"{currentHp} / {maxHp}";
-            }
+
+            _hpLabel?.Text = $"{currentHp} / {maxHp}";
         }
 
         public void UpdateCoords(Vector3 position)
         {
-            if (_coordsLabel != null)
-            {
-                _coordsLabel.Text = $"X: {position.X:F1} Y: {position.Y:F1} Z: {position.Z:F1}";
-            }
+            _coordsLabel?.Text = $"X: {position.X:F1} Y: {position.Y:F1} Z: {position.Z:F1}";
         }
 
         public void HideLoadingScene()
@@ -123,9 +114,9 @@ namespace SKNewRoles2.Game
         {
             if (_roleRevealScene == null) return;
 
-            if (_factionLabel != null) _factionLabel.Text = RoleInfo.GetFactionName(factionId);
-            if (_roleTitleLabel != null) _roleTitleLabel.Text = RoleInfo.GetRoleName(roleId);
-            if (_descriptionLabel != null) _descriptionLabel.Text = RoleInfo.GetRoleDescription(roleId);
+            _factionLabel?.Text = RoleInfo.GetFactionName(factionId);
+            _roleTitleLabel?.Text = RoleInfo.GetRoleName(roleId);
+            _descriptionLabel?.Text = RoleInfo.GetRoleDescription(roleId);
 
             _roleRevealScene.Visible = true;
             _roleRevealScene.MoveToFront();

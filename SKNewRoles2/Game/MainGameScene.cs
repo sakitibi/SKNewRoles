@@ -57,6 +57,9 @@ namespace SKNewRoles2.Game
             AddChild(_uiController);
             _uiController.Initialize(this);
 
+            _uiController.SetFpsLabelPathToHud("FPSText");
+            _uiController.SetLabelPathToHud("PositionText");
+
             _roleManager = new GameRoleManager();
             AddChild(_roleManager);
 
@@ -66,6 +69,11 @@ namespace SKNewRoles2.Game
             _chunkManagerCpp = GetNodeOrNull<Node3D>("ChunkManager");
 
             _playerManager.SpawnPlayer(this, _networkHandler, _chunkManagerCpp);
+
+            if (MyPlayerInstance != null && IsInstanceValid(MyPlayerInstance))
+            {
+                _uiController.SetPlayerPathToHud(MyPlayerInstance.GetPath());
+            }
 
             _hotbarManager = GetNodeOrNull<HotbarManager>("HotbarManager");
             var hotbarNode = GetNodeOrNull<Node>("Hotbar");
