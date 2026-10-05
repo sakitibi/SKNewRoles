@@ -91,12 +91,12 @@ namespace SKNewRoles2.Game
                 _hpBar.Value = currentHp;
             }
 
-            _hpLabel?.Text = $"{currentHp} / {maxHp}";
+            _hpLabel.Text = $"{currentHp} / {maxHp}";
         }
 
         public void UpdateCoords(Vector3 position)
         {
-            _coordsLabel?.Text = $"X: {position.X:F1} Y: {position.Y:F1} Z: {position.Z:F1}";
+            _coordsLabel.Text = $"X: {position.X:F1} Y: {position.Y:F1} Z: {position.Z:F1}";
         }
 
         public void HideLoadingScene()
@@ -114,9 +114,9 @@ namespace SKNewRoles2.Game
         {
             if (_roleRevealScene == null) return;
 
-            _factionLabel?.Text = RoleInfo.GetFactionName(factionId);
-            _roleTitleLabel?.Text = RoleInfo.GetRoleName(roleId);
-            _descriptionLabel?.Text = RoleInfo.GetRoleDescription(roleId);
+            _factionLabel.Text = RoleInfo.GetFactionName(factionId);
+            _roleTitleLabel.Text = RoleInfo.GetRoleName(roleId);
+            _descriptionLabel.Text = RoleInfo.GetRoleDescription(roleId);
 
             _roleRevealScene.Visible = true;
             _roleRevealScene.MoveToFront();
