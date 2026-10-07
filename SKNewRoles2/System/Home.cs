@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using Godot;
 using SKNewRoles2.Game.BGM;
 
@@ -62,7 +63,8 @@ namespace SKNewRoles2.SNRSystem
 
         private void OnStartButtonPressed()
         {
-            _bgmManager.PlayBgm(1.0f, 5, null, false);
+            _bgmManager.PlayBgm(2.0f, 5, null, false);
+            Thread.Sleep(600); // クリック音を鳴らす為
             string storyScenePath = "res://Scenes/StoryReader.tscn";
 
             Error error = GetTree().ChangeSceneToFile(storyScenePath);
