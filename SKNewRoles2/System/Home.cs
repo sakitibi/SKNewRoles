@@ -64,7 +64,7 @@ namespace SKNewRoles2.SNRSystem
         private void OnStartButtonPressed()
         {
             _bgmManager.PlayBgm(2.0f, 5, null, false);
-            Thread.Sleep(400); // クリック音を鳴らす為
+            Thread.Sleep(300); // クリック音を鳴らす為
             string storyScenePath = "res://Scenes/StoryReader.tscn";
 
             Error error = GetTree().ChangeSceneToFile(storyScenePath);
