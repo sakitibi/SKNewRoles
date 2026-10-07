@@ -6,7 +6,7 @@ namespace SKNewRoles2.Game.BGM
     public partial class BGMManager : Node
     {
         private AudioStreamPlayer _bgmPlayer;
-        private static readonly string BgmPathBases = "user://game_asset/Audio/BGM/";
+        private static readonly string BgmPathBases = "user://game_asset/Audio/";
 
         [Export] public float WaitDelaySeconds { get; set; } = 5.0f;
 
@@ -16,11 +16,12 @@ namespace SKNewRoles2.Game.BGM
 
         public List<string> BgmPaths { get; set; } =
         [
-            $"{BgmPathBases}game_bgm1.mp3",
-            $"{BgmPathBases}game_bgm2.ogg",
-            $"{BgmPathBases}title_bgm1.mp3",
-            $"{BgmPathBases}title_bgm2.mp3",
-            $"{BgmPathBases}title_bgm3.mp3"
+            $"{BgmPathBases}BGM/game_bgm1.mp3",
+            $"{BgmPathBases}BGM/game_bgm2.ogg",
+            $"{BgmPathBases}BGM/title_bgm1.mp3",
+            $"{BgmPathBases}BGM/title_bgm2.mp3",
+            $"{BgmPathBases}BGM/title_bgm3.mp3",
+            $"{BgmPathBases}button_click.ogg"
         ];
 
         public override void _Ready()

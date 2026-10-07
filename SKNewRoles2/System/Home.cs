@@ -62,6 +62,7 @@ namespace SKNewRoles2.SNRSystem
 
         private void OnStartButtonPressed()
         {
+            _bgmManager.PlayBgm(1.0f, 5, null, false);
             string storyScenePath = "res://Scenes/StoryReader.tscn";
 
             Error error = GetTree().ChangeSceneToFile(storyScenePath);
