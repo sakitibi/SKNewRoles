@@ -25,10 +25,10 @@ namespace SKNewRoles2.Game.BGM
 
         public override void _Ready()
         {
-            EnsurePlayerExists();
+            EnsurePlayerExists(true);
         }
 
-        private void EnsurePlayerExists()
+        private void EnsurePlayerExists(bool isLoop)
         {
             if (_bgmPlayer == null)
             {
@@ -38,14 +38,14 @@ namespace SKNewRoles2.Game.BGM
                     Bus = "Master"
                 };
                 
-                _bgmPlayer.Finished += OnBgmFinished;
+                _bgmPlayer.Finished += () => OnBgmFinished(isLoop);
                 AddChild(_bgmPlayer);
             }
         }
 
-        private async void OnBgmFinished()
+        private async void OnBgmFinished(bool isLoop)
         {
-            if (_isStopping) return;
+            if (_isStopping || !isLoop) return;
 
             GD.Print($"🎵 [BGMManager] BGM終了。{WaitDelaySeconds}秒待機してから次の曲を再生します...");
 
@@ -53,7 +53,7 @@ namespace SKNewRoles2.Game.BGM
 
             if (!_isStopping && IsInsideTree())
             {
-                PlayBgm(_currentVolumeDb, index: -1, candidates: _currentCandidateIndices);
+                PlayBgm(_currentVolumeDb, index: -1, candidates: _currentCandidateIndices, isLoop);
             }
         }
 
@@ -80,7 +80,7 @@ namespace SKNewRoles2.Game.BGM
             GD.Print("🎵 [BGMManager] すべてのBGMパスをクリアしました。");
         }
 
-        public void PlayBgm(float volumeDb = 0.0f, int index = -1, List<int> candidates = null)
+        public void PlayBgm(float volumeDb = 0.0f, int index = -1, List<int> candidates = null, bool isLoop = true)
         {
             _isStopping = false;
             _currentVolumeDb = volumeDb;
@@ -115,7 +115,7 @@ namespace SKNewRoles2.Game.BGM
                 wavStream.LoopMode = AudioStreamWav.LoopModeEnum.Disabled;
             }
 
-            EnsurePlayerExists();
+            EnsurePlayerExists(isLoop);
 
             if (!IsInsideTree())
             {
