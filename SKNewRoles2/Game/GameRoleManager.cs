@@ -4,6 +4,7 @@ using System;
 using System.Threading.Tasks;
 using SKNewRoles2.SessionManagerSystem;
 using SKNewRoles2.Game.Network;
+using System.Collections.Generic;
 
 namespace SKNewRoles2.Game
 {
@@ -50,7 +51,7 @@ namespace SKNewRoles2.Game
             }
 
             Dictionary roleCountsDict = [];
-            roleCountsDict[1] = 1; // 役職ID 1 (人狼) を 1人
+            roleCountsDict[RoleInfo.RoleIdDictionary.GetValueOrDefault("witch")] = 1; // 役職ID 1 (人狼) を 1人
 
             GD.Print($"🎲 [AssignRoles] {playerIdsArray.Count} 人のプレイヤーに役職を割り当てます");
 
