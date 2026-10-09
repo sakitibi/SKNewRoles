@@ -5,6 +5,7 @@
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/string.hpp>
 #include <array>
+#include <utility>
 
 namespace godot {
     struct HotbarSlotData {
@@ -31,6 +32,8 @@ namespace godot {
 
             void set_slot_item(int index, const String &item_id, int count);
             Dictionary get_slot_item(int index) const;
+
+            void swap_slots(int slot_a, int slot_b);
 
             bool add_item(const String &item_id, int count = 1);
             bool consume_item(int index, int amount = 1);

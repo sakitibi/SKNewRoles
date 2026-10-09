@@ -7,6 +7,9 @@ void Hotbar::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_selected_slot"), &Hotbar::get_selected_slot);
     ClassDB::bind_method(D_METHOD("set_slot_item", "index", "item_id", "count"), &Hotbar::set_slot_item);
     ClassDB::bind_method(D_METHOD("get_slot_item", "index"), &Hotbar::get_slot_item);
+    
+    ClassDB::bind_method(D_METHOD("swap_slots", "slot_a", "slot_b"), &Hotbar::swap_slots);
+
     ClassDB::bind_method(D_METHOD("add_item", "item_id", "count"), &Hotbar::add_item, DEFVAL(1));
     ClassDB::bind_method(D_METHOD("consume_item", "index", "amount"), &Hotbar::consume_item, DEFVAL(1));
 
@@ -55,6 +58,17 @@ Dictionary Hotbar::get_slot_item(int index) const {
     result["item_id"] = slots_[index].item_id;
     result["count"] = slots_[index].count;
     return result;
+}
+
+void Hotbar::swap_slots(int slot_a, int slot_b) {
+    if (slot_a == slot_b) return;
+    if (slot_a < 0 || slot_a >= 9 || slot_b < 0 || slot_b >= 9) return;
+
+    // スロットの内部構造体を入れ替え
+    std::swap(slots_[slot_a], slots_[slot_b]);
+
+    emit_signal("item_changed", slot_a, slots_[slot_a].item_id, slots_[slot_a].count);
+    emit_signal("item_changed", slot_b, slots_[slot_b].item_id, slots_[slot_b].count);
 }
 
 bool Hotbar::add_item(const String &item_id, int count) {

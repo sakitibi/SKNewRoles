@@ -45,14 +45,52 @@ namespace SKNewRoles2.Game.Inventory
 
         public override void _UnhandledInput(InputEvent @event)
         {
-            // キーボード入力（数字の 1〜9 キー）でスロット切り替え
+            // キーボード入力（数字の 1〜9 キー）の判定
             for (int i = 0; i < 9; i++)
             {
                 if (@event.IsActionPressed($"hotbar_slot_{i + 1}"))
                 {
-                    SelectSlot(i);
+                    // Shiftキーが押されているか判定
+                    bool isShiftPressed = Input.IsKeyPressed(Key.Shift);
+
+                    if (isShiftPressed)
+                    {
+                        // Shift + 数字キー: 現在選択中のスロットとスロット i を交換
+                        SwapSlots(_currentSlotIndex, i);
+                    }
+                    else
+                    {
+                        // 通常の数字キー: スロット選択の切り替え
+                        SelectSlot(i);
+                    }
                     break;
                 }
+            }
+        }
+
+        /// <summary>
+        /// 2つのスロットのアイテムと数量を入れ替える
+        /// </summary>
+        public void SwapSlots(int slotA, int slotB)
+        {
+            if (slotA == slotB) return;
+            if (slotA < 0 || slotA >= 9 || slotB < 0 || slotB >= 9) return;
+
+            if (_hotbarNode != null && IsInstanceValid(_hotbarNode) && _hotbarNode.HasMethod("swap_slots"))
+            {
+                _hotbarNode.Call("swap_slots", slotA, slotB);
+                GD.Print($"🔄 [HotbarManager] スロット交換 (C++): {slotA} ↔ {slotB}");
+            }
+            else if (_hotbarNode != null && IsInstanceValid(_hotbarNode) &&
+                _hotbarNode.HasMethod("get_item") && _hotbarNode.HasMethod("set_item"))
+            {
+                Variant itemA = _hotbarNode.Call("get_item", slotA);
+                Variant itemB = _hotbarNode.Call("get_item", slotB);
+
+                _hotbarNode.Call("set_item", slotA, itemB);
+                _hotbarNode.Call("set_item", slotB, itemA);
+
+                GD.Print($"🔄 [HotbarManager] スロット交換 (Fallback): {slotA} ↔ {slotB}");
             }
         }
 
@@ -74,7 +112,6 @@ namespace SKNewRoles2.Game.Inventory
             if (index < 0 || index >= 9) return;
             _currentSlotIndex = index;
 
-            // C++ 側のスロット選択メソッドを呼び出し
             if (_hotbarNode != null && IsInstanceValid(_hotbarNode) && _hotbarNode.HasMethod("select_slot"))
             {
                 _hotbarNode.Call("select_slot", index);
