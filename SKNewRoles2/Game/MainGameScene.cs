@@ -88,7 +88,7 @@ namespace SKNewRoles2.Game
             }
 
             // 非同期初期化処理の実行
-            await _initializer.InitializeAsync(
+            await GameInitializer.InitializeAsync(
                 this,
                 _connection,
                 _roleManager,

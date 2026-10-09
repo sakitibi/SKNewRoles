@@ -8,9 +8,7 @@ namespace SKNewRoles2.Game
 {
     public class GameInitializer
     {
-        private readonly ChunkLoader _chunkLoader = new();
-
-        public async Task InitializeAsync(
+        public static async Task InitializeAsync(
             MainGameScene scene,
             RealtimeConnection connection,
             GameRoleManager roleManager,
