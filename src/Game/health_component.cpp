@@ -13,7 +13,6 @@ HealthComponent::HealthComponent() {
 HealthComponent::~HealthComponent() {}
 
 void HealthComponent::_bind_methods() {
-    // Property bindings
     ClassDB::bind_method(D_METHOD("set_max_hp", "max_hp"), &HealthComponent::set_max_hp);
     ClassDB::bind_method(D_METHOD("get_max_hp"), &HealthComponent::get_max_hp);
     ADD_PROPERTY(PropertyInfo(Variant::INT, "max_hp"), "set_max_hp", "get_max_hp");
@@ -24,13 +23,11 @@ void HealthComponent::_bind_methods() {
 
     ClassDB::bind_method(D_METHOD("is_dead"), &HealthComponent::get_is_dead);
 
-    // Method bindings
     ClassDB::bind_method(D_METHOD("take_damage", "amount"), &HealthComponent::take_damage);
     ClassDB::bind_method(D_METHOD("heal", "amount"), &HealthComponent::heal);
     ClassDB::bind_method(D_METHOD("die"), &HealthComponent::die);
     ClassDB::bind_method(D_METHOD("respawn", "health_percentage"), &HealthComponent::respawn, DEFVAL(100));
 
-    // Signal bindings
     ADD_SIGNAL(MethodInfo("hp_changed", PropertyInfo(Variant::INT, "current_hp"), PropertyInfo(Variant::INT, "max_hp")));
     ADD_SIGNAL(MethodInfo("died"));
     ADD_SIGNAL(MethodInfo("respawned"));

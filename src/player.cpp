@@ -1,12 +1,9 @@
 #include "player.h"
+#include "player_skin.h"
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/input_event_mouse_motion.hpp>
 #include <godot_cpp/classes/camera3d.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
-#include <godot_cpp/classes/file_access.hpp>
-#include <godot_cpp/classes/image.hpp>
-#include <godot_cpp/classes/image_texture.hpp>
-#include <godot_cpp/classes/mesh.hpp>
 
 using namespace godot;
 
@@ -24,13 +21,6 @@ void SNR2Player::_bind_methods() {
     ClassDB::bind_method(D_METHOD("take_damage", "amount"), &SNR2Player::take_damage);
     ClassDB::bind_method(D_METHOD("heal", "amount"), &SNR2Player::heal);
 
-    ClassDB::bind_method(D_METHOD("die"), &SNR2Player::die);
-    ClassDB::bind_method(D_METHOD("set_spectator_mode", "p_enable"), &SNR2Player::set_spectator_mode);
-    ClassDB::bind_method(D_METHOD("is_spectator"), &SNR2Player::is_spectator);
-
-    ClassDB::bind_method(D_METHOD("_on_hp_changed", "current_hp", "max_hp"), &SNR2Player::_on_hp_changed);
-    ClassDB::bind_method(D_METHOD("_on_player_died"), &SNR2Player::_on_player_died);
-
     ClassDB::bind_method(D_METHOD("get_max_hunger"), &SNR2Player::get_max_hunger);
     ClassDB::bind_method(D_METHOD("set_max_hunger", "p_hunger"), &SNR2Player::set_max_hunger);
     ADD_PROPERTY(PropertyInfo(Variant::INT, "max_hunger"), "set_max_hunger", "get_max_hunger");
@@ -42,9 +32,16 @@ void SNR2Player::_bind_methods() {
     ClassDB::bind_method(D_METHOD("consume_hunger", "amount"), &SNR2Player::consume_hunger);
     ClassDB::bind_method(D_METHOD("restore_hunger", "amount"), &SNR2Player::restore_hunger);
 
-    ADD_SIGNAL(MethodInfo("hunger_changed", PropertyInfo(Variant::INT, "current_hunger"), PropertyInfo(Variant::INT, "max_hunger")));
+    ClassDB::bind_method(D_METHOD("die"), &SNR2Player::die);
+    ClassDB::bind_method(D_METHOD("set_spectator_mode", "p_enable"), &SNR2Player::set_spectator_mode);
+    ClassDB::bind_method(D_METHOD("is_spectator"), &SNR2Player::is_spectator);
+
+    ClassDB::bind_method(D_METHOD("_on_hp_changed", "current_hp", "max_hp"), &SNR2Player::_on_hp_changed);
+    ClassDB::bind_method(D_METHOD("_on_hunger_changed", "current_hunger", "max_hunger"), &SNR2Player::_on_hunger_changed);
+    ClassDB::bind_method(D_METHOD("_on_player_died"), &SNR2Player::_on_player_died);
 
     ADD_SIGNAL(MethodInfo("hp_changed", PropertyInfo(Variant::INT, "current_hp"), PropertyInfo(Variant::INT, "max_hp")));
+    ADD_SIGNAL(MethodInfo("hunger_changed", PropertyInfo(Variant::INT, "current_hunger"), PropertyInfo(Variant::INT, "max_hunger")));
     ADD_SIGNAL(MethodInfo("player_died"));
 }
 
@@ -55,10 +52,8 @@ void SNR2Player::_ready() {
     input = Input::get_singleton();
     camera = Object::cast_to<Camera3D>(get_node_or_null(NodePath("Camera3D")));
 
-    // カスタムスキンの適用
     apply_custom_skins();
 
-    // コンポーネントの取得または生成
     health_component = Object::cast_to<HealthComponent>(get_node_or_null(NodePath("HealthComponent")));
     if (!health_component) {
         health_component = memnew(HealthComponent);
@@ -77,11 +72,16 @@ void SNR2Player::_ready() {
         add_child(fall_damage_component);
     }
 
+    hunger_component = Object::cast_to<HungerComponent>(get_node_or_null(NodePath("HungerComponent")));
+    if (!hunger_component) {
+        hunger_component = memnew(HungerComponent);
+        add_child(hunger_component);
+    }
+
     if (spectator_component) {
         spectator_component->setup(this, camera);
     }
 
-    // シグナルの接続
     if (health_component) {
         if (!health_component->is_connected("hp_changed", Callable(this, "_on_hp_changed"))) {
             health_component->connect("hp_changed", Callable(this, "_on_hp_changed"));
@@ -90,78 +90,54 @@ void SNR2Player::_ready() {
             health_component->connect("died", Callable(this, "_on_player_died"));
         }
     }
-}
 
-// --------------------------------------------------
-// スキン処理
-// --------------------------------------------------
-void SNR2Player::apply_custom_skins() {
-    apply_part_skin("SkinModel/Head", "head_atlas.png");
-    apply_part_skin("SkinModel/Body", "body_atlas.png");
-    apply_part_skin("SkinModel/RightArm", "rightarm_atlas.png");
-    apply_part_skin("SkinModel/LeftArm", "leftarm_atlas.png");
-    apply_part_skin("SkinModel/RightLeg", "rightleg_atlas.png");
-    apply_part_skin("SkinModel/LeftLeg", "leftleg_atlas.png");
-}
-
-void SNR2Player::apply_part_skin(const String &node_path, const String &file_name) {
-    MeshInstance3D *mesh_instance = Object::cast_to<MeshInstance3D>(get_node_or_null(NodePath(node_path)));
-    if (!mesh_instance || !mesh_instance->get_mesh().is_valid()) return;
-
-    ProjectSettings *settings = ProjectSettings::get_singleton();
-    String relative_path = "user://game_asset/Skins/" + file_name;
-    String full_path = settings->globalize_path(relative_path);
-
-    if (FileAccess::file_exists(full_path)) {
-        Ref<Image> image = Image::load_from_file(full_path);
-        if (image.is_valid()) {
-            Ref<ImageTexture> texture = ImageTexture::create_from_image(image);
-
-            Ref<Material> base_mat = mesh_instance->get_mesh()->surface_get_material(0);
-            Ref<ShaderMaterial> shader_mat = base_mat;
-
-            if (shader_mat.is_valid()) {
-                Ref<ShaderMaterial> unique_mat = shader_mat->duplicate();
-                unique_mat->set_shader_parameter("texture_albedo", texture);
-                mesh_instance->set_material_override(unique_mat);
-            }
+    if (hunger_component) {
+        if (!hunger_component->is_connected("hunger_changed", Callable(this, "_on_hunger_changed"))) {
+            hunger_component->connect("hunger_changed", Callable(this, "_on_hunger_changed"));
         }
     }
+}
+
+void SNR2Player::apply_custom_skins() {
+    PlayerSkin::apply_custom_skins(this);
 }
 
 void SNR2Player::_on_hp_changed(int current_hp, int max_hp) {
     emit_signal("hp_changed", current_hp, max_hp);
 }
 
+void SNR2Player::_on_hunger_changed(int current_hunger, int max_hunger) {
+    emit_signal("hunger_changed", current_hunger, max_hunger);
+}
+
 void SNR2Player::_on_player_died() {
-    UtilityFunctions::print("[SNR2Player] Death notification received. Switching to Spectator Mode.");
+    UtilityFunctions::print("[SNR2Player] 死亡通知を受信しました。スペクテイターモードに切り替えます。");
     emit_signal("player_died");
     die();
 }
 
 void SNR2Player::set_max_hunger(int p_hunger) {
-    max_hunger = p_hunger;
+    if (hunger_component) hunger_component->set_max_hunger(p_hunger);
 }
 
 int SNR2Player::get_max_hunger() const {
-    return max_hunger;
+    return hunger_component ? hunger_component->get_max_hunger() : 0;
 }
 
 void SNR2Player::set_current_hunger(int p_hunger) {
-    current_hunger = Math::clamp(p_hunger, 0, max_hunger);
-    emit_signal("hunger_changed", current_hunger, max_hunger);
+    if (hunger_component) hunger_component->set_current_hunger(p_hunger);
 }
 
 int SNR2Player::get_current_hunger() const {
-    return current_hunger;
+    return hunger_component ? hunger_component->get_current_hunger() : 0;
 }
 
 void SNR2Player::consume_hunger(int amount) {
-    set_current_hunger(current_hunger - amount);
+    if (hunger_component) hunger_component->consume_hunger(amount);
 }
 
 void SNR2Player::restore_hunger(int amount) {
-    set_current_hunger(current_hunger + amount);
+    if (hunger_component) hunger_component->restore_hunger(amount);
 }
 
 void SNR2Player::_physics_process(double delta) {
@@ -187,6 +163,7 @@ void SNR2Player::_physics_process(double delta) {
     bool is_jump_pressed = input->is_key_pressed(KEY_SPACE) || input->is_action_pressed("ui_accept");
     if (is_jump_pressed && is_on_floor()) {
         velocity.y = JUMP_VELOCITY;
+        consume_hunger(1);
     }
 
     Vector2 input_dir = Vector2(0, 0);
@@ -197,7 +174,6 @@ void SNR2Player::_physics_process(double delta) {
 
     if (input_dir.length_squared() > 0.0f) {
         input_dir = input_dir.normalized();
-
         Basis basis = get_global_transform().basis;
         Vector3 forward = -basis.get_column(2);
         Vector3 right = basis.get_column(0);
@@ -208,7 +184,6 @@ void SNR2Player::_physics_process(double delta) {
         right.normalize();
 
         Vector3 direction = (forward * -input_dir.y + right * input_dir.x).normalized();
-
         velocity.x = direction.x * SPEED;
         velocity.z = direction.z * SPEED;
     } else {

@@ -25,6 +25,7 @@ FetchContent_MakeAvailable(godot-cpp)
 set(SOURCES
     src/register_types.cpp
     src/player.cpp
+    src/player_skin.cpp
     src/lobby_manager.cpp
     src/remote_player.cpp
     src/config_manager.cpp
@@ -51,6 +52,7 @@ set(SOURCES
     src/Game/health_component.cpp
     src/Game/spectator_component.cpp
     src/Game/fall_damage_component.cpp
+    src/Game/hunger_component.cpp
     src/Game/hotbar.cpp
 )
 
