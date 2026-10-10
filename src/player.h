@@ -28,6 +28,9 @@ namespace godot {
             float camera_rotation_x = 0.0f;
             const float LIMIT_ANGLE_X = 1.48f;
 
+            int max_hunger = 20;
+            int current_hunger = 20;
+
             Camera3D *camera = nullptr;
             Input *input = nullptr;
 
@@ -63,5 +66,16 @@ namespace godot {
 
             void _on_hp_changed(int current_hp, int max_hp);
             void _on_player_died();
+
+            void set_max_hunger(int p_hunger);
+            int get_max_hunger() const;
+
+            void set_current_hunger(int p_hunger);
+            int get_current_hunger() const;
+
+            void consume_hunger(int amount);
+            void restore_hunger(int amount);
+
+            void _on_hunger_changed(int current_hunger, int max_hunger);
     };
 }

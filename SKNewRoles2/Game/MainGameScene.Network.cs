@@ -38,6 +38,36 @@ namespace SKNewRoles2.Game
             scene.UIController.UpdateHp(scene.CurrentHp, scene.MaxHp);
         }
 
+        public void UpdateHungerUIFromPlayer()
+        {
+            if (scene.MyPlayerInstance == null || !GodotObject.IsInstanceValid(scene.MyPlayerInstance) || scene.UIController == null) return;
+
+            string[] curHungerKeys = ["CurrentHunger", "current_hunger", "hunger", "CurrentFood", "food"];
+            foreach (var key in curHungerKeys)
+            {
+                var val = scene.MyPlayerInstance.Get(key);
+                if (TryConvertToInt(val, out int hungerVal))
+                {
+                    scene.CurrentHunger = hungerVal;
+                    break;
+                }
+            }
+
+            string[] maxHungerKeys = ["MaxHunger", "max_hunger", "max_food", "MaxFood"];
+            foreach (var key in maxHungerKeys)
+            {
+                var val = scene.MyPlayerInstance.Get(key);
+                if (TryConvertToInt(val, out int maxVal))
+                {
+                    scene.MaxHunger = maxVal;
+                    break;
+                }
+            }
+
+            // GameUIController 側に満腹度更新メソッドがある想定、あるいは直接UIを操作
+            // scene.UIController.UpdateHunger(scene.CurrentHunger, scene.MaxHunger);
+        }
+
         private static bool TryConvertToInt(Variant variant, out int result)
         {
             result = 0;
@@ -68,6 +98,17 @@ namespace SKNewRoles2.Game
             _ = SafeSendHpAsync(myUserId, currentHp, maxHp);
         }
 
+        public void OnMyPlayerHungerChanged(int currentHunger, int maxHunger)
+        {
+            scene.CurrentHunger = currentHunger;
+            scene.MaxHunger = maxHunger;
+
+            // scene.UIController?.UpdateHunger(currentHunger, maxHunger);
+
+            string myUserId = MainGameScene.GetMyUserId();
+            _ = SafeSendHungerAsync(myUserId, currentHunger, maxHunger);
+        }
+
         private async Task SafeSendHpAsync(string userId, int currentHp, int maxHp)
         {
             try
@@ -77,6 +118,18 @@ namespace SKNewRoles2.Game
             catch (Exception ex)
             {
                 GD.PrintErr($"⚠️ [Realtime] HP送信時例外 (送信スキップ): {ex.Message}");
+            }
+        }
+
+        private async Task SafeSendHungerAsync(string userId, int currentHunger, int maxHunger)
+        {
+            try
+            {
+                await RealtimeBroadcaster.SendHungerAsync(scene.Connection, userId, currentHunger, maxHunger);
+            }
+            catch (Exception ex)
+            {
+                GD.PrintErr($"⚠️ [Realtime] 満腹度送信時例外 (送信スキップ): {ex.Message}");
             }
         }
 

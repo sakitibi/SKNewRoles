@@ -40,6 +40,8 @@ namespace SKNewRoles2.Game
 
         public int MyRole => _roleManager?.MyRole ?? -1;
         public int MyFaction => _roleManager?.MyFaction ?? -1;
+        public int CurrentHunger { get; set; } = 20;
+        public int MaxHunger { get; set; } = 20;
         private readonly List<int> BGMList = [
             0, 1
         ];
@@ -129,6 +131,7 @@ namespace SKNewRoles2.Game
 
                 _uiController?.UpdateCoords(playerPos);
                 _networkHandler?.UpdateHpUIFromPlayer();
+                _networkHandler?.UpdateHungerUIFromPlayer();
 
                 if (player.Visible)
                 {

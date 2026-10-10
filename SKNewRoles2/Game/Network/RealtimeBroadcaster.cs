@@ -62,6 +62,22 @@ namespace SKNewRoles2.Game.Network
             return Task.CompletedTask;
         }
 
+        public static Task SendHungerAsync(RealtimeConnection connection, string playerId, int currentHunger, int maxHunger)
+        {
+            if (!IsReady(connection)) return Task.CompletedTask;
+
+            var payload = new
+            {
+                topic = "realtime:public:lobbies",
+                @event = "broadcast",
+                payload = new { type = "player_hunger", player_id = playerId, current_hunger = currentHunger, max_hunger = maxHunger },
+                @ref = (string)null
+            };
+
+            connection.Client.SendText(JsonSerializer.Serialize(payload));
+            return Task.CompletedTask;
+        }
+
         public static Task SendHotbarSlotAsync(RealtimeConnection connection, string playerId, int slotIndex)
         {
             if (!IsReady(connection)) return Task.CompletedTask;

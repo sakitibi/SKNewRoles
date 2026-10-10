@@ -31,6 +31,19 @@ void SNR2Player::_bind_methods() {
     ClassDB::bind_method(D_METHOD("_on_hp_changed", "current_hp", "max_hp"), &SNR2Player::_on_hp_changed);
     ClassDB::bind_method(D_METHOD("_on_player_died"), &SNR2Player::_on_player_died);
 
+    ClassDB::bind_method(D_METHOD("get_max_hunger"), &SNR2Player::get_max_hunger);
+    ClassDB::bind_method(D_METHOD("set_max_hunger", "p_hunger"), &SNR2Player::set_max_hunger);
+    ADD_PROPERTY(PropertyInfo(Variant::INT, "max_hunger"), "set_max_hunger", "get_max_hunger");
+
+    ClassDB::bind_method(D_METHOD("get_current_hunger"), &SNR2Player::get_current_hunger);
+    ClassDB::bind_method(D_METHOD("set_current_hunger", "p_hunger"), &SNR2Player::set_current_hunger);
+    ADD_PROPERTY(PropertyInfo(Variant::INT, "current_hunger"), "set_current_hunger", "get_current_hunger");
+
+    ClassDB::bind_method(D_METHOD("consume_hunger", "amount"), &SNR2Player::consume_hunger);
+    ClassDB::bind_method(D_METHOD("restore_hunger", "amount"), &SNR2Player::restore_hunger);
+
+    ADD_SIGNAL(MethodInfo("hunger_changed", PropertyInfo(Variant::INT, "current_hunger"), PropertyInfo(Variant::INT, "max_hunger")));
+
     ADD_SIGNAL(MethodInfo("hp_changed", PropertyInfo(Variant::INT, "current_hp"), PropertyInfo(Variant::INT, "max_hp")));
     ADD_SIGNAL(MethodInfo("player_died"));
 }
@@ -124,6 +137,31 @@ void SNR2Player::_on_player_died() {
     UtilityFunctions::print("[SNR2Player] Death notification received. Switching to Spectator Mode.");
     emit_signal("player_died");
     die();
+}
+
+void SNR2Player::set_max_hunger(int p_hunger) {
+    max_hunger = p_hunger;
+}
+
+int SNR2Player::get_max_hunger() const {
+    return max_hunger;
+}
+
+void SNR2Player::set_current_hunger(int p_hunger) {
+    current_hunger = Math::clamp(p_hunger, 0, max_hunger);
+    emit_signal("hunger_changed", current_hunger, max_hunger);
+}
+
+int SNR2Player::get_current_hunger() const {
+    return current_hunger;
+}
+
+void SNR2Player::consume_hunger(int amount) {
+    set_current_hunger(current_hunger - amount);
+}
+
+void SNR2Player::restore_hunger(int amount) {
+    set_current_hunger(current_hunger + amount);
 }
 
 void SNR2Player::_physics_process(double delta) {

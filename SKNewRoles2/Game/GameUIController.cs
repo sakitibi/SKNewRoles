@@ -9,6 +9,10 @@ namespace SKNewRoles2.Game
         private Control _roleRevealScene;
         private ProgressBar _hpBar;
         private Label _hpLabel;
+        
+        private ProgressBar _hungerBar;
+        private Label _hungerLabel;
+
         private Label _factionLabel;
         private Label _roleTitleLabel;
         private Label _descriptionLabel;
@@ -28,6 +32,9 @@ namespace SKNewRoles2.Game
             _hpBar = parentNode.GetNode<ProgressBar>("UILayer/HPBar");
             _hpLabel = parentNode.GetNode<Label>("UILayer/HPBar/HPLabel");
 
+            _hungerBar = parentNode.GetNode<ProgressBar>("UILayer/HungerBar");
+            _hungerLabel = parentNode.GetNode<Label>("UILayer/HungerBar/HungerLabel");
+
             // 座標表示用ラベル
             _coordsLabel = parentNode.GetNode<Label>("HUDManager/PositionText");
 
@@ -37,6 +44,8 @@ namespace SKNewRoles2.Game
             GD.Print($"🔍 [UI Check] LoadingScene: {(_loadingScene != null ? "✅ Found" : "❌ Not Found")}");
             GD.Print($"🔍 [UI Check] HPBar: {(_hpBar != null ? "✅ Found" : "❌ Not Found")}");
             GD.Print($"🔍 [UI Check] HPLabel: {(_hpLabel != null ? "✅ Found" : "❌ Not Found")}");
+            GD.Print($"🔍 [UI Check] HungerBar: {(_hungerBar != null ? "✅ Found" : "❌ Not Found")}");
+            GD.Print($"🔍 [UI Check] HungerLabel: {(_hungerLabel != null ? "✅ Found" : "❌ Not Found")}");
             GD.Print($"🔍 [UI Check] PositionText (Coords): {(_coordsLabel != null ? "✅ Found" : "❌ Not Found")}");
             GD.Print($"🔍 [UI Check] HUDManager (C++): {(_hudManager != null ? "✅ Found" : "❌ Not Found")}");
 
@@ -91,7 +100,24 @@ namespace SKNewRoles2.Game
                 _hpBar.Value = currentHp;
             }
 
-            _hpLabel.Text = $"{currentHp} / {maxHp}";
+            if (_hpLabel != null)
+            {
+                _hpLabel.Text = $"{currentHp}";
+            }
+        }
+
+        public void UpdateHunger(int currentHunger, int maxHunger)
+        {
+            if (_hungerBar != null)
+            {
+                _hungerBar.MaxValue = maxHunger;
+                _hungerBar.Value = currentHunger;
+            }
+
+            if (_hungerLabel != null)
+            {
+                _hungerLabel.Text = $"{currentHunger}";
+            }
         }
 
         public void UpdateCoords(Vector3 position)
