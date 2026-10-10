@@ -64,8 +64,7 @@ namespace SKNewRoles2.Game
                 }
             }
 
-            // GameUIController 側に満腹度更新メソッドがある想定、あるいは直接UIを操作
-            // scene.UIController.UpdateHunger(scene.CurrentHunger, scene.MaxHunger);
+            scene.UIController.UpdateHunger(scene.CurrentHunger, scene.MaxHunger);
         }
 
         private static bool TryConvertToInt(Variant variant, out int result)
