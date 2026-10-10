@@ -13,6 +13,8 @@
 [ext_resource type="Texture2D" uid="uid://dr34prvo6j2xt" path="res://Resources/Items/iron_pickaxe.png" id="6_wrt32"]
 [ext_resource type="Texture2D" uid="uid://cmiw2yimcdm7e" path="res://Resources/Items/iron_sword.png" id="7_r7ao7"]
 [ext_resource type="Script" uid="uid://biyun6mruconi" path="res://SKNewRoles2/Game/Inventory/HotbarUIController.cs" id="13_hx67e"]
+[ext_resource type="StyleBox" uid="uid://dvcomf0c4jxtq" path="res://Resources/Themes/slot_normal_style.tres" id="14_7yt2m"]
+[ext_resource type="StyleBox" uid="uid://cg3im1pa6ex1u" path="res://Resources/Themes/slot_selected_style.tres" id="15_f3uto"]
 
 [sub_resource type="Resource" id="Resource_247uh"]
 script = ExtResource("3_pspun")
@@ -150,9 +152,12 @@ grow_horizontal = 2
 grow_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_hotbar_bg")
 
-[node name="HotbarUIController" type="Control" parent="UILayer/HotbarUI" unique_id=336542986]
+[node name="HotbarUIController" type="Control" parent="UILayer/HotbarUI" unique_id=336542986 node_paths=PackedStringArray("_slotContainer")]
 layout_mode = 2
 script = ExtResource("13_hx67e")
+_slotContainer = NodePath("../SlotContainer")
+_normalSlotStyle = ExtResource("14_7yt2m")
+_selectedSlotStyle = ExtResource("15_f3uto")
 
 [node name="SlotContainer" type="HBoxContainer" parent="UILayer/HotbarUI" unique_id=1827491023]
 layout_mode = 2
