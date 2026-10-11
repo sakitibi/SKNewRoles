@@ -31,7 +31,6 @@ void SNR2Player::_bind_methods() {
     ClassDB::bind_method(D_METHOD("_on_player_died"), &SNR2Player::_on_player_died);
 
     ADD_SIGNAL(MethodInfo("hp_changed", PropertyInfo(Variant::INT, "current_hp"), PropertyInfo(Variant::INT, "max_hp")));
-    ADD_SIGNAL(MethodInfo("hunger_changed", PropertyInfo(Variant::INT, "current_hunger"), PropertyInfo(Variant::INT, "max_hunger")));
     ADD_SIGNAL(MethodInfo("player_died"));
 }
 
@@ -101,7 +100,7 @@ void SNR2Player::_on_hunger_changed(int current_hunger, int max_hunger) {
 }
 
 void SNR2Player::_on_player_died() {
-    UtilityFunctions::print("[SNR2Player] 死亡通知を受信しました。スペクテイターモードに切り替えます。");
+    UtilityFunctions::print("[SNR2Player] Death notification received. Switching to Spectator Mode.");
     emit_signal("player_died");
     die();
 }
