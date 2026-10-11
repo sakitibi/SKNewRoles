@@ -32,14 +32,20 @@ namespace SKNewRoles2.SNRSystem
             if (_progressBar.HasNode("PercentLabel"))
             {
                 _percentLabel = _progressBar.GetNode<Label>("PercentLabel");
-                _percentLabel.Text = "0%";
+                if (_percentLabel != null && IsInstanceValid(_percentLabel))
+                {
+                    _percentLabel.Text = "0%";
+                }
             }
 
             _progressBar.Value = 0;
             
             OnStartupVisualInitialized?.Invoke(this);
 
-            _statusLabel.Text = "システムを初期化中...";
+            if (_statusLabel != null && IsInstanceValid(_statusLabel))
+            {
+                _statusLabel.Text = "システムを初期化中...";
+            }
 
             _ = RunStartupSequenceAsync();
         }
@@ -48,18 +54,23 @@ namespace SKNewRoles2.SNRSystem
         {
             try
             {
-                UpdateProgress(0, "システム環境を確認中...");
+                UpdateProgress(0, "Minecraftをロード中...");
                 await Task.Delay(200);
+                if (!IsInstanceValid(this) || !IsInsideTree()) return;
 
                 await AssetDownloader.EnsureAssetsDownloadedAsync((ratio, text) =>
                 {
-                    float mappedVal = 10f + (ratio * 40f);
-                    UpdateProgress(mappedVal, text);
+                    // コールバック内でもインスタンスの有効性を確認
+                    if (IsInstanceValid(this) && IsInsideTree())
+                    {
+                        float mappedVal = 10f + (ratio * 40f);
+                        UpdateProgress(mappedVal, text);
+                    }
                 });
 
                 if (!IsInstanceValid(this) || !IsInsideTree()) return;
 
-                UpdateProgress(50, "コアモジュールをロード中...");
+                UpdateProgress(50, "マイクラ人狼クエスト.frameworkをロード中...");
                 await Task.Delay(200);
                 if (!IsInstanceValid(this) || !IsInsideTree()) return;
 
@@ -71,11 +82,16 @@ namespace SKNewRoles2.SNRSystem
                     {
                         try
                         {
+                            if (!IsInstanceValid(this) || !IsInsideTree()) return;
+
                             if (invocationList[i] is Func<Action<float, string>, Task> modTask)
                             {
                                 await modTask.Invoke((val, text) => {
-                                    float mappedVal = 55f + (val * 0.35f); 
-                                    UpdateProgress(mappedVal, text);
+                                    if (IsInstanceValid(this) && IsInsideTree())
+                                    {
+                                        float mappedVal = 55f + (val * 0.35f); 
+                                        UpdateProgress(mappedVal, text);
+                                    }
                                 });
                             }
                         }
@@ -117,12 +133,13 @@ namespace SKNewRoles2.SNRSystem
 
         private void UpdateProgress(float targetValue, string statusText)
         {
-            if (_statusLabel != null)
+            // 破棄チェックを追加
+            if (_statusLabel != null && IsInstanceValid(_statusLabel))
             {
                 _statusLabel.Text = statusText;
             }
 
-            if (_progressBar != null)
+            if (_progressBar != null && IsInstanceValid(_progressBar))
             {
                 float startValue = (float)_progressBar.Value;
 
@@ -137,11 +154,14 @@ namespace SKNewRoles2.SNRSystem
                               .SetTrans(Tween.TransitionType.Sine)
                               .SetEase(Tween.EaseType.Out);
 
-                if (_percentLabel != null)
+                if (_percentLabel != null && IsInstanceValid(_percentLabel))
                 {
                     _progressTween.Parallel().TweenMethod(
                         Callable.From<float>(val => {
-                            _percentLabel.Text = $"{Mathf.RoundToInt(val)}%";
+                            if (_percentLabel != null && IsInstanceValid(_percentLabel))
+                            {
+                                _percentLabel.Text = $"{Mathf.RoundToInt(val)}%";
+                            }
                         }),
                         startValue,
                         targetValue,

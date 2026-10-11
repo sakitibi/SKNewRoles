@@ -1,4 +1,5 @@
 using Godot;
+using System;
 using System.Text.Json;
 using SKNewRoles2.SessionManagerSystem;
 
@@ -71,9 +72,9 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
                             }
                         }
                     }
-                    catch 
+                    catch (Exception ex)
                     {
-                        // パースエラーは無視
+                        GD.PrintErr($"❌ [Realtime] パース/イベント処理エラー: {ex.Message} | メッセージ: {message}");
                     }
 
                     // データベース変更通知
