@@ -114,6 +114,19 @@ namespace SKNewRoles2.Game
             _ = SafeSendHungerAsync(myUserId, currentHunger, maxHunger);
         }
 
+        public void OnPlayerAttacked(Node hitNode, int damage)
+        {
+            if (hitNode == null || !GodotObject.IsInstanceValid(hitNode)) return;
+
+            string targetUserId = hitNode.HasMeta("player_id") ? hitNode.GetMeta("player_id").AsString() : hitNode.GetName();
+            string myUserId = MainGameScene.GetMyUserId();
+
+            if (!string.IsNullOrEmpty(targetUserId))
+            {
+                _ = SafeSendAttackAsync(myUserId, targetUserId, damage);
+            }
+        }
+
         private async Task SafeSendHpAsync(string userId, int currentHp, int maxHp)
         {
             try
@@ -135,6 +148,18 @@ namespace SKNewRoles2.Game
             catch (Exception ex)
             {
                 GD.PrintErr($"⚠️ [Realtime] 満腹度送信時例外 (送信スキップ): {ex.Message}");
+            }
+        }
+
+        private async Task SafeSendAttackAsync(string attackerId, string targetId, int damage)
+        {
+            try
+            {
+                await RealtimeBroadcaster.SendAttackAsync(scene.Connection, attackerId, targetId, damage);
+            }
+            catch (Exception ex)
+            {
+                GD.PrintErr($"⚠️ [Realtime] 攻撃送信時例外: {ex.Message}");
             }
         }
 

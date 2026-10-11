@@ -110,6 +110,22 @@ namespace SKNewRoles2.Game.Network
             return Task.CompletedTask;
         }
 
+        public static Task SendAttackAsync(RealtimeConnection connection, string attackerId, string targetId, int damage)
+        {
+            if (!IsReady(connection)) return Task.CompletedTask;
+
+            var payload = new
+            {
+                topic = "realtime:public:lobbies",
+                @event = "broadcast",
+                payload = new { type = "player_attack", attacker_id = attackerId, target_id = targetId, damage },
+                @ref = (string)null
+            };
+
+            connection.Client.SendText(JsonSerializer.Serialize(payload));
+            return Task.CompletedTask;
+        }
+
         private static bool IsReady(RealtimeConnection connection)
         {
             return connection != null && 

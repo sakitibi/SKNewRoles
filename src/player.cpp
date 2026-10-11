@@ -1,9 +1,11 @@
 #include "player.h"
 #include "player_skin.h"
 #include "player_movement.h"
+#include "player_attack.h"
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/input_event_mouse_motion.hpp>
 #include <godot_cpp/classes/camera3d.hpp>
+#include <godot_cpp/classes/input_event_mouse_button.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -119,6 +121,7 @@ void SNR2Player::_physics_process(double delta) {
 void SNR2Player::_input(const Ref<InputEvent> &event) {
     if (!input) return;
 
+    // 視点移動（右クリックドラッグ）
     if (input->is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_RIGHT)) {
         Ref<InputEventMouseMotion> mouse_motion = event;
         if (mouse_motion.is_valid()) {
@@ -134,6 +137,13 @@ void SNR2Player::_input(const Ref<InputEvent> &event) {
                 cam_rot.x = camera_rotation_x;
                 camera->set_rotation(cam_rot);
             }
+        }
+    }
+
+    Ref<InputEventMouseButton> mouse_button = event;
+    if (mouse_button.is_valid() && mouse_button->is_pressed() && mouse_button->get_button_index() == MouseButton::MOUSE_BUTTON_LEFT) {
+        if (!is_spectator()) {
+            PlayerAttack::process_attack(this, camera);
         }
     }
 }
