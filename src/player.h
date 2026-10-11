@@ -4,8 +4,6 @@
 #include <godot_cpp/classes/camera3d.hpp>
 #include <godot_cpp/classes/input_event.hpp>
 #include <godot_cpp/classes/input.hpp>
-#include <godot_cpp/classes/mesh_instance3d.hpp>
-#include <godot_cpp/classes/shader_material.hpp>
 
 #include "Game/health_component.h"
 #include "Game/spectator_component.h"

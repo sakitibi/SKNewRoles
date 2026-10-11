@@ -1,5 +1,6 @@
 #include "player.h"
 #include "player_skin.h"
+#include "player_movement.h"
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/input_event_mouse_motion.hpp>
 #include <godot_cpp/classes/camera3d.hpp>
@@ -20,17 +21,6 @@ void SNR2Player::_bind_methods() {
 
     ClassDB::bind_method(D_METHOD("take_damage", "amount"), &SNR2Player::take_damage);
     ClassDB::bind_method(D_METHOD("heal", "amount"), &SNR2Player::heal);
-
-    ClassDB::bind_method(D_METHOD("get_max_hunger"), &SNR2Player::get_max_hunger);
-    ClassDB::bind_method(D_METHOD("set_max_hunger", "p_hunger"), &SNR2Player::set_max_hunger);
-    ADD_PROPERTY(PropertyInfo(Variant::INT, "max_hunger"), "set_max_hunger", "get_max_hunger");
-
-    ClassDB::bind_method(D_METHOD("get_current_hunger"), &SNR2Player::get_current_hunger);
-    ClassDB::bind_method(D_METHOD("set_current_hunger", "p_hunger"), &SNR2Player::set_current_hunger);
-    ADD_PROPERTY(PropertyInfo(Variant::INT, "current_hunger"), "set_current_hunger", "get_current_hunger");
-
-    ClassDB::bind_method(D_METHOD("consume_hunger", "amount"), &SNR2Player::consume_hunger);
-    ClassDB::bind_method(D_METHOD("restore_hunger", "amount"), &SNR2Player::restore_hunger);
 
     ClassDB::bind_method(D_METHOD("die"), &SNR2Player::die);
     ClassDB::bind_method(D_METHOD("set_spectator_mode", "p_enable"), &SNR2Player::set_spectator_mode);
@@ -150,49 +140,11 @@ void SNR2Player::_physics_process(double delta) {
         return;
     }
 
-    Vector3 velocity = get_velocity();
-
-    if (!is_on_floor()) {
-        velocity.y -= gravity * static_cast<float>(delta);
-    }
-
-    if (fall_damage_component) {
-        fall_damage_component->process_fall_damage(this);
-    }
-
-    bool is_jump_pressed = input->is_key_pressed(KEY_SPACE) || input->is_action_pressed("ui_accept");
-    if (is_jump_pressed && is_on_floor()) {
-        velocity.y = JUMP_VELOCITY;
-        consume_hunger(1);
-    }
-
-    Vector2 input_dir = Vector2(0, 0);
-    if (input->is_key_pressed(KEY_D) || input->is_action_pressed("ui_right")) input_dir.x += 1.0f;
-    if (input->is_key_pressed(KEY_A) || input->is_action_pressed("ui_left")) input_dir.x -= 1.0f;
-    if (input->is_key_pressed(KEY_S) || input->is_action_pressed("ui_down")) input_dir.y += 1.0f;
-    if (input->is_key_pressed(KEY_W) || input->is_action_pressed("ui_up")) input_dir.y -= 1.0f;
-
-    if (input_dir.length_squared() > 0.0f) {
-        input_dir = input_dir.normalized();
-        Basis basis = get_global_transform().basis;
-        Vector3 forward = -basis.get_column(2);
-        Vector3 right = basis.get_column(0);
-
-        forward.y = 0.0f;
-        right.y = 0.0f;
-        forward.normalize();
-        right.normalize();
-
-        Vector3 direction = (forward * -input_dir.y + right * input_dir.x).normalized();
-        velocity.x = direction.x * SPEED;
-        velocity.z = direction.z * SPEED;
-    } else {
-        velocity.x = 0.0f;
-        velocity.z = 0.0f;
-    }
-
-    set_velocity(velocity);
-    move_and_slide();
+    // 移動処理を外部クラスへ委譲
+    PlayerMovement::process_physics(
+        this, input, fall_damage_component, hunger_component,
+        static_cast<float>(delta), gravity, SPEED, JUMP_VELOCITY, is_spectator()
+    );
 }
 
 void SNR2Player::_input(const Ref<InputEvent> &event) {
