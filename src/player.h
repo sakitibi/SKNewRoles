@@ -51,13 +51,6 @@ namespace godot {
             void take_damage(int amount);
             void heal(int amount);
 
-            void set_max_hunger(int p_hunger);
-            int get_max_hunger() const;
-            void set_current_hunger(int p_hunger);
-            int get_current_hunger() const;
-            void consume_hunger(int amount);
-            void restore_hunger(int amount);
-
             void die();
             void set_spectator_mode(bool p_enable);
             bool is_spectator() const;

@@ -106,30 +106,6 @@ void SNR2Player::_on_player_died() {
     die();
 }
 
-void SNR2Player::set_max_hunger(int p_hunger) {
-    if (hunger_component) hunger_component->set_max_hunger(p_hunger);
-}
-
-int SNR2Player::get_max_hunger() const {
-    return hunger_component ? hunger_component->get_max_hunger() : 0;
-}
-
-void SNR2Player::set_current_hunger(int p_hunger) {
-    if (hunger_component) hunger_component->set_current_hunger(p_hunger);
-}
-
-int SNR2Player::get_current_hunger() const {
-    return hunger_component ? hunger_component->get_current_hunger() : 0;
-}
-
-void SNR2Player::consume_hunger(int amount) {
-    if (hunger_component) hunger_component->consume_hunger(amount);
-}
-
-void SNR2Player::restore_hunger(int amount) {
-    if (hunger_component) hunger_component->restore_hunger(amount);
-}
-
 void SNR2Player::_physics_process(double delta) {
     if (!input) return;
 
