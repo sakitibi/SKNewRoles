@@ -27,6 +27,7 @@ set(SOURCES
     src/player.cpp
     src/player_skin.cpp
     src/player_movement.cpp
+    src/player_attack.cpp
     src/lobby_manager.cpp
     src/remote_player.cpp
     src/config_manager.cpp
