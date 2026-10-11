@@ -52,6 +52,8 @@ namespace SKNewRoles2.Game
 
             _networkHandler = new MainGameSceneNetwork(this);
 
+            _connection.OnAttackReceived += _networkHandler.OnRemoteAttackReceived;
+
             _bgmManager = new BGMManager();
             AddChild(_bgmManager);
 
@@ -166,6 +168,11 @@ namespace SKNewRoles2.Game
 
             GD.Print("🚪 [MainGameScene] _ExitTree: シーン破棄のため通信とBGMを安全に停止します。");
             _bgmManager?.StopBgm();
+
+            if (_connection != null && _networkHandler != null)
+            {
+                _connection.OnAttackReceived -= _networkHandler.OnRemoteAttackReceived;
+            }
 
             try
             {

@@ -13,13 +13,14 @@ namespace SKNewRoles2.Game.Network
         private bool _isJoinedChannel = false;
         private int _refCounter = 1;
 
-        // シーン遷移時などの非同期処理キャンセル用トークン
         private readonly CancellationTokenSource _cts = new();
 
         public WebSocketPeer Client => _client;
         public bool IsJoinedChannel => _isJoinedChannel;
 
         public int PingMs { get; private set; } = -1;
+
+        public event Action<string, string, int> OnAttackReceived;
 
         public async Task<bool> EnsureConnectedAsync()
         {
@@ -87,6 +88,35 @@ namespace SKNewRoles2.Game.Network
             while (_client.GetAvailablePacketCount() > 0)
             {
                 string message = _client.GetPacket().GetStringFromUtf8();
+                
+                try
+                {
+                    using JsonDocument doc = JsonDocument.Parse(message);
+                    JsonElement root = doc.RootElement;
+
+                    if (root.TryGetProperty("event", out JsonElement evElem) && evElem.GetString() == "broadcast")
+                    {
+                        JsonElement payload = root.GetProperty("payload");
+                        if (payload.TryGetProperty("type", out JsonElement typeElem))
+                        {
+                            string type = typeElem.GetString();
+
+                            if (type == "player_attack")
+                            {
+                                string attackerId = payload.GetProperty("attacker_id").GetString();
+                                string targetId = payload.GetProperty("target_id").GetString();
+                                int damage = payload.GetProperty("damage").GetInt32();
+
+                                OnAttackReceived?.Invoke(attackerId, targetId, damage);
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    GD.PrintErr($"⚠️ [RealtimeConnection] パース例外: {ex.Message}");
+                }
+
                 RealtimeMessageDispatcher.ProcessMessage(message, ref _isJoinedChannel);
             }
         }

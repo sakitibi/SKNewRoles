@@ -127,6 +127,21 @@ namespace SKNewRoles2.Game
             }
         }
 
+        public void OnRemoteAttackReceived(string attackerId, string targetId, int damage)
+        {
+            string myUserId = MainGameScene.GetMyUserId();
+
+            // 自分自身がターゲットだった場合
+            if (targetId == myUserId)
+            {
+                if (scene.HealthComponent != null && GodotObject.IsInstanceValid(scene.HealthComponent))
+                {
+                    GD.Print($"⚔️ [Network] プレイヤーが {attackerId} から {damage} のダメージを受けました！");
+                    scene.HealthComponent.Call("take_damage", damage);
+                }
+            }
+        }
+
         private async Task SafeSendHpAsync(string userId, int currentHp, int maxHp)
         {
             try
