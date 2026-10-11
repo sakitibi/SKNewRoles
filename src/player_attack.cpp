@@ -36,18 +36,18 @@ void PlayerAttack::process_attack(Node3D *player_node, Camera3D *camera) {
     if (!result.is_empty()) {
         Node *hit_node = Object::cast_to<Node>(result["collider"]);
         if (hit_node) {
-            UtilityFunctions::print("[PlayerAttack] ヒットしたオブジェクト: ", hit_node->get_name());
+            UtilityFunctions::print("[PlayerAttack] Hit object: ", hit_node->get_name());
 
             HealthComponent *health = Object::cast_to<HealthComponent>(hit_node->get_node_or_null(NodePath("HealthComponent")));
             if (health) {
                 int damage = 1;
                 health->take_damage(damage);
-                UtilityFunctions::print("[PlayerAttack] ターゲットにダメージを与えました！");
+                UtilityFunctions::print("[PlayerAttack] You dealt damage to the target!");
 
                 player_node->emit_signal("player_attacked", hit_node, damage);
             }
         }
     } else {
-        UtilityFunctions::print("[PlayerAttack] リーチ内にヒットする対象はありませんでした。");
+        UtilityFunctions::print("[PlayerAttack] There were no targets within range.");
     }
 }
