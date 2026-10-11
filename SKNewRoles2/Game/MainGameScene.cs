@@ -75,6 +75,16 @@ namespace SKNewRoles2.Game
             if (MyPlayerInstance != null && IsInstanceValid(MyPlayerInstance))
             {
                 _uiController.SetPlayerPathToHud(MyPlayerInstance.GetPath());
+
+                var hungerComp = MyPlayerInstance.GetNodeOrNull("HungerComponent");
+                if (hungerComp != null && IsInstanceValid(hungerComp))
+                {
+                    if (!hungerComp.IsConnected("hunger_changed", Callable.From<int, int>(_networkHandler.OnMyPlayerHungerChanged)))
+                    {
+                        hungerComp.Connect("hunger_changed", Callable.From<int, int>(_networkHandler.OnMyPlayerHungerChanged));
+                        GD.Print("✅ [MainGameScene] HungerComponent のシグナル接続に成功しました。");
+                    }
+                }
             }
 
             _hotbarManager = GetNodeOrNull<HotbarManager>("HotbarManager");

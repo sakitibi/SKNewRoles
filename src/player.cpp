@@ -79,12 +79,6 @@ void SNR2Player::_ready() {
             health_component->connect("died", Callable(this, "_on_player_died"));
         }
     }
-
-    if (hunger_component) {
-        if (!hunger_component->is_connected("hunger_changed", Callable(this, "_on_hunger_changed"))) {
-            hunger_component->connect("hunger_changed", Callable(this, "_on_hunger_changed"));
-        }
-    }
 }
 
 void SNR2Player::apply_custom_skins() {

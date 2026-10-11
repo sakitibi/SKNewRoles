@@ -42,10 +42,16 @@ namespace SKNewRoles2.Game
         {
             if (scene.MyPlayerInstance == null || !GodotObject.IsInstanceValid(scene.MyPlayerInstance) || scene.UIController == null) return;
 
+            Node targetNode = scene.MyPlayerInstance.GetNodeOrNull("HungerComponent");
+            if (targetNode == null || !GodotObject.IsInstanceValid(targetNode))
+            {
+                targetNode = scene.MyPlayerInstance;
+            }
+
             string[] curHungerKeys = ["CurrentHunger", "current_hunger", "hunger", "CurrentFood", "food"];
             foreach (var key in curHungerKeys)
             {
-                var val = scene.MyPlayerInstance.Get(key);
+                var val = targetNode.Get(key);
                 if (TryConvertToInt(val, out int hungerVal))
                 {
                     scene.CurrentHunger = hungerVal;
@@ -56,7 +62,7 @@ namespace SKNewRoles2.Game
             string[] maxHungerKeys = ["MaxHunger", "max_hunger", "max_food", "MaxFood"];
             foreach (var key in maxHungerKeys)
             {
-                var val = scene.MyPlayerInstance.Get(key);
+                var val = targetNode.Get(key);
                 if (TryConvertToInt(val, out int maxVal))
                 {
                     scene.MaxHunger = maxVal;
@@ -102,7 +108,7 @@ namespace SKNewRoles2.Game
             scene.CurrentHunger = currentHunger;
             scene.MaxHunger = maxHunger;
 
-            // scene.UIController?.UpdateHunger(currentHunger, maxHunger);
+            scene.UIController?.UpdateHunger(currentHunger, maxHunger);
 
             string myUserId = MainGameScene.GetMyUserId();
             _ = SafeSendHungerAsync(myUserId, currentHunger, maxHunger);

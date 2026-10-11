@@ -114,3 +114,5 @@ far = 64.0
 [node name="HealthComponent" type="HealthComponent" parent="." unique_id=280545807]
 
 [node name="SpectatorComponent" type="SpectatorComponent" parent="." unique_id=1163104127]
+
+[node name="HungerComponent" type="HungerComponent" parent="." unique_id=1828242711]
