@@ -48,7 +48,7 @@ namespace SKNewRoles2.Lobby
         /// <summary>
         /// 指定した間隔ごとにプレイヤーの位置・回転情報を送信します
         /// </summary>
-        public static void UpdatePlayerTransformBroadcast(Node3D targetNode, ref float broadcastTimer, float delta, float interval = 0.05f)
+        public static void UpdatePlayerTransformBroadcast(Node3D targetNode, ref float broadcastTimer, float delta, float interval = 0.2f)
         {
             if (targetNode == null || !GodotObject.IsInstanceValid(targetNode)) return;
 
