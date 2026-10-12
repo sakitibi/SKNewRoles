@@ -9,8 +9,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
     {
         private static string GetCurrentTopic()
         {
-            string roomCode = SessionManager.Instance.CurrentRoomCode;
-            return string.IsNullOrEmpty(roomCode) ? "room:global_lobby" : $"room:{roomCode}";
+            return "realtime:public:lobbies";
         }
 
         /// <summary>
@@ -116,7 +115,6 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
             var client = RealtimeConnectionService.RealtimeClient;
             if (client == null || client.GetReadyState() != WebSocketPeer.State.Open)
             {
-                GD.PrintErr("⚠️ [送信スキップ] WebSocketが開いていません。");
                 return;
             }
 
@@ -146,7 +144,6 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
 
             string json = JsonSerializer.Serialize(broadcastPayload);
             client.SendText(json);
-            // GD.Print($"📤 [Transform送信] Topic: {GetCurrentTopic()}");
         }
 
         /// <summary>

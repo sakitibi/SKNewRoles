@@ -13,7 +13,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
         private static int _refCounter = 1;
 
         /// <summary>
-        /// Supabase Realtime (WebSocket) への接続を開始し、ルーム専用チャンネルを購読します。
+        /// Supabase Realtime (WebSocket) への接続を開始し、lobbies チャンネルを購読します。
         /// </summary>
         public static void StartListeningLobbyChanges()
         {
@@ -22,11 +22,10 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
             string roomCode = SessionManager.Instance.CurrentRoomCode;
             if (string.IsNullOrEmpty(roomCode))
             {
-                GD.PrintErr("部屋コードが空です!");
-                return;
+                GD.PrintErr("⚠️ [RealtimeConnection] 部屋コードが空ですが、接続を続行します。");
             }
 
-            string topicName = $"room:{roomCode}";
+            string topicName = "realtime:public:lobbies";
 
             string wsUrl = $"{SessionManager.SupabaseUrl.Replace("https://", "wss://")}/realtime/v1/websocket?apikey={SessionManager.SupabaseAnonKey}";
            
@@ -35,13 +34,13 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
            
             if (err != Error.Ok)
             {
-                GD.PrintErr("❌ Supabase Realtime へのWebSocket接続初期化に失敗しました。");
+                GD.PrintErr("❌ [RealtimeConnection] Supabase Realtime へのWebSocket接続初期化に失敗しました。");
                 return;
             }
 
             IsListening = true;
             IsJoinedChannel = false;
-            GD.Print($"🌐 Supabase Realtime 接続待機中 (Topic: {topicName})...");
+            GD.Print($"🌐 [RealtimeConnection] Supabase Realtime 接続待機中 (Topic: {topicName})...");
 
             Task.Run(async () => {
                 int timeout = 0;
@@ -62,6 +61,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
                         @event = "phx_join",
                         payload = new { 
                             config = new { 
+                                postgres_changes = new[] { new { @event = "*", schema = "public", table = "lobbies" } },
                                 broadcast = new { ack = false, self = true }
                             } 
                         },
@@ -69,8 +69,14 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
                     };
                     string joinJson = JsonSerializer.Serialize(joinPayload);
                     RealtimeClient.SendText(joinJson);
+                    
+                    // 接続が確立されたためフラグを立てる
                     IsJoinedChannel = true;
-                    GD.Print($"📡 Supabaseチャンネル [{topicName}] への参加リクエストを送信しました！ (Ref: {currentRef})");
+                    GD.Print($"📡 [RealtimeConnection] phx_join 送信完了 -> Topic: {topicName}, Ref: {currentRef}");
+                }
+                else
+                {
+                    GD.PrintErr($"❌ [RealtimeConnection] WebSocketがオープン状態になりませんでした。ReadyState: {RealtimeClient?.GetReadyState()}");
                 }
             });
         }
@@ -86,12 +92,15 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
                 elapsed += 50;
             }
 
-            if (IsJoinedChannel && RealtimeClient != null && RealtimeClient.GetReadyState() == WebSocketPeer.State.Open)
+            if (RealtimeClient != null && RealtimeClient.GetReadyState() == WebSocketPeer.State.Open)
             {
+                IsJoinedChannel = true;
                 await Task.Delay(250);
+                GD.Print("✅ [RealtimeConnection] EnsureConnectedAsync 完了");
                 return true;
             }
 
+            GD.PrintErr("⚠️ [RealtimeConnection] EnsureConnectedAsync タイムアウトしました");
             return false;
         }
 
@@ -102,7 +111,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
 
             IsListening = false;
             IsJoinedChannel = false;
-            GD.Print("🛑 Supabase Realtime 監視を正常にクローズしました。");
+            GD.Print("🛑 [RealtimeConnection] Supabase Realtime 監視を正常にクローズしました。");
         }
     }
 }

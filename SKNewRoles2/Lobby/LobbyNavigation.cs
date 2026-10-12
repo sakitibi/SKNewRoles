@@ -26,7 +26,7 @@ namespace SKNewRoles2.Lobby
 
             if (SessionManager.Instance.IsHost)
             {
-                GD.Print("👑 ホストが退出したため、ロビーを解散します...");
+                GD.Print("👑 [LobbyNavigation] ホストが退出したため、ロビーを解散します...");
                 await LobbySettings.CloseLobbyAsync(SessionManager.Instance.CurrentRoomCode);
             }
 
@@ -38,6 +38,7 @@ namespace SKNewRoles2.Lobby
         /// </summary>
         public static void LeaveLobbyCleanup(SceneTree tree, Action cleanupAction, string targetScene = DefaultLobbySelectScene)
         {
+            GD.Print($"🧹 [LobbyNavigation] クリーンアップを実行します。ターゲットシーン: {targetScene}");
             cleanupAction?.Invoke();
 
             SessionManager.Instance.CurrentRoomCode = "";
@@ -52,7 +53,11 @@ namespace SKNewRoles2.Lobby
         /// </summary>
         public static void TransitionToGameStage(SceneTree tree, IEnumerable<string> remotePlayerIds, Action cleanupAction, string gameScenePath = DefaultMainGameScene)
         {
-            if (tree == null) return;
+            if (tree == null)
+            {
+                GD.PrintErr("❌ [LobbyNavigation] SceneTree が null のためシーン遷移できません。");
+                return;
+            }
 
             SessionManager.Instance.CurrentRoomPlayerIds.Clear();
 
@@ -69,17 +74,26 @@ namespace SKNewRoles2.Lobby
             {
                 foreach (string remoteId in remotePlayerIds)
                 {
-                    if (!SessionManager.Instance.CurrentRoomPlayerIds.Contains(remoteId))
+                    if (!string.IsNullOrEmpty(remoteId) && !SessionManager.Instance.CurrentRoomPlayerIds.Contains(remoteId))
                     {
                         SessionManager.Instance.CurrentRoomPlayerIds.Add(remoteId);
                     }
                 }
             }
 
-            GD.Print($"🎮 メインステージへ安全に遷移します。参加者数: {SessionManager.Instance.CurrentRoomPlayerIds.Count} 人");
+            GD.Print($"🎮 [LobbyNavigation] メインステージへ遷移します。パス: {gameScenePath} | 参加者数: {SessionManager.Instance.CurrentRoomPlayerIds.Count} 人");
+            foreach (var id in SessionManager.Instance.CurrentRoomPlayerIds)
+            {
+                GD.Print($"  - 参加プレイヤーID: {id}");
+            }
 
             cleanupAction?.Invoke();
-            tree.ChangeSceneToFile(gameScenePath);
+            
+            Error err = tree.ChangeSceneToFile(gameScenePath);
+            if (err != Error.Ok)
+            {
+                GD.PrintErr($"❌ [LobbyNavigation] シーンの変更に失敗しました。Error code: {err}");
+            }
         }
     }
 }
