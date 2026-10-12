@@ -33,6 +33,8 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
                     
                     if (string.IsNullOrEmpty(message)) continue;
 
+                    GD.Print($"📥 [Realtime Raw受信] {message}");
+
                     try
                     {
                         using JsonDocument doc = JsonDocument.Parse(message);
@@ -42,51 +44,58 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
                         {
                             string ev = evElem.GetString();
 
-                            // Broadcast パケットの識別処理
                             if (ev == "broadcast")
                             {
-                                JsonElement payload = root.GetProperty("payload");
-                                if (payload.TryGetProperty("type", out JsonElement typeElem))
+                                if (root.TryGetProperty("payload", out JsonElement outerPayload))
                                 {
-                                    string type = typeElem.GetString();
+                                    if (outerPayload.TryGetProperty("event", out JsonElement customEventElem))
+                                    {
+                                        string customEvent = customEventElem.GetString();
+                                        GD.Print($"📡 [Broadcast検知] CustomEvent: {customEvent}");
 
-                                    // 位置・回転データの受信
-                                    if (type == "transform_all")
-                                    {
-                                        string pId = payload.GetProperty("player_id").GetString();
-                                        
-                                        float px = (float)payload.GetProperty("px").GetDouble();
-                                        float py = (float)payload.GetProperty("py").GetDouble();
-                                        float pz = (float)payload.GetProperty("pz").GetDouble();
-                                        float rx = (float)payload.GetProperty("rx").GetDouble();
-                                        float ry = (float)payload.GetProperty("ry").GetDouble();
-                                        float rz = (float)payload.GetProperty("rz").GetDouble();
-                                        
-                                        RealtimeEvents.RaisePlayerTransformReceivedAll(pId, px, py, pz, rx, ry, rz);
-                                    }
-                                    // 役職割当データの受信
-                                    else if (type == "assign_role")
-                                    {
-                                        string targetPlayerId = payload.GetProperty("target_player_id").GetString();
-                                        int role = payload.GetProperty("role").GetInt32();
-                                        int faction = payload.GetProperty("faction").GetInt32();
+                                        if (outerPayload.TryGetProperty("payload", out JsonElement innerPayload))
+                                        {
+                                            if (customEvent == "transform_all")
+                                            {
+                                                string pId = innerPayload.GetProperty("player_id").GetString();
+                                                float px = (float)innerPayload.GetProperty("px").GetDouble();
+                                                float py = (float)innerPayload.GetProperty("py").GetDouble();
+                                                float pz = (float)innerPayload.GetProperty("pz").GetDouble();
+                                                float rx = (float)innerPayload.GetProperty("rx").GetDouble();
+                                                float ry = (float)innerPayload.GetProperty("ry").GetDouble();
+                                                float rz = (float)innerPayload.GetProperty("rz").GetDouble();
 
-                                        RealtimeEvents.RaiseRoleAssignedReceived(targetPlayerId, role, faction);
-                                    }
-                                    // ゲーム開始シグナルの受信
-                                    else if (type == "start_game")
-                                    {
-                                        GD.Print("🎮 [Realtime] ホストからゲーム開始シグナルを受信しました！");
-                                        RealtimeEvents.RaiseGameStartReceived();
+                                                GD.Print($"📍 座標データ受信成功: ID={pId}, Pos=({px}, {py}, {pz})");
+                                                RealtimeEvents.RaisePlayerTransformReceivedAll(pId, px, py, pz, rx, ry, rz);
+                                            }
+                                            else if (customEvent == "assign_role")
+                                            {
+                                                string targetPlayerId = innerPayload.GetProperty("target_player_id").GetString();
+                                                int role = innerPayload.GetProperty("role").GetInt32();
+                                                int faction = innerPayload.GetProperty("faction").GetInt32();
+
+                                                GD.Print($"👑 役職データ受信成功: Target={targetPlayerId}, Role={role}");
+                                                RealtimeEvents.RaiseRoleAssignedReceived(targetPlayerId, role, faction);
+                                            }
+                                            else if (customEvent == "start_game")
+                                            {
+                                                GD.Print("🎮 [Realtime] ホストからゲーム開始シグナルを受信しました！");
+                                                RealtimeEvents.RaiseGameStartReceived();
+                                            }
+                                        }
                                     }
                                 }
                                 continue;
+                            }
+                            else
+                            {
+                                GD.Print($"ℹ️ [その他のイベント] event = {ev}");
                             }
                         }
                     }
                     catch (Exception ex)
                     {
-                        GD.PrintErr($"❌ [Realtime] パース/イベント処理エラー: {ex.Message} | メッセージ: {message}");
+                        GD.PrintErr($"❌ [Realtime] パース例外: {ex.Message} | 対象メッセージ: {message}");
                     }
                 }
             }
@@ -100,12 +109,16 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
         }
 
         /// <summary>
-        /// 自分の最新のフル3D座標を送信します。
+        /// 自分の最新の3D座標を送信します。
         /// </summary>
         public static void LobbySendTransformBroadcastAll(float px, float py, float pz, float rx, float ry, float rz)
         {
             var client = RealtimeConnectionService.RealtimeClient;
-            if (client == null || client.GetReadyState() != WebSocketPeer.State.Open) return;
+            if (client == null || client.GetReadyState() != WebSocketPeer.State.Open)
+            {
+                GD.PrintErr("⚠️ [送信スキップ] WebSocketが開いていません。");
+                return;
+            }
 
             string senderId = SessionManager.Instance.CurrentSession?.User?.Id;
             if (string.IsNullOrEmpty(senderId))
@@ -119,29 +132,34 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
                 @event = "broadcast",
                 payload = new
                 {
-                    type = "transform_all",
-                    player_id = senderId, 
-                    px,
-                    py,
-                    pz,
-                    rx,
-                    ry,
-                    rz
+                    type = "broadcast",
+                    @event = "transform_all",
+                    payload = new
+                    {
+                        player_id = senderId, 
+                        px, py, pz,
+                        rx, ry, rz
+                    }
                 },
                 @ref = (string)null
             };
 
             string json = JsonSerializer.Serialize(broadcastPayload);
             client.SendText(json);
+            // GD.Print($"📤 [Transform送信] Topic: {GetCurrentTopic()}");
         }
 
         /// <summary>
-        /// ホストから全員に向けてゲーム開始のシグナルをBroadcast送信します。
+        /// ホストから全員に向けてゲーム開始シグナルを送信します。
         /// </summary>
         public static void LobbySendStartGame()
         {
             var client = RealtimeConnectionService.RealtimeClient;
-            if (client == null || client.GetReadyState() != WebSocketPeer.State.Open) return;
+            if (client == null || client.GetReadyState() != WebSocketPeer.State.Open)
+            {
+                GD.PrintErr("❌ [ゲーム開始送信失敗] WebSocketがオープン状態ではありません！");
+                return;
+            }
 
             var broadcastPayload = new
             {
@@ -149,14 +167,16 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
                 @event = "broadcast",
                 payload = new
                 {
-                    type = "start_game"
+                    type = "broadcast",
+                    @event = "start_game",
+                    payload = new {}
                 },
                 @ref = (string)null
             };
 
             string json = JsonSerializer.Serialize(broadcastPayload);
             client.SendText(json);
-            GD.Print($"📡 [Realtime] ゲーム開始のBroadcastを送信しました (Topic: {GetCurrentTopic()})。");
+            GD.Print($"📡 [ゲーム開始送信成功] JSONを送信しました -> Topic: {GetCurrentTopic()} | JSON: {json}");
         }
     }
 }
