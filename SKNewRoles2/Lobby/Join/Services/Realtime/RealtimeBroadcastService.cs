@@ -64,7 +64,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
                                                 float ry = (float)innerPayload.GetProperty("ry").GetDouble();
                                                 float rz = (float)innerPayload.GetProperty("rz").GetDouble();
 
-                                                GD.Print($"📍 座標データ受信成功: ID={pId}, Pos=({px}, {py}, {pz})");
+                                                //GD.Print($"📍 座標データ受信成功: ID={pId}, Pos=({px}, {py}, {pz})");
                                                 RealtimeEvents.RaisePlayerTransformReceivedAll(pId, px, py, pz, rx, ry, rz);
                                             }
                                             else if (customEvent == "assign_role")
