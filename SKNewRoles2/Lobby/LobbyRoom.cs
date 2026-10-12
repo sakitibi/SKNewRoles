@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using SKNewRoles2.SessionManagerSystem;
 using SKNewRoles2.Lobby.JOIN.Services.Realtime;
 using SKNewRoles2.Game.BGM;
+using System.Threading.Tasks;
 
 namespace SKNewRoles2.Lobby
 {
@@ -48,10 +49,15 @@ namespace SKNewRoles2.Lobby
 
             if (StartGameButton != null)
             {
-                StartGameButton.Pressed += () => {
+                StartGameButton.Pressed += async () => {
                     if (SessionManager.Instance.IsHost && !_isTransitioning)
                     {
+                        _isTransitioning = true;
+                        
                         RealtimeBroadcastService.LobbySendStartGame();
+                        
+                        await Task.Delay(100);
+
                         TransitionToGameStage();
                     }
                 };
