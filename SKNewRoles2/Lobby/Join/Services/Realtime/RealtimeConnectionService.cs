@@ -19,12 +19,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
         {
             if (IsListening) return;
 
-            string roomCode = SessionManager.Instance.CurrentRoomCode;
-            if (string.IsNullOrEmpty(roomCode))
-            {
-                GD.PrintErr("⚠️ [RealtimeConnection] 部屋コードが空ですが、接続を続行します。");
-            }
-
+            // ユーザー指定の絶対トピック名
             string topicName = "realtime:public:lobbies";
 
             string wsUrl = $"{SessionManager.SupabaseUrl.Replace("https://", "wss://")}/realtime/v1/websocket?apikey={SessionManager.SupabaseAnonKey}";
@@ -70,7 +65,6 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
                     string joinJson = JsonSerializer.Serialize(joinPayload);
                     RealtimeClient.SendText(joinJson);
                     
-                    // 接続が確立されたためフラグを立てる
                     IsJoinedChannel = true;
                     GD.Print($"📡 [RealtimeConnection] phx_join 送信完了 -> Topic: {topicName}, Ref: {currentRef}");
                 }
