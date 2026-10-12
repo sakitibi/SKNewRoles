@@ -22,7 +22,6 @@ namespace SKNewRoles2.Lobby
         private RoomUI _roomUIInstance;
 
         private bool _isTransitioning = false;
-        private float _broadcastTimer = 0.0f;
         private readonly BGMManager _bgmManager = new();
 
         public Color GrassBlockColor { get; set; } = new Color(0.3f, 0.85f, 0.15f, 1.0f);
@@ -87,15 +86,7 @@ namespace SKNewRoles2.Lobby
 
             _bgmManager?.StopBgm();
         }
-
-        public override void _Process(double delta)
-        {
-            RealtimeBroadcastService.PollRealtimeEvents();
-
-            // プレイヤー座標の定期送信
-            LobbyRealtimeHelper.UpdatePlayerTransformBroadcast(_myPlayerInstance, ref _broadcastTimer, (float)delta);
-        }
-
+        
         private void OnRoomSettingsChangedFromServer()
         {
             if (_isTransitioning || !IsInstanceValid(this) || !IsInsideTree()) return;

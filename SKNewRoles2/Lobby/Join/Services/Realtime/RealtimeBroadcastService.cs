@@ -32,8 +32,6 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
                     
                     if (string.IsNullOrEmpty(message)) continue;
 
-                    GD.Print($"📥 [Realtime Raw受信] {message}");
-
                     try
                     {
                         using JsonDocument doc = JsonDocument.Parse(message);
@@ -50,7 +48,6 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
                                     if (outerPayload.TryGetProperty("event", out JsonElement customEventElem))
                                     {
                                         string customEvent = customEventElem.GetString();
-                                        GD.Print($"📡 [Broadcast検知] CustomEvent: {customEvent}");
 
                                         if (outerPayload.TryGetProperty("payload", out JsonElement innerPayload))
                                         {
@@ -64,7 +61,6 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
                                                 float ry = (float)innerPayload.GetProperty("ry").GetDouble();
                                                 float rz = (float)innerPayload.GetProperty("rz").GetDouble();
 
-                                                //GD.Print($"📍 座標データ受信成功: ID={pId}, Pos=({px}, {py}, {pz})");
                                                 RealtimeEvents.RaisePlayerTransformReceivedAll(pId, px, py, pz, rx, ry, rz);
                                             }
                                             else if (customEvent == "assign_role")
@@ -86,9 +82,20 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
                                 }
                                 continue;
                             }
+                            else if (ev == "system")
+                            {
+                                if (root.TryGetProperty("payload", out JsonElement sysPayload))
+                                {
+                                    if (sysPayload.TryGetProperty("message", out JsonElement msgElem))
+                                    {
+                                        GD.PrintErr($"⚠️ [Realtime System制限通知] {msgElem.GetString()}");
+                                    }
+                                }
+                                continue;
+                            }
                             else
                             {
-                                GD.Print($"ℹ️ [その他のイベント] event = {ev}");
+                                // GD.Print($"ℹ️ [その他のイベント] event = {ev} | message = {message}");
                             }
                         }
                     }

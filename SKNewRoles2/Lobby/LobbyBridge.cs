@@ -6,6 +6,8 @@ namespace SKNewRoles2.Lobby
     public partial class LobbyBridge : Node
     {
         private GodotObject _cppLobbyManager;
+        private float _broadcastTimer = 0.0f;
+        private const float BroadcastInterval = 0.1f;
 
         public override void _Ready()
         {
@@ -17,37 +19,38 @@ namespace SKNewRoles2.Lobby
 
         public override void _ExitTree()
         {
-            // メモリリーク防止のためイベント解除
             RealtimeEvents.OnPlayerTransformReceivedAll -= OnPlayerTransformReceivedAll;
         }
 
         public override void _Process(double delta)
         {
-            // WebSocketのイベント回収
             RealtimeBroadcastService.PollRealtimeEvents();
 
-            // 3Dロビー用にNode3Dとして自分の座標を取得・送信する処理
-            if (_cppLobbyManager is Node3D lobbyNode3D)
+            _broadcastTimer += (float)delta;
+            if (_broadcastTimer >= BroadcastInterval)
             {
-                var myPlayer = lobbyNode3D.GetNode<Node3D>("MyPlayer");
-                if (myPlayer != null && IsInstanceValid(myPlayer))
+                _broadcastTimer = 0.0f;
+
+                if (_cppLobbyManager is Node3D lobbyNode3D)
                 {
-                    // 自分の最新のフル3D位置・回転データを全員へBroadcast送信
-                    RealtimeBroadcastService.LobbySendTransformBroadcastAll(
-                        myPlayer.Position.X,
-                        myPlayer.Position.Y,
-                        myPlayer.Position.Z,
-                        myPlayer.Rotation.X,
-                        myPlayer.Rotation.Y,
-                        myPlayer.Rotation.Z
-                    );
+                    var myPlayer = lobbyNode3D.GetNode<Node3D>("MyPlayer");
+                    if (myPlayer != null && IsInstanceValid(myPlayer))
+                    {
+                        RealtimeBroadcastService.LobbySendTransformBroadcastAll(
+                            myPlayer.Position.X,
+                            myPlayer.Position.Y,
+                            myPlayer.Position.Z,
+                            myPlayer.Rotation.X,
+                            myPlayer.Rotation.Y,
+                            myPlayer.Rotation.Z
+                        );
+                    }
                 }
             }
         }
 
         private void OnPlayerTransformReceivedAll(string playerId, float px, float py, float pz, float rx, float ry, float rz)
         {
-            // C#で受け取ったデータをそのままC++のLobbyManager側のオブジェクトへ中継する処理
             if (_cppLobbyManager != null && IsInstanceValid(_cppLobbyManager))
             {
                 if (_cppLobbyManager.HasMethod("update_remote_player_transform"))
