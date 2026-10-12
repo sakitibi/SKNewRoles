@@ -54,7 +54,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
                         payload = new { 
                             config = new { 
                                 postgres_changes = new[] { new { @event = "*", schema = "public", table = "lobbies" } },
-                                broadcast = new { ack = false }
+                                broadcast = new { ack = false, self = true }
                             } 
                         },
                         @ref = currentRef
