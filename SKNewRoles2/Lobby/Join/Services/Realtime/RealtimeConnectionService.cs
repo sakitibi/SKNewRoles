@@ -13,11 +13,20 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
         private static int _refCounter = 1;
 
         /// <summary>
-        /// Supabase Realtime (WebSocket) への接続を開始し、lobbies テーブルを購読します。
+        /// Supabase Realtime (WebSocket) への接続を開始し、ルーム専用チャンネルを購読します。
         /// </summary>
         public static void StartListeningLobbyChanges()
         {
             if (IsListening) return;
+
+            string roomCode = SessionManager.Instance.CurrentRoomCode;
+            if (string.IsNullOrEmpty(roomCode))
+            {
+                GD.PrintErr("部屋コードが空です!");
+                return;
+            }
+
+            string topicName = $"room:{roomCode}";
 
             string wsUrl = $"{SessionManager.SupabaseUrl.Replace("https://", "wss://")}/realtime/v1/websocket?apikey={SessionManager.SupabaseAnonKey}";
            
@@ -32,7 +41,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
 
             IsListening = true;
             IsJoinedChannel = false;
-            GD.Print("🌐 Supabase Realtime (WebSocket) 接続の待機を開始しました。");
+            GD.Print($"🌐 Supabase Realtime 接続待機中 (Topic: {topicName})...");
 
             Task.Run(async () => {
                 int timeout = 0;
@@ -49,11 +58,10 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
 
                     var joinPayload = new
                     {
-                        topic = "realtime:public:lobbies",
+                        topic = topicName,
                         @event = "phx_join",
                         payload = new { 
                             config = new { 
-                                postgres_changes = new[] { new { @event = "*", schema = "public", table = "lobbies" } },
                                 broadcast = new { ack = false, self = true }
                             } 
                         },
@@ -62,14 +70,11 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
                     string joinJson = JsonSerializer.Serialize(joinPayload);
                     RealtimeClient.SendText(joinJson);
                     IsJoinedChannel = true;
-                    GD.Print($"📡 Supabaseへ lobbies リアルタイム購読 & Broadcast を有効化しました！ (Ref: {currentRef})");
+                    GD.Print($"📡 Supabaseチャンネル [{topicName}] への参加リクエストを送信しました！ (Ref: {currentRef})");
                 }
             });
         }
 
-        /// <summary>
-        /// WebSocket接続および Supabase チャンネルの phx_join 完了を確実に非同期待機します。
-        /// </summary>
         public static async Task<bool> EnsureConnectedAsync(int timeoutMs = 5000)
         {
             StartListeningLobbyChanges();
@@ -81,9 +86,8 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
                 elapsed += 50;
             }
 
-            if (IsJoinedChannel && RealtimeClient != null && RealtimeClient.GetReadyState() != WebSocketPeer.State.Open)
+            if (IsJoinedChannel && RealtimeClient != null && RealtimeClient.GetReadyState() == WebSocketPeer.State.Open)
             {
-                // Supabase側でハンドシェイクが確立するまでの安定猶予時間
                 await Task.Delay(250);
                 return true;
             }
@@ -91,9 +95,6 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
             return false;
         }
 
-        /// <summary>
-        /// リアルタイム通信の監視を終了し、WebSocket接続を破棄します。
-        /// </summary>
         public static void StopListeningLobbyChanges()
         {
             RealtimeClient?.Close();

@@ -7,6 +7,12 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
 {
     public static class RealtimeBroadcastService
     {
+        private static string GetCurrentTopic()
+        {
+            string roomCode = SessionManager.Instance.CurrentRoomCode;
+            return string.IsNullOrEmpty(roomCode) ? "room:global_lobby" : $"room:{roomCode}";
+        }
+
         /// <summary>
         /// 毎フレーム呼び出し、WebSocketパケットの回収と各イベントの発火を行います。
         /// </summary>
@@ -67,6 +73,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
 
                                         RealtimeEvents.RaiseRoleAssignedReceived(targetPlayerId, role, faction);
                                     }
+                                    // ゲーム開始シグナルの受信
                                     else if (type == "start_game")
                                     {
                                         GD.Print("🎮 [Realtime] ホストからゲーム開始シグナルを受信しました！");
@@ -81,21 +88,6 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
                     {
                         GD.PrintErr($"❌ [Realtime] パース/イベント処理エラー: {ex.Message} | メッセージ: {message}");
                     }
-
-                    // データベース変更通知
-                    string lowerMessage = message.ToLower();
-                    if (lowerMessage.Contains("update") || 
-                        lowerMessage.Contains("postgres_changes") || 
-                        lowerMessage.Contains("\"event\":\"*\""))
-                    {
-                        string currentCode = SessionManager.Instance.CurrentRoomCode;
-
-                        if (string.IsNullOrEmpty(currentCode) || lowerMessage.Contains(currentCode.ToLower()))
-                        {
-                            GD.Print("🔔 参加中ロビーのリアルタイムデータベース更新を検知しました。UIを同期します。");
-                            RealtimeEvents.RaiseLobbyTableChanged();
-                        }
-                    }
                 }
             }
             else if (state == WebSocketPeer.State.Closed)
@@ -108,7 +100,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
         }
 
         /// <summary>
-        /// 自分の最新のフル3D座標（位置XYZ、回転XYZ）を高速に全員へ送信します。
+        /// 自分の最新のフル3D座標を送信します。
         /// </summary>
         public static void LobbySendTransformBroadcastAll(float px, float py, float pz, float rx, float ry, float rz)
         {
@@ -123,7 +115,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
 
             var broadcastPayload = new
             {
-                topic = "realtime:public:lobbies",
+                topic = GetCurrentTopic(),
                 @event = "broadcast",
                 payload = new
                 {
@@ -153,7 +145,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
 
             var broadcastPayload = new
             {
-                topic = "realtime:public:lobbies",
+                topic = GetCurrentTopic(),
                 @event = "broadcast",
                 payload = new
                 {
@@ -164,7 +156,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
 
             string json = JsonSerializer.Serialize(broadcastPayload);
             client.SendText(json);
-            GD.Print("📡 [Realtime] ゲーム開始のBroadcastを送信しました。");
+            GD.Print($"📡 [Realtime] ゲーム開始のBroadcastを送信しました (Topic: {GetCurrentTopic()})。");
         }
     }
 }
