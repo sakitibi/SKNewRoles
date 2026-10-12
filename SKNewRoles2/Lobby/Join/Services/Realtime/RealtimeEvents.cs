@@ -7,6 +7,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
         public static event Action OnLobbyTableChanged;
         public static event Action<string, float, float, float, float, float, float> OnPlayerTransformReceivedAll; 
         public static event Action<string, int, int> OnRoleAssignedReceived;
+        public static event Action OnGameStartReceived;
 
         public static void RaiseLobbyTableChanged() 
             => OnLobbyTableChanged?.Invoke();
@@ -16,5 +17,8 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
 
         public static void RaiseRoleAssignedReceived(string targetPlayerId, int role, int faction) 
             => OnRoleAssignedReceived?.Invoke(targetPlayerId, role, faction);
+
+        public static void RaiseGameStartReceived() 
+            => OnGameStartReceived?.Invoke();
     }
 }

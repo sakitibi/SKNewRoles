@@ -67,6 +67,11 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
 
                                         RealtimeEvents.RaiseRoleAssignedReceived(targetPlayerId, role, faction);
                                     }
+                                    else if (type == "start_game")
+                                    {
+                                        GD.Print("🎮 [Realtime] ホストからゲーム開始シグナルを受信しました！");
+                                        RealtimeEvents.RaiseGameStartReceived();
+                                    }
                                 }
                                 continue;
                             }
@@ -103,7 +108,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
         }
 
         /// <summary>
-        /// 自分の最新のフル3D座標（位置XYZ、回転XYZ）を高速に全員へ送信（Broadcast）します。
+        /// 自分の最新のフル3D座標（位置XYZ、回転XYZ）を高速に全員へ送信します。
         /// </summary>
         public static void LobbySendTransformBroadcastAll(float px, float py, float pz, float rx, float ry, float rz)
         {
@@ -136,6 +141,30 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
 
             string json = JsonSerializer.Serialize(broadcastPayload);
             client.SendText(json);
+        }
+
+        /// <summary>
+        /// ホストから全員に向けてゲーム開始のシグナルをBroadcast送信します。
+        /// </summary>
+        public static void LobbySendStartGame()
+        {
+            var client = RealtimeConnectionService.RealtimeClient;
+            if (client == null || client.GetReadyState() != WebSocketPeer.State.Open) return;
+
+            var broadcastPayload = new
+            {
+                topic = "realtime:public:lobbies",
+                @event = "broadcast",
+                payload = new
+                {
+                    type = "start_game"
+                },
+                @ref = (string)null
+            };
+
+            string json = JsonSerializer.Serialize(broadcastPayload);
+            client.SendText(json);
+            GD.Print("📡 [Realtime] ゲーム開始のBroadcastを送信しました。");
         }
     }
 }

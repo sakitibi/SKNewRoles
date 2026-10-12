@@ -48,11 +48,17 @@ namespace SKNewRoles2.Lobby
 
             if (StartGameButton != null)
             {
-                StartGameButton.Pressed += _roomUIInstance.OnStartGameButtonPressed;
+                StartGameButton.Pressed += () => {
+                    if (SessionManager.Instance.IsHost && !_isTransitioning)
+                    {
+                        RealtimeBroadcastService.LobbySendStartGame();
+                        TransitionToGameStage();
+                    }
+                };
                 StartGameButton.Disabled = !SessionManager.Instance.IsHost;
             }
 
-            // ネットワークイベント登録
+            RealtimeEvents.OnGameStartReceived += TransitionToGameStage;
             LobbyRealtimeHelper.RegisterListeners(OnRoomSettingsChangedFromServer, OnRemotePlayerTransformReceived);
 
             _roomUIInstance.UpdateRoomInfoUI();
@@ -105,6 +111,7 @@ namespace SKNewRoles2.Lobby
 
         private void CleanupEvents()
         {
+            RealtimeEvents.OnGameStartReceived -= TransitionToGameStage;
             LobbyRealtimeHelper.UnregisterListeners(OnRoomSettingsChangedFromServer, OnRemotePlayerTransformReceived);
             _otherPlayers.Clear();
         }
