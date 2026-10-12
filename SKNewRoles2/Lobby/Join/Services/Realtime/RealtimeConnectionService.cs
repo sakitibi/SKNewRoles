@@ -22,7 +22,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
             // ユーザー指定の絶対トピック名
             string topicName = "realtime:public:lobbies";
 
-            string wsUrl = $"{SessionManager.SupabaseUrl.Replace("https://", "wss://")}/realtime/v1/websocket?apikey={SessionManager.SupabaseAnonKey}";
+            string wsUrl = $"{SessionManager.SupabaseUrl.Replace("https://", "wss://")}/realtime/v1/websocket?apikey={SessionManager.SupabaseAnonKey}&vsn=1.0.0";
            
             RealtimeClient = new WebSocketPeer();
             Error err = RealtimeClient.ConnectToUrl(wsUrl);
