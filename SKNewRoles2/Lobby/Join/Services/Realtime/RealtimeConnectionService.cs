@@ -49,20 +49,15 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
                     string currentRef = _refCounter.ToString();
                     _refCounter++;
 
-                    string token = SessionManager.Instance.CurrentSession?.AccessToken;
-                    if (string.IsNullOrEmpty(token))
-                    {
-                        token = SessionManager.SupabaseAnonKey;
-                    }
+                    string token = SessionManager.SupabaseAnonKey;
 
                     var joinPayload = new
                     {
                         topic = topicName,
                         @event = "phx_join",
                         payload = new { 
-                            access_token = token, 
+                            access_token = token,
                             config = new { 
-                                postgres_changes = new[] { new { @event = "*", schema = "public", table = "lobbies" } },
                                 broadcast = new { ack = false, self = true }
                             } 
                         },
