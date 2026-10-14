@@ -48,15 +48,11 @@ namespace SKNewRoles2.Lobby
 
             if (StartGameButton != null)
             {
-                StartGameButton.Pressed += async () => {
+                StartGameButton.Pressed += () => {
                     if (SessionManager.Instance.IsHost && !_isTransitioning)
                     {
-                        _isTransitioning = true;
-                        
                         RealtimeBroadcastService.LobbySendStartGame();
                         
-                        await Task.Delay(100);
-
                         TransitionToGameStage();
                     }
                 };
