@@ -7,7 +7,7 @@ namespace SKNewRoles2.Game.Network
     public static class RealtimeMessageDispatcher
     {
         public static event Action<string, float, float, float, float, float, float> OnPlayerTransformReceivedAll;
-        public static event Action<string, int, int> OnRoleAssignedReceived;
+        public static event Action<string, uint, uint> OnRoleAssignedReceived;
         public static event Action<string, int, int> OnPlayerHpReceived;
 
         public static void ProcessMessage(string rawJson, ref bool isJoinedChannel)
@@ -52,8 +52,8 @@ namespace SKNewRoles2.Game.Network
                     else if (type == "assign_role")
                     {
                         string targetPlayerId = payloadProp.GetProperty("target_player_id").GetString();
-                        int role = payloadProp.GetProperty("role").GetInt32();
-                        int faction = payloadProp.GetProperty("faction").GetInt32();
+                        uint role = payloadProp.GetProperty("role").GetUInt32();
+                        uint faction = payloadProp.GetProperty("faction").GetUInt32();
 
                         OnRoleAssignedReceived?.Invoke(targetPlayerId, role, faction);
                     }

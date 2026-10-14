@@ -39,7 +39,7 @@ namespace SKNewRoles2.Game
                 bool received = await roleManager.WaitForRoleAssignedAsync(timeoutMs: 10000);
                 if (!received)
                 {
-                    GD.PrintErr("⚠️ 役職受信タイムアウトのため、デフォルト(村人)を適用します");
+                    GD.PrintErr("⚠️ 役職受信タイムアウトのため、デフォルト(生徒)を適用します");
                     roleManager.ApplyRole(0, 0);
                 }
             }

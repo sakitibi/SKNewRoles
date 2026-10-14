@@ -136,7 +136,7 @@ namespace SKNewRoles2.Game
             }
         }
 
-        public async Task ShowRoleRevealAsync(int roleId, int factionId, int displayTimeMs = 5000)
+        public async Task ShowRoleRevealAsync(uint roleId, uint factionId, ushort displayTimeMs = 5000)
         {
             if (_roleRevealScene == null) return;
 

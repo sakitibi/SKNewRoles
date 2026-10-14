@@ -4,20 +4,20 @@ namespace SKNewRoles2.Game
 {
     public static class RoleInfo
     {
-        public static Dictionary<string, int> RoleIdDictionary { get; set; } = new()
+        public static Dictionary<string, uint> RoleIdDictionary { get; set; } = new()
         {
             {"students", 0},
             {"witch", 1}
         };
 
-        public static Dictionary<string, int> FactionIdDictionary { get; set; } = new()
+        public static Dictionary<string, uint> FactionIdDictionary { get; set; } = new()
         {
             {"students", 0},
             {"witch", 1},
             {"other", 2}
         };
         
-        public static string GetFactionName(int factionId)
+        public static string GetFactionName(uint factionId)
         {
             return factionId switch
             {
@@ -28,7 +28,7 @@ namespace SKNewRoles2.Game
             };
         }
 
-        public static string GetRoleName(int roleId)
+        public static string GetRoleName(uint roleId)
         {
             return roleId switch
             {
@@ -38,7 +38,7 @@ namespace SKNewRoles2.Game
             };
         }
 
-        public static string GetRoleDescription(int roleId)
+        public static string GetRoleDescription(uint roleId)
         {
             return roleId switch
             {

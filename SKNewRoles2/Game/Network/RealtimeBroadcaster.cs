@@ -25,7 +25,7 @@ namespace SKNewRoles2.Game.Network
             return Task.CompletedTask;
         }
 
-        public static Task SendRoleAsync(RealtimeConnection connection, string targetPlayerId, int role, int faction)
+        public static Task SendRoleAsync(RealtimeConnection connection, string targetPlayerId, uint role, uint faction)
         {
             if (!IsReady(connection))
             {

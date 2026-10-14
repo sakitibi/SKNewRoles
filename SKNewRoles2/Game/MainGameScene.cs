@@ -38,8 +38,8 @@ namespace SKNewRoles2.Game
         public int MaxHp { get => _maxHp; set => _maxHp = value; }
         private int _maxHp = 20;
 
-        public int MyRole => _roleManager?.MyRole ?? -1;
-        public int MyFaction => _roleManager?.MyFaction ?? -1;
+        public uint MyRole => _roleManager?.MyRole ?? 0;
+        public uint MyFaction => _roleManager?.MyFaction ?? 0;
         public int CurrentHunger { get; set; } = 20;
         public int MaxHunger { get; set; } = 20;
         private readonly List<int> BGMList = [
@@ -119,7 +119,11 @@ namespace SKNewRoles2.Game
 
             if (_uiController != null)
             {
-                await _uiController.ShowRoleRevealAsync(_roleManager?.MyRole ?? 0, _roleManager?.MyFaction ?? 0, displayTimeMs: 5000);
+                await _uiController.ShowRoleRevealAsync(
+                    (uint)(_roleManager?.MyRole ?? 0),
+                    (uint)(_roleManager?.MyFaction ?? 0),
+                    5000
+                );
             }
 
             _playerManager.EnablePhysics();

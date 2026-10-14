@@ -12,11 +12,11 @@ namespace SKNewRoles2.Game
     {
         private Node _roleManagerCpp;
 
-        public int MyRole { get; private set; } = -1;
-        public int MyFaction { get; private set; } = -1;
+        public uint MyRole { get; private set; } = 0;
+        public uint MyFaction { get; private set; } = 0;
         public bool HasRoleReceived { get; private set; } = false;
 
-        public event Action<int, int> OnRoleApplied;
+        public event Action<uint, uint> OnRoleApplied;
         private readonly RealtimeConnection _connection = new();
 
         public void Initialize(Node roleManagerCppNode)
@@ -67,8 +67,8 @@ namespace SKNewRoles2.Game
                 string targetUserId = key.AsString();
                 var roleData = assignmentResult[key].AsGodotDictionary();
 
-                int assignedRole = roleData["role"].AsInt32();
-                int assignedFaction = roleData["faction"].AsInt32();
+                uint assignedRole = roleData["role"].AsUInt32();
+                uint assignedFaction = roleData["faction"].AsUInt32();
 
                 GD.Print($"🎭 割り当て完了: Player={targetUserId}, Role={assignedRole}, Faction={assignedFaction}");
 
@@ -97,7 +97,7 @@ namespace SKNewRoles2.Game
             return HasRoleReceived;
         }
 
-        private void OnRoleAssignedReceived(string targetUserId, int roleId, int factionId)
+        private void OnRoleAssignedReceived(string targetUserId, uint roleId, uint factionId)
         {
             string myUserId = GetMyUserId();
             if (targetUserId != myUserId && !string.IsNullOrEmpty(targetUserId)) return;
@@ -108,7 +108,7 @@ namespace SKNewRoles2.Game
             GD.Print($"📩 [OnRoleAssignedReceived] 役職データを受信しました: Faction={MyFaction}, Role={MyRole}");
         }
 
-        public void ApplyRole(int roleId, int factionId)
+        public void ApplyRole(uint roleId, uint factionId)
         {
             MyRole = roleId;
             MyFaction = factionId;
