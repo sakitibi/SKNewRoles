@@ -8,8 +8,8 @@ namespace SKNewRoles2.Game
         public static async Task WaitForInitialChunksLoadedAsync(Node3D chunkManagerCpp)
         {
             ushort timeoutMs = 15000;
-            ushort elapsedMs = 0;
-            ushort checkIntervalMs = 100;
+            byte elapsedMs = 0;
+            byte checkIntervalMs = 100;
 
             if (chunkManagerCpp == null)
             {
