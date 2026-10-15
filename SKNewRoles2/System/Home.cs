@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Threading;
 using Godot;
 using SKNewRoles2.Game.BGM;
