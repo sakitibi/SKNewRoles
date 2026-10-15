@@ -61,8 +61,8 @@ int HealthComponent::get_current_hp() const {
     return current_hp;
 }
 
-void HealthComponent::take_damage(int p_amount) {
-    if (is_dead || p_amount <= 0) return;
+void HealthComponent::take_damage(uint32_t p_amount) {
+    if (is_dead || p_amount == 0) return;
 
     UtilityFunctions::print("[Damage] Applied damage: ", p_amount);
     set_current_hp(current_hp - p_amount);

@@ -12,7 +12,7 @@ namespace godot {
             
             // 設定パラメータ
             float safe_fall_height = 3.0f;
-            int damage_per_block = 1;
+            u_int32_t damage_per_block = 1;
 
         protected:
             static void _bind_methods();

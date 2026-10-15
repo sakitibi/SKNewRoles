@@ -48,7 +48,7 @@ namespace godot {
             int get_max_hp() const;
             void set_current_hp(int p_hp);
             int get_current_hp() const;
-            void take_damage(int amount);
+            void take_damage(u_int32_t amount);
             void heal(int amount);
 
             void die();

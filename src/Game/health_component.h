@@ -27,7 +27,7 @@ namespace godot {
             bool get_is_dead() const { return is_dead; }
 
             // HP操作メソッド
-            void take_damage(int p_amount);
+            void take_damage(uint32_t p_amount);
             void heal(int p_amount);
             void die();
             void respawn(int p_health_percentage = 100);

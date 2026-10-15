@@ -36,7 +36,7 @@ void FallDamageComponent::process_fall_damage(CharacterBody3D *player) {
             float fall_distance = fall_start_y - current_pos.y;
 
             if (fall_distance > safe_fall_height) {
-                int damage = static_cast<int>((fall_distance - safe_fall_height) * damage_per_block);
+                uint32_t damage = static_cast<uint32_t>((fall_distance - safe_fall_height) * damage_per_block);
                 if (damage > 0) {
                     if (player->has_method("take_damage")) {
                         player->call("take_damage", damage);

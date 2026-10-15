@@ -164,7 +164,7 @@ int SNR2Player::get_current_hp() const {
     return health_component ? health_component->get_current_hp() : 0;
 }
 
-void SNR2Player::take_damage(int amount) {
+void SNR2Player::take_damage(uint32_t amount) {
     if (health_component) health_component->take_damage(amount);
 }
 

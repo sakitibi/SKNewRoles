@@ -20,7 +20,7 @@ namespace SKNewRoles2.Game.Network
 
         public int PingMs { get; private set; } = -1;
 
-        public event Action<string, string, int> OnAttackReceived;
+        public event Action<string, string, uint> OnAttackReceived;
 
         public async Task<bool> EnsureConnectedAsync()
         {
@@ -105,7 +105,7 @@ namespace SKNewRoles2.Game.Network
                             {
                                 string attackerId = payload.GetProperty("attacker_id").GetString();
                                 string targetId = payload.GetProperty("target_id").GetString();
-                                int damage = payload.GetProperty("damage").GetInt32();
+                                uint damage = payload.GetProperty("damage").GetUInt32();
 
                                 OnAttackReceived?.Invoke(attackerId, targetId, damage);
                             }

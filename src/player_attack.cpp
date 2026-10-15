@@ -40,7 +40,7 @@ void PlayerAttack::process_attack(Node3D *player_node, Camera3D *camera) {
 
             HealthComponent *health = Object::cast_to<HealthComponent>(hit_node->get_node_or_null(NodePath("HealthComponent")));
             if (health) {
-                int damage = 1;
+                uint32_t damage = 1;
                 health->take_damage(damage);
                 UtilityFunctions::print("[PlayerAttack] You dealt damage to the target!");
 

@@ -127,7 +127,7 @@ namespace SKNewRoles2.Game
             }
         }
 
-        public void OnRemoteAttackReceived(string attackerId, string targetId, int damage)
+        public void OnRemoteAttackReceived(string attackerId, string targetId, uint damage)
         {
             string myUserId = MainGameScene.GetMyUserId();
 
