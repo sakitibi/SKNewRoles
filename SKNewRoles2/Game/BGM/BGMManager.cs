@@ -11,7 +11,7 @@ namespace SKNewRoles2.Game.BGM
         [Export] public float WaitDelaySeconds { get; set; } = 5.0f;
 
         private float _currentVolumeDb = 0.0f;
-        private List<int> _currentCandidateIndices = null;
+        private uint[] _currentCandidateIndices = null;
         private bool _isStopping = false;
 
         public List<string> BgmPaths { get; set; } =
@@ -81,7 +81,7 @@ namespace SKNewRoles2.Game.BGM
             GD.Print("🎵 [BGMManager] すべてのBGMパスをクリアしました。");
         }
 
-        public void PlayBgm(float volumeDb = 0.0f, int index = -1, List<int> candidates = null, bool isLoop = true)
+        public void PlayBgm(float volumeDb = 0.0f, int index = -1, uint[] candidates = null, bool isLoop = true)
         {
             _isStopping = false;
             _currentVolumeDb = volumeDb;

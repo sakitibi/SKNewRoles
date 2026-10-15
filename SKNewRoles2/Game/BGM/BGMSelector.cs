@@ -1,4 +1,5 @@
 using Godot;
+using System;
 using System.Collections.Generic;
 
 namespace SKNewRoles2.Game.BGM
@@ -8,25 +9,29 @@ namespace SKNewRoles2.Game.BGM
         /// <summary>
         /// 指定された条件 (直指定 / 候補リスト / 全体) に基づいてインデックスを選出する
         /// </summary>
-        public static int SelectIndex(List<string> bgmPaths, int index = -1, List<int> candidates = null)
+        public static int SelectIndex(List<string> bgmPaths, int index = -1, uint[] candidates = null)
         {
             if (bgmPaths == null || bgmPaths.Count == 0) return -1;
 
+            // 指定されたインデックスが有効範囲内ならそのまま返す
             if (index >= 0 && index < bgmPaths.Count)
             {
                 return index;
             }
 
-            if (candidates != null && candidates.Count > 0)
+            // 候補が指定されている場合
+            if (candidates != null && candidates.Length > 0)
             {
-                List<int> validCandidates = candidates.FindAll(i => i >= 0 && i < bgmPaths.Count);
-                if (validCandidates.Count > 0)
+                uint[] validCandidates = Array.FindAll(candidates, i => i < (uint)bgmPaths.Count);
+                
+                if (validCandidates.Length > 0)
                 {
-                    int randPos = (int)(GD.Randi() % (uint)validCandidates.Count);
-                    return validCandidates[randPos];
+                    uint randPos = GD.Randi() % (uint)validCandidates.Length;
+                    return (int)validCandidates[randPos];
                 }
             }
 
+            // 候補がない、または有効な候補が1つもない場合は全体からランダム選択
             return (int)(GD.Randi() % (uint)bgmPaths.Count);
         }
     }

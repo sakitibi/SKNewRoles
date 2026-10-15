@@ -10,7 +10,7 @@ namespace SKNewRoles2.SNRSystem
         private Button _startButton;
         private Button _exitButton;
         private readonly BGMManager _bgmManager = new();
-        private readonly List<int> BGMList = [
+        private readonly uint[] BGMList = [
             1, 2, 3,
         ];
 
