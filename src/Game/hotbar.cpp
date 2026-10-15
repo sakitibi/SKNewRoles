@@ -38,7 +38,7 @@ int Hotbar::get_selected_slot() const {
     return selected_index_;
 }
 
-void Hotbar::set_slot_item(int index, const String &item_id, int count) {
+void Hotbar::set_slot_item(int index, const String &item_id, uint16_t count) {
     if (index < 0 || index >= 9) return;
 
     slots_[index].item_id = item_id;
@@ -71,48 +71,48 @@ void Hotbar::swap_slots(int slot_a, int slot_b) {
     emit_signal("item_changed", slot_b, slots_[slot_b].item_id, slots_[slot_b].count);
 }
 
-bool Hotbar::add_item(const String &item_id, int count) {
-    if (item_id.is_empty() || count <= 0) return false;
+bool Hotbar::add_item(const String &item_id, uint16_t count) {
+    if (item_id.is_empty() || count == 0) return false;
 
-    const int max_stack = 64;
+    const uint16_t max_stack = 64;
 
     // 既存の同一アイテムのスロットへ加算
     for (int i = 0; i < 9; ++i) {
         if (slots_[i].item_id == item_id && slots_[i].count < max_stack) {
-            int available_space = max_stack - slots_[i].count;
-            int add_amount = (count <= available_space) ? count : available_space;
+            uint16_t available_space = max_stack - slots_[i].count;
+            uint16_t add_amount = (count <= available_space) ? count : available_space;
 
             slots_[i].count += add_amount;
             emit_signal("item_changed", i, slots_[i].item_id, slots_[i].count);
 
             count -= add_amount;
-            if (count <= 0) return true;
+            if (count == 0) return true;
         }
     }
 
     // 空きスロットへ配置
     for (int i = 0; i < 9; ++i) {
         if (slots_[i].item_id.is_empty()) {
-            int add_amount = (count <= max_stack) ? count : max_stack;
+            uint16_t add_amount = (count <= max_stack) ? count : max_stack;
 
             slots_[i].item_id = item_id;
             slots_[i].count = add_amount;
             emit_signal("item_changed", i, slots_[i].item_id, slots_[i].count);
 
             count -= add_amount;
-            if (count <= 0) return true;
+            if (count == 0) return true;
         }
     }
 
     return count == 0;
 }
 
-bool Hotbar::consume_item(int index, int amount) {
+bool Hotbar::consume_item(int index, uint16_t amount) {
     if (index < 0 || index >= 9) return false;
     if (slots_[index].item_id.is_empty() || slots_[index].count < amount) return false;
 
     slots_[index].count -= amount;
-    if (slots_[index].count <= 0) {
+    if (slots_[index].count == 0) {
         slots_[index].item_id = "";
         slots_[index].count = 0;
     }

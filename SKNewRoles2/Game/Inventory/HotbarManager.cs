@@ -28,13 +28,13 @@ namespace SKNewRoles2.Game.Inventory
 
                 if (_hotbarNode.HasSignal("slot_changed"))
                 {
-                    if (!_hotbarNode.IsConnected("slot_changed", Callable.From<int>(OnSlotChanged)))
-                        _hotbarNode.Connect("slot_changed", Callable.From<int>(OnSlotChanged));
+                    if (!_hotbarNode.IsConnected("slot_changed", Callable.From<ushort>(OnSlotChanged)))
+                        _hotbarNode.Connect("slot_changed", Callable.From<ushort>(OnSlotChanged));
                 }
                 if (_hotbarNode.HasSignal("item_changed"))
                 {
-                    if (!_hotbarNode.IsConnected("item_changed", Callable.From<int, string, int>(OnItemChanged)))
-                        _hotbarNode.Connect("item_changed", Callable.From<int, string, int>(OnItemChanged));
+                    if (!_hotbarNode.IsConnected("item_changed", Callable.From<int, string, ushort>(OnItemChanged)))
+                        _hotbarNode.Connect("item_changed", Callable.From<int, string, ushort>(OnItemChanged));
                 }
             }
             else
@@ -46,7 +46,7 @@ namespace SKNewRoles2.Game.Inventory
         public override void _UnhandledInput(InputEvent @event)
         {
             // キーボード入力（数字の 1〜9 キー）の判定
-            for (int i = 0; i < 9; i++)
+            for (ushort i = 0; i < 9; i++)
             {
                 if (@event.IsActionPressed($"hotbar_slot_{i + 1}"))
                 {
@@ -97,7 +97,7 @@ namespace SKNewRoles2.Game.Inventory
         /// <summary>
         /// アイテム入手・配布時に外部から呼び出す処理
         /// </summary>
-        public bool PickupItem(string itemId, int count = 1)
+        public bool PickupItem(string itemId, ushort count = 1)
         {
             if (_hotbarNode != null && IsInstanceValid(_hotbarNode) && _hotbarNode.HasMethod("add_item"))
             {
@@ -107,7 +107,7 @@ namespace SKNewRoles2.Game.Inventory
             return false;
         }
 
-        public void SelectSlot(int index)
+        public void SelectSlot(ushort index)
         {
             if (index < 0 || index >= 9) return;
             _currentSlotIndex = index;
@@ -118,7 +118,7 @@ namespace SKNewRoles2.Game.Inventory
             }
         }
 
-        private void OnSlotChanged(int newIndex)
+        private void OnSlotChanged(ushort newIndex)
         {
             _currentSlotIndex = newIndex;
 
@@ -129,7 +129,7 @@ namespace SKNewRoles2.Game.Inventory
             _ = SendHotbarSlotAsync(newIndex);
         }
 
-        private void OnItemChanged(int slotIndex, string itemId, int count)
+        private void OnItemChanged(int slotIndex, string itemId, ushort count)
         {
             GD.Print($"📦 [HotbarManager] ItemChanged 受信: Slot={slotIndex}, Item={itemId}, Count={count}");
 

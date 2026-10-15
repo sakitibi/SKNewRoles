@@ -10,7 +10,7 @@
 namespace godot {
     struct HotbarSlotData {
         String item_id = "";
-        int count = 0;
+        uint16_t count = 0;
     };
 
     class Hotbar : public Node {
@@ -30,12 +30,12 @@ namespace godot {
             void select_slot(int index);
             int get_selected_slot() const;
 
-            void set_slot_item(int index, const String &item_id, int count);
+            void set_slot_item(int index, const String &item_id, uint16_t count);
             Dictionary get_slot_item(int index) const;
 
             void swap_slots(int slot_a, int slot_b);
 
-            bool add_item(const String &item_id, int count = 1);
-            bool consume_item(int index, int amount = 1);
+            bool add_item(const String &item_id, uint16_t count = 1);
+            bool consume_item(int index, uint16_t amount = 1);
     };
 }

@@ -40,7 +40,7 @@ namespace SKNewRoles2.Game.Player
             _playerSpawner.SetPlayerPhysicsEnabled(MyPlayerInstance, true);
         }
 
-        public void GrantInitialItems(HotbarManager hotbarManager)
+        public static void GrantInitialItems(HotbarManager hotbarManager)
         {
             if (hotbarManager != null)
             {
