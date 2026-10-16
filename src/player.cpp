@@ -141,9 +141,10 @@ void SNR2Player::_input(const Ref<InputEvent> &event) {
     }
 
     Ref<InputEventMouseButton> mouse_button = event;
+    Ref<PlayerAttack> attack = memnew(PlayerAttack);
     if (mouse_button.is_valid() && mouse_button->is_pressed() && mouse_button->get_button_index() == MouseButton::MOUSE_BUTTON_LEFT) {
         if (!is_spectator()) {
-            PlayerAttack::process_attack(this, camera);
+            attack->process_attack(this, camera);
         }
     }
 }
