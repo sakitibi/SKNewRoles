@@ -159,7 +159,7 @@ namespace SKNewRoles2.Game.Inventory
             }
         }
 
-        private async Task SendHotbarItemAsync(int slotIndex, string itemId, int count)
+        private async Task SendHotbarItemAsync(int slotIndex, string itemId, ushort count)
         {
             try
             {
