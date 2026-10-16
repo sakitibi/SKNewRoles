@@ -37,6 +37,10 @@ namespace SKNewRoles2.Game.Player
 
                 targetPlayer = _opponentScene.Instantiate<Node3D>();
                 targetPlayer.Name = $"RemotePlayer_{senderId}";
+                
+                // ★ ここで C++ 側のレイキャストから逆引きできるように player_id メタデータを付与する
+                targetPlayer.SetMeta("player_id", senderId);
+
                 AddChild(targetPlayer);
                 
                 _otherPlayers[senderId] = targetPlayer;
@@ -129,7 +133,6 @@ namespace SKNewRoles2.Game.Player
             playerNode.Visible = visible;
             if (!visible) return;
 
-            // 子ノードの MeshInstance3D に対してアルファ値を適用
             SetNodeAlphaRecursive(playerNode, isTransparent ? 0.2f : 1.0f);
         }
 
