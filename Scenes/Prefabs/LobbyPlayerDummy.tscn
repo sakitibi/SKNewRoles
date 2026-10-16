@@ -65,6 +65,12 @@ size = Vector3(0.25, 0.75, 0.25)
 material = SubResource("ShaderMat_LeftLeg")
 size = Vector3(0.25, 0.75, 0.25)
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_player"]
+size = Vector3(0.6, 1.8, 0.6)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_player")
+
 [node name="LobbyPlayerDummy" type="RemotePlayer" unique_id=1645808363]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 
@@ -93,3 +99,9 @@ mesh = SubResource("BoxMesh_RightLeg")
 [node name="LeftLeg" type="MeshInstance3D" parent="SkinModel"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.125, -0.75, 0)
 mesh = SubResource("BoxMesh_LeftLeg")
+
+[node name="HitboxArea" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.125, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HitboxArea"]
+shape = SubResource("CapsuleShape3D_Player")
