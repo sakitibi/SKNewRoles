@@ -100,7 +100,7 @@ namespace SKNewRoles2.Game
             scene.SetRemotePlayerHp(currentHp);
 
             string myUserId = MainGameScene.GetMyUserId();
-            _ = SafeSendHpAsync(myUserId, currentHp, maxHp);
+            _ = SafeSendHpAsync(myUserId, (uint)Math.Max(0, currentHp), (uint)Math.Max(0, maxHp));
         }
 
         public void OnMyPlayerHungerChanged(int currentHunger, int maxHunger)
@@ -111,7 +111,7 @@ namespace SKNewRoles2.Game
             scene.UIController?.UpdateHunger(currentHunger, maxHunger);
 
             string myUserId = MainGameScene.GetMyUserId();
-            _ = SafeSendHungerAsync(myUserId, currentHunger, maxHunger);
+            _ = SafeSendHungerAsync(myUserId, (uint)Math.Max(0, currentHunger), (uint)Math.Max(0, maxHunger));
         }
 
         public void OnPlayerAttacked(Node hitNode, int damage)
@@ -123,7 +123,7 @@ namespace SKNewRoles2.Game
 
             if (!string.IsNullOrEmpty(targetUserId))
             {
-                _ = SafeSendAttackAsync(myUserId, targetUserId, damage);
+                _ = SafeSendAttackAsync(myUserId, targetUserId, (uint)Math.Max(0, damage));
             }
         }
 
@@ -136,7 +136,7 @@ namespace SKNewRoles2.Game
             if (!string.IsNullOrEmpty(targetPlayerId))
             {
                 GD.Print($"⚔️ [Network] リモートプレイヤー ({targetPlayerId}) への攻撃を検知、ダメージ送信を行います。");
-                _ = SafeSendAttackAsync(myUserId, targetPlayerId, (int)damage);
+                _ = SafeSendAttackAsync(myUserId, targetPlayerId, damage);
             }
         }
 
@@ -155,7 +155,7 @@ namespace SKNewRoles2.Game
             }
         }
 
-        private async Task SafeSendHpAsync(string userId, int currentHp, int maxHp)
+        private async Task SafeSendHpAsync(string userId, uint currentHp, uint maxHp)
         {
             try
             {
@@ -167,7 +167,7 @@ namespace SKNewRoles2.Game
             }
         }
 
-        private async Task SafeSendHungerAsync(string userId, int currentHunger, int maxHunger)
+        private async Task SafeSendHungerAsync(string userId, uint currentHunger, uint maxHunger)
         {
             try
             {
@@ -179,7 +179,7 @@ namespace SKNewRoles2.Game
             }
         }
 
-        private async Task SafeSendAttackAsync(string attackerId, string targetId, int damage)
+        private async Task SafeSendAttackAsync(string attackerId, string targetId, uint damage)
         {
             try
             {
