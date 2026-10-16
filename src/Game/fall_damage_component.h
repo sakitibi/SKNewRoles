@@ -2,6 +2,7 @@
 
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/classes/character_body3d.hpp>
+#include <cstdint>
 
 namespace godot {
     class FallDamageComponent : public Node3D {
@@ -12,7 +13,7 @@ namespace godot {
             
             // 設定パラメータ
             float safe_fall_height = 3.0f;
-            u_int32_t damage_per_block = 1;
+            uint32_t damage_per_block = 1;
 
         protected:
             static void _bind_methods();
