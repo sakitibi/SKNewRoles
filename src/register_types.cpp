@@ -3,6 +3,7 @@
 
 #include "register_types.h"
 #include "player.h"
+#include "player_attack.h"
 #include "lobby_manager.h"
 #include "remote_player.h"
 #include "config_manager.h"
@@ -34,6 +35,7 @@ void initialize_player_module(ModuleInitializationLevel p_level) {
         return;
     }
     ClassDB::register_class<SNR2Player>();
+    ClassDB::register_class<PlayerAttack>();
     ClassDB::register_class<BlockRegistry>();
     ClassDB::register_class<BlockMeshCache>();
     ClassDB::register_class<SNR2FallingBlock>();

@@ -127,9 +127,6 @@ namespace SKNewRoles2.Game
             }
         }
 
-        /// <summary>
-        /// C++側からリモートプレイヤーへのヒット時に飛んでくるシグナルを受け取る
-        /// </summary>
         public void OnPlayerAttackedRemote(string targetPlayerId, uint damage)
         {
             string myUserId = MainGameScene.GetMyUserId();
@@ -145,7 +142,6 @@ namespace SKNewRoles2.Game
             string myUserId = MainGameScene.GetMyUserId();
             GD.Print($"📥 [Network受信] 攻撃イベントを受信: Attacker={attackerId}, Target={targetId}, 自分のID={myUserId}");
 
-            // 自分自身がターゲットだった場合
             if (targetId == myUserId)
             {
                 if (scene.HealthComponent != null && GodotObject.IsInstanceValid(scene.HealthComponent))

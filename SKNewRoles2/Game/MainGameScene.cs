@@ -84,12 +84,6 @@ namespace SKNewRoles2.Game
                         GD.Print("✅ [MainGameScene] HungerComponent のシグナル接続に成功しました。");
                     }
                 }
-
-                if (!MyPlayerInstance.IsConnected("player_attacked_remote", Callable.From<string, uint>(_networkHandler.OnPlayerAttackedRemote)))
-                {
-                    MyPlayerInstance.Connect("player_attacked_remote", Callable.From<string, uint>(_networkHandler.OnPlayerAttackedRemote));
-                    GD.Print("✅ [MainGameScene] player_attacked_remote シグナル接続に成功しました。");
-                }
             }
 
             _hotbarManager = GetNodeOrNull<HotbarManager>("HotbarManager");
@@ -130,6 +124,43 @@ namespace SKNewRoles2.Game
             }
 
             _playerManager.EnablePhysics();
+        }
+
+        public override void _Input(InputEvent @event)
+        {
+            // マウスの左クリックで攻撃
+            if (@event is InputEventMouseButton mouseEvent && mouseEvent.Pressed && mouseEvent.ButtonIndex == MouseButton.Left)
+            {
+                var camera = GetViewport().GetCamera3D();
+                if (MyPlayerInstance != null && camera != null && IsInstanceValid(MyPlayerInstance))
+                {
+                    PerformAttack(camera);
+                }
+            }
+        }
+
+        private void PerformAttack(Camera3D camera)
+        {
+            GodotObject playerAttack = ClassDB.Instantiate("PlayerAttack").AsGodotObject();
+            if (playerAttack != null)
+            {
+                using (playerAttack)
+                {
+                    Variant targetIdVar = playerAttack.Call("process_attack", MyPlayerInstance, camera);
+                    string targetPlayerId = targetIdVar.AsString();
+
+                    if (!string.IsNullOrEmpty(targetPlayerId))
+                    {
+                        uint damage = 1;
+                        GD.Print($"⚔️ [MainGameScene] リモートプレイヤー攻撃検知: Target={targetPlayerId}");
+                        _networkHandler.OnPlayerAttackedRemote(targetPlayerId, damage);
+                    }
+                }
+            }
+            else
+            {
+                GD.PrintErr("❌ [MainGameScene] PlayerAttack クラスのインスタンス化に失敗しました。ClassDBへの登録を確認してください。");
+            }
         }
 
         public override void _Process(double delta)

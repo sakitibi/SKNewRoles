@@ -9,8 +9,12 @@
 
 using namespace godot;
 
-void PlayerAttack::process_attack(Node3D *player_node, Camera3D *camera) {
-    if (!player_node || !camera) return;
+void PlayerAttack::_bind_methods() {
+    ClassDB::bind_method(D_METHOD("process_attack", "player_node", "camera"), &PlayerAttack::process_attack);
+}
+
+String PlayerAttack::process_attack(Node3D *player_node, Camera3D *camera) {
+    if (!player_node || !camera) return "";
 
     Transform3D cam_transform = camera->get_global_transform();
     Vector3 origin = cam_transform.origin;
@@ -18,13 +22,12 @@ void PlayerAttack::process_attack(Node3D *player_node, Camera3D *camera) {
     Vector3 target = origin + forward * 3.0f;
 
     Ref<World3D> world = player_node->get_world_3d();
-    if (!world.is_valid()) return;
+    if (!world.is_valid()) return "";
 
     PhysicsDirectSpaceState3D *space_state = world->get_direct_space_state();
-    if (!space_state) return;
+    if (!space_state) return "";
 
     Ref<PhysicsRayQueryParameters3D> query = PhysicsRayQueryParameters3D::create(origin, target);
-    
     query->set_collide_with_areas(true);
 
     CollisionObject3D *player_col = Object::cast_to<CollisionObject3D>(player_node);
@@ -45,8 +48,7 @@ void PlayerAttack::process_attack(Node3D *player_node, Camera3D *camera) {
                 uint32_t damage = 1;
                 health->take_damage(damage);
                 UtilityFunctions::print("[PlayerAttack] You dealt damage to the target!");
-
-                player_node->emit_signal("player_attacked", hit_node, damage);
+                return "";
             }
             else {
                 Node *current = hit_node;
@@ -61,10 +63,8 @@ void PlayerAttack::process_attack(Node3D *player_node, Camera3D *camera) {
                 }
 
                 if (!target_player_id.is_empty()) {
-                    uint32_t damage = 1;
                     UtilityFunctions::print("[PlayerAttack] Hit remote player ID: ", target_player_id);
-
-                    player_node->emit_signal("player_attacked_remote", target_player_id, damage);
+                    return target_player_id;
                 } else {
                     UtilityFunctions::print("[PlayerAttack] Hit an object, but player_id metadata was not found.");
                 }
@@ -73,4 +73,6 @@ void PlayerAttack::process_attack(Node3D *player_node, Camera3D *camera) {
     } else {
         UtilityFunctions::print("[PlayerAttack] There were no targets within range.");
     }
+
+    return "";
 }
