@@ -135,7 +135,7 @@ namespace SKNewRoles2.Game
             string myUserId = MainGameScene.GetMyUserId();
             if (!string.IsNullOrEmpty(targetPlayerId))
             {
-                GD.Print($"⚔️ [Network] リモートプレイヤー ({targetPlayerId}) への攻撃を検知、ダメージ送信を行います。");
+                GD.Print($"⚔️ [Network送信前] Attacker={myUserId} -> Target={targetPlayerId} へダメージ {damage} を送信します。");
                 _ = SafeSendAttackAsync(myUserId, targetPlayerId, damage);
             }
         }
@@ -143,15 +143,24 @@ namespace SKNewRoles2.Game
         public void OnRemoteAttackReceived(string attackerId, string targetId, uint damage)
         {
             string myUserId = MainGameScene.GetMyUserId();
+            GD.Print($"📥 [Network受信] 攻撃イベントを受信: Attacker={attackerId}, Target={targetId}, 自分のID={myUserId}");
 
             // 自分自身がターゲットだった場合
             if (targetId == myUserId)
             {
                 if (scene.HealthComponent != null && GodotObject.IsInstanceValid(scene.HealthComponent))
                 {
-                    GD.Print($"⚔️ [Network] プレイヤーが {attackerId} から {damage} のダメージを受けました！");
+                    GD.Print($"💥 [被弾処理成功] プレイヤーが {attackerId} から {damage} のダメージを受けました！");
                     scene.HealthComponent.Call("take_damage", damage);
                 }
+                else
+                {
+                    GD.PrintErr("❌ [被弾エラー] HealthComponent が無効なためダメージを適用できません。");
+                }
+            }
+            else
+            {
+                GD.Print("ℹ️ [Network受信] 自分宛ての攻撃ではないため無視しました。");
             }
         }
 
@@ -184,6 +193,7 @@ namespace SKNewRoles2.Game
             try
             {
                 await RealtimeBroadcaster.SendAttackAsync(scene.Connection, attackerId, targetId, damage);
+                GD.Print("✅ [Realtime] 攻撃のブロードキャスト送信処理が完了しました。");
             }
             catch (Exception ex)
             {
