@@ -4,6 +4,7 @@
 #include <godot_cpp/classes/camera3d.hpp>
 #include <godot_cpp/classes/input_event.hpp>
 #include <godot_cpp/classes/input.hpp>
+#include <cstdint>
 
 #include "Game/health_component.h"
 #include "Game/spectator_component.h"
@@ -48,7 +49,7 @@ namespace godot {
             int get_max_hp() const;
             void set_current_hp(int p_hp);
             int get_current_hp() const;
-            void take_damage(u_int32_t amount);
+            void take_damage(uint32_t amount);
             void heal(int amount);
 
             void die();
