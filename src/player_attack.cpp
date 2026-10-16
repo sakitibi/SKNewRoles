@@ -25,6 +25,8 @@ void PlayerAttack::process_attack(Node3D *player_node, Camera3D *camera) {
 
     Ref<PhysicsRayQueryParameters3D> query = PhysicsRayQueryParameters3D::create(origin, target);
     
+    query->set_collide_with_areas(true);
+
     CollisionObject3D *player_col = Object::cast_to<CollisionObject3D>(player_node);
     if (player_col) {
         Array exclude_array;
@@ -45,6 +47,13 @@ void PlayerAttack::process_attack(Node3D *player_node, Camera3D *camera) {
                 UtilityFunctions::print("[PlayerAttack] You dealt damage to the target!");
 
                 player_node->emit_signal("player_attacked", hit_node, damage);
+            }
+            else if (hit_node->has_meta("player_id")) {
+                String target_player_id = hit_node->get_meta("player_id");
+                uint32_t damage = 1;
+                UtilityFunctions::print("[PlayerAttack] Hit remote player: ", target_player_id);
+
+                player_node->emit_signal("player_attacked_remote", target_player_id, damage);
             }
         }
     } else {

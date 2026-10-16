@@ -14,8 +14,6 @@ namespace SKNewRoles2.Game
         private readonly PackedScene _opponentScene = GD.Load<PackedScene>("res://Scenes/Prefabs/LobbyPlayerDummy.tscn");
 
         private readonly PlayerManager _playerManager = new();
-        private readonly GameInitializer _initializer = new();
-
         public Node3D MyPlayerInstance => _playerManager.MyPlayerInstance;
         public Node HealthComponent => _playerManager.HealthComponent;
         
@@ -85,6 +83,12 @@ namespace SKNewRoles2.Game
                         hungerComp.Connect("hunger_changed", Callable.From<int, int>(_networkHandler.OnMyPlayerHungerChanged));
                         GD.Print("✅ [MainGameScene] HungerComponent のシグナル接続に成功しました。");
                     }
+                }
+
+                if (!MyPlayerInstance.IsConnected("player_attacked_remote", Callable.From<string, uint>(_networkHandler.OnPlayerAttackedRemote)))
+                {
+                    MyPlayerInstance.Connect("player_attacked_remote", Callable.From<string, uint>(_networkHandler.OnPlayerAttackedRemote));
+                    GD.Print("✅ [MainGameScene] player_attacked_remote シグナル接続に成功しました。");
                 }
             }
 

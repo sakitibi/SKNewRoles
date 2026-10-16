@@ -127,6 +127,19 @@ namespace SKNewRoles2.Game
             }
         }
 
+        /// <summary>
+        /// C++側からリモートプレイヤーへのヒット時に飛んでくるシグナルを受け取る
+        /// </summary>
+        public void OnPlayerAttackedRemote(string targetPlayerId, uint damage)
+        {
+            string myUserId = MainGameScene.GetMyUserId();
+            if (!string.IsNullOrEmpty(targetPlayerId))
+            {
+                GD.Print($"⚔️ [Network] リモートプレイヤー ({targetPlayerId}) への攻撃を検知、ダメージ送信を行います。");
+                _ = SafeSendAttackAsync(myUserId, targetPlayerId, (int)damage);
+            }
+        }
+
         public void OnRemoteAttackReceived(string attackerId, string targetId, uint damage)
         {
             string myUserId = MainGameScene.GetMyUserId();

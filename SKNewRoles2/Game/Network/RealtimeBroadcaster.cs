@@ -46,7 +46,7 @@ namespace SKNewRoles2.Game.Network
             return Task.CompletedTask;
         }
 
-        public static Task SendHpAsync(RealtimeConnection connection, string playerId, int currentHp, int maxHp)
+        public static Task SendHpAsync(RealtimeConnection connection, string playerId, uint currentHp, uint maxHp)
         {
             if (!IsReady(connection)) return Task.CompletedTask;
 
@@ -62,7 +62,7 @@ namespace SKNewRoles2.Game.Network
             return Task.CompletedTask;
         }
 
-        public static Task SendHungerAsync(RealtimeConnection connection, string playerId, int currentHunger, int maxHunger)
+        public static Task SendHungerAsync(RealtimeConnection connection, string playerId, uint currentHunger, uint maxHunger)
         {
             if (!IsReady(connection)) return Task.CompletedTask;
 
@@ -94,7 +94,7 @@ namespace SKNewRoles2.Game.Network
             return Task.CompletedTask;
         }
 
-        public static Task SendHotbarItemAsync(RealtimeConnection connection, string playerId, int slotIndex, string itemId, int count)
+        public static Task SendHotbarItemAsync(RealtimeConnection connection, string playerId, int slotIndex, string itemId, ushort count)
         {
             if (!IsReady(connection)) return Task.CompletedTask;
 
@@ -110,7 +110,7 @@ namespace SKNewRoles2.Game.Network
             return Task.CompletedTask;
         }
 
-        public static Task SendAttackAsync(RealtimeConnection connection, string attackerId, string targetId, int damage)
+        public static Task SendAttackAsync(RealtimeConnection connection, string attackerId, string targetId, uint damage)
         {
             if (!IsReady(connection)) return Task.CompletedTask;
 
