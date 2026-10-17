@@ -9,13 +9,13 @@
 using namespace godot;
 
 void RoleManager::_bind_methods() {
-    ClassDB::bind_method(D_METHOD("assign_roles", "player_ids", "role_counts"), &RoleManager::assign_roles);
+    ClassDB::bind_method(D_METHOD("assign_roles", "player_ids", "role_counts", "role_factions"), &RoleManager::assign_roles, DEFVAL(Dictionary()));
 }
 
 RoleManager::RoleManager() {}
 RoleManager::~RoleManager() {}
 
-Dictionary RoleManager::assign_roles(Array player_ids, Dictionary role_counts) {
+Dictionary RoleManager::assign_roles(Array player_ids, Dictionary role_counts, Dictionary role_factions) {
     Dictionary result;
     int total_players = player_ids.size();
 
@@ -23,23 +23,20 @@ Dictionary RoleManager::assign_roles(Array player_ids, Dictionary role_counts) {
         return result;
     }
 
-    // 役職のプールを作成
-    std::vector<int> role_pool;
+    std::vector<uint32_t> role_pool;
 
-    // Dictionary で指定された役職と人数をプールに追加
     Array keys = role_counts.keys();
     for (int i = 0; i < keys.size(); ++i) {
-        int role_id = keys[i];
-        int count = role_counts[keys[i]];
+        uint32_t role_id = static_cast<uint32_t>(keys[i]);
+        uint32_t count = static_cast<uint32_t>(role_counts[keys[i]]);
 
-        for (int c = 0; c < count && role_pool.size() < static_cast<size_t>(total_players); ++c) {
+        for (uint32_t c = 0; c < count && role_pool.size() < static_cast<size_t>(total_players); ++c) {
             role_pool.push_back(role_id);
         }
     }
 
-    // 定員に達していない場合は、残りを「村人」で埋める
     while (role_pool.size() < static_cast<size_t>(total_players)) {
-        role_pool.push_back(Role::CITIZEN);
+        role_pool.push_back(DefaultRoles::STUDENTS);
     }
 
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
@@ -47,14 +44,17 @@ Dictionary RoleManager::assign_roles(Array player_ids, Dictionary role_counts) {
 
     for (int i = 0; i < total_players; ++i) {
         String player_id = player_ids[i];
-        int assigned_role = role_pool[i];
-        int assigned_faction = Faction::CITIZEN_FACTION;
+        uint32_t assigned_role = role_pool[i];
+        uint32_t assigned_faction = DefaultFactions::STUDENTS_FACTION;
 
-        // 役職に応じた陣営の判定
-        if (assigned_role == Role::WEREWOLF) {
-            assigned_faction = Faction::WEREWOLF_FACTION;
+        if (role_factions.has(assigned_role)) {
+            assigned_faction = static_cast<uint32_t>(role_factions[assigned_role]);
         } else {
-            assigned_faction = Faction::CITIZEN_FACTION;
+            if (assigned_role == DefaultRoles::WEREWOLF) {
+                assigned_faction = DefaultFactions::WEREWOLF_FACTION;
+            } else {
+                assigned_faction = DefaultFactions::STUDENTS_FACTION;
+            }
         }
 
         Dictionary player_data;

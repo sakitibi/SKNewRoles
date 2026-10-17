@@ -4,20 +4,19 @@
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/array.hpp>
 #include <godot_cpp/variant/string.hpp>
+#include <cstdint>
 
 namespace godot {
-    // 陣営（Faction）の定義
-    enum Faction {
-        CITIZEN_FACTION = 0, // 村人陣営
-        WEREWOLF_FACTION = 1, // 人狼陣営
-        NEUTRAL_FACTION = 2  // 第三陣営
-    };
+    namespace DefaultRoles {
+        const uint32_t STUDENTS = 0;
+        const uint32_t WEREWOLF = 1;
+    }
 
-    // 役職（Role）の定義
-    enum Role {
-        CITIZEN = 0,    // 村人
-        WEREWOLF = 1,   // 人狼
-    };
+    namespace DefaultFactions {
+        const uint32_t STUDENTS_FACTION = 0;
+        const uint32_t WEREWOLF_FACTION = 1;
+        const uint32_t NEUTRAL_FACTION = 2;
+    }
 
     class RoleManager : public Node {
         GDCLASS(RoleManager, Node);
@@ -29,6 +28,6 @@ namespace godot {
             RoleManager();
             ~RoleManager();
 
-            Dictionary assign_roles(Array player_ids, Dictionary role_counts);
+            Dictionary assign_roles(Array player_ids, Dictionary role_counts, Dictionary role_factions = Dictionary());
     };
 }

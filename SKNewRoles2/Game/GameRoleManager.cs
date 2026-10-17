@@ -53,13 +53,24 @@ namespace SKNewRoles2.Game
                 playerIdsArray.Add(myUserId);
             }
 
+            uint witchRoleId = RoleInfo.RoleIdDictionary["witch"];
+
             Dictionary roleCountsDict = [];
-            roleCountsDict[RoleInfo.RoleIdDictionary.GetValueOrDefault("witch")] = 1; // 人狼 (1人)
+            roleCountsDict[witchRoleId] = 1;
 
-            GD.Print($"🎲 [AssignRoles] {playerIdsArray.Count} 人のプレイヤーに役職を割り当てます");
+            Dictionary roleFactionsDict = [];
+            roleFactionsDict[witchRoleId] = 1;
 
-            var rawResult = _roleManagerCpp.Call("assign_roles", playerIdsArray, roleCountsDict);
+            GD.Print($"🎲 [AssignRoles] {playerIdsArray.Count} 人のプレイヤーに役職を割り当てます (Witch ID: {witchRoleId})");
+
+            var rawResult = _roleManagerCpp.Call("assign_roles", playerIdsArray, roleCountsDict, roleFactionsDict);
             var assignmentResult = rawResult.AsGodotDictionary();
+
+            if (assignmentResult == null || assignmentResult.Count == 0)
+            {
+                GD.PrintErr("❌ [AssignRoles] C++ 側からの役職割り当て結果が空です。");
+                return;
+            }
 
             var keysList = new Array<Variant>(assignmentResult.Keys);
             int count = keysList.Count;
