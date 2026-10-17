@@ -47,27 +47,27 @@ namespace SKNewRoles2.Game
         {
             GD.Print("[_Ready] 開始");
 
-            _networkHandler = new MainGameSceneNetwork(this);
+            _networkHandler = new(this);
 
             _connection.OnAttackReceived += _networkHandler.OnRemoteAttackReceived;
 
-            _bgmManager = new BGMManager();
+            _bgmManager = new();
             AddChild(_bgmManager);
 
-            _uiController = new GameUIController();
+            _uiController = new();
             AddChild(_uiController);
             _uiController.Initialize(this);
 
             _uiController.SetFpsLabelPathToHud("FPSText");
             _uiController.SetLabelPathToHud("PositionText");
 
-            _roleManager = new GameRoleManager();
+            _roleManager = new();
             AddChild(_roleManager);
 
-            _remotePlayerManager = new RemotePlayerManager();
+            _remotePlayerManager = new();
             AddChild(_remotePlayerManager);
 
-            _chunkManagerCpp = GetNodeOrNull<Node3D>("ChunkManager");
+            _chunkManagerCpp = GetNode<Node3D>("ChunkManager");
 
             _playerManager.SpawnPlayer(this, _networkHandler, _chunkManagerCpp);
 
@@ -75,7 +75,7 @@ namespace SKNewRoles2.Game
             {
                 _uiController.SetPlayerPathToHud(MyPlayerInstance.GetPath());
 
-                var hungerComp = MyPlayerInstance.GetNodeOrNull("HungerComponent");
+                var hungerComp = MyPlayerInstance.GetNode("HungerComponent");
                 if (hungerComp != null && IsInstanceValid(hungerComp))
                 {
                     if (!hungerComp.IsConnected("hunger_changed", Callable.From<int, int>(_networkHandler.OnMyPlayerHungerChanged)))
@@ -86,8 +86,8 @@ namespace SKNewRoles2.Game
                 }
             }
 
-            _hotbarManager = GetNodeOrNull<HotbarManager>("HotbarManager");
-            var hotbarNode = GetNodeOrNull<Node>("Hotbar");
+            _hotbarManager = GetNode<HotbarManager>("HotbarManager");
+            var hotbarNode = GetNode<Node>("Hotbar");
             
             if (_hotbarManager != null)
             {
