@@ -54,11 +54,15 @@ namespace SKNewRoles2.Game
 
             uint witchRoleId = RoleInfo.RoleIdDictionary["witch"];
 
-            Dictionary roleCountsDict = [];
-            roleCountsDict[witchRoleId] = 1;
+            Dictionary roleCountsDict = new()
+            {
+                { witchRoleId, 1 }
+            };
 
-            Dictionary roleFactionsDict = [];
-            roleFactionsDict[witchRoleId] = 1;
+            Dictionary roleFactionsDict = new()
+            {
+                { witchRoleId, 1 }
+            };
 
             GD.Print($"🎲 [AssignRoles] {playerIdsArray.Count} 人のプレイヤーに役職を割り当てます (Witch ID: {witchRoleId})");
 
