@@ -34,20 +34,20 @@ Dictionary RoleManager::assign_roles(Array player_ids, Dictionary role_counts, D
         uint32_t role_id = static_cast<uint32_t>(keys[i]);
         uint32_t count = static_cast<uint32_t>(role_counts[keys[i]]);
 
-        UtilityFunctions::print("[RoleManager] Processing role_id: ", role_id, ", count: ", count);
+        UtilityFunctions::print("[RoleManager] Processing role_id: ", static_cast<int64_t>(role_id), ", count: ", static_cast<int64_t>(count));
 
         for (uint32_t c = 0; c < count && role_pool.size() < static_cast<size_t>(total_players); ++c) {
             role_pool.push_back(role_id);
         }
     }
 
-    UtilityFunctions::print("[RoleManager] Pool size after role_counts: ", role_pool.size());
+    UtilityFunctions::print("[RoleManager] Pool size after role_counts: ", static_cast<int64_t>(role_pool.size()));
 
     while (role_pool.size() < static_cast<size_t>(total_players)) {
         role_pool.push_back(DefaultRoles::STUDENTS);
     }
 
-    UtilityFunctions::print("[RoleManager] Final role_pool size: ", role_pool.size());
+    UtilityFunctions::print("[RoleManager] Final role_pool size: ", static_cast<int64_t>(role_pool.size()));
 
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::shuffle(role_pool.begin(), role_pool.end(), std::default_random_engine(seed));
@@ -72,7 +72,7 @@ Dictionary RoleManager::assign_roles(Array player_ids, Dictionary role_counts, D
         player_data["faction"] = assigned_faction;
 
         result[player_id] = player_data;
-        UtilityFunctions::print("[RoleManager] Assigned - Player: ", player_id, ", Role: ", assigned_role, ", Faction: ", assigned_faction);
+        UtilityFunctions::print("[RoleManager] Assigned - Player: ", player_id, ", Role: ", static_cast<int64_t>(assigned_role), ", Faction: ", static_cast<int64_t>(assigned_faction));
     }
 
     UtilityFunctions::print("[RoleManager] assign_roles finished.");
