@@ -1,0 +1,7 @@
+if [ "$1" == "cp" ]; then
+    cp -fr ./SKNewRoles.app ./SKNewRoles2.app
+elif [ "$1" == "rm" ]; then
+    rm -fr ./SKNewRoles2.app
+else
+    echo "command notfound: ${1}"
+fi
