@@ -7,18 +7,23 @@ namespace SKNewRoles2.Game.Player
     public partial class RemotePlayerManager : Node
     {
         private PackedScene _opponentScene;
+        private RealtimeConnection _connection;
         private readonly Dictionary<string, Node3D> _otherPlayers = [];
-        private readonly Dictionary<string, int> _otherPlayerHps = []; // 各相手のHP保持用
+        private readonly Dictionary<string, int> _otherPlayerHps = [];
         private string _myUserId;
         private int _myHp = 20;
 
-        public void Initialize(PackedScene opponentScene, string myUserId)
+        public void Initialize(PackedScene opponentScene, string myUserId, RealtimeConnection connection)
         {
             _opponentScene = opponentScene;
             _myUserId = myUserId;
+            _connection = connection;
 
-            RealtimeMessageDispatcher.OnPlayerTransformReceivedAll += OnPlayerTransformReceivedAll;
-            RealtimeMessageDispatcher.OnPlayerHpReceived += OnOtherPlayerHpReceived;
+            if (_connection != null)
+            {
+                _connection.OnTransformReceived += OnPlayerTransformReceivedAll;
+                _connection.OnHpReceived += OnOtherPlayerHpReceived;
+            }
         }
 
         public void SetMyHp(int hp)
@@ -38,7 +43,6 @@ namespace SKNewRoles2.Game.Player
                 targetPlayer = _opponentScene.Instantiate<Node3D>();
                 targetPlayer.Name = $"RemotePlayer_{senderId}";
                 
-                // ★ ここで C++ 側のレイキャストから逆引きできるように player_id メタデータを付与する
                 targetPlayer.SetMeta("player_id", senderId);
 
                 AddChild(targetPlayer);
@@ -188,8 +192,11 @@ namespace SKNewRoles2.Game.Player
 
         public override void _ExitTree()
         {
-            RealtimeMessageDispatcher.OnPlayerTransformReceivedAll -= OnPlayerTransformReceivedAll;
-            RealtimeMessageDispatcher.OnPlayerHpReceived -= OnOtherPlayerHpReceived;
+            if (_connection != null)
+            {
+                _connection.OnTransformReceived -= OnPlayerTransformReceivedAll;
+                _connection.OnHpReceived -= OnOtherPlayerHpReceived;
+            }
         }
     }
 }

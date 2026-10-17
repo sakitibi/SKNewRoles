@@ -27,7 +27,7 @@ namespace SKNewRoles2.Game
                 }
 
                 roleManager.Initialize(scene.GetNodeOrNull<Node>("RoleManager"), connection);
-                remotePlayerManager.Initialize(opponentScene, MainGameScene.GetMyUserId());
+                remotePlayerManager.Initialize(opponentScene, MainGameScene.GetMyUserId(), connection);
 
                 await ChunkLoader.WaitForInitialChunksLoadedAsync(chunkManager);
 
