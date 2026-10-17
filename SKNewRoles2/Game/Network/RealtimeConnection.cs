@@ -12,7 +12,6 @@ namespace SKNewRoles2.Game.Network
         private WebSocketPeer _client;
         private bool _isJoinedChannel = false;
         private int _refCounter = 1;
-
         private readonly CancellationTokenSource _cts = new();
         private readonly RealtimeMessageRouter _messageRouter = new();
 
@@ -20,37 +19,42 @@ namespace SKNewRoles2.Game.Network
         public bool IsJoinedChannel => _isJoinedChannel;
         public int PingMs { get; private set; } = -1;
 
-        // RealtimeMessageRouter へ各種イベントを委譲[cite: 2, 22]
         public event Action<string, string, uint> OnAttackReceived
         {
             add => _messageRouter.OnAttackReceived += value;
             remove => _messageRouter.OnAttackReceived -= value;
         }
+
         public event Action<string, float, float, float, float, float, float> OnTransformReceived
         {
             add => _messageRouter.OnTransformReceived += value;
             remove => _messageRouter.OnTransformReceived -= value;
         }
+
         public event Action<string, int, int> OnHpReceived
         {
             add => _messageRouter.OnHpReceived += value;
             remove => _messageRouter.OnHpReceived -= value;
         }
+
         public event Action<string, int, int> OnHungerReceived
         {
             add => _messageRouter.OnHungerReceived += value;
             remove => _messageRouter.OnHungerReceived -= value;
         }
+
         public event Action<string, int> OnHotbarSlotReceived
         {
             add => _messageRouter.OnHotbarSlotReceived += value;
             remove => _messageRouter.OnHotbarSlotReceived -= value;
         }
+
         public event Action<string, int, string, int> OnHotbarItemReceived
         {
             add => _messageRouter.OnHotbarItemReceived += value;
             remove => _messageRouter.OnHotbarItemReceived -= value;
         }
+
         public event Action<string, uint, uint> OnRoleAssignedReceived
         {
             add => _messageRouter.OnRoleAssignedReceived += value;
@@ -59,9 +63,7 @@ namespace SKNewRoles2.Game.Network
 
         public async Task<bool> EnsureConnectedAsync()
         {
-            if (_client != null && 
-                _client.GetReadyState() == WebSocketPeer.State.Open && 
-                _isJoinedChannel)
+            if (_client != null && _client.GetReadyState() == WebSocketPeer.State.Open && _isJoinedChannel)
             {
                 return true;
             }
@@ -124,10 +126,7 @@ namespace SKNewRoles2.Game.Network
             {
                 string message = _client.GetPacket().GetStringFromUtf8();
                 
-                // 1. システムレベルの接続応答（phx_reply）の処理
                 RealtimeMessageDispatcher.ProcessMessage(message, ref _isJoinedChannel);
-
-                // 2. ゲーム内イベントメッセージのルーティング（パース＆イベント発火）
                 _messageRouter.RouteMessage(message);
             }
         }
