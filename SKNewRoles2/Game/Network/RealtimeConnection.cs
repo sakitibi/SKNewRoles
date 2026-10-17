@@ -20,7 +20,7 @@ namespace SKNewRoles2.Game.Network
         public bool IsJoinedChannel => _isJoinedChannel;
         public int PingMs { get; private set; } = -1;
 
-        // MessageRouter へイベントを委譲
+        // RealtimeMessageRouter へ各種イベントを委譲[cite: 2, 22]
         public event Action<string, string, uint> OnAttackReceived
         {
             add => _messageRouter.OnAttackReceived += value;
@@ -124,10 +124,11 @@ namespace SKNewRoles2.Game.Network
             {
                 string message = _client.GetPacket().GetStringFromUtf8();
                 
-                // パースとイベント発火をルーターに委譲
-                _messageRouter.RouteMessage(message);
-
+                // 1. システムレベルの接続応答（phx_reply）の処理
                 RealtimeMessageDispatcher.ProcessMessage(message, ref _isJoinedChannel);
+
+                // 2. ゲーム内イベントメッセージのルーティング（パース＆イベント発火）
+                _messageRouter.RouteMessage(message);
             }
         }
 

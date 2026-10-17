@@ -1,48 +1,51 @@
 using Godot;
 using Godot.Collections;
 using System;
-using System.Threading.Tasks;
-using SKNewRoles2.SessionManagerSystem;
-using SKNewRoles2.Game.Network;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using SKNewRoles2.Game.Network;
+using SKNewRoles2.SessionManagerSystem;
 
 namespace SKNewRoles2.Game
 {
     public partial class GameRoleManager : Node
     {
         private Node _roleManagerCpp;
+        private RealtimeConnection _connection;
 
         public uint MyRole { get; private set; } = 0;
         public uint MyFaction { get; private set; } = 0;
         public bool HasRoleReceived { get; private set; } = false;
 
         public event Action<uint, uint> OnRoleApplied;
-        private readonly RealtimeConnection _connection = new();
 
-        public void Initialize(Node roleManagerCppNode)
+        public void Initialize(Node roleManagerCppNode, RealtimeConnection connection)
         {
             _roleManagerCpp = roleManagerCppNode;
-            RealtimeMessageDispatcher.OnRoleAssignedReceived += OnRoleAssignedReceived;
+            _connection = connection;
+
+            if (_connection != null)
+            {
+                _connection.OnRoleAssignedReceived += OnRoleAssignedReceived;
+            }
         }
 
         public async Task AssignRolesToAllPlayers(string myUserId)
         {
             if (_roleManagerCpp == null || !_roleManagerCpp.HasMethod("assign_roles"))
             {
-                GD.PrintErr("❌ [AssignRoles] RoleManager が正しく設定されていません");
+                GD.PrintErr("❌ [AssignRoles] RoleManager C++ ノードが正しく設定されていません。");
                 return;
             }
 
             var playerIdsArray = new Godot.Collections.Array();
+            var roomPlayers = SessionManager.Instance?.CurrentRoomPlayerIds;
 
-            if (SessionManager.Instance?.CurrentRoomPlayerIds != null && SessionManager.Instance.CurrentRoomPlayerIds.Count > 0)
+            if (roomPlayers != null && roomPlayers.Count > 0)
             {
-                var playerIds = SessionManager.Instance.CurrentRoomPlayerIds;
-                int playerCount = playerIds.Count;
-
-                for (int i = 0; i < playerCount; i++)
+                foreach (var id in roomPlayers)
                 {
-                    playerIdsArray.Add(playerIds[i]);
+                    playerIdsArray.Add(id);
                 }
             }
             else
@@ -51,7 +54,7 @@ namespace SKNewRoles2.Game
             }
 
             Dictionary roleCountsDict = [];
-            roleCountsDict[RoleInfo.RoleIdDictionary.GetValueOrDefault("witch")] = 1; // 役職ID 1 (人狼) を 1人
+            roleCountsDict[RoleInfo.RoleIdDictionary.GetValueOrDefault("witch")] = 1; // 人狼 (1人)
 
             GD.Print($"🎲 [AssignRoles] {playerIdsArray.Count} 人のプレイヤーに役職を割り当てます");
 
@@ -78,7 +81,10 @@ namespace SKNewRoles2.Game
                 }
                 else
                 {
-                    await RealtimeBroadcaster.SendRoleAsync(_connection, targetUserId, assignedRole, assignedFaction);
+                    if (_connection != null)
+                    {
+                        await RealtimeBroadcaster.SendRoleAsync(_connection, targetUserId, assignedRole, assignedFaction);
+                    }
                 }
             }
         }
@@ -105,7 +111,7 @@ namespace SKNewRoles2.Game
             if (HasRoleReceived) return;
 
             ApplyRole(roleId, factionId);
-            GD.Print($"📩 [OnRoleAssignedReceived] 役職データを受信しました: Faction={MyFaction}, Role={MyRole}");
+            GD.Print($"📩 [OnRoleAssignedReceived] 役職データを受信しました: Role={MyRole}, Faction={MyFaction}");
         }
 
         public void ApplyRole(uint roleId, uint factionId)
@@ -130,7 +136,10 @@ namespace SKNewRoles2.Game
 
         public override void _ExitTree()
         {
-            RealtimeMessageDispatcher.OnRoleAssignedReceived -= OnRoleAssignedReceived;
+            if (_connection != null)
+            {
+                _connection.OnRoleAssignedReceived -= OnRoleAssignedReceived;
+            }
         }
     }
 }

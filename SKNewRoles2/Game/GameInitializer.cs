@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Godot;
 using SKNewRoles2.Game.Network;
 using SKNewRoles2.Game.Player;
+using SKNewRoles2.SessionManagerSystem;
 
 namespace SKNewRoles2.Game
 {
@@ -25,21 +26,29 @@ namespace SKNewRoles2.Game
                     GD.PrintErr("❌ [Realtime] MainGameScene での WebSocket 接続に失敗しました。");
                 }
 
-                roleManager.Initialize(scene.GetNode<Node>("RoleManager"));
+                roleManager.Initialize(scene.GetNodeOrNull<Node>("RoleManager"), connection);
                 remotePlayerManager.Initialize(opponentScene, MainGameScene.GetMyUserId());
 
-                // チャンク読み込み完了の待機
                 await ChunkLoader.WaitForInitialChunksLoadedAsync(chunkManager);
 
-                if (SessionManagerSystem.SessionManager.Instance != null && SessionManagerSystem.SessionManager.Instance.IsHost)
+                string myUserId = MainGameScene.GetMyUserId();
+
+                // ホストのみが役職の割り当て・送信を実行する
+                bool isHost = SessionManager.Instance != null && SessionManager.Instance.IsHost;
+                if (isHost)
                 {
-                    await roleManager.AssignRolesToAllPlayers(MainGameScene.GetMyUserId());
+                    GD.Print("👑 [GameInitializer] ホストとして全員の役職割り当てを開始します。");
+                    await roleManager.AssignRolesToAllPlayers(myUserId);
+                }
+                else
+                {
+                    GD.Print("⏳ [GameInitializer] ゲストとしてホストからの役職受信を待機します。");
                 }
 
                 bool received = await roleManager.WaitForRoleAssignedAsync(timeoutMs: 10000);
                 if (!received)
                 {
-                    GD.PrintErr("⚠️ 役職受信タイムアウトのため、デフォルト(生徒)を適用します");
+                    GD.PrintErr("⚠️ [GameInitializer] 役職受信タイムアウトのため、デフォルト(生徒)を適用します。");
                     roleManager.ApplyRole(0, 0);
                 }
             }

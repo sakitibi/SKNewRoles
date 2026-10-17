@@ -6,7 +6,6 @@ namespace SKNewRoles2.Game.Network
 {
     public class RealtimeMessageRouter
     {
-        // 各種イベントの定義
         public event Action<string, string, uint> OnAttackReceived;
         public event Action<string, float, float, float, float, float, float> OnTransformReceived;
         public event Action<string, int, int> OnHpReceived;

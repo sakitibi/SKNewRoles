@@ -29,7 +29,7 @@ namespace SKNewRoles2.Game.Network
         {
             if (!IsReady(connection))
             {
-                GD.PrintErr("❌ [Realtime] チャンネル参加が完了していないため SendRoleBroadcast を送信できませんでした。");
+                GD.PrintErr("❌ [Realtime] チャンネル参加が完了していないため SendRoleAsync を送信できませんでした。");
                 return Task.CompletedTask;
             }
 
