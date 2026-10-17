@@ -1,4 +1,14 @@
-cd /Applications/SKNewRoles
+PROJECT_DIR="/Applications/SKNewRoles"
+cd "$PROJECT_DIR" || exit 1
+
 /Applications/Godot_mono.app/Contents/MacOS/Godot --headless --export-release "macOS" ./SKNewRoles.app
+
+RESOURCES_BASE="$PROJECT_DIR/SKNewRoles.app/Contents/Resources/"
+GODOT_SHARP="$RESOURCES_BASE/data_SKNewRoles_macos_arm64/GodotSharp.dll"
+TARGET_SHARP="$RESOURCES_BASE/data_SKNewRoles_macos_x86_64/GodotSharp.dll"
+
+rm -f "$GODOT_SHARP"
+ln -sf "$TARGET_SHARP" "$GODOT_SHARP"
+
 codesign --force --deep --sign - --options runtime --entitlements ./entitlements.plist ./SKNewRoles.app
 xattr -d -r com.apple.quarantine ./SKNewRoles.app 2>/dev/null || true
