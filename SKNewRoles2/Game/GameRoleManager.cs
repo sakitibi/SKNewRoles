@@ -1,7 +1,6 @@
 using Godot;
 using Godot.Collections;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using SKNewRoles2.Game.Network;
 using SKNewRoles2.SessionManagerSystem;
