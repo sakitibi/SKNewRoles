@@ -7,10 +7,14 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
 {
     public static class RealtimeBroadcastService
     {
-        private static readonly SessionManager _session_manager = new();
         public static string GetCurrentTopic()
         {
-            return $"realtime:public:lobbies?roomcode={_session_manager.CurrentRoomCode}";
+            string roomCode = SessionManager.Instance?.CurrentRoomCode;
+            if (string.IsNullOrEmpty(roomCode))
+            {
+                return "realtime:public:lobbies";
+            }
+            return $"realtime:public:lobbies:{roomCode}";
         }
 
         /// <summary>
@@ -93,10 +97,6 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
                                     }
                                 }
                                 continue;
-                            }
-                            else
-                            {
-                                // GD.Print($"ℹ️ [その他のイベント] event = {ev} | message = {message}");
                             }
                         }
                     }
