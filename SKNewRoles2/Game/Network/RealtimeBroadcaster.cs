@@ -15,7 +15,7 @@ namespace SKNewRoles2.Game.Network
 
             var payload = new
             {
-                topic = "realtime:public:lobbies",
+                topic = "realtime:public:lobbie",
                 @event = "broadcast",
                 payload = new { type = "transform_all", player_id = senderId, px, py, pz, rx, ry, rz },
                 @ref = (string)null
@@ -35,7 +35,7 @@ namespace SKNewRoles2.Game.Network
 
             var payload = new
             {
-                topic = "realtime:public:lobbies",
+                topic = "realtime:public:lobbie",
                 @event = "broadcast",
                 payload = new { type = "assign_role", target_player_id = targetPlayerId, role, faction },
                 @ref = (string)null
@@ -52,7 +52,7 @@ namespace SKNewRoles2.Game.Network
 
             var payload = new
             {
-                topic = "realtime:public:lobbies",
+                topic = "realtime:public:lobbie",
                 @event = "broadcast",
                 payload = new { type = "player_hp", player_id = playerId, current_hp = currentHp, max_hp = maxHp },
                 @ref = (string)null
@@ -68,7 +68,7 @@ namespace SKNewRoles2.Game.Network
 
             var payload = new
             {
-                topic = "realtime:public:lobbies",
+                topic = "realtime:public:lobbie",
                 @event = "broadcast",
                 payload = new { type = "player_hunger", player_id = playerId, current_hunger = currentHunger, max_hunger = maxHunger },
                 @ref = (string)null
@@ -84,7 +84,7 @@ namespace SKNewRoles2.Game.Network
 
             var payload = new
             {
-                topic = "realtime:public:lobbies",
+                topic = "realtime:public:lobbie",
                 @event = "broadcast",
                 payload = new { type = "hotbar_slot", player_id = playerId, slot_index = slotIndex },
                 @ref = (string)null
@@ -100,7 +100,7 @@ namespace SKNewRoles2.Game.Network
 
             var payload = new
             {
-                topic = "realtime:public:lobbies",
+                topic = "realtime:public:lobbie",
                 @event = "broadcast",
                 payload = new { type = "hotbar_item", player_id = playerId, slot_index = slotIndex, item_id = itemId, count },
                 @ref = (string)null
@@ -116,7 +116,7 @@ namespace SKNewRoles2.Game.Network
 
             var payload = new
             {
-                topic = "realtime:public:lobbies",
+                topic = "realtime:public:lobbie",
                 @event = "broadcast",
                 payload = new { type = "player_attack", attacker_id = attackerId, target_id = targetId, damage },
                 @ref = (string)null

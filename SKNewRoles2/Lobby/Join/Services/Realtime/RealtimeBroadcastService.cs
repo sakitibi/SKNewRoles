@@ -9,7 +9,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
     {
         private static string GetCurrentTopic()
         {
-            return "realtime:public:lobbbies";
+            return "realtime:public:lobbie";
         }
 
         /// <summary>

@@ -135,7 +135,7 @@ namespace SKNewRoles2.Game.Network
         {
             var joinPayload = new
             {
-                topic = "realtime:public:lobbies",
+                topic = "realtime:public:lobbie",
                 @event = "phx_join",
                 payload = new { config = new { broadcast = new { self = false } } },
                 @ref = _refCounter++.ToString()
