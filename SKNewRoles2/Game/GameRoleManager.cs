@@ -45,11 +45,13 @@ namespace SKNewRoles2.Game
                 foreach (var id in roomPlayers)
                 {
                     playerIdsArray.Add(id);
+                    GD.Print($"📋 [AssignRoles] ルーム参加者IDを追加: {id}");
                 }
             }
             else
             {
                 playerIdsArray.Add(myUserId);
+                GD.Print($"📋 [AssignRoles] ルーム参加者が見つからないため自分のIDのみ追加: {myUserId}");
             }
 
             uint witchRoleId = RoleInfo.RoleIdDictionary["witch"];
@@ -87,17 +89,23 @@ namespace SKNewRoles2.Game
                 uint assignedRole = roleData["role"].AsUInt32();
                 uint assignedFaction = roleData["faction"].AsUInt32();
 
-                GD.Print($"🎭 割り当て完了: Player={targetUserId}, Role={assignedRole}, Faction={assignedFaction}");
+                GD.Print($"🎭 割り当て結果: TargetUser={targetUserId}, Role={assignedRole}, Faction={assignedFaction}");
 
                 if (targetUserId == myUserId)
                 {
+                    GD.Print("👑 [AssignRoles] 自分自身の役職を直接適用します。");
                     ApplyRole(assignedRole, assignedFaction);
                 }
                 else
                 {
                     if (_connection != null)
                     {
+                        GD.Print($"📡 [AssignRoles] ゲスト (Target={targetUserId}) へ役職データを送信します。");
                         await RealtimeBroadcaster.SendRoleAsync(_connection, targetUserId, assignedRole, assignedFaction);
+                    }
+                    else
+                    {
+                        GD.PrintErr("❌ [AssignRoles] Connection が null のためリモートプレイヤーへ送信できません。");
                     }
                 }
             }
@@ -120,12 +128,22 @@ namespace SKNewRoles2.Game
         private void OnRoleAssignedReceived(string targetUserId, uint roleId, uint factionId)
         {
             string myUserId = GetMyUserId();
-            if (targetUserId != myUserId && !string.IsNullOrEmpty(targetUserId)) return;
+            GD.Print($"📩 [OnRoleAssignedReceived] 受信イベント検知: TargetUser={targetUserId}, 自分のID(myUserId)={myUserId}, Role={roleId}, Faction={factionId}");
 
-            if (HasRoleReceived) return;
+            if (targetUserId != myUserId && !string.IsNullOrEmpty(targetUserId))
+            {
+                GD.Print($"ℹ️ [OnRoleAssignedReceived] 自分宛てではないためスキップします (Target: {targetUserId} != Me: {myUserId})");
+                return;
+            }
+
+            if (HasRoleReceived)
+            {
+                GD.Print("ℹ️ [OnRoleAssignedReceived] すでに役職が適用済みのためスキップします。");
+                return;
+            }
 
             ApplyRole(roleId, factionId);
-            GD.Print($"📩 [OnRoleAssignedReceived] 役職データを受信しました: Role={MyRole}, Faction={MyFaction}");
+            GD.Print($"✨ [OnRoleAssignedReceived] 役職データの受信・適用が成功しました: Role={MyRole}, Faction={MyFaction}");
         }
 
         public void ApplyRole(uint roleId, uint factionId)
