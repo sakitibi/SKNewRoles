@@ -26,6 +26,11 @@ namespace SKNewRoles2.Game
             if (_connection != null)
             {
                 _connection.OnRoleAssignedReceived += OnRoleAssignedReceived;
+                GD.Print("✅ [GameRoleManager] RealtimeConnection の OnRoleAssignedReceived イベントを購読しました。");
+            }
+            else
+            {
+                GD.PrintErr("❌ [GameRoleManager] Initialize 時に connection が null です。");
             }
         }
 
@@ -45,11 +50,13 @@ namespace SKNewRoles2.Game
                 foreach (var id in roomPlayers)
                 {
                     playerIdsArray.Add(id);
+                    GD.Print($"📋 [AssignRoles] ルーム参加者IDを追加: {id}");
                 }
             }
             else
             {
                 playerIdsArray.Add(myUserId);
+                GD.Print($"📋 [AssignRoles] ルーム参加者が見つからないため自分のIDのみ追加: {myUserId}");
             }
 
             uint witchRoleId = RoleInfo.RoleIdDictionary["witch"];
@@ -91,6 +98,7 @@ namespace SKNewRoles2.Game
 
                 if (targetUserId == myUserId)
                 {
+                    GD.Print("👑 [AssignRoles] 自分自身の役職を直接適用します。");
                     ApplyRole(assignedRole, assignedFaction);
                 }
                 else
@@ -108,6 +116,10 @@ namespace SKNewRoles2.Game
                             }
                         });
                     }
+                    else
+                    {
+                        GD.PrintErr("❌ [AssignRoles] Connection が null のためゲストへ送信できません。");
+                    }
                 }
             }
         }
@@ -117,10 +129,29 @@ namespace SKNewRoles2.Game
             int maxLoop = timeoutMs / checkIntervalMs;
             int loopCheck = 0;
 
+            GD.Print($"⏳ [WaitForRoleAssignedAsync] 役職データの受信待ちを開始します (最大 {timeoutMs}ms)...");
+
             while (!HasRoleReceived && loopCheck < maxLoop)
             {
+                // ★ 重要: 待機中も WebSocket のパケット受信を強制処理する
+                _connection?.Poll();
+
+                if (loopCheck % 10 == 0)
+                {
+                    GD.Print($"⏳ [WaitForRoleAssignedAsync] 待機中... ({loopCheck * checkIntervalMs}ms / {timeoutMs}ms)");
+                }
+
                 await Task.Delay(checkIntervalMs);
                 loopCheck++;
+            }
+
+            if (HasRoleReceived)
+            {
+                GD.Print("✅ [WaitForRoleAssignedAsync] 役職データの受信を確認しました。");
+            }
+            else
+            {
+                GD.PrintErr("⚠️ [WaitForRoleAssignedAsync] タイムアウトしました。役職データが届きませんでした。");
             }
 
             return HasRoleReceived;
@@ -129,15 +160,17 @@ namespace SKNewRoles2.Game
         private void OnRoleAssignedReceived(string targetUserId, uint roleId, uint factionId)
         {
             string myUserId = GetMyUserId();
-            GD.Print($"📩 [OnRoleAssignedReceived] 受信イベント検知: TargetUser={targetUserId}, 自分のID={myUserId}");
+            GD.Print($"📩 [OnRoleAssignedReceived] 受信イベント検知: TargetUser={targetUserId}, 自分のID={myUserId}, Role={roleId}, Faction={factionId}");
 
             if (targetUserId != myUserId && !string.IsNullOrEmpty(targetUserId))
             {
+                GD.Print($"ℹ️ [OnRoleAssignedReceived] 自分宛てではないためスキップします (Target: {targetUserId} != Me: {myUserId})");
                 return;
             }
 
             if (HasRoleReceived)
             {
+                GD.Print("ℹ️ [OnRoleAssignedReceived] すでに役職が適用済みのためスキップします。");
                 return;
             }
 
