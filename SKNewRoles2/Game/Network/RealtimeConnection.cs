@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Text.Json;
 using SKNewRoles2.SessionManagerSystem;
+using SKNewRoles2.Lobby.JOIN.Services.Realtime;
 
 namespace SKNewRoles2.Game.Network
 {
@@ -133,9 +134,10 @@ namespace SKNewRoles2.Game.Network
 
         private void SendJoinChannelRequest()
         {
+            string topicName = RealtimeBroadcastService.GetCurrentTopic();
             var joinPayload = new
             {
-                topic = "realtime:public:lobbies",
+                topic = topicName,
                 @event = "phx_join",
                 payload = new { config = new { broadcast = new { self = false } } },
                 @ref = _refCounter++.ToString()

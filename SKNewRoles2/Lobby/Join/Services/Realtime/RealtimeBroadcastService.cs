@@ -7,7 +7,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
 {
     public static class RealtimeBroadcastService
     {
-        private static string GetCurrentTopic()
+        public static string GetCurrentTopic()
         {
             return "realtime:public:lobbies";
         }

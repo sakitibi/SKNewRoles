@@ -2,11 +2,13 @@ using Godot;
 using System.Text.Json;
 using System.Threading.Tasks;
 using SKNewRoles2.SessionManagerSystem;
+using SKNewRoles2.Lobby.JOIN.Services.Realtime;
 
 namespace SKNewRoles2.Game.Network
 {
     public static class RealtimeBroadcaster
     {
+        private readonly static string _topicName = RealtimeBroadcastService.GetCurrentTopic();
         public static Task SendTransformAsync(RealtimeConnection connection, float px, float py, float pz, float rx, float ry, float rz)
         {
             if (!IsReady(connection)) return Task.CompletedTask;
@@ -15,7 +17,7 @@ namespace SKNewRoles2.Game.Network
 
             var payload = new
             {
-                topic = "realtime:public:lobbies",
+                topic = _topicName,
                 @event = "broadcast",
                 payload = new { type = "transform_all", player_id = senderId, px, py, pz, rx, ry, rz },
                 @ref = (string)null
@@ -35,7 +37,7 @@ namespace SKNewRoles2.Game.Network
 
             var payload = new
             {
-                topic = "realtime:public:lobbies",
+                topic = _topicName,
                 @event = "broadcast",
                 payload = new { type = "assign_role", target_player_id = targetPlayerId, role, faction },
                 @ref = (string)null
@@ -52,7 +54,7 @@ namespace SKNewRoles2.Game.Network
 
             var payload = new
             {
-                topic = "realtime:public:lobbies",
+                topic = _topicName,
                 @event = "broadcast",
                 payload = new { type = "player_hp", player_id = playerId, current_hp = currentHp, max_hp = maxHp },
                 @ref = (string)null
@@ -68,7 +70,7 @@ namespace SKNewRoles2.Game.Network
 
             var payload = new
             {
-                topic = "realtime:public:lobbies",
+                topic = _topicName,
                 @event = "broadcast",
                 payload = new { type = "player_hunger", player_id = playerId, current_hunger = currentHunger, max_hunger = maxHunger },
                 @ref = (string)null
@@ -84,7 +86,7 @@ namespace SKNewRoles2.Game.Network
 
             var payload = new
             {
-                topic = "realtime:public:lobbies",
+                topic = _topicName,
                 @event = "broadcast",
                 payload = new { type = "hotbar_slot", player_id = playerId, slot_index = slotIndex },
                 @ref = (string)null
@@ -100,7 +102,7 @@ namespace SKNewRoles2.Game.Network
 
             var payload = new
             {
-                topic = "realtime:public:lobbies",
+                topic = _topicName,
                 @event = "broadcast",
                 payload = new { type = "hotbar_item", player_id = playerId, slot_index = slotIndex, item_id = itemId, count },
                 @ref = (string)null
@@ -116,7 +118,7 @@ namespace SKNewRoles2.Game.Network
 
             var payload = new
             {
-                topic = "realtime:public:lobbies",
+                topic = _topicName,
                 @event = "broadcast",
                 payload = new { type = "player_attack", attacker_id = attackerId, target_id = targetId, damage },
                 @ref = (string)null
