@@ -16,7 +16,6 @@ namespace SKNewRoles2.Game.Network
 
         public void RouteMessage(string message)
         {
-            // ★ 追加: 受信したすべてのメッセージをコンソールに表示
             GD.Print($"📥 [WebSocket Raw受信] {message}");
 
             try

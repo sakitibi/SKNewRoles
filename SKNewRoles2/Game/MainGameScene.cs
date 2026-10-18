@@ -39,6 +39,8 @@ namespace SKNewRoles2.Game
         public uint MyFaction => _roleManager?.MyFaction ?? 0;
         public int CurrentHunger { get; set; } = 20;
         public int MaxHunger { get; set; } = 20;
+        private static Vector3 _lastSentPosition = Vector3.Zero;
+        private static Vector3 _lastSentRotation = Vector3.Zero;
         private readonly uint[] BGMList = [
             0, 1
         ];
@@ -178,13 +180,23 @@ namespace SKNewRoles2.Game
             if (player != null && IsInstanceValid(player))
             {
                 Vector3 playerPos = player.GlobalPosition;
+                Vector3 playerRot = player.Rotation;
+
+                float posThreshold = 0.001f;
+                float rotThreshold = 0.001f;
+
+                bool hasMoved = playerPos.DistanceSquaredTo(_lastSentPosition) > (posThreshold * posThreshold);
+                bool hasRotated = playerRot.DistanceSquaredTo(_lastSentRotation) > (rotThreshold * rotThreshold);
 
                 _uiController?.UpdateCoords(playerPos);
                 _networkHandler?.UpdateHpUIFromPlayer();
                 _networkHandler?.UpdateHungerUIFromPlayer();
 
-                if (player.Visible)
+                if (player.Visible && hasMoved && hasRotated)
                 {
+                    _lastSentPosition = playerPos;
+                    _lastSentRotation = playerRot;
+                    
                     _networkHandler?.SendMyTransform();
                 }
             }
