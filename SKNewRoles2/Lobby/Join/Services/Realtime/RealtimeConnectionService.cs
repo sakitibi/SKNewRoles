@@ -19,7 +19,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
         {
             if (IsListening) return;
 
-            string topicName = "realtime:public:lobbie";
+            string topicName = "realtime:public:lobbies";
 
             string wsUrl = $"{SessionManager.SupabaseUrl.Replace("https://", "wss://")}/realtime/v1/websocket?apikey={SessionManager.SupabaseAnonKey}&vsn=1.0.0";
            
