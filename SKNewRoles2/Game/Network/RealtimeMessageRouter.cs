@@ -16,6 +16,9 @@ namespace SKNewRoles2.Game.Network
 
         public void RouteMessage(string message)
         {
+            // ★ 追加: 受信したすべてのメッセージをコンソールに表示
+            GD.Print($"📥 [WebSocket Raw受信] {message}");
+
             try
             {
                 using JsonDocument doc = JsonDocument.Parse(message);
@@ -87,6 +90,7 @@ namespace SKNewRoles2.Game.Network
                                 string targetPlayerId = payload.GetProperty("target_player_id").GetString();
                                 uint role = payload.GetProperty("role").GetUInt32();
                                 uint faction = payload.GetProperty("faction").GetUInt32();
+                                GD.Print($"🎯 [Router] assign_role イベントを検知しました: Target={targetPlayerId}, Role={role}");
                                 OnRoleAssignedReceived?.Invoke(targetPlayerId, role, faction);
                                 break;
                             }
