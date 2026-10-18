@@ -10,9 +10,6 @@ namespace SKNewRoles2.SessionManagerSystem
     /// </summary>
     public partial class SessionManager : Node
     {
-        // ==========================================
-        // 1. MOD向けプロパティ（自由に変更・取得が可能）
-        // ==========================================
         public string CurrentRoomCode { get; set; } = "";
         public string CurrentRoomName { get; set; } = "";
         public bool IsHost { get; set; } = false;
