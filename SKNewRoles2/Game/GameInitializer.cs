@@ -45,7 +45,7 @@ namespace SKNewRoles2.Game
                     GD.Print("⏳ [GameInitializer] ゲストとしてホストからの役職受信を待機します。");
                 }
 
-                bool received = await roleManager.WaitForRoleAssignedAsync(timeoutMs: 10000);
+                bool received = await roleManager.WaitForRoleAssignedAsync(timeoutMs: 1000000);
                 if (!received)
                 {
                     GD.PrintErr("⚠️ [GameInitializer] 役職受信タイムアウトのため、デフォルト(生徒)を適用します。");

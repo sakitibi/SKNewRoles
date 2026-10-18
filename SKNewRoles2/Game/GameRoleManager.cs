@@ -133,7 +133,6 @@ namespace SKNewRoles2.Game
 
             while (!HasRoleReceived && loopCheck < maxLoop)
             {
-                // ★ 重要: 待機中も WebSocket のパケット受信を強制処理する
                 _connection?.Poll();
 
                 if (loopCheck % 10 == 0)

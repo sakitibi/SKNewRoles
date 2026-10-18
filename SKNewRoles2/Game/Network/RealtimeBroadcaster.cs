@@ -8,7 +8,17 @@ namespace SKNewRoles2.Game.Network
 {
     public static class RealtimeBroadcaster
     {
-        private readonly static string _topicName = RealtimeBroadcastService.GetCurrentTopic();
+        private static string GetTopicName()
+        {
+            string topic = RealtimeBroadcastService.GetCurrentTopic();
+            if (string.IsNullOrEmpty(topic))
+            {
+                GD.PrintErr("⚠️ [RealtimeBroadcaster] 取得したトピック名が空です！");
+                return "realtime:public:lobbies";
+            }
+            return topic;
+        }
+
         public static Task SendTransformAsync(RealtimeConnection connection, float px, float py, float pz, float rx, float ry, float rz)
         {
             if (!IsReady(connection)) return Task.CompletedTask;
@@ -17,7 +27,7 @@ namespace SKNewRoles2.Game.Network
 
             var payload = new
             {
-                topic = _topicName,
+                topic = GetTopicName(),
                 @event = "broadcast",
                 payload = new { type = "transform_all", player_id = senderId, px, py, pz, rx, ry, rz },
                 @ref = (string)null
@@ -35,9 +45,12 @@ namespace SKNewRoles2.Game.Network
                 return Task.CompletedTask;
             }
 
+            string currentTopic = GetTopicName();
+            GD.Print($"📡 [Realtime] 送信トピック確認: {currentTopic} (Target={targetPlayerId}, Role={role})");
+
             var payload = new
             {
-                topic = _topicName,
+                topic = currentTopic,
                 @event = "broadcast",
                 payload = new { type = "assign_role", target_player_id = targetPlayerId, role, faction },
                 @ref = (string)null
@@ -54,7 +67,7 @@ namespace SKNewRoles2.Game.Network
 
             var payload = new
             {
-                topic = _topicName,
+                topic = GetTopicName(),
                 @event = "broadcast",
                 payload = new { type = "player_hp", player_id = playerId, current_hp = currentHp, max_hp = maxHp },
                 @ref = (string)null
@@ -68,15 +81,15 @@ namespace SKNewRoles2.Game.Network
         {
             if (!IsReady(connection)) return Task.CompletedTask;
 
-            var payload = new
+            var payloadObj = new
             {
-                topic = _topicName,
+                topic = GetTopicName(),
                 @event = "broadcast",
                 payload = new { type = "player_hunger", player_id = playerId, current_hunger = currentHunger, max_hunger = maxHunger },
                 @ref = (string)null
             };
 
-            connection.Client.SendText(JsonSerializer.Serialize(payload));
+            connection.Client.SendText(JsonSerializer.Serialize(payloadObj));
             return Task.CompletedTask;
         }
 
@@ -86,7 +99,7 @@ namespace SKNewRoles2.Game.Network
 
             var payload = new
             {
-                topic = _topicName,
+                topic = GetTopicName(),
                 @event = "broadcast",
                 payload = new { type = "hotbar_slot", player_id = playerId, slot_index = slotIndex },
                 @ref = (string)null
@@ -102,7 +115,7 @@ namespace SKNewRoles2.Game.Network
 
             var payload = new
             {
-                topic = _topicName,
+                topic = GetTopicName(),
                 @event = "broadcast",
                 payload = new { type = "hotbar_item", player_id = playerId, slot_index = slotIndex, item_id = itemId, count },
                 @ref = (string)null
@@ -118,7 +131,7 @@ namespace SKNewRoles2.Game.Network
 
             var payload = new
             {
-                topic = _topicName,
+                topic = GetTopicName(),
                 @event = "broadcast",
                 payload = new { type = "player_attack", attacker_id = attackerId, target_id = targetId, damage },
                 @ref = (string)null
