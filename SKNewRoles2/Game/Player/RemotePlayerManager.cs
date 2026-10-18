@@ -1,6 +1,5 @@
 using Godot;
 using SKNewRoles2.Game.Network;
-using SKNewRoles2.Game.Inventory.Item;
 using System.Collections.Generic;
 
 namespace SKNewRoles2.Game.Player
@@ -56,8 +55,7 @@ namespace SKNewRoles2.Game.Player
                 _otherPlayerHps[senderId] = 20;
                 _otherPlayerSelectedSlots[senderId] = 0;
 
-                UpdateSinglePlayerVisibility(senderId, targetPlayer);
-
+                RemotePlayerVisualHandler.UpdateVisibility(targetPlayer, 20, _myHp);
                 RefreshRemotePlayerHandItem(senderId);
             }
 
@@ -89,7 +87,7 @@ namespace SKNewRoles2.Game.Player
                     {
                         remotePlayer.Call("set_current_hp", currentHp);
                     }
-                    UpdateSinglePlayerVisibility(senderId, remotePlayer);
+                    RemotePlayerVisualHandler.UpdateVisibility(remotePlayer, currentHp, _myHp);
                 }
             }
         }
@@ -99,7 +97,6 @@ namespace SKNewRoles2.Game.Player
             if (senderId == _myUserId) return;
 
             _otherPlayerSelectedSlots[senderId] = slotIndex;
-            GD.Print($"📦 [RemotePlayer] プレイヤー {senderId} の選択スロット変更を受信: Slot={slotIndex}");
             RefreshRemotePlayerHandItem(senderId);
         }
 
@@ -114,7 +111,6 @@ namespace SKNewRoles2.Game.Player
             }
 
             inv[slotIndex] = itemId;
-            GD.Print($"📦 [RemotePlayer] プレイヤー {senderId} のアイテム変更を受信: Slot={slotIndex}, Item={itemId}");
             RefreshRemotePlayerHandItem(senderId);
         }
 
@@ -130,57 +126,7 @@ namespace SKNewRoles2.Game.Player
                 activeItemId = itemId;
             }
 
-            UpdateRightArmItem(remotePlayer, activeItemId);
-        }
-
-        private static void UpdateRightArmItem(Node3D remotePlayer, string itemId)
-        {
-            var rightArm = remotePlayer.GetNodeOrNull<Node3D>("SkinModel/RightArm");
-            if (rightArm == null)
-            {
-                GD.PrintErr("❌ [RemotePlayer] SkinModel/RightArm ノードが見つかりませんでした。");
-                return;
-            }
-
-            var existingItemNode = rightArm.GetNodeOrNull<Node3D>("HandHeldItem");
-            existingItemNode?.QueueFree();
-
-            if (string.IsNullOrEmpty(itemId) || itemId == "none" || itemId == "air")
-            {
-                return;
-            }
-
-            Texture2D iconTexture = null;
-            if (ItemDatabase.Instance != null)
-            {
-                var itemData = ItemDatabase.Instance.GetItem(itemId);
-                iconTexture = itemData?.Icon;
-            }
-
-            if (iconTexture == null)
-            {
-                string texturePath = $"res://Resources/Items/{itemId}.png";
-                iconTexture = GD.Load<Texture2D>(texturePath);
-            }
-
-            if (iconTexture == null)
-            {
-                GD.PrintErr($"⚠️ [RemotePlayer] アイテムテクスチャのロードに失敗しました (ItemId: {itemId})");
-                return;
-            }
-
-            // マイクラ風2Dアイテム用 Sprite3D
-            Sprite3D itemSprite = new() {
-                Name = "HandHeldItem",
-                Texture = iconTexture,
-                TextureFilter = BaseMaterial3D.TextureFilterEnum.Nearest,
-                PixelSize = 0.025f,
-                Centered = true,
-                Transform = new Transform3D(Basis.Identity, new Vector3(0.0f, -0.4f, 0.05f))
-            };
-
-            rightArm.AddChild(itemSprite);
-            GD.Print($"✨ [RemotePlayer] 右腕にアイテム '{itemId}' のスプライトを表示しました。");
+            RemotePlayerVisualHandler.UpdateRightArmItem(remotePlayer, activeItemId);
         }
 
         private void UpdateAllPlayersVisibility()
@@ -189,87 +135,9 @@ namespace SKNewRoles2.Game.Player
             {
                 if (IsInstanceValid(kvp.Value))
                 {
-                    UpdateSinglePlayerVisibility(kvp.Key, kvp.Value);
+                    int opponentHp = _otherPlayerHps.TryGetValue(kvp.Key, out int hp) ? hp : 20;
+                    RemotePlayerVisualHandler.UpdateVisibility(kvp.Value, opponentHp, _myHp);
                 }
-            }
-        }
-
-        private void UpdateSinglePlayerVisibility(string senderId, Node3D remotePlayer)
-        {
-            int opponentHp = _otherPlayerHps.TryGetValue(senderId, out int hp) ? hp : 20;
-
-            if (opponentHp >= 1)
-            {
-                SetPlayerVisualState(remotePlayer, visible: true, isTransparent: false);
-            }
-            else
-            {
-                if (_myHp >= 1)
-                {
-                    SetPlayerVisualState(remotePlayer, visible: false, isTransparent: false);
-                }
-                else
-                {
-                    SetPlayerVisualState(remotePlayer, visible: true, isTransparent: true);
-                }
-            }
-        }
-
-        private static void SetPlayerVisualState(Node3D playerNode, bool visible, bool isTransparent)
-        {
-            playerNode.Visible = visible;
-            if (!visible) return;
-
-            SetNodeAlphaRecursive(playerNode, isTransparent ? 0.2f : 1.0f);
-        }
-
-        private static void SetNodeAlphaRecursive(Node node, float alpha)
-        {
-            if (node is GeometryInstance3D geom)
-            {
-                geom.CastShadow = alpha < 1.0f 
-                    ? GeometryInstance3D.ShadowCastingSetting.Off 
-                    : GeometryInstance3D.ShadowCastingSetting.On;
-            }
-
-            if (node is MeshInstance3D meshInstance)
-            {
-                int surfaceCount = meshInstance.GetSurfaceOverrideMaterialCount();
-                if (surfaceCount == 0 && meshInstance.Mesh != null)
-                {
-                    surfaceCount = meshInstance.Mesh.GetSurfaceCount();
-                }
-
-                for (int i = 0; i < surfaceCount; i++)
-                {
-                    Material mat = meshInstance.GetSurfaceOverrideMaterial(i) ?? meshInstance.Mesh?.SurfaceGetMaterial(i);
-                    
-                    if (mat is StandardMaterial3D stdMat)
-                    {
-                        StandardMaterial3D dupMat = (StandardMaterial3D)stdMat.Duplicate();
-                        
-                        if (alpha < 1.0f)
-                        {
-                            dupMat.Transparency = BaseMaterial3D.TransparencyEnum.AlphaDepthPrePass; 
-                            dupMat.BlendMode = BaseMaterial3D.BlendModeEnum.Mix;
-                        }
-                        else
-                        {
-                            dupMat.Transparency = BaseMaterial3D.TransparencyEnum.Disabled;
-                        }
-
-                        Color color = dupMat.AlbedoColor;
-                        color.A = alpha;
-                        dupMat.AlbedoColor = color;
-
-                        meshInstance.SetSurfaceOverrideMaterial(i, dupMat);
-                    }
-                }
-            }
-
-            foreach (Node child in node.GetChildren())
-            {
-                SetNodeAlphaRecursive(child, alpha);
             }
         }
 
