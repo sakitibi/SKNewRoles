@@ -105,22 +105,23 @@ namespace SKNewRoles2.Game
                 {
                     if (_connection != null)
                     {
-                        _ = Task.Run(async () =>
-                        {
-                            for (int retry = 0; retry < 5; retry++)
-                            {
-                                if (HasRoleReceived) break;
-                                GD.Print($"📡 [AssignRoles] ゲスト (Target={targetUserId}) へ役職データを送信中 (試行 {retry + 1}/5)...");
-                                await RealtimeBroadcaster.SendRoleAsync(_connection, targetUserId, assignedRole, assignedFaction);
-                                await Task.Delay(1500);
-                            }
-                        });
+                        _ = SendRoleWithRetryAsync(targetUserId, assignedRole, assignedFaction);
                     }
                     else
                     {
                         GD.PrintErr("❌ [AssignRoles] Connection が null のためゲストへ送信できません。");
                     }
                 }
+            }
+        }
+
+        private async Task SendRoleWithRetryAsync(string targetUserId, uint role, uint faction)
+        {
+            for (int retry = 0; retry < 5; retry++)
+            {
+                GD.Print($"📡 [AssignRoles] ゲスト (Target={targetUserId}) へ役職データを送信中 (試行 {retry + 1}/5)...");
+                await RealtimeBroadcaster.SendRoleAsync(_connection, targetUserId, role, faction);
+                await Task.Delay(1500);
             }
         }
 
