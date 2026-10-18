@@ -57,6 +57,8 @@ namespace SKNewRoles2.Game.Player
                 _otherPlayerSelectedSlots[senderId] = 0;
 
                 UpdateSinglePlayerVisibility(senderId, targetPlayer);
+
+                RefreshRemotePlayerHandItem(senderId);
             }
 
             if (targetPlayer != null)
@@ -97,6 +99,7 @@ namespace SKNewRoles2.Game.Player
             if (senderId == _myUserId) return;
 
             _otherPlayerSelectedSlots[senderId] = slotIndex;
+            GD.Print($"📦 [RemotePlayer] プレイヤー {senderId} の選択スロット変更を受信: Slot={slotIndex}");
             RefreshRemotePlayerHandItem(senderId);
         }
 
@@ -111,6 +114,7 @@ namespace SKNewRoles2.Game.Player
             }
 
             inv[slotIndex] = itemId;
+            GD.Print($"📦 [RemotePlayer] プレイヤー {senderId} のアイテム変更を受信: Slot={slotIndex}, Item={itemId}");
             RefreshRemotePlayerHandItem(senderId);
         }
 
@@ -132,7 +136,11 @@ namespace SKNewRoles2.Game.Player
         private static void UpdateRightArmItem(Node3D remotePlayer, string itemId)
         {
             var rightArm = remotePlayer.GetNodeOrNull<Node3D>("SkinModel/RightArm");
-            if (rightArm == null) return;
+            if (rightArm == null)
+            {
+                GD.PrintErr("❌ [RemotePlayer] SkinModel/RightArm ノードが見つかりませんでした。");
+                return;
+            }
 
             var existingItemNode = rightArm.GetNodeOrNull<Node3D>("HandHeldItem");
             existingItemNode?.QueueFree();
@@ -157,9 +165,11 @@ namespace SKNewRoles2.Game.Player
 
             if (iconTexture == null)
             {
+                GD.PrintErr($"⚠️ [RemotePlayer] アイテムテクスチャのロードに失敗しました (ItemId: {itemId})");
                 return;
             }
 
+            // マイクラ風2Dアイテム用 Sprite3D
             Sprite3D itemSprite = new() {
                 Name = "HandHeldItem",
                 Texture = iconTexture,
@@ -170,6 +180,7 @@ namespace SKNewRoles2.Game.Player
             };
 
             rightArm.AddChild(itemSprite);
+            GD.Print($"✨ [RemotePlayer] 右腕にアイテム '{itemId}' のスプライトを表示しました。");
         }
 
         private void UpdateAllPlayersVisibility()
