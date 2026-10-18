@@ -1,5 +1,6 @@
 using Godot;
 using SKNewRoles2.Game.Network;
+using SKNewRoles2.Game.Inventory.Item;
 using System.Collections.Generic;
 
 namespace SKNewRoles2.Game.Player
@@ -10,6 +11,9 @@ namespace SKNewRoles2.Game.Player
         private RealtimeConnection _connection;
         private readonly Dictionary<string, Node3D> _otherPlayers = [];
         private readonly Dictionary<string, int> _otherPlayerHps = [];
+        private readonly Dictionary<string, Dictionary<int, string>> _otherPlayerInventories = [];
+        private readonly Dictionary<string, int> _otherPlayerSelectedSlots = [];
+
         private string _myUserId;
         private int _myHp = 20;
 
@@ -23,6 +27,8 @@ namespace SKNewRoles2.Game.Player
             {
                 _connection.OnTransformReceived += OnPlayerTransformReceivedAll;
                 _connection.OnHpReceived += OnOtherPlayerHpReceived;
+                _connection.OnHotbarSlotReceived += OnOtherPlayerHotbarSlotReceived;
+                _connection.OnHotbarItemReceived += OnOtherPlayerHotbarItemReceived;
             }
         }
 
@@ -42,19 +48,17 @@ namespace SKNewRoles2.Game.Player
 
                 targetPlayer = _opponentScene.Instantiate<Node3D>();
                 targetPlayer.Name = $"RemotePlayer_{senderId}";
-                
                 targetPlayer.SetMeta("player_id", senderId);
 
                 AddChild(targetPlayer);
                 
                 _otherPlayers[senderId] = targetPlayer;
                 _otherPlayerHps[senderId] = 20;
+                _otherPlayerSelectedSlots[senderId] = 0;
 
-                // 新規生成時に表示状態を反映
                 UpdateSinglePlayerVisibility(senderId, targetPlayer);
             }
 
-            // 座標の反映処理
             if (targetPlayer != null)
             {
                 if (targetPlayer.HasMethod("set_target_transform"))
@@ -83,16 +87,91 @@ namespace SKNewRoles2.Game.Player
                     {
                         remotePlayer.Call("set_current_hp", currentHp);
                     }
-
-                    // HP変更に伴い表示状態を更新
                     UpdateSinglePlayerVisibility(senderId, remotePlayer);
                 }
             }
         }
 
-        /// <summary>
-        /// 全てのリモートプレイヤーの表示状態を再評価
-        /// </summary>
+        private void OnOtherPlayerHotbarSlotReceived(string senderId, int slotIndex)
+        {
+            if (senderId == _myUserId) return;
+
+            _otherPlayerSelectedSlots[senderId] = slotIndex;
+            RefreshRemotePlayerHandItem(senderId);
+        }
+
+        private void OnOtherPlayerHotbarItemReceived(string senderId, int slotIndex, string itemId, int count)
+        {
+            if (senderId == _myUserId) return;
+
+            if (!_otherPlayerInventories.TryGetValue(senderId, out var inv))
+            {
+                inv = [];
+                _otherPlayerInventories[senderId] = inv;
+            }
+
+            inv[slotIndex] = itemId;
+            RefreshRemotePlayerHandItem(senderId);
+        }
+
+        private void RefreshRemotePlayerHandItem(string senderId)
+        {
+            if (!_otherPlayers.TryGetValue(senderId, out Node3D remotePlayer) || !IsInstanceValid(remotePlayer)) return;
+
+            int selectedSlot = _otherPlayerSelectedSlots.TryGetValue(senderId, out int slot) ? slot : 0;
+            string activeItemId = "";
+
+            if (_otherPlayerInventories.TryGetValue(senderId, out var inv) && inv.TryGetValue(selectedSlot, out var itemId))
+            {
+                activeItemId = itemId;
+            }
+
+            UpdateRightArmItem(remotePlayer, activeItemId);
+        }
+
+        private static void UpdateRightArmItem(Node3D remotePlayer, string itemId)
+        {
+            var rightArm = remotePlayer.GetNodeOrNull<Node3D>("SkinModel/RightArm");
+            if (rightArm == null) return;
+
+            var existingItemNode = rightArm.GetNodeOrNull<Node3D>("HandHeldItem");
+            existingItemNode?.QueueFree();
+
+            if (string.IsNullOrEmpty(itemId) || itemId == "none" || itemId == "air")
+            {
+                return;
+            }
+
+            Texture2D iconTexture = null;
+            if (ItemDatabase.Instance != null)
+            {
+                var itemData = ItemDatabase.Instance.GetItem(itemId);
+                iconTexture = itemData?.Icon;
+            }
+
+            if (iconTexture == null)
+            {
+                string texturePath = $"res://Resources/Items/{itemId}.png";
+                iconTexture = GD.Load<Texture2D>(texturePath);
+            }
+
+            if (iconTexture == null)
+            {
+                return;
+            }
+
+            Sprite3D itemSprite = new() {
+                Name = "HandHeldItem",
+                Texture = iconTexture,
+                TextureFilter = BaseMaterial3D.TextureFilterEnum.Nearest,
+                PixelSize = 0.025f,
+                Centered = true,
+                Transform = new Transform3D(Basis.Identity, new Vector3(0.0f, -0.4f, 0.05f))
+            };
+
+            rightArm.AddChild(itemSprite);
+        }
+
         private void UpdateAllPlayersVisibility()
         {
             foreach (var kvp in _otherPlayers)
@@ -104,9 +183,6 @@ namespace SKNewRoles2.Game.Player
             }
         }
 
-        /// <summary>
-        /// 指定されたリモートプレイヤーの表示条件を判定して適用
-        /// </summary>
         private void UpdateSinglePlayerVisibility(string senderId, Node3D remotePlayer)
         {
             int opponentHp = _otherPlayerHps.TryGetValue(senderId, out int hp) ? hp : 20;
@@ -117,7 +193,6 @@ namespace SKNewRoles2.Game.Player
             }
             else
             {
-                // 相手が0以下の場合
                 if (_myHp >= 1)
                 {
                     SetPlayerVisualState(remotePlayer, visible: false, isTransparent: false);
@@ -129,9 +204,6 @@ namespace SKNewRoles2.Game.Player
             }
         }
 
-        /// <summary>
-        /// ノードの可視性およびメッシュの透明度（アルファ値）を設定
-        /// </summary>
         private static void SetPlayerVisualState(Node3D playerNode, bool visible, bool isTransparent)
         {
             playerNode.Visible = visible;
@@ -196,6 +268,8 @@ namespace SKNewRoles2.Game.Player
             {
                 _connection.OnTransformReceived -= OnPlayerTransformReceivedAll;
                 _connection.OnHpReceived -= OnOtherPlayerHpReceived;
+                _connection.OnHotbarSlotReceived -= OnOtherPlayerHotbarSlotReceived;
+                _connection.OnHotbarItemReceived -= OnOtherPlayerHotbarItemReceived;
             }
         }
     }

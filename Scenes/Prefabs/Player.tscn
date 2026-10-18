@@ -107,7 +107,7 @@ mesh = SubResource("BoxMesh_LeftLeg")
 shape = SubResource("BoxShape3D_player")
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=1739803627]
-transform = Transform3D(1, 0, 0, 0, 0.9659258, 0.25881904, 0, -0.25881904, 0.9659258, 0, 0.6, -0.4)
+transform = Transform3D(1, 0, 0, 0, 0.9659258, 0.25881904, 0, -0.25881904, 0.9659258, 0, 0.6, -0.3)
 current = true
 far = 64.0
 

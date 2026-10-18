@@ -6,18 +6,29 @@ namespace SKNewRoles2.Game.Inventory.Item
     [GlobalClass]
     public partial class ItemDatabase : Node
     {
-        [Export] private Godot.Collections.Array<ItemData> _itemList = [];
+        public static ItemDatabase Instance { get; private set; }
 
+        [Export] private Godot.Collections.Array<ItemData> _itemList = [];
         private readonly Dictionary<string, ItemData> _database = [];
 
         public override void _Ready()
         {
+            Instance = this;
+
             foreach (var item in _itemList)
             {
                 if (item != null && !string.IsNullOrEmpty(item.ItemId) && !_database.ContainsKey(item.ItemId))
                 {
                     _database.Add(item.ItemId, item);
                 }
+            }
+        }
+
+        public override void _ExitTree()
+        {
+            if (Instance == this)
+            {
+                Instance = null;
             }
         }
 

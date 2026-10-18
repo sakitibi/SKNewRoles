@@ -21,7 +21,6 @@ namespace SKNewRoles2.Game.Inventory
             _scene = scene;
             _hotbarNode = hotbarNode;
 
-            // C++ノードからのシグナル接続
             if (_hotbarNode != null && IsInstanceValid(_hotbarNode))
             {
                 GD.Print("✅ [HotbarManager] Hotbar ノードとの連携を開始しました。");
@@ -45,22 +44,18 @@ namespace SKNewRoles2.Game.Inventory
 
         public override void _UnhandledInput(InputEvent @event)
         {
-            // キーボード入力（数字の 1〜9 キー）の判定
             for (ushort i = 0; i < 9; i++)
             {
                 if (@event.IsActionPressed($"hotbar_slot_{i + 1}"))
                 {
-                    // Shiftキーが押されているか判定
                     bool isShiftPressed = Input.IsKeyPressed(Key.Shift);
 
                     if (isShiftPressed)
                     {
-                        // Shift + 数字キー: 現在選択中のスロットとスロット i を交換
                         SwapSlots(_currentSlotIndex, i);
                     }
                     else
                     {
-                        // 通常の数字キー: スロット選択の切り替え
                         SelectSlot(i);
                     }
                     break;
@@ -68,9 +63,6 @@ namespace SKNewRoles2.Game.Inventory
             }
         }
 
-        /// <summary>
-        /// 2つのスロットのアイテムと数量を入れ替える
-        /// </summary>
         public void SwapSlots(int slotA, int slotB)
         {
             if (slotA == slotB) return;
@@ -79,7 +71,6 @@ namespace SKNewRoles2.Game.Inventory
             if (_hotbarNode != null && IsInstanceValid(_hotbarNode) && _hotbarNode.HasMethod("swap_slots"))
             {
                 _hotbarNode.Call("swap_slots", slotA, slotB);
-                GD.Print($"🔄 [HotbarManager] スロット交換 (C++): {slotA} ↔ {slotB}");
             }
             else if (_hotbarNode != null && IsInstanceValid(_hotbarNode) &&
                 _hotbarNode.HasMethod("get_item") && _hotbarNode.HasMethod("set_item"))
@@ -89,14 +80,9 @@ namespace SKNewRoles2.Game.Inventory
 
                 _hotbarNode.Call("set_item", slotA, itemB);
                 _hotbarNode.Call("set_item", slotB, itemA);
-
-                GD.Print($"🔄 [HotbarManager] スロット交換 (Fallback): {slotA} ↔ {slotB}");
             }
         }
 
-        /// <summary>
-        /// アイテム入手・配布時に外部から呼び出す処理
-        /// </summary>
         public bool PickupItem(string itemId, ushort count = 1)
         {
             if (_hotbarNode != null && IsInstanceValid(_hotbarNode) && _hotbarNode.HasMethod("add_item"))
@@ -121,25 +107,14 @@ namespace SKNewRoles2.Game.Inventory
         private void OnSlotChanged(ushort newIndex)
         {
             _currentSlotIndex = newIndex;
-
-            // UI 側のハイライト表示を更新
             _uiController?.UpdateSelectedSlot(newIndex);
-
-            // 選択変更を他プレイヤーへ送信
             _ = SendHotbarSlotAsync(newIndex);
         }
 
         private void OnItemChanged(int slotIndex, string itemId, ushort count)
         {
-            GD.Print($"📦 [HotbarManager] ItemChanged 受信: Slot={slotIndex}, Item={itemId}, Count={count}");
-
             ItemData data = _itemDatabase?.GetItem(itemId);
             Texture2D iconTexture = data?.Icon;
-
-            if (data == null && !string.IsNullOrEmpty(itemId))
-            {
-                GD.PrintErr($"⚠️ [HotbarManager] ItemDatabase に '{itemId}' のデータが存在しません。");
-            }
 
             _uiController?.UpdateSlotItem(slotIndex, iconTexture, count);
             _ = SendHotbarItemAsync(slotIndex, itemId, count);
@@ -155,7 +130,7 @@ namespace SKNewRoles2.Game.Inventory
             }
             catch (Exception ex)
             {
-                GD.PrintErr($"⚠️ [Hotbar] スロット同期送信エラー: {ex.Message}");
+                GD.PrintErr($"⚠️ [Hotbar] スロット送信エラー: {ex.Message}");
             }
         }
 
@@ -169,7 +144,7 @@ namespace SKNewRoles2.Game.Inventory
             }
             catch (Exception ex)
             {
-                GD.PrintErr($"⚠️ [Hotbar] アイテム更新送信エラー: {ex.Message}");
+                GD.PrintErr($"⚠️ [Hotbar] アイテム送信エラー: {ex.Message}");
             }
         }
     }
