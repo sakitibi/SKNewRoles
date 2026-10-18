@@ -38,9 +38,8 @@ namespace SKNewRoles2.Lobby
             string lobbyName = _lobbyNameInput.Text.Trim();
             string roomCode = GenerateRandomRoomCode(8);
 
-            // 作成時点では強制的に非公開 (false) に設定します
+            // 作成時点では強制的に非公開に設定します
             bool isPublic = false;
-            
 
             _confirmButton.Disabled = true;
             _lobbyNameInput.Editable = false;
