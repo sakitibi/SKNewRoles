@@ -4,6 +4,7 @@ using System;
 using System.Threading.Tasks;
 using SKNewRoles2.Game.Network;
 using SKNewRoles2.SessionManagerSystem;
+using System.Collections.Generic;
 
 namespace SKNewRoles2.Game
 {
@@ -42,15 +43,16 @@ namespace SKNewRoles2.Game
                 return;
             }
 
-            var playerIdsArray = new Godot.Collections.Array();
-            var roomPlayers = SessionManager.Instance?.CurrentRoomPlayerIds;
+            Godot.Collections.Array playerIdsArray = [];
+            List<string> roomPlayers = SessionManager.Instance?.CurrentRoomPlayerIds;
+            int roomPlayersCount = roomPlayers.Count;
 
-            if (roomPlayers != null && roomPlayers.Count > 0)
+            if (roomPlayers != null && roomPlayersCount > 0)
             {
-                foreach (var id in roomPlayers)
+                for (int i = 0;i < roomPlayersCount; i++)
                 {
-                    playerIdsArray.Add(id);
-                    GD.Print($"📋 [AssignRoles] ルーム参加者IDを追加: {id}");
+                    playerIdsArray.Add(roomPlayers[i]);
+                    GD.Print($"📋 [AssignRoles] ルーム参加者IDを追加: {roomPlayers[i]}");
                 }
             }
             else
@@ -73,8 +75,8 @@ namespace SKNewRoles2.Game
 
             GD.Print($"🎲 [AssignRoles] {playerIdsArray.Count} 人のプレイヤーに役職を割り当てます (Witch ID: {witchRoleId})");
 
-            var rawResult = _roleManagerCpp.Call("assign_roles", playerIdsArray, roleCountsDict, roleFactionsDict);
-            var assignmentResult = rawResult.AsGodotDictionary();
+            Variant rawResult = _roleManagerCpp.Call("assign_roles", playerIdsArray, roleCountsDict, roleFactionsDict);
+            Dictionary assignmentResult = rawResult.AsGodotDictionary();
 
             if (assignmentResult == null || assignmentResult.Count == 0)
             {
@@ -89,7 +91,7 @@ namespace SKNewRoles2.Game
             {
                 Variant key = keysList[i];
                 string targetUserId = key.AsString();
-                var roleData = assignmentResult[key].AsGodotDictionary();
+                Dictionary roleData = assignmentResult[key].AsGodotDictionary();
 
                 uint assignedRole = roleData["role"].AsUInt32();
                 uint assignedFaction = roleData["faction"].AsUInt32();
@@ -117,7 +119,7 @@ namespace SKNewRoles2.Game
 
         private async Task SendRoleWithRetryAsync(string targetUserId, uint role, uint faction)
         {
-            for (int retry = 0; retry < 5; retry++)
+            for (byte retry = 0; retry < 5; retry++)
             {
                 GD.Print($"📡 [AssignRoles] ゲスト (Target={targetUserId}) へ役職データを送信中 (試行 {retry + 1}/5)...");
                 await RealtimeBroadcaster.SendRoleAsync(_connection, targetUserId, role, faction);
@@ -128,7 +130,7 @@ namespace SKNewRoles2.Game
         public async Task<bool> WaitForRoleAssignedAsync(int timeoutMs = 15000, int checkIntervalMs = 200)
         {
             int maxLoop = timeoutMs / checkIntervalMs;
-            int loopCheck = 0;
+            uint loopCheck = 0;
 
             GD.Print($"⏳ [WaitForRoleAssignedAsync] 役職データの受信待ちを開始します (最大 {timeoutMs}ms)...");
 
