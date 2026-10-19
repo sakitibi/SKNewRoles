@@ -2,7 +2,6 @@ using Godot;
 using System.Text.Json;
 using System.Threading.Tasks;
 using SKNewRoles2.SessionManagerSystem;
-using SKNewRoles2.Lobby.JOIN.Services.Realtime;
 
 namespace SKNewRoles2.Game.Network
 {
@@ -10,7 +9,7 @@ namespace SKNewRoles2.Game.Network
     {
         private static string GetTopicName()
         {
-            string topic = RealtimeBroadcastService.GetCurrentTopic();
+            string topic = RealtimeTopicProvider.GetCurrentTopic();
             if (string.IsNullOrEmpty(topic))
             {
                 GD.PrintErr("⚠️ [RealtimeBroadcaster] 取得したトピック名が空です！");

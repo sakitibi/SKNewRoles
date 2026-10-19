@@ -37,7 +37,7 @@ namespace SKNewRoles2.Lobby
             if (LeaveButton != null)
             {
                 LeaveButton.Pressed += async () => {
-                    RealtimeBroadcastService.LobbySendLeave();
+                    RealtimeLobbySender.LobbySendLeave();
                     await LobbyNavigation.LeaveLobbyAsync(GetTree(), LeaveButton, CleanupEvents);
                 };
             }
@@ -53,7 +53,7 @@ namespace SKNewRoles2.Lobby
                 StartGameButton.Pressed += () => {
                     if (SessionManager.Instance.IsHost && !_isTransitioning)
                     {
-                        RealtimeBroadcastService.LobbySendStartGame();
+                        RealtimeLobbySender.LobbySendStartGame();
                         TransitionToGameStage();
                     }
                 };
@@ -111,7 +111,7 @@ namespace SKNewRoles2.Lobby
         public void LeaveLobbyForced()
         {
             // 強制退出時も退出通知を飛ばす
-            RealtimeBroadcastService.LobbySendLeave();
+            RealtimeLobbySender.LobbySendLeave();
             LobbyNavigation.LeaveLobbyCleanup(GetTree(), CleanupEvents);
         }
 
@@ -135,7 +135,7 @@ namespace SKNewRoles2.Lobby
         {
             try
             {
-                RealtimeBroadcastService.LobbySendLeave();
+                RealtimeLobbySender.LobbySendLeave();
             }
             catch
             {

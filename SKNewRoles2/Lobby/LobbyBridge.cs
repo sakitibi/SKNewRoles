@@ -24,7 +24,7 @@ namespace SKNewRoles2.Lobby
 
         public override void _Process(double delta)
         {
-            RealtimeBroadcastService.PollRealtimeEvents();
+            RealtimeLobbyReceiver.PollRealtimeEvents();
 
             _broadcastTimer += (float)delta;
             if (_broadcastTimer >= BroadcastInterval)
@@ -36,7 +36,7 @@ namespace SKNewRoles2.Lobby
                     var myPlayer = lobbyNode3D.GetNode<Node3D>("MyPlayer");
                     if (myPlayer != null && IsInstanceValid(myPlayer))
                     {
-                        RealtimeBroadcastService.LobbySendTransformBroadcastAll(
+                        RealtimeLobbySender.LobbySendTransformBroadcastAll(
                             myPlayer.Position.X,
                             myPlayer.Position.Y,
                             myPlayer.Position.Z,

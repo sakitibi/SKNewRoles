@@ -2,6 +2,7 @@ using Godot;
 using System.Text.Json;
 using System.Threading.Tasks;
 using SKNewRoles2.SessionManagerSystem;
+using SKNewRoles2.Game.Network;
 
 namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
 {
@@ -19,7 +20,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
         {
             if (IsListening) return;
 
-            string topicName = RealtimeBroadcastService.GetCurrentTopic();
+            string topicName = RealtimeTopicProvider.GetCurrentTopic();
 
             string wsUrl = $"{SessionManager.SupabaseUrl.Replace("https://", "wss://")}/realtime/v1/websocket?apikey={SessionManager.SupabaseAnonKey}&vsn=1.0.0";
            
