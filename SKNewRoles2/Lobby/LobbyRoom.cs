@@ -36,7 +36,10 @@ namespace SKNewRoles2.Lobby
 
             if (LeaveButton != null)
             {
-                LeaveButton.Pressed += async () => await LobbyNavigation.LeaveLobbyAsync(GetTree(), LeaveButton, CleanupEvents);
+                LeaveButton.Pressed += async () => {
+                    RealtimeBroadcastService.LobbySendLeave();
+                    await LobbyNavigation.LeaveLobbyAsync(GetTree(), LeaveButton, CleanupEvents);
+                };
             }
 
             if (PrivacyToggleButton != null)
@@ -51,7 +54,6 @@ namespace SKNewRoles2.Lobby
                     if (SessionManager.Instance.IsHost && !_isTransitioning)
                     {
                         RealtimeBroadcastService.LobbySendStartGame();
-                        
                         TransitionToGameStage();
                     }
                 };
@@ -59,6 +61,8 @@ namespace SKNewRoles2.Lobby
             }
 
             RealtimeEvents.OnGameStartReceived += TransitionToGameStage;
+            RealtimeEvents.OnPlayerLeaveReceived += OnRemotePlayerLeaveReceived;
+
             LobbyRealtimeHelper.RegisterListeners(OnRoomSettingsChangedFromServer, OnRemotePlayerTransformReceived);
 
             _roomUIInstance.UpdateRoomInfoUI();
@@ -88,8 +92,26 @@ namespace SKNewRoles2.Lobby
             _roomUIInstance.OnRoomSettingsChangedFromServer();
         }
 
+        /// <summary>
+        /// 他プレイヤーの退出シグナルを受信した際の処理（プレハブの削除）
+        /// </summary>
+        private void OnRemotePlayerLeaveReceived(string playerId)
+        {
+            if (_otherPlayers.TryGetValue(playerId, out Node3D playerNode))
+            {
+                if (IsInstanceValid(playerNode))
+                {
+                    playerNode.QueueFree();
+                    GD.Print($"🧹 [LobbyRoom] 退出したプレイヤーのプレハブを削除しました: {playerId}");
+                }
+                _otherPlayers.Remove(playerId);
+            }
+        }
+
         public void LeaveLobbyForced()
         {
+            // 強制退出時も退出通知を飛ばす
+            RealtimeBroadcastService.LobbySendLeave();
             LobbyNavigation.LeaveLobbyCleanup(GetTree(), CleanupEvents);
         }
 
@@ -104,8 +126,23 @@ namespace SKNewRoles2.Lobby
         private void CleanupEvents()
         {
             RealtimeEvents.OnGameStartReceived -= TransitionToGameStage;
+            RealtimeEvents.OnPlayerLeaveReceived -= OnRemotePlayerLeaveReceived;
             LobbyRealtimeHelper.UnregisterListeners(OnRoomSettingsChangedFromServer, OnRemotePlayerTransformReceived);
             _otherPlayers.Clear();
+        }
+
+        public override void _ExitTree()
+        {
+            try
+            {
+                RealtimeBroadcastService.LobbySendLeave();
+            }
+            catch
+            {
+                // 終了時の例外は無視
+            }
+            CleanupEvents();
+            base._ExitTree();
         }
 
         protected override void Dispose(bool disposing)

@@ -82,6 +82,12 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
                                                 GD.Print("🎮 [Realtime] ホストからゲーム開始シグナルを受信しました！");
                                                 RealtimeEvents.RaiseGameStartReceived();
                                             }
+                                            else if (customEvent == "player_leave")
+                                            {
+                                                string pId = innerPayload.GetProperty("player_id").GetString();
+                                                GD.Print($"👋 [Realtime] プレイヤーの退出を受信しました: {pId}");
+                                                RealtimeEvents.RaisePlayerLeaveReceived(pId);
+                                            }
                                         }
                                     }
                                 }
@@ -182,6 +188,44 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
             string json = JsonSerializer.Serialize(broadcastPayload);
             client.SendText(json);
             GD.Print($"📡 [ゲーム開始送信成功] JSONを送信しました -> Topic: {GetCurrentTopic()} | JSON: {json}");
+        }
+
+        /// <summary>
+        /// 部屋からの退出を他のプレイヤーに通知します。
+        /// </summary>
+        public static void LobbySendLeave()
+        {
+            var client = RealtimeConnectionService.RealtimeClient;
+            if (client == null || client.GetReadyState() != WebSocketPeer.State.Open)
+            {
+                return;
+            }
+
+            string senderId = SessionManager.Instance.CurrentSession?.User?.Id;
+            if (string.IsNullOrEmpty(senderId))
+            {
+                senderId = $"Guest_{SessionManager.Instance.CurrentRoomCode}";
+            }
+
+            var broadcastPayload = new
+            {
+                topic = GetCurrentTopic(),
+                @event = "broadcast",
+                payload = new
+                {
+                    type = "broadcast",
+                    @event = "player_leave",
+                    payload = new
+                    {
+                        player_id = senderId
+                    }
+                },
+                @ref = (string)null
+            };
+
+            string json = JsonSerializer.Serialize(broadcastPayload);
+            client.SendText(json);
+            GD.Print($"📡 [退出通知送信] 退出ブロードキャストを送信しました -> Topic: {GetCurrentTopic()} | PlayerID: {senderId}");
         }
     }
 }
