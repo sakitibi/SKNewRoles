@@ -2,6 +2,7 @@ using Godot;
 using SKNewRoles2.SNRSystem.Assets;
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace SKNewRoles2.SNRSystem
@@ -60,14 +61,23 @@ namespace SKNewRoles2.SNRSystem
                 await Task.Delay(200);
 
                 string homeDir = System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile);
-                _exists = System.Environment.MachineName switch
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
-                    "windows" => Directory.Exists($"{homeDir}\\AppData\\Roaming\\.minecraft") || 
-                        Directory.Exists($"{homeDir}\\AppData\\Roaming\\Minecraft Bedrock"),
-                    "macos" => Directory.Exists($"{homeDir}/Library/Application Support/minecraft"),
-                    "linux" => Directory.Exists($"{homeDir}/.minecraft"),
-                    _ => false,
-                };
+                    _exists = Directory.Exists($"{homeDir}/Library/Application Support/minecraft");
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    _exists = Directory.Exists($"{homeDir}\\AppData\\Roaming\\.minecraft") || 
+                        Directory.Exists($"{homeDir}\\AppData\\Roaming\\Minecraft Bedrock");
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    _exists = Directory.Exists($"{homeDir}/.minecraft");
+                }
+                else
+                {
+                    _exists = false;
+                }
                 
                 if (!IsInstanceValid(this) || !IsInsideTree()) return;
                 if (!_exists)
