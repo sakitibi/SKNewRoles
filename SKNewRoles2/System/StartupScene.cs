@@ -1,6 +1,7 @@
 using Godot;
 using SKNewRoles2.SNRSystem.Assets;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace SKNewRoles2.SNRSystem
@@ -18,6 +19,7 @@ namespace SKNewRoles2.SNRSystem
         private ColorRect _background;
 
         private Tween _progressTween;
+        private bool _exists;
 
         public TextureProgressBar StartupProgressBar => _progressBar;
         public Label StatusLabel => _statusLabel;
@@ -56,7 +58,25 @@ namespace SKNewRoles2.SNRSystem
             {
                 UpdateProgress(0, "Minecraftをロード中...");
                 await Task.Delay(200);
+
+                string homeDir = System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile);
+                _exists = System.Environment.MachineName switch
+                {
+                    "windows" => Directory.Exists($"{homeDir}\\AppData\\Roaming\\.minecraft") || 
+                        Directory.Exists($"{homeDir}\\AppData\\Roaming\\Minecraft Bedrock"),
+                    "macos" => Directory.Exists($"{homeDir}/Library/Application Support/minecraft"),
+                    "linux" => Directory.Exists($"{homeDir}/.minecraft"),
+                    _ => false,
+                };
+                
                 if (!IsInstanceValid(this) || !IsInsideTree()) return;
+                if (!_exists)
+                {
+                    UpdateProgress(0, "エラー Minecraftが購入されていません。");
+                    await Task.Delay(300);
+                    GetTree().Quit(1);
+                    return;
+                }
 
                 await AssetDownloader.EnsureAssetsDownloadedAsync((ratio, text) =>
                 {
