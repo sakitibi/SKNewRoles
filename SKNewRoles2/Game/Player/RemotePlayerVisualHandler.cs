@@ -43,9 +43,9 @@ namespace SKNewRoles2.Game.Player
                 Name = "HandHeldItem",
                 Texture = iconTexture,
                 TextureFilter = BaseMaterial3D.TextureFilterEnum.Nearest,
-                PixelSize = 0.04f,
+                PixelSize = 0.045f,
                 Centered = true,
-                Transform = new Transform3D(Basis.Identity, new Vector3(0.0f, -0.35f, 0.12f))
+                Transform = new Transform3D(Basis.Identity, new Vector3(0.0f, -0.45f, 0.12f))
             };
 
             rightArm.AddChild(itemSprite);
