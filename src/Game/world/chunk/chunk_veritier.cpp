@@ -1,4 +1,5 @@
 #include "chunk_veritier.h"
+#include <chrono>
 #include <godot_cpp/classes/static_body3d.hpp>
 #include <godot_cpp/classes/collision_shape3d.hpp>
 #include <godot_cpp/classes/concave_polygon_shape3d.hpp>
@@ -7,6 +8,8 @@
 using namespace godot;
 
 void ChunkVeritier::verity_initial_collisions(const HashMap<Vector2i, Node3D *> &loaded_chunks) {
+    auto start_time = std::chrono::high_resolution_clock::now();
+
     UtilityFunctions::print("[ChunkManager Veritication] --- Chunk Hit Detection Veritication Log ---");
 
     int total_collision_shapes = 0;
@@ -42,4 +45,8 @@ void ChunkVeritier::verity_initial_collisions(const HashMap<Vector2i, Node3D *> 
     } else {
         UtilityFunctions::print("[ChunkManager Veritication] SUCCESS: The polygons are correctly registered in the physical space.");
     }
+
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+    UtilityFunctions::print(vformat("Chunk verity time: %d ms", (int)duration_ms));
 }

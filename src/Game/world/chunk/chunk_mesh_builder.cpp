@@ -3,6 +3,8 @@
 #include "builders/chunk_data_parser.h"
 #include "builders/chunk_mesh_builder_new.h"
 #include "builders/chunk_node_applier.h"
+#include <godot_cpp/variant/utility_functions.hpp>
+#include <chrono>
 
 using namespace godot;
 
@@ -23,7 +25,14 @@ BuiltChunkData ChunkMeshBuilder::build_chunk_data_async(
     const HashMap<String, Vector<Vector3>> &categorized_positions,
     bool p_is_initial_load
 ) {
+    auto start_time = std::chrono::high_resolution_clock::now();
+
     BuiltChunkDataNew newData = ChunkMeshBuilderNew::build_chunk_data_async(categorized_positions, p_is_initial_load);
+
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+
+    UtilityFunctions::print(vformat("Chunk build time: %d ms", (int)duration_ms));
 
     BuiltChunkData result;
     result.meshes = newData.meshes;

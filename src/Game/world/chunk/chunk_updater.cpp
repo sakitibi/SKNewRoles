@@ -5,10 +5,13 @@
 #include <godot_cpp/templates/hash_set.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <cmath>
+#include <chrono>
 
 using namespace godot;
 
 void ChunkUpdater::update_chunks_around_player(ChunkManager *manager, const Vector3 &center_pos) {
+    auto start_time = std::chrono::high_resolution_clock::now();
+
     if (!manager) return;
 
     float chunk_size = manager->get_chunk_size();
@@ -56,6 +59,10 @@ void ChunkUpdater::update_chunks_around_player(ChunkManager *manager, const Vect
         manager->call_deferred("verity_initial_collisions");
         UtilityFunctions::print("[ChunkManager] Initial chunk loading completed.");
     }
+
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+    UtilityFunctions::print(vformat("Chunk update time: %d ms", (int)duration_ms));
 }
 
 void ChunkUpdater::load_chunk(ChunkManager *manager, const Vector2i &coord) {

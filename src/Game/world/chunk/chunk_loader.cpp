@@ -1,10 +1,13 @@
 #include "chunk_loader.h"
 #include "../mca_parser.h"
 #include <godot_cpp/variant/utility_functions.hpp>
+#include <chrono>
 
 using namespace godot;
 
 void ChunkLoader::async_load_worker(void *p_userdata) {
+    auto start_time = std::chrono::high_resolution_clock::now();
+
     ChunkLoadData *data = static_cast<ChunkLoadData *>(p_userdata);
     if (!data) return;
 
@@ -48,6 +51,10 @@ void ChunkLoader::async_load_worker(void *p_userdata) {
     
     UtilityFunctions::print(vformat("[ChunkLoader] Coord (%d, %d) parsed blocks count: %d", 
     data->coord.x, data->coord.y, data->categorized_positions.size()));
+
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+    UtilityFunctions::print(vformat("Chunk loader time: %d ms", (int)duration_ms));
 }
 
 Node3D *ChunkLoader::create_chunk_node(const Vector2i &coord, float chunk_size, const BuiltChunkData &built_data) {

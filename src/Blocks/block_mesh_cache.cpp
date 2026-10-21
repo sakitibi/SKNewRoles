@@ -2,6 +2,7 @@
 #include "block_registry.h"
 #include "../Game/world/chunk/chunk_mesh_builder.h"
 
+#include <chrono>
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/classes/mesh_instance3d.hpp>
@@ -97,6 +98,8 @@ BlockMeshData BlockMeshCache::load_single_block_mesh(const String &scene_path) {
 }
 
 void BlockMeshCache::preload_block_meshes() {
+    auto start_time = std::chrono::high_resolution_clock::now();
+
     mesh_cache.clear();
     material_dedup_map.clear();
     const HashMap<String, String> &registry_map = BlockRegistry::get_block_scene_map();
@@ -110,6 +113,10 @@ void BlockMeshCache::preload_block_meshes() {
             }
         }
     }
+
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+    UtilityFunctions::print(vformat("Block mesh cache preload time: %d ms", (int)duration_ms));
 }
 
 BlockMeshData BlockMeshCache::get_block_mesh_data(const String &scene_path) {

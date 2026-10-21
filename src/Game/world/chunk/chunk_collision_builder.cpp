@@ -1,13 +1,17 @@
 #include "chunk_collision_builder.h"
 #include <godot_cpp/templates/hash_set.hpp>
 #include <godot_cpp/variant/vector3i.hpp>
+#include <godot_cpp/variant/utility_functions.hpp>
 #include <cmath>
+#include <chrono>
 
 using namespace godot;
 
 PackedVector3Array ChunkCollisionBuilder::build_collision_faces(
     const HashMap<String, Vector<Vector3>> &categorized_positions
 ) {
+    auto start_time = std::chrono::high_resolution_clock::now();
+
     PackedVector3Array collision_faces;
 
     HashSet<Vector3i> occupied_blocks;
@@ -78,6 +82,10 @@ PackedVector3Array ChunkCollisionBuilder::build_collision_faces(
             collision_faces.append(box_verts[k] + offset);
         }
     }
+
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+    UtilityFunctions::print(vformat("Chunk collision build time: %d ms", (int)duration_ms));
 
     return collision_faces;
 }

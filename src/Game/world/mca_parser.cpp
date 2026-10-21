@@ -1,6 +1,7 @@
 #include "mca_parser.h"
 #include <cmath>
 #include <cstring>
+#include <chrono>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
@@ -140,6 +141,8 @@ PackedByteArray MCAParser::get_raw_chunk_nbt(const String &path, int rel_x, int 
 }
 
 Dictionary MCAParser::parse_chunk(const String &region_folder_path, int chunk_x, int chunk_z) {
+    auto start_time = std::chrono::high_resolution_clock::now();
+
     int rx = static_cast<int>(std::floor(chunk_x / 32.0f));
     int rz = static_cast<int>(std::floor(chunk_z / 32.0f));
     String mca_path = region_folder_path + vformat("r.%d.%d.mca", rx, rz);
@@ -150,5 +153,11 @@ Dictionary MCAParser::parse_chunk(const String &region_folder_path, int chunk_x,
     PackedByteArray raw_nbt = get_raw_chunk_nbt(mca_path, rel_x, rel_z);
     if (raw_nbt.is_empty()) return Dictionary();
 
-    return parse_nbt_bytes(raw_nbt);
+    Dictionary result = parse_nbt_bytes(raw_nbt);
+
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+    UtilityFunctions::print(vformat("MCA parse time: %d ms", (int)duration_ms));
+
+    return result;
 }

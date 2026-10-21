@@ -9,6 +9,7 @@
 #include <godot_cpp/variant/vector3i.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <cmath>
+#include <chrono>
 
 using namespace godot;
 
@@ -52,6 +53,9 @@ BuiltChunkDataNew ChunkMeshBuilderNew::build_chunk_data_async(
     const HashMap<String, Vector<Vector3>> &categorized_positions,
     bool p_is_initial_load
 ) {
+    // 処理スタート時間の記録
+    auto start_time = std::chrono::high_resolution_clock::now();
+
     BuiltChunkDataNew result;
 
     HashSet<Vector3i> occupied_blocks;
@@ -152,7 +156,6 @@ BuiltChunkDataNew ChunkMeshBuilderNew::build_chunk_data_async(
             int surf_idx = array_mesh->get_surface_count();
             array_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surface_arrays);
 
-            // 3. 有効なマテリアルのみ割り当て
             if (surf.material.is_valid()) {
                 Ref<BaseMaterial3D> base_mat = surf.material;
                 if (base_mat.is_valid()) {
@@ -167,5 +170,11 @@ BuiltChunkDataNew ChunkMeshBuilderNew::build_chunk_data_async(
     }
 
     result.collision_faces = ChunkCollisionBuilder::build_collision_faces(categorized_positions);
+
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+
+    UtilityFunctions::print(vformat("Chunk build new time: %d ms", (int)duration_ms));
+
     return result;
 }

@@ -1,4 +1,5 @@
 #include "chunk_spawner.h"
+#include <chrono>
 #include "../../../Blocks/falling_block.h"
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/packed_scene.hpp>
@@ -7,6 +8,8 @@
 using namespace godot;
 
 void ChunkSpawner::spawn_falling_block(Node3D *parent_node, const Vector3 &spawn_pos, const String &block_type) {
+    auto start_time = std::chrono::high_resolution_clock::now();
+
     if (!parent_node) return;
 
     Ref<PackedScene> falling_scene = ResourceLoader::get_singleton()->load("res://FallingBlock.tscn");
@@ -24,4 +27,8 @@ void ChunkSpawner::spawn_falling_block(Node3D *parent_node, const Vector3 &spawn
         parent_node->add_child(block);
         UtilityFunctions::print(vformat("[ChunkManager] Falling block (%s) was generated: ", block_type), spawn_pos);
     }
+
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+    UtilityFunctions::print(vformat("Chunk spawn time: %d ms", (int)duration_ms));
 }
