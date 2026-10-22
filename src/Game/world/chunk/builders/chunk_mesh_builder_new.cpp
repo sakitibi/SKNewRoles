@@ -92,7 +92,7 @@ PureChunkData ChunkMeshBuilderNew::build_chunk_data_async(
         Vector<CubeFaceData> faces = CubeMeshUtils::get_cube_faces(height);
         BlockMeshData mesh_data = BlockMeshCache::get_block_mesh_data(scene_path);
 
-        std::unordered_map<Ref<Material>, PureSurfaceData> surface_map;
+        std::unordered_map<Material*, PureSurfaceData> surface_map;
 
         for (const Vector3 &pos : positions) {
             Vector3i grid_pos = to_grid_pos(pos);
@@ -115,7 +115,8 @@ PureChunkData ChunkMeshBuilderNew::build_chunk_data_async(
                     continue;
                 }
 
-                PureSurfaceData &surf = surface_map[face_mat];
+                Material* mat_ptr = face_mat.ptr();
+                PureSurfaceData &surf = surface_map[mat_ptr];
                 surf.material = face_mat;
 
                 int base_idx = surf.vertex_count;
