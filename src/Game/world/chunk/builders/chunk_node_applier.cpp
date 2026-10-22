@@ -3,15 +3,62 @@
 #include <godot_cpp/classes/static_body3d.hpp>
 #include <godot_cpp/classes/collision_shape3d.hpp>
 #include <godot_cpp/classes/concave_polygon_shape3d.hpp>
+#include <godot_cpp/classes/array_mesh.hpp>
+#include <godot_cpp/classes/base_material3d.hpp>
 
 using namespace godot;
 
-void ChunkNodeApplier::apply_chunk_data_to_node(Node3D *parent_node, const BuiltChunkDataNew &built_data) {
+void ChunkNodeApplier::apply_chunk_data_to_node(Node3D *parent_node, const PureChunkData &built_data) {
     if (!parent_node) return;
 
-    for (const auto &E : built_data.meshes) {
+    for (const auto &pair : built_data.block_surfaces) {
+        String block_id = String::utf8(pair.first.c_str());
+        const auto &surfaces = pair.second;
+
+        Ref<ArrayMesh> array_mesh;
+        array_mesh.instantiate();
+
+        for (const auto &surf : surfaces) {
+            if (surf.vertices.empty()) continue;
+
+            PackedVector3Array v_arr;
+            v_arr.resize(surf.vertices.size());
+            for (size_t i = 0; i < surf.vertices.size(); ++i) v_arr[i] = surf.vertices[i];
+
+            PackedVector3Array n_arr;
+            n_arr.resize(surf.normals.size());
+            for (size_t i = 0; i < surf.normals.size(); ++i) n_arr[i] = surf.normals[i];
+
+            PackedVector2Array uv_arr;
+            uv_arr.resize(surf.uvs.size());
+            for (size_t i = 0; i < surf.uvs.size(); ++i) uv_arr[i] = surf.uvs[i];
+
+            PackedInt32Array i_arr;
+            i_arr.resize(surf.indices.size());
+            for (size_t i = 0; i < surf.indices.size(); ++i) i_arr[i] = surf.indices[i];
+
+            Array surface_arrays;
+            surface_arrays.resize(Mesh::ARRAY_MAX);
+            surface_arrays[Mesh::ARRAY_VERTEX] = v_arr;
+            surface_arrays[Mesh::ARRAY_NORMAL] = n_arr;
+            surface_arrays[Mesh::ARRAY_TEX_UV] = uv_arr;
+            surface_arrays[Mesh::ARRAY_INDEX] = i_arr;
+
+            int surf_idx = array_mesh->get_surface_count();
+            array_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surface_arrays);
+
+            if (surf.material.is_valid()) {
+                Ref<BaseMaterial3D> base_mat = surf.material;
+                if (base_mat.is_valid()) {
+                    base_mat->set_flag(BaseMaterial3D::FLAG_UV1_USE_TRIPLANAR, false);
+                    base_mat->set_flag(BaseMaterial3D::FLAG_UV1_USE_WORLD_TRIPLANAR, false);
+                }
+                array_mesh->surface_set_material(surf_idx, surf.material);
+            }
+        }
+
         MeshInstance3D *mi = memnew(MeshInstance3D);
-        mi->set_mesh(E.value);
+        mi->set_mesh(array_mesh);
         parent_node->add_child(mi);
     }
 

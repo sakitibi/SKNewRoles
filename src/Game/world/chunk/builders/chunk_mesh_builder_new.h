@@ -1,28 +1,17 @@
 #pragma once
 
 #include <godot_cpp/classes/object.hpp>
-#include <godot_cpp/classes/array_mesh.hpp>
 #include <godot_cpp/classes/material.hpp>
-#include <godot_cpp/templates/hash_map.hpp>
 #include <godot_cpp/variant/packed_vector3_array.hpp>
-#include <godot_cpp/variant/packed_vector2_array.hpp>
-#include <godot_cpp/variant/packed_int32_array.hpp>
+#include <godot_cpp/variant/vector3.hpp>
+#include <godot_cpp/variant/string.hpp>
+#include <godot_cpp/templates/hash_map.hpp>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include "../chunk_mesh_builder.h"
 
 namespace godot {
-    struct BuiltChunkDataNew {
-        HashMap<String, Ref<ArrayMesh>> meshes;
-        PackedVector3Array collision_faces;
-    };
-
-    struct SurfaceMeshDataNew {
-        Ref<Material> material;
-        PackedVector3Array vertices;
-        PackedVector3Array normals;
-        PackedVector2Array uvs;
-        PackedInt32Array indices;
-        int vertex_count = 0;
-    };
-
     class ChunkMeshBuilderNew : public Object {
         GDCLASS(ChunkMeshBuilderNew, Object)
 
@@ -33,7 +22,7 @@ namespace godot {
             ChunkMeshBuilderNew() {}
             ~ChunkMeshBuilderNew() {}
 
-            static BuiltChunkDataNew build_chunk_data_async(
+            static PureChunkData build_chunk_data_async(
                 const HashMap<String, Vector<Vector3>> &categorized_positions,
                 bool p_is_initial_load = false
             );

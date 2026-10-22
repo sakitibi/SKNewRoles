@@ -4,7 +4,6 @@
 #include "../../../../Blocks/block_registry.h"
 #include "../../../../Blocks/block_mesh_cache.h"
 
-#include <godot_cpp/classes/base_material3d.hpp>
 #include <godot_cpp/templates/hash_set.hpp>
 #include <godot_cpp/variant/vector3i.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
@@ -49,14 +48,13 @@ static Ref<Material> resolve_face_material(const BlockMeshData &mesh_data, int f
     return Ref<Material>();
 }
 
-BuiltChunkDataNew ChunkMeshBuilderNew::build_chunk_data_async(
+PureChunkData ChunkMeshBuilderNew::build_chunk_data_async(
     const HashMap<String, Vector<Vector3>> &categorized_positions,
     bool p_is_initial_load
 ) {
-    // 処理スタート時間の記録
     auto start_time = std::chrono::high_resolution_clock::now();
 
-    BuiltChunkDataNew result;
+    PureChunkData result;
 
     HashSet<Vector3i> occupied_blocks;
     HashSet<Vector3i> dirt_path_blocks;
@@ -94,7 +92,7 @@ BuiltChunkDataNew ChunkMeshBuilderNew::build_chunk_data_async(
         Vector<CubeFaceData> faces = CubeMeshUtils::get_cube_faces(height);
         BlockMeshData mesh_data = BlockMeshCache::get_block_mesh_data(scene_path);
 
-        HashMap<Ref<Material>, SurfaceMeshDataNew> surface_map;
+        std::unordered_map<Ref<Material>, PureSurfaceData> surface_map;
 
         for (const Vector3 &pos : positions) {
             Vector3i grid_pos = to_grid_pos(pos);
@@ -117,56 +115,39 @@ BuiltChunkDataNew ChunkMeshBuilderNew::build_chunk_data_async(
                     continue;
                 }
 
-                SurfaceMeshDataNew &surf = surface_map[face_mat];
+                PureSurfaceData &surf = surface_map[face_mat];
                 surf.material = face_mat;
 
+                int base_idx = surf.vertex_count;
                 for (int v = 0; v < 4; ++v) {
-                    surf.vertices.append(pos + face.vertices[v]);
-                    surf.normals.append(face.normal);
-                    surf.uvs.append(face.uvs[v]);
+                    surf.vertices.push_back(pos + face.vertices[v]);
+                    surf.normals.push_back(face.normal);
+                    surf.uvs.push_back(face.uvs[v]);
                 }
 
-                surf.indices.append(surf.vertex_count + 0);
-                surf.indices.append(surf.vertex_count + 1);
-                surf.indices.append(surf.vertex_count + 2);
-                surf.indices.append(surf.vertex_count + 0);
-                surf.indices.append(surf.vertex_count + 2);
-                surf.indices.append(surf.vertex_count + 3);
+                surf.indices.push_back(base_idx + 0);
+                surf.indices.push_back(base_idx + 1);
+                surf.indices.push_back(base_idx + 2);
+                surf.indices.push_back(base_idx + 0);
+                surf.indices.push_back(base_idx + 2);
+                surf.indices.push_back(base_idx + 3);
 
                 surf.vertex_count += 4;
             }
         }
 
-        if (surface_map.is_empty()) continue;
+        if (surface_map.empty()) continue;
 
-        Ref<ArrayMesh> array_mesh;
-        array_mesh.instantiate();
-
+        std::vector<PureSurfaceData> surfaces_list;
         for (const auto &S : surface_map) {
-            const SurfaceMeshDataNew &surf = S.value;
-            if (surf.vertices.size() == 0) continue;
-
-            Array surface_arrays;
-            surface_arrays.resize(Mesh::ARRAY_MAX);
-            surface_arrays[Mesh::ARRAY_VERTEX] = surf.vertices;
-            surface_arrays[Mesh::ARRAY_NORMAL] = surf.normals;
-            surface_arrays[Mesh::ARRAY_TEX_UV] = surf.uvs;
-            surface_arrays[Mesh::ARRAY_INDEX] = surf.indices;
-
-            int surf_idx = array_mesh->get_surface_count();
-            array_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surface_arrays);
-
-            if (surf.material.is_valid()) {
-                Ref<BaseMaterial3D> base_mat = surf.material;
-                if (base_mat.is_valid()) {
-                    base_mat->set_flag(BaseMaterial3D::FLAG_UV1_USE_TRIPLANAR, false);
-                    base_mat->set_flag(BaseMaterial3D::FLAG_UV1_USE_WORLD_TRIPLANAR, false);
-                }
-                array_mesh->surface_set_material(surf_idx, surf.material);
+            if (!S.second.vertices.empty()) {
+                surfaces_list.push_back(S.second);
             }
         }
 
-        result.meshes[block_id] = array_mesh;
+        if (!surfaces_list.empty()) {
+            result.block_surfaces[block_id.utf8().get_data()] = surfaces_list;
+        }
     }
 
     result.collision_faces = ChunkCollisionBuilder::build_collision_faces(categorized_positions);

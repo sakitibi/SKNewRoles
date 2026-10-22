@@ -21,21 +21,26 @@ void ChunkLoader::async_load_worker(void *p_userdata) {
     for (const KeyValue<String, Vector<Vector3>> &entry : raw_positions) {
         String block_type = entry.key;
         const Vector<Vector3> &pos_list = entry.value;
+        int size = pos_list.size();
+
+        if (size == 0) continue;
 
         Vector<Vector3> valid_positions;
-        for (int i = 0; i < pos_list.size(); ++i) {
-            Vector3 block_pos = pos_list[i];
+        valid_positions.resize(size);
+        int valid_count = 0;
 
+        for (int i = 0; i < size; ++i) {
+            const Vector3 &block_pos = pos_list[i];
             float world_y = data->base_y_position + block_pos.y;
             
-            if (world_y < data->min_height || world_y > data->max_height) {
-                continue;
+            if (world_y >= data->min_height && world_y <= data->max_height) {
+                valid_positions.set(valid_count++, block_pos);
             }
-
-            valid_positions.push_back(block_pos);
         }
 
-        if (valid_positions.size() > 0) {
+        if (valid_count > 0) {
+            // 実際の有効なサイズに縮小
+            valid_positions.resize(valid_count);
             filtered_positions[block_type] = valid_positions;
         }
     }
@@ -50,7 +55,7 @@ void ChunkLoader::async_load_worker(void *p_userdata) {
     data->has_data = true;
     
     UtilityFunctions::print(vformat("[ChunkLoader] Coord (%d, %d) parsed blocks count: %d", 
-    data->coord.x, data->coord.y, data->categorized_positions.size()));
+        data->coord.x, data->coord.y, data->categorized_positions.size()));
 
     auto end_time = std::chrono::high_resolution_clock::now();
     auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();

@@ -56,7 +56,8 @@ void ChunkBlockEditor::rebuild_chunk_mesh(
     Node3D *old_chunk_node = loaded_chunks[chunk_coord];
 
     HashMap<String, Vector<Vector3>> &positions = chunk_block_data_map[chunk_coord];
-    BuiltChunkData new_built_data = ChunkMeshBuilder::build_chunk_data_async(positions, false);
+    
+    PureChunkData new_built_data = ChunkMeshBuilder::build_chunk_data_async(positions, false);
 
     Node3D *new_chunk_node = memnew(Node3D);
     new_chunk_node->set_name(vformat("Chunk_%d_%d", chunk_coord.x, chunk_coord.y));
