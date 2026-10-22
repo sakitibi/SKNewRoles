@@ -62,7 +62,7 @@ void ChunkLoader::async_load_worker(void *p_userdata) {
     UtilityFunctions::print(vformat("Chunk loader time: %d ms", (int)duration_ms));
 }
 
-Node3D *ChunkLoader::create_chunk_node(const Vector2i &coord, float chunk_size, const BuiltChunkData &built_data) {
+Node3D *ChunkLoader::create_chunk_node(const Vector2i &coord, float chunk_size, const PureChunkData &built_data) {
     Node3D *chunk_node = memnew(Node3D);
     chunk_node->set_name(vformat("Chunk_%d_%d", coord.x, coord.y));
 
