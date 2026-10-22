@@ -5,6 +5,7 @@
 #include <godot_cpp/templates/hash_map.hpp>
 #include <godot_cpp/variant/vector2i.hpp>
 #include <godot_cpp/variant/node_path.hpp>
+#include <queue>
 
 #include "chunk_loader.h"
 
@@ -33,10 +34,14 @@ namespace godot {
             HashMap<Vector2i, int64_t> pending_tasks;
             HashMap<Vector2i, HashMap<String, Vector<Vector3>>> chunk_block_data_map;
 
+            std::queue<ChunkLoadData *> completed_chunk_queue;
+            const int max_chunks_per_frame = 1;
+
             String region_folder_path = "user://game_asset/regions/";
 
             Node3D *find_local_player();
             void _safe_preload_block_meshes();
+            void process_completed_chunks();
 
         protected:
             static void _bind_methods();

@@ -91,6 +91,9 @@ void ChunkManager::_safe_preload_block_meshes() {
 void ChunkManager::_process(double delta) {
     if (Engine::get_singleton()->is_editor_hint()) return;
 
+    // 1. 追加: 毎フレーム、キューから一定数だけチャンクをシーンに適用する（カクつき防止）
+    process_completed_chunks();
+
     Vector3 center_pos = Vector3(0, 0, 0);
     Node3D *player = find_local_player();
     
@@ -151,21 +154,45 @@ void ChunkManager::_on_chunk_loaded(Variant p_userdata) {
     pending_tasks.erase(coord);
 
     if (data->has_data) {
-        Node3D *chunk_node = ChunkLoader::create_chunk_node(coord, chunk_size, data->built_data);
-        if (chunk_node) {
-            add_child(chunk_node);
-            loaded_chunks[coord] = chunk_node;
-            chunk_block_data_map[coord] = data->categorized_positions;
-            UtilityFunctions::print(vformat("[ChunkManager] Chunk (%d, %d) created and added to scene.", coord.x, coord.y));
-        }
+        completed_chunk_queue.push(data);
+    } else {
+        delete data;
     }
 
-    delete data;
-
-    if (!initial_load_complete && pending_tasks.is_empty()) {
+    if (!initial_load_complete && pending_tasks.is_empty() && completed_chunk_queue.empty()) {
         initial_load_complete = true;
         call_deferred("verity_initial_collisions");
         UtilityFunctions::print("[ChunkManager] All pending chunk tasks finished.");
+    }
+}
+
+void ChunkManager::process_completed_chunks() {
+    int processed_count = 0;
+
+    while (!completed_chunk_queue.empty() && processed_count < max_chunks_per_frame) {
+        ChunkLoadData *data = completed_chunk_queue.front();
+        completed_chunk_queue.pop();
+
+        if (data) {
+            Vector2i coord = data->coord;
+            Node3D *chunk_node = ChunkLoader::create_chunk_node(coord, chunk_size, data->built_data);
+            if (chunk_node) {
+                add_child(chunk_node);
+                loaded_chunks[coord] = chunk_node;
+                chunk_block_data_map[coord] = data->categorized_positions;
+                UtilityFunctions::print(vformat("[ChunkManager] Chunk (%d, %d) created and added to scene (queued).", coord.x, coord.y));
+            }
+            delete data;
+        }
+
+        processed_count++;
+    }
+
+    // すべての処理（ロード＆適用）が完了したかの判定
+    if (!initial_load_complete && pending_tasks.is_empty() && completed_chunk_queue.empty()) {
+        initial_load_complete = true;
+        call_deferred("verity_initial_collisions");
+        UtilityFunctions::print("[ChunkManager] All pending chunk tasks finished and applied.");
     }
 }
 
