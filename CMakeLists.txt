@@ -39,6 +39,7 @@ set(SOURCES
     src/Game/world/mca_parser.cpp
     src/Game/world/chunk/chunk_block_editor.cpp
     src/Game/world/chunk/chunk_manager.cpp
+    src/Game/world/chunk/chunk_queue_processor.cpp
     src/Game/world/chunk/chunk_updater.cpp
     src/Game/world/chunk/chunk_mesh_builder.cpp
     src/Game/world/chunk/chunk_collision_builder.cpp
