@@ -71,7 +71,7 @@ void SNR2Player::_ready() {
         spectator_component->setup(this, camera);
     }
 
-    if (player_camera.get_camera() && camera) {
+    if (camera) {
         player_camera.setup(this, camera);
     }
 
