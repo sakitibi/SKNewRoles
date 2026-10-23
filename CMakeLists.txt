@@ -24,12 +24,7 @@ FetchContent_MakeAvailable(godot-cpp)
 # コンパイル対象となる C++ ソースファイル
 set(SOURCES
     src/register_types.cpp
-    src/player.cpp
-    src/player_skin.cpp
-    src/player_movement.cpp
-    src/player_attack.cpp
     src/lobby_manager.cpp
-    src/remote_player.cpp
     src/config_manager.cpp
     src/Blocks/falling_block.cpp
     src/Blocks/grass_block.cpp
@@ -57,6 +52,12 @@ set(SOURCES
     src/Game/fall_damage_component.cpp
     src/Game/hunger_component.cpp
     src/Game/hotbar.cpp
+    src/Player/player.cpp
+    src/Player/player_skin.cpp
+    src/Player/player_movement.cpp
+    src/Player/player_attack.cpp
+    src/Player/player_camera.cpp
+    src/Player/remote_player.cpp
 )
 
 # 共有ライブラリとしてビルド

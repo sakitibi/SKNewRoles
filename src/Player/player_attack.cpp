@@ -5,7 +5,7 @@
 #include <godot_cpp/classes/collision_object3d.hpp>
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
-#include "Game/health_component.h"
+#include "../Game/health_component.h"
 
 using namespace godot;
 

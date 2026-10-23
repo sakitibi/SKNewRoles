@@ -3,8 +3,6 @@
 #include "player_movement.h"
 #include "player_attack.h"
 #include <godot_cpp/classes/project_settings.hpp>
-#include <godot_cpp/classes/input_event_mouse_motion.hpp>
-#include <godot_cpp/classes/camera3d.hpp>
 #include <godot_cpp/classes/input_event_mouse_button.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
@@ -73,6 +71,10 @@ void SNR2Player::_ready() {
         spectator_component->setup(this, camera);
     }
 
+    if (player_camera.get_camera() && camera) {
+        player_camera.setup(this, camera);
+    }
+
     if (health_component) {
         if (!health_component->is_connected("hp_changed", Callable(this, "_on_hp_changed"))) {
             health_component->connect("hp_changed", Callable(this, "_on_hp_changed"));
@@ -111,7 +113,6 @@ void SNR2Player::_physics_process(double delta) {
         return;
     }
 
-    // 移動処理を外部クラスへ委譲
     PlayerMovement::process_physics(
         this, input, fall_damage_component, hunger_component,
         static_cast<float>(delta), gravity, SPEED, JUMP_VELOCITY, is_spectator()
@@ -121,25 +122,9 @@ void SNR2Player::_physics_process(double delta) {
 void SNR2Player::_input(const Ref<InputEvent> &event) {
     if (!input) return;
 
-    // 視点移動（右クリックドラッグ）
-    if (input->is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_RIGHT)) {
-        Ref<InputEventMouseMotion> mouse_motion = event;
-        if (mouse_motion.is_valid()) {
-            Vector2 delta = mouse_motion->get_relative();
+    player_camera.handle_input(this, event, input);
 
-            rotate_y(-delta.x * mouse_sensitivity);
-
-            camera_rotation_x -= delta.y * mouse_sensitivity;
-            camera_rotation_x = Math::clamp(camera_rotation_x, -LIMIT_ANGLE_X, LIMIT_ANGLE_X);
-
-            if (camera != nullptr) {
-                Vector3 cam_rot = camera->get_rotation();
-                cam_rot.x = camera_rotation_x;
-                camera->set_rotation(cam_rot);
-            }
-        }
-    }
-
+    // 攻撃処理
     Ref<InputEventMouseButton> mouse_button = event;
     Ref<PlayerAttack> attack = memnew(PlayerAttack);
     if (mouse_button.is_valid() && mouse_button->is_pressed() && mouse_button->get_button_index() == MouseButton::MOUSE_BUTTON_LEFT) {

@@ -10,6 +10,7 @@
 #include "Game/spectator_component.h"
 #include "Game/fall_damage_component.h"
 #include "Game/hunger_component.h"
+#include "player_camera.h"
 
 namespace godot {
     class SNR2Player : public CharacterBody3D {
@@ -20,14 +21,11 @@ namespace godot {
             SpectatorComponent *spectator_component = nullptr;
             FallDamageComponent *fall_damage_component = nullptr;
             HungerComponent *hunger_component = nullptr;
+            PlayerCamera player_camera;
 
             float gravity = 9.8f;
             const float SPEED = 5.0f;
             const float JUMP_VELOCITY = 4.5f;
-
-            float mouse_sensitivity = 0.003f;
-            float camera_rotation_x = 0.0f;
-            const float LIMIT_ANGLE_X = 1.48f;
 
             Camera3D *camera = nullptr;
             Input *input = nullptr;

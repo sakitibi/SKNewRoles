@@ -2,10 +2,10 @@
 #include <godot_cpp/godot.hpp>
 
 #include "register_types.h"
-#include "player.h"
-#include "player_attack.h"
+#include "./Player/player.h"
+#include "./Player/player_attack.h"
+#include "./Player/remote_player.h"
 #include "lobby_manager.h"
-#include "remote_player.h"
 #include "config_manager.h"
 
 #include "Blocks/block_registry.h"
