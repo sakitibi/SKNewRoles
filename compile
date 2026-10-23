@@ -6,13 +6,17 @@ cd "$PROJECT_DIR" || exit 1
 RESOURCES_BASE="$PROJECT_DIR/SKNewRoles.app/Contents/Resources/"
 GODOT_SHARP="$RESOURCES_BASE/data_SKNewRoles_macos_arm64/GodotSharp.dll"
 VB_CORE="$RESOURCES_BASE/data_SKNewRoles_macos_arm64/Microsoft.VisualBasic.Core.dll"
+SYS_TTD="$RESOURCES_BASE/data_SKNewRoles_macos_arm64/System.Threading.Tasks.Dataflow.dll"
 TARGET_SHARP="$RESOURCES_BASE/data_SKNewRoles_macos_x86_64/GodotSharp.dll"
 TARGET_VB_CORE="$RESOURCES_BASE/data_SKNewRoles_macos_x86_64/Microsoft.VisualBasic.Core.dll"
+TARGET_SYS_TTD="$RESOURCES_BASE/data_SKNewRoles_macos_x86_64/System.Threading.Tasks.Dataflow.dll"
 
 rm -f "$GODOT_SHARP"
 rm -f "$VB_CORE"
+rm -f "$SYS_TTD"
 ln -sf "$TARGET_SHARP" "$GODOT_SHARP"
 ln -sf "$TARGET_VB_CORE" "$VB_CORE"
+ln -sf "$TARGET_SYS_TTD" "$SYS_TTD"
 
 codesign --force --deep --sign - --options runtime --entitlements ./entitlements.plist ./SKNewRoles.app
 xattr -d -r com.apple.quarantine ./SKNewRoles.app 2>/dev/null || true
