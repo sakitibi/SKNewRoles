@@ -47,7 +47,7 @@ namespace SKNewRoles2.Lobby
                 _owner.AddChild(_myPlayerInstance);
                 GD.Print("🚀 自分のプレイヤープレハブの生成に成功しました！");
 
-                _playerManager.EnablePhysics();
+                EnablePhysicsOnLobby();
 
                 // 保存済みスキンを適用し、その設定内容を他のプレイヤーへブロードキャスト
                 var mySkins = LobbySkinManager.ApplySavedSkinAndGetPresets(_myPlayerInstance);
@@ -72,6 +72,11 @@ namespace SKNewRoles2.Lobby
             {
                 GD.PrintErr($"❌ プレイヤー生成中にエラーが発生しました: {ex.Message}");
             }
+        }
+
+        public void EnablePhysicsOnLobby()
+        {
+            PlayerSpawner.SetPlayerPhysicsEnabled(_myPlayerInstance, true);
         }
 
         /// <summary>

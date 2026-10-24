@@ -32,8 +32,6 @@ namespace SKNewRoles2.Game.Player
             Vector3 spawnPos = new(0, 100, 0);
             playerInstance.GlobalPosition = spawnPos;
 
-            SetPlayerPhysicsEnabled(playerInstance, false);
-
             var healthComponent = playerInstance.GetNodeOrNull<Node>("HealthComponent");
             Node targetNode = healthComponent ?? playerInstance;
 
@@ -48,6 +46,7 @@ namespace SKNewRoles2.Game.Player
             }
 
             networkHandler?.UpdateHpUIFromPlayer();
+            SetPlayerPhysicsEnabled(playerInstance, false);
             GD.Print($"👤 [PlayerSpawner] 自プレイヤーを生成し、スキンを適用・送信しました。(Pos: {spawnPos})");
 
             return (playerInstance, healthComponent);

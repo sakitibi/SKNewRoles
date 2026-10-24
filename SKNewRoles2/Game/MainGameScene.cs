@@ -100,6 +100,7 @@ namespace SKNewRoles2.Game
             if (_uiController != null)
             {
                 await _uiController.ShowRoleRevealAsync(_roleManager?.MyRole ?? 0, _roleManager?.MyFaction ?? 0, 5000);
+                PlayerSpawner.SetPlayerPhysicsEnabled(_playerHandler.MyPlayerInstance, true);
             }
         }
 

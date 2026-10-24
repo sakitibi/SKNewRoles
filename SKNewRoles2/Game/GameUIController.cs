@@ -1,4 +1,5 @@
 using Godot;
+using SKNewRoles2.Game.Player;
 using System.Threading.Tasks;
 
 namespace SKNewRoles2.Game
