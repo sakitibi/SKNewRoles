@@ -2,12 +2,14 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using SKNewRoles2.Game;
 using SKNewRoles2.SessionManagerSystem;
 
 namespace SKNewRoles2.Lobby
 {
     public partial class LobbyRoom
     {
+        private static readonly SkinEditScene _skin_edit_scene = new();
         /// <summary>
         /// 自分自身の操作用プレイヤープレハブを安全に生成します。
         /// </summary>
@@ -26,6 +28,8 @@ namespace SKNewRoles2.Lobby
                 _myPlayerInstance.Name = "MyPlayer"; 
                 AddChild(_myPlayerInstance);
                 GD.Print("🚀 自分のプレイヤープレハブの生成に成功しました！");
+
+                ApplySavedSkinToPlayer(_myPlayerInstance);
 
                 await ToSignal(GetTree(), "process_frame");
 
@@ -46,6 +50,42 @@ namespace SKNewRoles2.Lobby
             {
                 GD.PrintErr($"❌ プレイヤー生成中にエラーが発生しました: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// プレイヤーインスタンスに保存されたカスタムスキンを適用します。
+        /// </summary>
+        private static void ApplySavedSkinToPlayer(Node3D playerInstance)
+        {
+            var config = new ConfigFile();
+            Error err = config.Load("user://player_skin.cfg");
+
+            if (err == Error.Ok)
+            {
+                foreach (string partName in _skin_edit_scene.equippedPresets.Keys)
+                {
+                    if (config.HasSectionKey("PlayerSkin", partName))
+                    {
+                        _skin_edit_scene.equippedPresets[partName] = (string)config.GetValue("PlayerSkin", partName);
+                    }
+                }
+            }
+            else
+            {
+                GD.Print("[LobbyRoom] 保存されたスキン設定が見つからないため、デフォルトを使用します。");
+            }
+
+            var painter = playerInstance.GetNodeOrNull<SkinPainter>("SkinPainter");
+            if (painter == null)
+            {
+                painter = new SkinPainter();
+                playerInstance.AddChild(painter);
+                painter.Name = "SkinPainter";
+            }
+
+            painter.Initialize(playerInstance);
+            painter.ApplyPresetToAllParts(_skin_edit_scene.equippedPresets);
+            GD.Print("[LobbyRoom] プレイヤーに保存されたスキンを適用しました！");
         }
 
         /// <summary>
@@ -93,7 +133,7 @@ namespace SKNewRoles2.Lobby
         {
             if (_dummyPlayerPrefab == null)
             {
-                GD.PrintErr($"❌ 相手プレイヤー(ID: {playerId})を生成しようとしましたが、_dummyPlayerPrefab が null です！");
+                GD.PrintErr($"❌ 相手プレイヤー(ID: {playerId})を生成しようとしましたが, _dummyPlayerPrefab が null です！");
                 return;
             }
 

@@ -13,7 +13,7 @@ namespace SKNewRoles2.Game
         private readonly string[] _availablePresets = ["preset_1"];
 
         // 部位ごとに適用しているプリセットIDを独立管理
-        private readonly Dictionary<string, string> _equippedPresets = new()
+        public readonly Dictionary<string, string> equippedPresets = new()
         {
             { "Head",     "preset_1" },
             { "Body",     "preset_1" },
@@ -57,13 +57,13 @@ namespace SKNewRoles2.Game
         /// </summary>
         public void SelectPresetForAll(string presetId)
         {
-            foreach (var partName in new List<string>(_equippedPresets.Keys))
+            foreach (var partName in new List<string>(equippedPresets.Keys))
             {
-                _equippedPresets[partName] = presetId;
+                equippedPresets[partName] = presetId;
             }
 
             var painter = GetNodeOrNull<SkinPainter>("SkinPainter");
-            painter?.ApplyPresetToAllParts(_equippedPresets);
+            painter?.ApplyPresetToAllParts(equippedPresets);
             GD.Print($"[SkinEdit] 全部位のプリセットを一括切り替えました: {presetId}");
         }
 
@@ -72,12 +72,12 @@ namespace SKNewRoles2.Game
         /// </summary>
         private void CyclePartPreset(string partName)
         {
-            string current = _equippedPresets.GetValueOrDefault(partName, "preset_1");
+            string current = equippedPresets.GetValueOrDefault(partName, "preset_1");
             int currentIndex = System.Array.IndexOf(_availablePresets, current);
             int nextIndex = (currentIndex + 1) % _availablePresets.Length;
             
             string nextPreset = _availablePresets[nextIndex];
-            _equippedPresets[partName] = nextPreset;
+            equippedPresets[partName] = nextPreset;
 
             ApplyPartPreset(partName, nextPreset);
         }
@@ -122,7 +122,7 @@ namespace SKNewRoles2.Game
                 {
                     painter.Initialize(dummyInstance);
                     // 初期表示時に設定中の部位別プリセットを全適用
-                    painter.ApplyPresetToAllParts(_equippedPresets);
+                    painter.ApplyPresetToAllParts(equippedPresets);
                 }
             }
             else
@@ -134,9 +134,23 @@ namespace SKNewRoles2.Game
         private void OnSaveButtonPressed()
         {
             GD.Print("[SkinEdit] スキン設定を確定しました:");
-            foreach (var (part, preset) in _equippedPresets)
+            
+            var config = new ConfigFile();
+            foreach (var (part, preset) in equippedPresets)
             {
+                config.SetValue("PlayerSkin", part, preset);
                 GD.Print($"  - {part}: {preset}");
+            }
+            
+            // ユーザーディレクトリに設定を保存
+            Error err = config.Save("user://player_skin.cfg");
+            if (err == Error.Ok)
+            {
+                GD.Print("[SkinEdit] スキン設定の保存に成功しました。");
+            }
+            else
+            {
+                GD.PrintErr("[SkinEdit] スキン設定の保存に失敗しました。");
             }
         }
 
