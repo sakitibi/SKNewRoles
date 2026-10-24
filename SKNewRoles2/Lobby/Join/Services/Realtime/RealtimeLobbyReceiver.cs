@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 
 namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
@@ -108,6 +109,23 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
                                 string pId = innerPayload.GetProperty("player_id").GetString();
                                 GD.Print($"👋 [Realtime] プレイヤーの退出を受信しました: {pId}");
                                 RealtimeEvents.RaisePlayerLeaveReceived(pId);
+                                break;
+                            }
+                            case "player_skin":
+                            {
+                                string pId = innerPayload.GetProperty("player_id").GetString();
+                                var skinsDict = new Dictionary<string, string>();
+                                
+                                if (innerPayload.TryGetProperty("skins", out JsonElement skinsElem))
+                                {
+                                    foreach (var prop in skinsElem.EnumerateObject())
+                                    {
+                                        skinsDict[prop.Name] = prop.Value.GetString();
+                                    }
+                                }
+
+                                GD.Print($"🎨 [Realtime] プレイヤーのスキン情報を受信しました: {pId}");
+                                RealtimeEvents.RaisePlayerSkinReceived(pId, skinsDict);
                                 break;
                             }
                         }

@@ -1,5 +1,6 @@
 using Godot;
 using System.Text.Json;
+using System.Collections.Generic;
 using SKNewRoles2.SessionManagerSystem;
 using SKNewRoles2.Game.Network;
 
@@ -116,6 +117,41 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
             string json = JsonSerializer.Serialize(broadcastPayload);
             client.SendText(json);
             GD.Print($"📡 [退出通知送信] 退出ブロードキャストを送信しました -> Topic: {GetTopic()} | PlayerID: {senderId}");
+        }
+
+        /// <summary>
+        /// 自分のスキン設定を全員に送信します。
+        /// </summary>
+        public static void LobbySendSkinBroadcast(Dictionary<string, string> skinPresets)
+        {
+            var client = RealtimeConnectionService.RealtimeClient;
+            if (client == null || client.GetReadyState() != WebSocketPeer.State.Open)
+            {
+                return;
+            }
+
+            string senderId = GetSenderId();
+
+            var broadcastPayload = new
+            {
+                topic = GetTopic(),
+                @event = "broadcast",
+                payload = new
+                {
+                    type = "broadcast",
+                    @event = "player_skin",
+                    payload = new
+                    {
+                        player_id = senderId,
+                        skins = skinPresets
+                    }
+                },
+                @ref = (string)null
+            };
+
+            string json = JsonSerializer.Serialize(broadcastPayload);
+            client.SendText(json);
+            GD.Print($"📡 [スキン送信] スキン情報をブロードキャストしました -> PlayerID: {senderId}");
         }
     }
 }

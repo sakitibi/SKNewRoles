@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
 {
@@ -9,6 +10,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
         public static event Action<string, int, int> OnRoleAssignedReceived;
         public static event Action OnGameStartReceived;
         public static event Action<string> OnPlayerLeaveReceived;
+        public static event Action<string, Dictionary<string, string>> OnPlayerSkinReceived;
 
         public static void RaiseLobbyTableChanged() 
             => OnLobbyTableChanged?.Invoke();
@@ -24,5 +26,8 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
         
         public static void RaisePlayerLeaveReceived(string playerId)
             => OnPlayerLeaveReceived?.Invoke(playerId);
+
+        public static void RaisePlayerSkinReceived(string playerId, Dictionary<string, string> skins)
+            => OnPlayerSkinReceived?.Invoke(playerId, skins);
     }
 }

@@ -2,18 +2,34 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using SKNewRoles2.Game;
 using SKNewRoles2.SessionManagerSystem;
+using SKNewRoles2.Lobby.JOIN.Services.Realtime;
 
 namespace SKNewRoles2.Lobby
 {
-    public partial class LobbyRoom
+    public class LobbyRoomPlayer
     {
-        private static readonly SkinEditScene _skin_edit_scene = new();
+        private readonly Node3D _owner;
+        private readonly PackedScene _playerPrefab;
+        private readonly PackedScene _dummyPlayerPrefab;
+        private Node3D _myPlayerInstance;
+        private readonly Dictionary<string, Node3D> _otherPlayers;
+        private readonly Dictionary<string, Dictionary<string, string>> _remotePlayerSkins = [];
+
+        public Node3D MyPlayerInstance => _myPlayerInstance;
+
+        public LobbyRoomPlayer(Node3D owner, PackedScene playerPrefab, PackedScene dummyPlayerPrefab, Dictionary<string, Node3D> otherPlayers)
+        {
+            _owner = owner;
+            _playerPrefab = playerPrefab;
+            _dummyPlayerPrefab = dummyPlayerPrefab;
+            _otherPlayers = otherPlayers;
+        }
+
         /// <summary>
         /// 自分自身の操作用プレイヤープレハブを安全に生成します。
         /// </summary>
-        public async Task SpawnPlayerPrefab()
+        public async Task SpawnPlayerPrefab(Color grassBlockColor)
         {
             try
             {
@@ -26,22 +42,24 @@ namespace SKNewRoles2.Lobby
                 _myPlayerInstance = _playerPrefab.Instantiate<Node3D>();
                 _myPlayerInstance.Position = new Vector3(0.0f, 2.0f, 0.0f);
                 _myPlayerInstance.Name = "MyPlayer"; 
-                AddChild(_myPlayerInstance);
+                _owner.AddChild(_myPlayerInstance);
                 GD.Print("🚀 自分のプレイヤープレハブの生成に成功しました！");
 
-                ApplySavedSkinToPlayer(_myPlayerInstance);
+                // 保存済みスキンを適用し、その設定内容を他のプレイヤーへブロードキャスト
+                var mySkins = LobbySkinManager.ApplySavedSkinAndGetPresets(_myPlayerInstance);
+                RealtimeLobbySender.LobbySendSkinBroadcast(mySkins);
 
-                await ToSignal(GetTree(), "process_frame");
+                await _owner.ToSignal(_owner.GetTree(), "process_frame");
 
                 // ステージ内のSNR2GrassBlockを全探索して色を一括同期
                 List<Node> grassBlocks = [];
-                await FindGrassBlocksRecursive(GetTree().Root, grassBlocks);
+                await FindGrassBlocksRecursive(_owner.GetTree().Root, grassBlocks);
 
                 if (grassBlocks.Count > 0)
                 {
                     foreach (Node block in grassBlocks)
                     {
-                        block.Call("set_grass_color", GrassBlockColor);
+                        block.Call("set_grass_color", grassBlockColor);
                     }
                     GD.Print($"{grassBlocks.Count} 個のSNR2GrassBlockを発見し、色を変更しました！");
                 }
@@ -53,60 +71,20 @@ namespace SKNewRoles2.Lobby
         }
 
         /// <summary>
-        /// プレイヤーインスタンスに保存されたカスタムスキンを適用します。
-        /// </summary>
-        private static void ApplySavedSkinToPlayer(Node3D playerInstance)
-        {
-            var config = new ConfigFile();
-            Error err = config.Load("user://player_skin.cfg");
-
-            if (err == Error.Ok)
-            {
-                foreach (string partName in _skin_edit_scene.equippedPresets.Keys)
-                {
-                    if (config.HasSectionKey("PlayerSkin", partName))
-                    {
-                        _skin_edit_scene.equippedPresets[partName] = (string)config.GetValue("PlayerSkin", partName);
-                    }
-                }
-            }
-            else
-            {
-                GD.Print("[LobbyRoom] 保存されたスキン設定が見つからないため、デフォルトを使用します。");
-            }
-
-            var painter = playerInstance.GetNodeOrNull<SkinPainter>("SkinPainter");
-            if (painter == null)
-            {
-                painter = new SkinPainter();
-                playerInstance.AddChild(painter);
-                painter.Name = "SkinPainter";
-            }
-
-            painter.Initialize(playerInstance);
-            painter.ApplyPresetToAllParts(_skin_edit_scene.equippedPresets);
-            GD.Print("[LobbyRoom] プレイヤーに保存されたスキンを適用しました！");
-        }
-
-        /// <summary>
         /// 他のプレイヤーから位置・回転（Broadcast）を受信した際の処理
         /// </summary>
-        private void OnRemotePlayerTransformReceived(string playerId, float px, float py, float pz, float rx, float ry, float rz)
+        public void OnRemotePlayerTransformReceived(string playerId, float px, float py, float pz, float rx, float ry, float rz)
         {
             string myId = SessionManager.Instance.CurrentSession?.User?.Id;
 
-            // 自分のIDと同じデータなら無視
             if (!string.IsNullOrEmpty(myId) && playerId == myId)
             {
                 return;
             }
 
-            GD.Print($"📡 他プレイヤーの座標を受信: ID={playerId}, Pos=({px}, {py}, {pz})");
-
-            // すでに存在する場合は移動
             if (_otherPlayers.TryGetValue(playerId, out Node3D remotePlayerNode))
             {
-                if (IsInstanceValid(remotePlayerNode))
+                if (GodotObject.IsInstanceValid(remotePlayerNode))
                 {
                     if (remotePlayerNode.HasMethod("set_target_transform"))
                     {
@@ -121,7 +99,6 @@ namespace SKNewRoles2.Lobby
             }
             else
             {
-                // 3. 存在しない場合は新規生成
                 SpawnRemotePlayerAll(playerId, px, py, pz, rx, ry, rz);
             }
         }
@@ -151,8 +128,33 @@ namespace SKNewRoles2.Lobby
                 remotePlayer.Call("set_target_transform", px, py, pz, rx, ry, rz);
             }
 
-            AddChild(remotePlayer);
+            _owner.AddChild(remotePlayer);
             _otherPlayers[playerId] = remotePlayer;
+
+            // 生成時に既に相手のスキン情報を受信していれば、即座に適用する
+            if (_remotePlayerSkins.TryGetValue(playerId, out var skinPresets))
+            {
+                LobbySkinManager.ApplySkinPresets(remotePlayer, skinPresets);
+            }
+        }
+
+        /// <summary>
+        /// 他プレイヤーのスキン情報を受信した際の処理
+        /// </summary>
+        public void OnRemotePlayerSkinReceived(string playerId, Dictionary<string, string> skinPresets)
+        {
+            string myId = SessionManager.Instance?.CurrentSession?.User?.Id;
+            if (!string.IsNullOrEmpty(myId) && playerId == myId) return;
+
+            // キャッシュに保存
+            _remotePlayerSkins[playerId] = skinPresets;
+
+            // すでにプレイヤーが存在していれば、すぐにスキンを適用
+            if (_otherPlayers.TryGetValue(playerId, out Node3D remotePlayerNode) && GodotObject.IsInstanceValid(remotePlayerNode))
+            {
+                LobbySkinManager.ApplySkinPresets(remotePlayerNode, skinPresets);
+                GD.Print($"🎨 [LobbyRoomPlayer] リモートプレイヤー ({playerId}) のスキンを更新しました。");
+            }
         }
 
         private static async Task FindGrassBlocksRecursive(Node node, List<Node> result)

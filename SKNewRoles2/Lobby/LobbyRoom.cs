@@ -17,7 +17,7 @@ namespace SKNewRoles2.Lobby
 
         private PackedScene _playerPrefab;
         private PackedScene _dummyPlayerPrefab;
-        private Node3D _myPlayerInstance;
+        private LobbyRoomPlayer _roomPlayer;
         private RoomUI _roomUIInstance;
 
         private bool _isTransitioning = false;
@@ -60,14 +60,6 @@ namespace SKNewRoles2.Lobby
                 StartGameButton.Disabled = !SessionManager.Instance.IsHost;
             }
 
-            RealtimeEvents.OnGameStartReceived += TransitionToGameStage;
-            RealtimeEvents.OnPlayerLeaveReceived += OnRemotePlayerLeaveReceived;
-
-            LobbyRealtimeHelper.RegisterListeners(OnRoomSettingsChangedFromServer, OnRemotePlayerTransformReceived);
-
-            _roomUIInstance.UpdateRoomInfoUI();
-            _roomUIInstance.UpdatePrivacyButtonVisual(SessionManager.Instance.IsPublic);
-
             // プレハブのロード
             if (ResourceLoader.Exists("res://Scenes/Prefabs/Player.tscn"))
             {
@@ -78,23 +70,33 @@ namespace SKNewRoles2.Lobby
                 ? GD.Load<PackedScene>("res://Scenes/Prefabs/LobbyPlayerDummy.tscn")
                 : _playerPrefab;
 
+            // 独立クラスのインスタンス化
+            _roomPlayer = new LobbyRoomPlayer(this, _playerPrefab, _dummyPlayerPrefab, _otherPlayers);
+
+            // イベントの購読登録（独立クラスのメソッドを割り当て）
+            RealtimeEvents.OnGameStartReceived += TransitionToGameStage;
+            RealtimeEvents.OnPlayerLeaveReceived += OnRemotePlayerLeaveReceived;
+            RealtimeEvents.OnPlayerSkinReceived += _roomPlayer.OnRemotePlayerSkinReceived;
+
+            LobbyRealtimeHelper.RegisterListeners(OnRoomSettingsChangedFromServer, _roomPlayer.OnRemotePlayerTransformReceived);
+
+            _roomUIInstance.UpdateRoomInfoUI();
+            _roomUIInstance.UpdatePrivacyButtonVisual(SessionManager.Instance.IsPublic);
+
             // マテリアルの Triplanar 自動適用
             LobbyMeshUtility.ApplyTriplanarToAllMeshes(this);
 
-            await SpawnPlayerPrefab();
+            await _roomPlayer.SpawnPlayerPrefab(GrassBlockColor);
 
             _bgmManager?.StopBgm();
         }
-        
+
         private void OnRoomSettingsChangedFromServer()
         {
             if (_isTransitioning || !IsInstanceValid(this) || !IsInsideTree()) return;
             _roomUIInstance.OnRoomSettingsChangedFromServer();
         }
 
-        /// <summary>
-        /// 他プレイヤーの退出シグナルを受信した際の処理（プレハブの削除）
-        /// </summary>
         private void OnRemotePlayerLeaveReceived(string playerId)
         {
             if (_otherPlayers.TryGetValue(playerId, out Node3D playerNode))
@@ -110,7 +112,6 @@ namespace SKNewRoles2.Lobby
 
         public void LeaveLobbyForced()
         {
-            // 強制退出時も退出通知を飛ばす
             RealtimeLobbySender.LobbySendLeave();
             LobbyNavigation.LeaveLobbyCleanup(GetTree(), CleanupEvents);
         }
@@ -127,7 +128,11 @@ namespace SKNewRoles2.Lobby
         {
             RealtimeEvents.OnGameStartReceived -= TransitionToGameStage;
             RealtimeEvents.OnPlayerLeaveReceived -= OnRemotePlayerLeaveReceived;
-            LobbyRealtimeHelper.UnregisterListeners(OnRoomSettingsChangedFromServer, OnRemotePlayerTransformReceived);
+            if (_roomPlayer != null)
+            {
+                RealtimeEvents.OnPlayerSkinReceived -= _roomPlayer.OnRemotePlayerSkinReceived;
+            }
+            LobbyRealtimeHelper.UnregisterListeners(OnRoomSettingsChangedFromServer, _roomPlayer != null ? _roomPlayer.OnRemotePlayerTransformReceived : null);
             _otherPlayers.Clear();
         }
 
