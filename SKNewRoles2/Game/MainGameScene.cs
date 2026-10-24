@@ -1,4 +1,5 @@
 using Godot;
+using System;
 using SKNewRoles2.SessionManagerSystem;
 using SKNewRoles2.Game.Network;
 using SKNewRoles2.Game.Inventory;
