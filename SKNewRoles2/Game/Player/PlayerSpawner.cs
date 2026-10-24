@@ -55,11 +55,21 @@ namespace SKNewRoles2.Game.Player
 
         public static void SetPlayerPhysicsEnabled(Node3D playerInstance, bool enabled)
         {
-            if (playerInstance == null || !GodotObject.IsInstanceValid(playerInstance)) return;
+            if (playerInstance == null || !GodotObject.IsInstanceValid(playerInstance))
+            {
+                GD.PrintErr("⚠️ [PlayerSpawner] playerInstance が無効または null です。");
+                return;
+            }
 
+            // メソッドが存在するかチェック
             if (playerInstance.HasMethod("set_movement_enabled"))
             {
                 playerInstance.Call("set_movement_enabled", enabled);
+                GD.Print($"✅ [PlayerSpawner] set_movement_enabled({enabled}) を正常に呼び出しました。 (Node: {playerInstance.Name})");
+            }
+            else
+            {
+                GD.PrintErr($"❌ [PlayerSpawner] エラー: このノード ({playerInstance.GetClass()}) に 'set_movement_enabled' メソッドが存在しません！");
             }
         }
     }
