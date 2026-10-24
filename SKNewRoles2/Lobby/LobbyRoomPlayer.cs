@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using SKNewRoles2.SessionManagerSystem;
 using SKNewRoles2.Lobby.JOIN.Services.Realtime;
+using SKNewRoles2.Game.Player;
 
 namespace SKNewRoles2.Lobby
 {
@@ -13,6 +14,7 @@ namespace SKNewRoles2.Lobby
         private readonly PackedScene _playerPrefab;
         private readonly PackedScene _dummyPlayerPrefab;
         private Node3D _myPlayerInstance;
+        private readonly PlayerManager _playerManager = new();
         private readonly Dictionary<string, Node3D> _otherPlayers;
         private readonly Dictionary<string, Dictionary<string, string>> _remotePlayerSkins = [];
 
@@ -44,6 +46,8 @@ namespace SKNewRoles2.Lobby
                 _myPlayerInstance.Name = "MyPlayer"; 
                 _owner.AddChild(_myPlayerInstance);
                 GD.Print("🚀 自分のプレイヤープレハブの生成に成功しました！");
+
+                _playerManager.EnablePhysics();
 
                 // 保存済みスキンを適用し、その設定内容を他のプレイヤーへブロードキャスト
                 var mySkins = LobbySkinManager.ApplySavedSkinAndGetPresets(_myPlayerInstance);

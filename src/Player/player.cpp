@@ -28,6 +28,7 @@ void SNR2Player::_bind_methods() {
 
     ClassDB::bind_method(D_METHOD("set_movement_enabled", "p_enable"), &SNR2Player::set_movement_enabled);
     ClassDB::bind_method(D_METHOD("get_movement_enabled"), &SNR2Player::get_movement_enabled);
+    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "movement_enable"), "set_movement_enabled", "get_movement_enabled");
 
     ClassDB::bind_method(D_METHOD("_on_hp_changed", "current_hp", "max_hp"), &SNR2Player::_on_hp_changed);
     ClassDB::bind_method(D_METHOD("_on_hunger_changed", "current_hunger", "max_hunger"), &SNR2Player::_on_hunger_changed);
