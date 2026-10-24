@@ -26,6 +26,9 @@ void SNR2Player::_bind_methods() {
     ClassDB::bind_method(D_METHOD("set_spectator_mode", "p_enable"), &SNR2Player::set_spectator_mode);
     ClassDB::bind_method(D_METHOD("is_spectator"), &SNR2Player::is_spectator);
 
+    ClassDB::bind_method(D_METHOD("set_movement_enabled", "p_enable"), &SNR2Player::set_movement_enabled);
+    ClassDB::bind_method(D_METHOD("get_movement_enabled"), &SNR2Player::get_movement_enabled);
+
     ClassDB::bind_method(D_METHOD("_on_hp_changed", "current_hp", "max_hp"), &SNR2Player::_on_hp_changed);
     ClassDB::bind_method(D_METHOD("_on_hunger_changed", "current_hunger", "max_hunger"), &SNR2Player::_on_hunger_changed);
     ClassDB::bind_method(D_METHOD("_on_player_died"), &SNR2Player::_on_player_died);
@@ -113,10 +116,12 @@ void SNR2Player::_physics_process(double delta) {
         return;
     }
 
-    PlayerMovement::process_physics(
-        this, input, fall_damage_component, hunger_component,
-        static_cast<float>(delta), gravity, SPEED, JUMP_VELOCITY, is_spectator()
-    );
+    if (is_movement_enabled) {
+        PlayerMovement::process_physics(
+            this, input, fall_damage_component, hunger_component,
+            static_cast<float>(delta), gravity, SPEED, JUMP_VELOCITY, is_spectator()
+        );
+    }
 }
 
 void SNR2Player::_input(const Ref<InputEvent> &event) {
@@ -148,6 +153,14 @@ void SNR2Player::set_current_hp(int p_hp) {
 
 int SNR2Player::get_current_hp() const {
     return health_component ? health_component->get_current_hp() : 0;
+}
+
+void SNR2Player::set_movement_enabled(bool enabled) {
+    SNR2Player::is_movement_enabled = enabled;
+}
+
+bool SNR2Player::get_movement_enabled() const {
+    return SNR2Player::is_movement_enabled || false;
 }
 
 void SNR2Player::take_damage(uint32_t amount) {

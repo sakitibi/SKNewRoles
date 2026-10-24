@@ -27,6 +27,8 @@ namespace godot {
             const float SPEED = 5.0f;
             const float JUMP_VELOCITY = 4.5f;
 
+            bool is_movement_enabled = false;
+
             Camera3D *camera = nullptr;
             Input *input = nullptr;
 
@@ -47,6 +49,8 @@ namespace godot {
             int get_max_hp() const;
             void set_current_hp(int p_hp);
             int get_current_hp() const;
+            void set_movement_enabled(bool enable);
+            bool get_movement_enabled() const;
             void take_damage(uint32_t amount);
             void heal(int amount);
 
