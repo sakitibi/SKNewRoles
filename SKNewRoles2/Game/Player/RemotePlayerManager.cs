@@ -1,5 +1,6 @@
 using Godot;
 using SKNewRoles2.Game.Network;
+using SKNewRoles2.Lobby;
 using System.Collections.Generic;
 
 namespace SKNewRoles2.Game.Player
@@ -12,6 +13,7 @@ namespace SKNewRoles2.Game.Player
         private readonly Dictionary<string, int> _otherPlayerHps = [];
         private readonly Dictionary<string, Dictionary<int, string>> _otherPlayerInventories = [];
         private readonly Dictionary<string, int> _otherPlayerSelectedSlots = [];
+        private readonly Dictionary<string, Dictionary<string, string>> _otherPlayerSkins = [];
 
         private string _myUserId;
         private int _myHp = 20;
@@ -28,6 +30,7 @@ namespace SKNewRoles2.Game.Player
                 _connection.OnHpReceived += OnOtherPlayerHpReceived;
                 _connection.OnHotbarSlotReceived += OnOtherPlayerHotbarSlotReceived;
                 _connection.OnHotbarItemReceived += OnOtherPlayerHotbarItemReceived;
+                _connection.OnSkinReceived += OnOtherPlayerSkinReceived;
             }
         }
 
@@ -57,6 +60,11 @@ namespace SKNewRoles2.Game.Player
 
                 RemotePlayerVisualHandler.UpdateVisibility(targetPlayer, 20, _myHp);
                 RefreshRemotePlayerHandItem(senderId);
+
+                if (_otherPlayerSkins.TryGetValue(senderId, out var skinPresets))
+                {
+                    LobbySkinManager.ApplySkinPresets(targetPlayer, skinPresets);
+                }
             }
 
             if (targetPlayer != null)
@@ -114,6 +122,24 @@ namespace SKNewRoles2.Game.Player
             RefreshRemotePlayerHandItem(senderId);
         }
 
+        /// <summary>
+        /// 他プレイヤーからスキン情報を受信した際の処理
+        /// </summary>
+        private void OnOtherPlayerSkinReceived(string senderId, Dictionary<string, string> skinPresets)
+        {
+            if (senderId == _myUserId) return;
+
+            // キャッシュに保存
+            _otherPlayerSkins[senderId] = skinPresets;
+
+            // すでにプレイヤーインスタンスが存在していれば、すぐにスキンを適用
+            if (_otherPlayers.TryGetValue(senderId, out Node3D remotePlayer) && IsInstanceValid(remotePlayer))
+            {
+                LobbySkinManager.ApplySkinPresets(remotePlayer, skinPresets);
+                GD.Print($"🎨 [RemotePlayerManager] リモートプレイヤー ({senderId}) のスキンを更新しました。");
+            }
+        }
+
         private void RefreshRemotePlayerHandItem(string senderId)
         {
             if (!_otherPlayers.TryGetValue(senderId, out Node3D remotePlayer) || !IsInstanceValid(remotePlayer)) return;
@@ -149,6 +175,7 @@ namespace SKNewRoles2.Game.Player
                 _connection.OnHpReceived -= OnOtherPlayerHpReceived;
                 _connection.OnHotbarSlotReceived -= OnOtherPlayerHotbarSlotReceived;
                 _connection.OnHotbarItemReceived -= OnOtherPlayerHotbarItemReceived;
+                _connection.OnSkinReceived -= OnOtherPlayerSkinReceived;
             }
         }
     }

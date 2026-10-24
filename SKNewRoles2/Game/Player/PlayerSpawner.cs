@@ -1,13 +1,19 @@
 using Godot;
+using System.Threading.Tasks;
+using SKNewRoles2.Lobby;
 
 namespace SKNewRoles2.Game.Player
 {
     public class PlayerSpawner
     {
-        private static readonly SkinEditScene _skin_edit_scene = new();
         private readonly PackedScene _playerScene = GD.Load<PackedScene>("res://Scenes/Prefabs/Player.tscn");
 
-        public (Node3D PlayerInstance, Node HealthComponent) SpawnMyPlayer(Node parent, MainGameSceneNetwork networkHandler)
+        /// <summary>
+        /// 自プレイヤーを生成し、スキン適用・ネットワーク送信・シグナル接続までを安全に行います。
+        /// </summary>
+        public async Task<(Node3D PlayerInstance, Node HealthComponent)> SpawnAndSetupMyPlayerAsync(
+            Node parent, 
+            MainGameNetworkHandler networkHandler)
         {
             if (_playerScene == null)
             {
@@ -19,7 +25,9 @@ namespace SKNewRoles2.Game.Player
             playerInstance.Name = "MyPlayer";
             parent.AddChild(playerInstance);
 
-            ApplySavedSkinToPlayer(playerInstance);
+            // 保存済みスキンの適用と、他のプレイヤーへの送信を自動実行
+            var mySkins = LobbySkinManager.ApplySavedSkinAndGetPresets(playerInstance);
+            await networkHandler.SendMySkinAsync(mySkins);
 
             Vector3 spawnPos = new(0, 100, 0);
             playerInstance.GlobalPosition = spawnPos;
@@ -40,45 +48,9 @@ namespace SKNewRoles2.Game.Player
             }
 
             networkHandler?.UpdateHpUIFromPlayer();
-            GD.Print($"👤 [PlayerSpawner] 自プレイヤーを生成しました。(Pos: {spawnPos})");
+            GD.Print($"👤 [PlayerSpawner] 自プレイヤーを生成し、スキンを適用・送信しました。(Pos: {spawnPos})");
 
             return (playerInstance, healthComponent);
-        }
-
-        /// <summary>
-        /// プレイヤーインスタンスに保存されたカスタムスキンを適用します。
-        /// </summary>
-        private static void ApplySavedSkinToPlayer(Node3D playerInstance)
-        {
-            var config = new ConfigFile();
-            Error err = config.Load("user://player_skin.cfg");
-
-            if (err == Error.Ok)
-            {
-                foreach (string partName in _skin_edit_scene.equippedPresets.Keys)
-                {
-                    if (config.HasSectionKey("PlayerSkin", partName))
-                    {
-                        _skin_edit_scene.equippedPresets[partName] = (string)config.GetValue("PlayerSkin", partName);
-                    }
-                }
-            }
-            else
-            {
-                GD.Print("[PlayerSpawner] 保存されたスキン設定が見つからないため、デフォルトを使用します。");
-            }
-
-            var painter = playerInstance.GetNodeOrNull<SkinPainter>("SkinPainter");
-            if (painter == null)
-            {
-                painter = new SkinPainter();
-                playerInstance.AddChild(painter);
-                painter.Name = "SkinPainter";
-            }
-
-            painter.Initialize(playerInstance);
-            painter.ApplyPresetToAllParts(_skin_edit_scene.equippedPresets);
-            GD.Print("[PlayerSpawner] プレイヤーに保存されたスキンを適用しました！");
         }
 
         public static void SetPlayerPhysicsEnabled(Node3D playerInstance, bool enabled)

@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Text.Json;
@@ -59,6 +60,12 @@ namespace SKNewRoles2.Game.Network
         {
             add => _messageRouter.OnRoleAssignedReceived += value;
             remove => _messageRouter.OnRoleAssignedReceived -= value;
+        }
+
+        public event Action<string, Dictionary<string, string>> OnSkinReceived
+        {
+            add => _messageRouter.OnSkinReceived += value;
+            remove => _messageRouter.OnSkinReceived -= value;
         }
 
         public async Task<bool> EnsureConnectedAsync()

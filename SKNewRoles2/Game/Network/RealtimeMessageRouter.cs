@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 
 namespace SKNewRoles2.Game.Network
@@ -13,6 +14,7 @@ namespace SKNewRoles2.Game.Network
         public event Action<string, int> OnHotbarSlotReceived;
         public event Action<string, int, string, int> OnHotbarItemReceived;
         public event Action<string, uint, uint> OnRoleAssignedReceived;
+        public event Action<string, Dictionary<string, string>> OnSkinReceived;
 
         public void RouteMessage(string message)
         {
@@ -91,6 +93,20 @@ namespace SKNewRoles2.Game.Network
                                 uint faction = payload.GetProperty("faction").GetUInt32();
                                 GD.Print($"🎯 [Router] assign_role イベントを検知しました: Target={targetPlayerId}, Role={role}");
                                 OnRoleAssignedReceived?.Invoke(targetPlayerId, role, faction);
+                                break;
+                            }
+                            case "player_skin":
+                            {
+                                string playerId = payload.GetProperty("player_id").GetString();
+                                Dictionary<string, string> skinsDict = [];
+                                if (payload.TryGetProperty("skins", out JsonElement skinsElem))
+                                {
+                                    foreach (var prop in skinsElem.EnumerateObject())
+                                    {
+                                        skinsDict[prop.Name] = prop.Value.GetString();
+                                    }
+                                }
+                                OnSkinReceived?.Invoke(playerId, skinsDict);
                                 break;
                             }
                         }

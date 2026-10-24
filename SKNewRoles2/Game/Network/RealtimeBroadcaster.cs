@@ -1,4 +1,5 @@
 using Godot;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 using SKNewRoles2.SessionManagerSystem;
@@ -133,6 +134,22 @@ namespace SKNewRoles2.Game.Network
                 topic = GetTopicName(),
                 @event = "broadcast",
                 payload = new { type = "player_attack", attacker_id = attackerId, target_id = targetId, damage },
+                @ref = (string)null
+            };
+
+            connection.Client.SendText(JsonSerializer.Serialize(payload));
+            return Task.CompletedTask;
+        }
+
+        public static Task SendSkinAsync(RealtimeConnection connection, string playerId, Dictionary<string, string> skinPresets)
+        {
+            if (!IsReady(connection)) return Task.CompletedTask;
+
+            var payload = new
+            {
+                topic = GetTopicName(),
+                @event = "broadcast",
+                payload = new { type = "player_skin", player_id = playerId, skins = skinPresets },
                 @ref = (string)null
             };
 

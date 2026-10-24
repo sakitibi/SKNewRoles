@@ -1,5 +1,4 @@
 using Godot;
-using System;
 using SKNewRoles2.SessionManagerSystem;
 using SKNewRoles2.Game.Network;
 using SKNewRoles2.Game.Inventory;
@@ -13,9 +12,14 @@ namespace SKNewRoles2.Game
         private Node3D _chunkManagerCpp;
         private readonly PackedScene _opponentScene = GD.Load<PackedScene>("res://Scenes/Prefabs/LobbyPlayerDummy.tscn");
 
-        private readonly PlayerManager _playerManager = new();
-        public Node3D MyPlayerInstance => _playerManager.MyPlayerInstance;
-        public Node HealthComponent => _playerManager.HealthComponent;
+        private readonly PlayerSpawner _playerSpawner = new();
+        private MainGamePlayerHandler _playerHandler;
+        private MainGameCombatHandler _combatHandler;
+        private MainGameUIHandler _uiHandler;
+        private MainGameNetworkHandler _networkHandler;
+
+        public Node3D MyPlayerInstance => _playerHandler?.MyPlayerInstance;
+        public Node HealthComponent => _playerHandler?.HealthComponent;
         
         private RemotePlayerManager _remotePlayerManager;
         private BGMManager _bgmManager;
@@ -27,70 +31,49 @@ namespace SKNewRoles2.Game
 
         public RealtimeConnection Connection => _connection;
         private readonly RealtimeConnection _connection = new();
-        
-        private MainGameSceneNetwork _networkHandler;
 
-        public int CurrentHp { get => _currentHp; set => _currentHp = value; }
-        private int _currentHp = 20;
-        public int MaxHp { get => _maxHp; set => _maxHp = value; }
-        private int _maxHp = 20;
-
+        public int CurrentHp { get; set; } = 20;
+        public int MaxHp { get; set; } = 20;
         public uint MyRole => _roleManager?.MyRole ?? 0;
         public uint MyFaction => _roleManager?.MyFaction ?? 0;
         public int CurrentHunger { get; set; } = 20;
         public int MaxHunger { get; set; } = 20;
-        private static Vector3 _lastSentPosition = Vector3.Zero;
-        private static Vector3 _lastSentRotation = Vector3.Zero;
-        private readonly uint[] BGMList = [
-            0, 1
-        ];
+
+        private readonly uint[] BGMList = [0, 1];
 
         public override async void _Ready()
         {
             GD.Print("[_Ready] 開始");
 
-            _networkHandler = new(this);
+            _playerHandler = new MainGamePlayerHandler(this);
+            _uiHandler = new MainGameUIHandler(this);
+            _networkHandler = new MainGameNetworkHandler(this);
+            _combatHandler = new MainGameCombatHandler(this, _networkHandler);
 
-            _connection.OnAttackReceived += _networkHandler.OnRemoteAttackReceived;
+            _networkHandler.RegisterEvents(_connection);
 
-            _bgmManager = new();
+            _bgmManager = new BGMManager();
             AddChild(_bgmManager);
 
-            _uiController = new();
+            _uiController = new GameUIController();
             AddChild(_uiController);
             _uiController.Initialize(this);
-
             _uiController.SetFpsLabelPathToHud("FPSText");
             _uiController.SetLabelPathToHud("PositionText");
 
-            _roleManager = new();
+            _roleManager = new GameRoleManager();
             AddChild(_roleManager);
 
-            _remotePlayerManager = new();
+            _remotePlayerManager = new RemotePlayerManager();
             AddChild(_remotePlayerManager);
 
             _chunkManagerCpp = GetNode<Node3D>("ChunkManager");
 
-            _playerManager.SpawnPlayer(this, _networkHandler, _chunkManagerCpp);
+            await _playerHandler.SpawnPlayerAsync(_playerSpawner, _networkHandler);
+            _playerHandler.SetupHungerSignal(_networkHandler);
 
-            if (MyPlayerInstance != null && IsInstanceValid(MyPlayerInstance))
-            {
-                _uiController.SetPlayerPathToHud(MyPlayerInstance.GetPath());
-
-                var hungerComp = MyPlayerInstance.GetNode("HungerComponent");
-                if (hungerComp != null && IsInstanceValid(hungerComp))
-                {
-                    if (!hungerComp.IsConnected("hunger_changed", Callable.From<int, int>(_networkHandler.OnMyPlayerHungerChanged)))
-                    {
-                        hungerComp.Connect("hunger_changed", Callable.From<int, int>(_networkHandler.OnMyPlayerHungerChanged));
-                        GD.Print("✅ [MainGameScene] HungerComponent のシグナル接続に成功しました。");
-                    }
-                }
-            }
-
-            _hotbarManager = GetNode<HotbarManager>("HotbarManager");
-            var hotbarNode = GetNode<Node>("Hotbar");
-            
+            _hotbarManager = GetNodeOrNull<HotbarManager>("HotbarManager");
+            var hotbarNode = GetNodeOrNull<Node>("Hotbar");
             if (_hotbarManager != null)
             {
                 _hotbarManager.Initialize(this, hotbarNode);
@@ -100,7 +83,6 @@ namespace SKNewRoles2.Game
                 GD.PrintErr("❌ [MainGameScene] HotbarManager ノードが見つかりません。");
             }
 
-            // 非同期初期化処理の実行
             await GameInitializer.InitializeAsync(
                 this,
                 _connection,
@@ -111,58 +93,20 @@ namespace SKNewRoles2.Game
                 _uiController
             );
 
-            _playerManager.SetVisible(true);
+            PlayerSpawner.SetPlayerPhysicsEnabled(MyPlayerInstance, true);
 
             _bgmManager?.PlayBgm(0.0f, -1, BGMList);
             PlayerManager.GrantInitialItems(_hotbarManager);
 
             if (_uiController != null)
             {
-                await _uiController.ShowRoleRevealAsync(
-                    _roleManager?.MyRole ?? 0,
-                    _roleManager?.MyFaction ?? 0,
-                    5000
-                );
+                await _uiController.ShowRoleRevealAsync(_roleManager?.MyRole ?? 0, _roleManager?.MyFaction ?? 0, 5000);
             }
-
-            _playerManager.EnablePhysics();
         }
 
         public override void _Input(InputEvent @event)
         {
-            // マウスの左クリックで攻撃
-            if (@event is InputEventMouseButton mouseEvent && mouseEvent.Pressed && mouseEvent.ButtonIndex == MouseButton.Left)
-            {
-                var camera = GetViewport().GetCamera3D();
-                if (MyPlayerInstance != null && camera != null && IsInstanceValid(MyPlayerInstance))
-                {
-                    PerformAttack(camera);
-                }
-            }
-        }
-
-        private void PerformAttack(Camera3D camera)
-        {
-            GodotObject playerAttack = ClassDB.Instantiate("PlayerAttack").AsGodotObject();
-            if (playerAttack != null)
-            {
-                using (playerAttack)
-                {
-                    Variant targetIdVar = playerAttack.Call("process_attack", MyPlayerInstance, camera);
-                    string targetPlayerId = targetIdVar.AsString();
-
-                    if (!string.IsNullOrEmpty(targetPlayerId))
-                    {
-                        uint damage = 1;
-                        GD.Print($"⚔️ [MainGameScene] リモートプレイヤー攻撃検知: Target={targetPlayerId}");
-                        _networkHandler.OnPlayerAttackedRemote(targetPlayerId, damage);
-                    }
-                }
-            }
-            else
-            {
-                GD.PrintErr("❌ [MainGameScene] PlayerAttack クラスのインスタンス化に失敗しました。ClassDBへの登録を確認してください。");
-            }
+            _combatHandler?.HandleInput(@event);
         }
 
         public override void _Process(double delta)
@@ -176,30 +120,11 @@ namespace SKNewRoles2.Game
                 GD.PrintErr($"⚠️ [Realtime] Poll 例外: {ex.Message}");
             }
 
-            var player = MyPlayerInstance;
-            if (player != null && IsInstanceValid(player))
-            {
-                Vector3 playerPos = player.GlobalPosition;
-                Vector3 playerRot = player.Rotation;
+            _uiHandler?.UpdateCoordsUI();
+            _uiHandler?.UpdateHpUIFromPlayer();
+            _uiHandler?.UpdateHungerUIFromPlayer();
 
-                float posThreshold = 0.001f;
-                float rotThreshold = 0.001f;
-
-                bool hasMoved = playerPos.DistanceSquaredTo(_lastSentPosition) > (posThreshold * posThreshold);
-                bool hasRotated = playerRot.DistanceSquaredTo(_lastSentRotation) > (rotThreshold * rotThreshold);
-
-                _uiController?.UpdateCoords(playerPos);
-                _networkHandler?.UpdateHpUIFromPlayer();
-                _networkHandler?.UpdateHungerUIFromPlayer();
-
-                if (player.Visible && hasMoved && hasRotated)
-                {
-                    _lastSentPosition = playerPos;
-                    _lastSentRotation = playerRot;
-                    
-                    _networkHandler?.SendMyTransform();
-                }
-            }
+            _networkHandler?.ProcessMovementSync();
         }
 
         public static string GetMyUserId()
@@ -221,7 +146,7 @@ namespace SKNewRoles2.Game
 
             if (_connection != null && _networkHandler != null)
             {
-                _connection.OnAttackReceived -= _networkHandler.OnRemoteAttackReceived;
+                _networkHandler.UnregisterEvents(_connection);
             }
 
             try
@@ -237,7 +162,6 @@ namespace SKNewRoles2.Game
         }
 
         public void StopBGM() => _bgmManager?.StopBgm();
-
         public void SetRemotePlayerHp(int currentHp) => _remotePlayerManager?.SetMyHp(currentHp);
     }
 }
