@@ -13,7 +13,7 @@ namespace SKNewRoles2.Game.Player
         public void SpawnPlayer(MainGameScene scene, MainGameSceneNetwork networkHandler, Node3D chunkManager)
         {
             (MyPlayerInstance, HealthComponent) = _playerSpawner.SpawnMyPlayer(scene, networkHandler);
-            _playerSpawner.SetPlayerPhysicsEnabled(MyPlayerInstance, false);
+            PlayerSpawner.SetPlayerPhysicsEnabled(MyPlayerInstance, false);
 
             if (MyPlayerInstance != null)
             {
@@ -37,7 +37,7 @@ namespace SKNewRoles2.Game.Player
 
         public void EnablePhysics()
         {
-            _playerSpawner.SetPlayerPhysicsEnabled(MyPlayerInstance, true);
+            PlayerSpawner.SetPlayerPhysicsEnabled(MyPlayerInstance, true);
         }
 
         public static void GrantInitialItems(HotbarManager hotbarManager)
