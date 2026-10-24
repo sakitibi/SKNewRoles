@@ -94,8 +94,6 @@ namespace SKNewRoles2.Game
                 _uiController
             );
 
-            PlayerSpawner.SetPlayerPhysicsEnabled(MyPlayerInstance, true);
-
             _bgmManager?.PlayBgm(0.0f, -1, BGMList);
             PlayerManager.GrantInitialItems(_hotbarManager);
 
