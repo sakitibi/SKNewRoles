@@ -1,5 +1,4 @@
 #include "player_camera.h"
-#include "player.h"
 #include <godot_cpp/classes/input_event_mouse_motion.hpp>
 #include <godot_cpp/classes/input_event_key.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>

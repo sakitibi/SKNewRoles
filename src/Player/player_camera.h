@@ -4,6 +4,7 @@
 #include <godot_cpp/classes/camera3d.hpp>
 #include <godot_cpp/classes/input.hpp>
 #include <godot_cpp/classes/input_event.hpp>
+#include "player.h"
 
 namespace godot {
     class PlayerCamera {
