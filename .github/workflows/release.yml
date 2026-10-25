@@ -31,13 +31,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # ★ macOS の場合のみ、C++20完全対応の Homebrew 版 LLVM をインストール
       - name: Install LLVM (macOS)
         if: matrix.os == 'macos-latest'
         run: |
           brew install llvm
 
-      # ★ macOS のみ Homebrew 版の Clang/Clang++ を指定して CMake を構成
       - name: Configure CMake
         shell: bash
         env:
@@ -45,6 +43,10 @@ jobs:
           SUPABASE_ANON_KEY_VAL: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
           if [ "${{ matrix.os }}" == "macos-latest" ]; then
+            export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"
+            export CPPFLAGS="-I/opt/homebrew/opt/llvm/include"
+            export CMAKE_PREFIX_PATH="/opt/homebrew/opt/llvm"
+
             cmake -B build \
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_C_COMPILER=/opt/homebrew/opt/llvm/bin/clang \
