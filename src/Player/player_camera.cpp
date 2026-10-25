@@ -9,6 +9,11 @@ using namespace godot;
 PlayerCamera::PlayerCamera() {}
 PlayerCamera::~PlayerCamera() {}
 
+void PlayerCamera::setup(Camera3D *p_camera) {
+    camera = p_camera;
+    update_transform();
+}
+
 void PlayerCamera::cycle_camera_mode() {
     current_camera_mode = static_cast<CameraMode>((current_camera_mode + 1) % 3);
     update_transform();

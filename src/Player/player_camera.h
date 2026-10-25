@@ -27,6 +27,8 @@ namespace godot {
             PlayerCamera();
             ~PlayerCamera();
 
+            void setup(Camera3D *p_camera);
+
             void cycle_camera_mode();
             void handle_input(Node3D *player, const Ref<InputEvent> &event, Input *input);
             

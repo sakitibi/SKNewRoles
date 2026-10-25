@@ -83,6 +83,11 @@ void SNR2Player::_ready() {
             health_component->connect("died", Callable(this, "_on_player_died"));
         }
     }
+
+    if (camera) {
+        spectator_component->setup(this, camera);
+        player_camera.setup(camera);
+    }
 }
 
 void SNR2Player::apply_custom_skins() {
