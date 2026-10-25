@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 3.16)
 # プロジェクト名を設定
 project(godot_player_extension)
 
-# C++の標準規格をC++17に設定
-set(CMAKE_CXX_STANDARD 17)
+# C++の標準規格をC++20に設定
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 

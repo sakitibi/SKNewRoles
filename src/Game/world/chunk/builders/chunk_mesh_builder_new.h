@@ -15,6 +15,12 @@ namespace godot {
     class ChunkMeshBuilderNew : public Object {
         GDCLASS(ChunkMeshBuilderNew, Object)
 
+        private:
+            struct BlockTask {
+                String block_id;
+                Vector<Vector3> positions;
+            };
+
         protected:
             static void _bind_methods() {}
 
