@@ -66,8 +66,11 @@ PureChunkData ChunkMeshBuilderNew::build_chunk_data_async(
 
     const HashMap<String, String> &registry_map = BlockRegistry::get_block_scene_map();
 
-
-    std::vector<ChunkMeshBuilderNew::BlockTask> tasks;
+    struct BlockTask {
+        String block_id;
+        Vector<Vector3> positions;
+    };
+    std::vector<BlockTask> tasks;
     tasks.reserve(categorized_positions.size());
     for (const auto &E : categorized_positions) {
         if (!E.value.is_empty()) {
@@ -77,13 +80,15 @@ PureChunkData ChunkMeshBuilderNew::build_chunk_data_async(
 
     std::mutex result_mutex;
 
+    // ハードウェアのコア数を取得
     unsigned int hardware_threads = std::thread::hardware_concurrency();
     unsigned int num_threads = hardware_threads == 0 ? 4 : hardware_threads;
     
+    // タスク数がスレッド数より少ない場合はタスク数に合わせる
     size_t chunk_size = (tasks.size() + num_threads - 1) / num_threads;
     if (chunk_size < 1) chunk_size = 1;
 
-    std::vector<std::thread> threads;
+    std::vector<std::jthread> threads;
     threads.reserve(num_threads);
 
     for (size_t i = 0; i < tasks.size(); i += chunk_size) {
@@ -91,6 +96,7 @@ PureChunkData ChunkMeshBuilderNew::build_chunk_data_async(
 
         threads.emplace_back([i, end_idx, &tasks, &occupied_blocks, &dirt_path_blocks, &registry_map, &result, &result_mutex]() {
             
+            // 各スレッドローカルの結果一時保持用マップ
             std::unordered_map<std::string, std::vector<PureSurfaceData>> local_block_surfaces;
 
             for (size_t t = i; t < end_idx; ++t) {
@@ -177,6 +183,7 @@ PureChunkData ChunkMeshBuilderNew::build_chunk_data_async(
                 }
             }
 
+            // スレッド終了時に一括して結果をロック保護下でマージ
             if (!local_block_surfaces.empty()) {
                 std::lock_guard<std::mutex> lock(result_mutex);
                 for (auto &pair : local_block_surfaces) {
@@ -184,12 +191,6 @@ PureChunkData ChunkMeshBuilderNew::build_chunk_data_async(
                 }
             }
         });
-    }
-
-    for (auto &t : threads) {
-        if (t.joinable()) {
-            t.join();
-        }
     }
 
     result.collision_faces = ChunkCollisionBuilder::build_collision_faces(categorized_positions);

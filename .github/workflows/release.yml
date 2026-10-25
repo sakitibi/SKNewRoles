@@ -31,16 +31,32 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # ★ macOS の場合のみ、C++20完全対応の Homebrew 版 LLVM をインストール
+      - name: Install LLVM (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install llvm
+
+      # ★ macOS のみ Homebrew 版の Clang/Clang++ を指定して CMake を構成
       - name: Configure CMake
         shell: bash
         env:
           SUPABASE_URL_VAL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY_VAL: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
-          cmake -B build \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DSUPABASE_URL="$SUPABASE_URL_VAL" \
-            -DSUPABASE_ANON_KEY="$SUPABASE_ANON_KEY_VAL"
+          if [ "${{ matrix.os }}" == "macos-latest" ]; then
+            cmake -B build \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_C_COMPILER=/opt/homebrew/opt/llvm/bin/clang \
+              -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++ \
+              -DSUPABASE_URL="$SUPABASE_URL_VAL" \
+              -DSUPABASE_ANON_KEY="$SUPABASE_ANON_KEY_VAL"
+          else
+            cmake -B build \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DSUPABASE_URL="$SUPABASE_URL_VAL" \
+              -DSUPABASE_ANON_KEY="$SUPABASE_ANON_KEY_VAL"
+          fi
 
       - name: Build
         run: cmake --build build --config Release --parallel 2
