@@ -75,10 +75,6 @@ void SNR2Player::_ready() {
         spectator_component->setup(this, camera);
     }
 
-    if (camera) {
-        player_camera.setup(this, camera);
-    }
-
     if (health_component) {
         if (!health_component->is_connected("hp_changed", Callable(this, "_on_hp_changed"))) {
             health_component->connect("hp_changed", Callable(this, "_on_hp_changed"));

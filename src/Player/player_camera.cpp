@@ -9,11 +9,6 @@ using namespace godot;
 PlayerCamera::PlayerCamera() {}
 PlayerCamera::~PlayerCamera() {}
 
-void PlayerCamera::setup(SNR2Player *player, Camera3D *p_camera) {
-    camera = p_camera;
-    update_transform();
-}
-
 void PlayerCamera::cycle_camera_mode() {
     current_camera_mode = static_cast<CameraMode>((current_camera_mode + 1) % 3);
     update_transform();
@@ -53,7 +48,7 @@ void PlayerCamera::update_transform() {
     camera->set_rotation(Vector3(camera_rotation_x, y_rot, 0.0f));
 }
 
-void PlayerCamera::handle_input(SNR2Player *player, const Ref<InputEvent> &event, Input *input) {
+void PlayerCamera::handle_input(Node3D *player, const Ref<InputEvent> &event, Input *input) {
     if (!player || !input) return;
 
     // mキーでカメラモード切り替え
@@ -64,7 +59,6 @@ void PlayerCamera::handle_input(SNR2Player *player, const Ref<InputEvent> &event
         }
     }
 
-    // 視点移動
     if (input->is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_RIGHT)) {
         Ref<InputEventMouseMotion> mouse_motion = event;
         if (mouse_motion.is_valid()) {

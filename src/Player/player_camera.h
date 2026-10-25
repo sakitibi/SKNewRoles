@@ -4,7 +4,6 @@
 #include <godot_cpp/classes/camera3d.hpp>
 #include <godot_cpp/classes/input.hpp>
 #include <godot_cpp/classes/input_event.hpp>
-#include "player.h"
 
 namespace godot {
     class PlayerCamera {
@@ -28,9 +27,8 @@ namespace godot {
             PlayerCamera();
             ~PlayerCamera();
 
-            void setup(SNR2Player *player, Camera3D *p_camera);
             void cycle_camera_mode();
-            void handle_input(SNR2Player *player, const Ref<InputEvent> &event, Input *input);
+            void handle_input(Node3D *player, const Ref<InputEvent> &event, Input *input);
             
             CameraMode get_current_mode() const { return current_camera_mode; }
             Camera3D *get_camera() const { return camera; }
