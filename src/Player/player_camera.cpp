@@ -15,7 +15,7 @@ void PlayerCamera::setup(SNR2Player *player, Camera3D *p_camera) {
 }
 
 void PlayerCamera::cycle_camera_mode() {
-    current_camera_mode = static_cast<CameraMode>((current_camera_mode + 1) % MAX_MODES);
+    current_camera_mode = static_cast<CameraMode>((current_camera_mode + 1) % 3);
     update_transform();
 
     const char* mode_str = "";

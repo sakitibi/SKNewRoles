@@ -6,15 +6,12 @@
 #include <godot_cpp/classes/input_event.hpp>
 
 namespace godot {
-    class SNR2Player;
-
     class PlayerCamera {
         public:
             enum CameraMode {
-                FIRST_PERSON = 0,
+                FIRST_PERSON,
                 THIRD_PERSON_BACK,
                 THIRD_PERSON_FRONT,
-                MAX_MODES
             };
 
         private:
