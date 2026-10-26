@@ -12,7 +12,11 @@ namespace SKNewRoles2.Game.Player
         public Node3D MyPlayerInstance { get; private set; }
         public Node HealthComponent { get; private set; }
 
-        public async Task SpawnPlayerAsync(MainGameScene scene, MainGameNetworkHandler networkHandler, Node3D chunkManager)
+        public async Task SpawnPlayerAsync(
+            MainGameScene scene,
+            MainGameNetworkHandler networkHandler,
+            Node3D chunkManager
+        )
         {
             (MyPlayerInstance, HealthComponent) = await _playerSpawner.SpawnAndSetupMyPlayerAsync(scene, networkHandler);
             PlayerSpawner.SetPlayerPhysicsEnabled(MyPlayerInstance, false);

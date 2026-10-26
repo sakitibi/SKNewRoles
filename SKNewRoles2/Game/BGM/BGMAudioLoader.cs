@@ -21,7 +21,7 @@ namespace SKNewRoles2.Game.BGM
                 return null;
             }
 
-            using var file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
+            using FileAccess file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
             if (file == null)
             {
                 GD.PrintErr($"⚠️ [BGMAudioLoader] ファイルを開けませんでした: {path}");
@@ -45,7 +45,7 @@ namespace SKNewRoles2.Game.BGM
             // WAV
             if (path.EndsWith(".wav", StringComparison.OrdinalIgnoreCase))
             {
-                var wavStream = new AudioStreamWav
+                AudioStreamWav wavStream = new()
                 {
                     Data = buffer,
                     Format = AudioStreamWav.FormatEnum.Format16Bits

@@ -108,16 +108,16 @@ namespace SKNewRoles2.Game
 
         private void LoadPlayerPreview()
         {
-            var dummyScene = GD.Load<PackedScene>(DummyScenePath);
+            PackedScene dummyScene = GD.Load<PackedScene>(DummyScenePath);
             if (dummyScene != null)
             {
-                var dummyInstance = dummyScene.Instantiate<Node3D>();
+                Node3D dummyInstance = dummyScene.Instantiate<Node3D>();
                 dummyInstance.Call("set_process_movement", false);
                 dummyInstance.Position = Vector3.Zero;
 
                 _skinModelContainer.AddChild(dummyInstance);
 
-                var painter = GetNodeOrNull<SkinPainter>("SkinPainter");
+                SkinPainter painter = GetNodeOrNull<SkinPainter>("SkinPainter");
                 if (painter != null)
                 {
                     painter.Initialize(dummyInstance);

@@ -20,7 +20,7 @@ namespace SKNewRoles2.SessionManagerSystem.Services
                 return false;
             }
 
-            var httpRequest = new HttpRequest();
+            HttpRequest httpRequest = new();
             manager.AddChild(httpRequest);
 
             string url = $"{SessionManager.SupabaseUrl}/auth/v1/token?grant_type=refresh_token";
@@ -32,7 +32,7 @@ namespace SKNewRoles2.SessionManagerSystem.Services
             var payload = new { refresh_token = manager.CurrentSession.RefreshToken };
             string jsonBody = JsonSerializer.Serialize(payload);
 
-            var tcs = new TaskCompletionSource<(long result, long responseCode, byte[] body)>(TaskCreationOptions.RunContinuationsAsynchronously);
+            TaskCompletionSource<(long result, long responseCode, byte[] body)> tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
             void OnCompleted(long result, long responseCode, string[] responseHeaders, byte[] body)
             {
@@ -49,7 +49,7 @@ namespace SKNewRoles2.SessionManagerSystem.Services
                 return false;
             }
 
-            var (res, code, bodyData) = await tcs.Task;
+            (long res, long code, byte[] bodyData) = await tcs.Task;
             httpRequest.QueueFree();
 
             if (res == (long)HttpRequest.Result.Success && code == 200)
@@ -57,7 +57,7 @@ namespace SKNewRoles2.SessionManagerSystem.Services
                 string responseText = Encoding.UTF8.GetString(bodyData);
                 try
                 {
-                    var newSession = JsonSerializer.Deserialize<SessionData>(responseText);
+                    SessionData newSession = JsonSerializer.Deserialize<SessionData>(responseText);
                     if (newSession != null && !string.IsNullOrEmpty(newSession.AccessToken))
                     {
                         if (manager.CurrentSession.User != null && newSession.User == null)

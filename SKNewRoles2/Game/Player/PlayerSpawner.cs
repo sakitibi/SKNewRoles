@@ -45,7 +45,7 @@ namespace SKNewRoles2.Game.Player
                 }
             }
 
-            networkHandler?.UpdateHpUIFromPlayer();
+            _ = networkHandler?.UpdateHpUIFromPlayer();
             SetPlayerPhysicsEnabled(playerInstance, false);
             GD.Print($"👤 [PlayerSpawner] 自プレイヤーを生成し、スキンを適用・送信しました。(Pos: {spawnPos})");
 

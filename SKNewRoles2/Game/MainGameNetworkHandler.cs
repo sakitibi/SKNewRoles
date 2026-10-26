@@ -172,7 +172,7 @@ namespace SKNewRoles2.Game
             }
         }
 
-        public void UpdateHpUIFromPlayer()
+        public async Task UpdateHpUIFromPlayer()
         {
             if (scene.MyPlayerInstance == null || !GodotObject.IsInstanceValid(scene.MyPlayerInstance) || scene.UIController == null) return;
 
@@ -181,7 +181,7 @@ namespace SKNewRoles2.Game
             string[] curHpKeys = ["CurrentHp", "current_hp", "hp", "Health", "health", "CurrentHealth"];
             foreach (var key in curHpKeys)
             {
-                var val = targetNode.Get(key);
+                Variant val = targetNode.Get(key);
                 if (TryConvertToInt(val, out int hpVal))
                 {
                     scene.CurrentHp = hpVal;
@@ -192,7 +192,7 @@ namespace SKNewRoles2.Game
             string[] maxHpKeys = ["MaxHp", "max_hp", "max_health", "MaxHealth"];
             foreach (var key in maxHpKeys)
             {
-                var val = targetNode.Get(key);
+                Variant val = targetNode.Get(key);
                 if (TryConvertToInt(val, out int maxVal))
                 {
                     scene.MaxHp = maxVal;
@@ -200,7 +200,7 @@ namespace SKNewRoles2.Game
                 }
             }
 
-            scene.UIController.UpdateHp(scene.CurrentHp, scene.MaxHp);
+            _ = scene.UIController.UpdateHp(scene.CurrentHp, scene.MaxHp);
         }
 
         private static bool TryConvertToInt(Variant variant, out int result)

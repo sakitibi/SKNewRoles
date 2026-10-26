@@ -95,7 +95,7 @@ namespace SKNewRoles2.Game.Network
                 if (_cts.IsCancellationRequested) return false;
 
                 _client.Poll();
-                var state = _client.GetReadyState();
+                WebSocketPeer.State state = _client.GetReadyState();
 
                 if (state == WebSocketPeer.State.Open)
                 {

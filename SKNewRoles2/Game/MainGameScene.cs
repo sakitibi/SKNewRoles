@@ -127,7 +127,7 @@ namespace SKNewRoles2.Game
             }
 
             _ = _uiHandler?.UpdateCoordsUI();
-            _uiHandler?.UpdateHpUIFromPlayer();
+            _ = _uiHandler?.UpdateHpUIFromPlayer();
             _uiHandler?.UpdateHungerUIFromPlayer();
 
             _networkHandler?.ProcessMovementSync();

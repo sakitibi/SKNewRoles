@@ -13,7 +13,7 @@ namespace SKNewRoles2.SessionManagerSystem.Services
         /// </summary>
         public static void StartUserInfoSync()
         {
-            var manager = SessionManager.Instance;
+            SessionManager manager = SessionManager.Instance;
             if (manager == null) return;
 
             if (manager.IsInsideTree())
@@ -44,7 +44,7 @@ namespace SKNewRoles2.SessionManagerSystem.Services
                 return false;
             }
 
-            var httpRequest = new HttpRequest();
+            HttpRequest httpRequest = new();
             manager.AddChild(httpRequest);
 
             string url = $"{SessionManager.SupabaseUrl}/auth/v1/user";
@@ -54,7 +54,7 @@ namespace SKNewRoles2.SessionManagerSystem.Services
                 "Accept: application/json"
             ];
 
-            var tcs = new TaskCompletionSource<(long result, long responseCode, byte[] body)>(TaskCreationOptions.RunContinuationsAsynchronously);
+            TaskCompletionSource<(long result, long responseCode, byte[] body)> tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
             void OnCompleted(long result, long responseCode, string[] responseHeaders, byte[] body)
             {
@@ -108,14 +108,14 @@ namespace SKNewRoles2.SessionManagerSystem.Services
 
         private static bool ApplyFreshUserData(byte[] bodyData)
         {
-            var manager = SessionManager.Instance;
+            SessionManager manager = SessionManager.Instance;
             if (manager == null) return false;
 
             string jsonText = Encoding.UTF8.GetString(bodyData);
 
             try
             {
-                var freshUser = JsonSerializer.Deserialize<UserInfo>(jsonText);
+                UserInfo freshUser = JsonSerializer.Deserialize<UserInfo>(jsonText);
                 if (freshUser != null)
                 {
                     manager.CurrentSession ??= new SessionData();

@@ -16,6 +16,8 @@ namespace SKNewRoles2.Game
         public uint MyRole { get; private set; } = 0;
         public uint MyFaction { get; private set; } = 0;
         public bool HasRoleReceived { get; private set; } = false;
+        public Dictionary RoleCountsDict { get; set; }
+        public Dictionary RoleFactionsDict { get; set; }
 
         public event Action<uint, uint> OnRoleApplied;
 
@@ -63,19 +65,17 @@ namespace SKNewRoles2.Game
 
             uint witchRoleId = RoleInfo.RoleIdDictionary["witch"];
 
-            Dictionary roleCountsDict = new()
-            {
-                { witchRoleId, 1 }
-            };
-
-            Dictionary roleFactionsDict = new()
-            {
-                { witchRoleId, 1 }
-            };
+            RoleCountsDict.Add(witchRoleId, 1);
+            RoleFactionsDict.Add(witchRoleId, 1);
 
             GD.Print($"🎲 [AssignRoles] {playerIdsArray.Count} 人のプレイヤーに役職を割り当てます (Witch ID: {witchRoleId})");
 
-            Variant rawResult = _roleManagerCpp.Call("assign_roles", playerIdsArray, roleCountsDict, roleFactionsDict);
+            Variant rawResult = _roleManagerCpp.Call(
+                "assign_roles",
+                playerIdsArray,
+                RoleCountsDict,
+                RoleFactionsDict
+            );
             Dictionary assignmentResult = rawResult.AsGodotDictionary();
 
             if (assignmentResult == null || assignmentResult.Count == 0)

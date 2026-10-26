@@ -92,7 +92,7 @@ namespace SKNewRoles2.Game
             }
         }
 
-        public void UpdateHp(int currentHp, int maxHp)
+        public async Task UpdateHp(int currentHp, int maxHp)
         {
             if (_hpBar != null)
             {
