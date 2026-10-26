@@ -1,14 +1,15 @@
+using System.Threading.Tasks;
 using Godot;
 
 namespace SKNewRoles2.Game
 {
     public class MainGameUIHandler(MainGameScene scene)
     {
-        public void UpdateCoordsUI()
+        public async Task UpdateCoordsUI()
         {
             if (scene.MyPlayerInstance != null && GodotObject.IsInstanceValid(scene.MyPlayerInstance))
             {
-                scene.UIController?.UpdateCoords(scene.MyPlayerInstance.GlobalPosition);
+                await scene.UIController?.UpdateCoords(scene.MyPlayerInstance.GlobalPosition);
             }
         }
 

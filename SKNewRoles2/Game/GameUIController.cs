@@ -20,7 +20,7 @@ namespace SKNewRoles2.Game
         private Label _coordsLabel;
         private Node _hudManager;
 
-        public void Initialize(Node parentNode)
+        public async Task Initialize(Node parentNode)
         {
             if (parentNode == null)
             {
@@ -121,7 +121,7 @@ namespace SKNewRoles2.Game
             }
         }
 
-        public void UpdateCoords(Vector3 position)
+        public async Task UpdateCoords(Vector3 position)
         {
             _coordsLabel.Text = $"X: {position.X:F1} Y: {position.Y:F1} Z: {position.Z:F1}";
         }

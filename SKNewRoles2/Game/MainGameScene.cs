@@ -58,7 +58,7 @@ namespace SKNewRoles2.Game
 
             _uiController = new GameUIController();
             AddChild(_uiController);
-            _uiController.Initialize(this);
+            await _uiController.Initialize(this);
             _uiController.SetFpsLabelPathToHud("FPSText");
             _uiController.SetLabelPathToHud("PositionText");
 
