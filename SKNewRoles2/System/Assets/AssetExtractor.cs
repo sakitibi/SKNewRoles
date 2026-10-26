@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Godot;
 using SharpCompress.Archives;
 using SharpCompress.Archives.SevenZip;
@@ -9,14 +10,16 @@ namespace SKNewRoles2.SNRSystem.Assets
 {
     public static class AssetExtractor
     {
-        public static void Extract7z(string archivePath, string targetDir, int bufferSize)
+        private static FileStream _stream;
+        private static IArchive _archive;
+        public static async Task Extract7z(string archivePath, string targetDir, int bufferSize)
         {
             if (!File.Exists(archivePath)) return;
 
             try
             {
-                using var stream = new FileStream(archivePath, FileMode.Open, System.IO.FileAccess.Read, FileShare.Read, bufferSize);
-                using var archive = SevenZipArchive.OpenArchive(stream);
+                _stream = new(archivePath, FileMode.Open, System.IO.FileAccess.Read, FileShare.Read, bufferSize);
+                _archive = SevenZipArchive.OpenArchive(_stream);
 
                 var extractionOptions = new ExtractionOptions
                 {
@@ -24,7 +27,7 @@ namespace SKNewRoles2.SNRSystem.Assets
                     Overwrite = true
                 };
 
-                foreach (var entry in archive.Entries)
+                foreach (var entry in _archive.Entries)
                 {
                     if (!entry.IsDirectory)
                     {

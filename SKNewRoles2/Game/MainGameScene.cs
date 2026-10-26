@@ -120,7 +120,7 @@ namespace SKNewRoles2.Game
                 GD.PrintErr($"⚠️ [Realtime] Poll 例外: {ex.Message}");
             }
 
-            _uiHandler?.UpdateCoordsUI();
+            _ = _uiHandler?.UpdateCoordsUI();
             _uiHandler?.UpdateHpUIFromPlayer();
             _uiHandler?.UpdateHungerUIFromPlayer();
 

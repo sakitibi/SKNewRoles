@@ -51,7 +51,7 @@ namespace SKNewRoles2.SNRSystem.Assets
             await Task.Run(() =>
             {
                 string calculatedHash = AssetHashManager.ComputeSha512(Save7zPath, BufferSize);
-                AssetExtractor.Extract7z(Save7zPath, TargetDir, BufferSize);
+                _ = AssetExtractor.Extract7z(Save7zPath, TargetDir, BufferSize);
                 AssetHashManager.SaveHash(HashTxtPath, calculatedHash);
 
                 if (File.Exists(Save7zPath))
