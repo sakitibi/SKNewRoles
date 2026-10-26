@@ -78,8 +78,8 @@ namespace SKNewRoles2.Lobby
 
         private static string GenerateRandomRoomCode(int length)
         {
-            var random = new Random();
-            var result = new StringBuilder(length);
+            Random random = new();
+            StringBuilder result = new(length);
             for (int i = 0; i < length; i++)
             {
                 result.Append(AllowedChars[random.Next(AllowedChars.Length)]);
