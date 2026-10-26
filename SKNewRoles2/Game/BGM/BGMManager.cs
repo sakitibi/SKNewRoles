@@ -1,5 +1,6 @@
 using Godot;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SKNewRoles2.Game.BGM
 {
@@ -54,7 +55,7 @@ namespace SKNewRoles2.Game.BGM
 
             if (!_isStopping && IsInsideTree())
             {
-                PlayBgm(_currentVolumeDb, index: -1, candidates: _currentCandidateIndices, isLoop);
+                _ = PlayBgm(_currentVolumeDb, candidates: _currentCandidateIndices, isLoop);
             }
         }
 
@@ -81,13 +82,13 @@ namespace SKNewRoles2.Game.BGM
             GD.Print("🎵 [BGMManager] すべてのBGMパスをクリアしました。");
         }
 
-        public void PlayBgm(float volumeDb = 0.0f, int index = -1, uint[] candidates = null, bool isLoop = true)
+        public async Task PlayBgm(float volumeDb = 0.0f, uint[] candidates = null, bool isLoop = true)
         {
             _isStopping = false;
             _currentVolumeDb = volumeDb;
             _currentCandidateIndices = candidates;
 
-            int selectedIndex = BGMSelector.SelectIndex(BgmPaths, index, candidates);
+            int selectedIndex = BGMSelector.SelectIndex(BgmPaths, candidates);
             if (selectedIndex < 0)
             {
                 GD.PrintErr("⚠️ [BGMManager] 再生可能な BGM パスが存在しないか選曲に失敗しました。");

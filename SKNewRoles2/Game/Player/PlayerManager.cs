@@ -1,6 +1,7 @@
 using Godot;
 using System.Threading.Tasks;
 using SKNewRoles2.Game.Inventory;
+using System.Collections.Generic;
 
 namespace SKNewRoles2.Game.Player
 {
@@ -41,13 +42,19 @@ namespace SKNewRoles2.Game.Player
             PlayerSpawner.SetPlayerPhysicsEnabled(MyPlayerInstance, true);
         }
 
-        public static void GrantInitialItems(HotbarManager hotbarManager)
+        public static void GrantInitialItems(
+            HotbarManager hotbarManager,
+            Dictionary<string, ushort> grantItemDic
+        )
         {
             if (hotbarManager != null)
             {
-                hotbarManager.PickupItem("iron_axe", 1);
-                hotbarManager.PickupItem("iron_pickaxe", 1);
-                GD.Print("🎒 [PlayerManager] 初期アイテム (iron_axe, iron_pickaxe) を配布しました。");
+                foreach (KeyValuePair<string, ushort> grantItem in grantItemDic)
+                {
+                    hotbarManager.PickupItem(grantItem.Key, grantItem.Value);
+                }
+                string keysCommaSeparated = string.Join(", ", grantItemDic.Keys);
+                GD.Print($"🎒 [PlayerManager] 初期アイテム ({keysCommaSeparated}) を配布しました。");
             }
             else
             {

@@ -12,6 +12,12 @@ namespace SKNewRoles2.SNRSystem.Assets
     {
         private static FileStream _stream;
         private static IArchive _archive;
+        private static readonly ExtractionOptions _extractionOptions = new()
+        {
+            ExtractFullPath = true,
+            Overwrite = true
+        };
+
         public static async Task Extract7z(string archivePath, string targetDir, int bufferSize)
         {
             if (!File.Exists(archivePath)) return;
@@ -21,17 +27,11 @@ namespace SKNewRoles2.SNRSystem.Assets
                 _stream = new(archivePath, FileMode.Open, System.IO.FileAccess.Read, FileShare.Read, bufferSize);
                 _archive = SevenZipArchive.OpenArchive(_stream);
 
-                var extractionOptions = new ExtractionOptions
-                {
-                    ExtractFullPath = true,
-                    Overwrite = true
-                };
-
-                foreach (var entry in _archive.Entries)
+                foreach (IArchiveEntry entry in _archive.Entries)
                 {
                     if (!entry.IsDirectory)
                     {
-                        entry.WriteToDirectory(targetDir, extractionOptions);
+                        entry.WriteToDirectory(targetDir, _extractionOptions);
                     }
                 }
 

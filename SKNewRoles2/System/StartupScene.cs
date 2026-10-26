@@ -26,7 +26,7 @@ namespace SKNewRoles2.SNRSystem
         public Label StatusLabel => _statusLabel;
         public ColorRect BackgroundRect => _background;
 
-        public override void _Ready()
+        public override async void _Ready()
         {
             _background = GetNode<ColorRect>("Background");
             _statusLabel = GetNode<Label>("CenterContainer/VBoxContainer/LoadingLabel");
@@ -83,7 +83,7 @@ namespace SKNewRoles2.SNRSystem
                 if (!_exists)
                 {
                     UpdateProgress(0, "エラー Minecraftが購入されていません。");
-                    await Task.Delay(300);
+                    await Task.Delay(3000);
                     GetTree().Quit(1);
                     return;
                 }

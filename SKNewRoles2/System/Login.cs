@@ -12,7 +12,7 @@ namespace SKNewRoles2.SNRSystem
         private Button _cancelButton;
         private Label _errorMessageLabel;
         private HttpRequest _supabaseRequest;
-        public override void _Ready()
+        public override async void _Ready()
         {
             // 全て LoginPanel の直下から取得
             _codeInput = GetNode<LineEdit>("MarginContainer/VBoxContainer/LoginPanel/CodeInput");
@@ -39,7 +39,7 @@ namespace SKNewRoles2.SNRSystem
             _submitButton.Disabled = newText.Length != 8;
         }
 
-        private void OnSubmitButtonPressed()
+        private async void OnSubmitButtonPressed()
         {
             _submitButton.Disabled = true;
             _codeInput.Editable = false;
@@ -68,7 +68,7 @@ namespace SKNewRoles2.SNRSystem
             }
         }
 
-        private void OnSupabaseRequestCompleted(long result, long responseCode, string[] headers, byte[] body)
+        private async void OnSupabaseRequestCompleted(long result, long responseCode, string[] headers, byte[] body)
         {
             string jsonText = body != null ? System.Text.Encoding.UTF8.GetString(body) : "";
             

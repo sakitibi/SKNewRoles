@@ -9,15 +9,9 @@ namespace SKNewRoles2.Game.BGM
         /// <summary>
         /// 指定された条件 (直指定 / 候補リスト / 全体) に基づいてインデックスを選出する
         /// </summary>
-        public static int SelectIndex(List<string> bgmPaths, int index = -1, uint[] candidates = null)
+        public static int SelectIndex(List<string> bgmPaths, uint[] candidates = null)
         {
             if (bgmPaths == null || bgmPaths.Count == 0) return -1;
-
-            // 指定されたインデックスが有効範囲内ならそのまま返す
-            if (index >= 0 && index < bgmPaths.Count)
-            {
-                return index;
-            }
 
             // 候補が指定されている場合
             if (candidates != null && candidates.Length > 0)

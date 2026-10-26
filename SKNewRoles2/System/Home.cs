@@ -31,7 +31,7 @@ namespace SKNewRoles2.SNRSystem
 
             AddChild(_bgmManager);
 
-            _bgmManager.PlayBgm(1.0f, -1, BGMList);
+            _ = _bgmManager.PlayBgm(1.0f, BGMList);
         }
 
         /// <summary>
@@ -62,8 +62,9 @@ namespace SKNewRoles2.SNRSystem
 
         private void OnStartButtonPressed()
         {
-            _bgmManager.PlayBgm(2.0f, 5, null, false);
-            Thread.Sleep(300); // クリック音を鳴らす為
+            uint[] buttonClickSoundIdx = [5];
+            _ = _bgmManager.PlayBgm(2.0f, buttonClickSoundIdx, false);
+            Thread.Sleep(250); // クリック音を鳴らす為
             string storyScenePath = "res://Scenes/StoryReader.tscn";
 
             Error error = GetTree().ChangeSceneToFile(storyScenePath);

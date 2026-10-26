@@ -5,6 +5,7 @@ using SKNewRoles2.Game.Network;
 using SKNewRoles2.Game.Inventory;
 using SKNewRoles2.Game.Player;
 using SKNewRoles2.Game.BGM;
+using System.Collections.Generic;
 
 namespace SKNewRoles2.Game
 {
@@ -21,6 +22,7 @@ namespace SKNewRoles2.Game
 
         public Node3D MyPlayerInstance => _playerHandler?.MyPlayerInstance;
         public Node HealthComponent => _playerHandler?.HealthComponent;
+        private Node _hotbarNode;
         
         private RemotePlayerManager _remotePlayerManager;
         private BGMManager _bgmManager;
@@ -39,6 +41,10 @@ namespace SKNewRoles2.Game
         public uint MyFaction => _roleManager?.MyFaction ?? 0;
         public int CurrentHunger { get; set; } = 20;
         public int MaxHunger { get; set; } = 20;
+        public Dictionary<string, ushort> GrantItemDic { get; set; } = new() {
+            {"iron_axe", 1},
+            {"iron_pickaxe", 1}
+        };
 
         private readonly uint[] BGMList = [0, 1];
 
@@ -74,10 +80,10 @@ namespace SKNewRoles2.Game
             _playerHandler.SetupHungerSignal(_networkHandler);
 
             _hotbarManager = GetNodeOrNull<HotbarManager>("HotbarManager");
-            var hotbarNode = GetNodeOrNull<Node>("Hotbar");
+            _hotbarNode = GetNodeOrNull<Node>("Hotbar");
             if (_hotbarManager != null)
             {
-                _hotbarManager.Initialize(this, hotbarNode);
+                _hotbarManager.Initialize(this, _hotbarNode);
             }
             else
             {
@@ -94,8 +100,8 @@ namespace SKNewRoles2.Game
                 _uiController
             );
 
-            _bgmManager?.PlayBgm(0.0f, -1, BGMList);
-            PlayerManager.GrantInitialItems(_hotbarManager);
+            _ = _bgmManager?.PlayBgm(0.0f, BGMList);
+            PlayerManager.GrantInitialItems(_hotbarManager, GrantItemDic);
 
             if (_uiController != null)
             {

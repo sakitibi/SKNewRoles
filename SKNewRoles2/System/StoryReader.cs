@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace SKNewRoles2.SNRSystem
 {
@@ -14,6 +15,9 @@ namespace SKNewRoles2.SNRSystem
         private RichTextLabel _storyLabel;
         private Button _nextButton;
         private Button _skipButton;
+        private static MemoryStream _inputStream;
+        private static BrotliStream _brotliStream;
+        private static MemoryStream _outputStream;
 
         private List<string> _storyPages = [];
         private int _currentPageIndex = 0;
@@ -21,7 +25,7 @@ namespace SKNewRoles2.SNRSystem
         private const string DefaultStoryPath = "res://Resources/Stories/first_story.txt.br";
         private const string ModStoryPath = "user://mods/first_story.br";
 
-        public override void _Ready()
+        public override async void _Ready()
         {
             _storyLabel = GetNode<RichTextLabel>("MarginContainer/VBoxContainer/StoryPanel/MarginContainer/StoryLabel");
             _nextButton = GetNode<Button>("MarginContainer/VBoxContainer/ButtonContainer/NextButton");
@@ -30,11 +34,11 @@ namespace SKNewRoles2.SNRSystem
             _nextButton.Pressed += OnNextButtonPressed;
             _skipButton.Pressed += OnSkipButtonPressed;
 
-            LoadStoryData();
+            await LoadStoryData();
             ShowCurrentPage();
         }
 
-        private void LoadStoryData()
+        private async Task LoadStoryData()
         {
             string targetPath = DefaultStoryPath;
 
@@ -53,10 +57,10 @@ namespace SKNewRoles2.SNRSystem
 
             try
             {
-                using var file = Godot.FileAccess.Open(targetPath, Godot.FileAccess.ModeFlags.Read);
+                Godot.FileAccess file = Godot.FileAccess.Open(targetPath, Godot.FileAccess.ModeFlags.Read);
                 byte[] compressedBytes = file.GetBuffer((long)file.GetLength());
 
-                string decompressedText = DecompressBrotli(compressedBytes);
+                string decompressedText = await DecompressBrotli(compressedBytes);
 
                 _storyPages.Clear();
 
@@ -84,14 +88,14 @@ namespace SKNewRoles2.SNRSystem
             }
         }
 
-        private static string DecompressBrotli(byte[] compressedData)
+        private static async Task<string> DecompressBrotli(byte[] compressedData)
         {
-            using var inputStream = new MemoryStream(compressedData);
-            using var brotliStream = new BrotliStream(inputStream, CompressionMode.Decompress);
-            using var outputStream = new MemoryStream();
+            _inputStream = new MemoryStream(compressedData);
+            _brotliStream = new BrotliStream(_inputStream, CompressionMode.Decompress);
+            _outputStream = new();
             
-            brotliStream.CopyTo(outputStream);
-            byte[] decompressedBytes = outputStream.ToArray();
+            _brotliStream.CopyTo(_outputStream);
+            byte[] decompressedBytes = _outputStream.ToArray();
 
             return Encoding.UTF8.GetString(decompressedBytes);
         }
