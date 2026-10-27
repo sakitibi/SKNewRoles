@@ -25,12 +25,12 @@ namespace SKNewRoles2.Game.Network
 
             string senderId = SessionManager.Instance?.CurrentSession?.User?.Id ?? $"Guest_{SessionManager.Instance?.CurrentRoomCode}";
 
-            var payload = new
+            RealtimePayload payload = new()
             {
                 topic = GetTopicName(),
                 @event = "broadcast",
                 payload = new { type = "transform_all", player_id = senderId, px, py, pz, rx, ry, rz },
-                @ref = (string)null
+                @ref = null
             };
 
             connection.Client.SendText(JsonSerializer.Serialize(payload));
@@ -48,12 +48,12 @@ namespace SKNewRoles2.Game.Network
             string currentTopic = GetTopicName();
             GD.Print($"📡 [Realtime] 送信トピック確認: {currentTopic} (Target={targetPlayerId}, Role={role})");
 
-            var payload = new
+            RealtimePayload payload = new()
             {
                 topic = currentTopic,
                 @event = "broadcast",
                 payload = new { type = "assign_role", target_player_id = targetPlayerId, role, faction },
-                @ref = (string)null
+                @ref = null
             };
 
             connection.Client.SendText(JsonSerializer.Serialize(payload));
@@ -65,12 +65,12 @@ namespace SKNewRoles2.Game.Network
         {
             if (!IsReady(connection)) return Task.CompletedTask;
 
-            var payload = new
+            RealtimePayload payload = new()
             {
                 topic = GetTopicName(),
                 @event = "broadcast",
                 payload = new { type = "player_hp", player_id = playerId, current_hp = currentHp, max_hp = maxHp },
-                @ref = (string)null
+                @ref = null
             };
 
             connection.Client.SendText(JsonSerializer.Serialize(payload));
@@ -81,12 +81,12 @@ namespace SKNewRoles2.Game.Network
         {
             if (!IsReady(connection)) return Task.CompletedTask;
 
-            var payloadObj = new
+            RealtimePayload payloadObj = new()
             {
                 topic = GetTopicName(),
                 @event = "broadcast",
                 payload = new { type = "player_hunger", player_id = playerId, current_hunger = currentHunger, max_hunger = maxHunger },
-                @ref = (string)null
+                @ref = null
             };
 
             connection.Client.SendText(JsonSerializer.Serialize(payloadObj));
@@ -97,12 +97,12 @@ namespace SKNewRoles2.Game.Network
         {
             if (!IsReady(connection)) return Task.CompletedTask;
 
-            var payload = new
+            RealtimePayload payload = new()
             {
                 topic = GetTopicName(),
                 @event = "broadcast",
                 payload = new { type = "hotbar_slot", player_id = playerId, slot_index = slotIndex },
-                @ref = (string)null
+                @ref = null
             };
 
             connection.Client.SendText(JsonSerializer.Serialize(payload));
@@ -113,12 +113,12 @@ namespace SKNewRoles2.Game.Network
         {
             if (!IsReady(connection)) return Task.CompletedTask;
 
-            var payload = new
+            RealtimePayload payload = new()
             {
                 topic = GetTopicName(),
                 @event = "broadcast",
                 payload = new { type = "hotbar_item", player_id = playerId, slot_index = slotIndex, item_id = itemId, count },
-                @ref = (string)null
+                @ref = null
             };
 
             connection.Client.SendText(JsonSerializer.Serialize(payload));
@@ -129,12 +129,12 @@ namespace SKNewRoles2.Game.Network
         {
             if (!IsReady(connection)) return Task.CompletedTask;
 
-            var payload = new
+            RealtimePayload payload = new()
             {
                 topic = GetTopicName(),
                 @event = "broadcast",
                 payload = new { type = "player_attack", attacker_id = attackerId, target_id = targetId, damage },
-                @ref = (string)null
+                @ref = null
             };
 
             connection.Client.SendText(JsonSerializer.Serialize(payload));
@@ -145,12 +145,12 @@ namespace SKNewRoles2.Game.Network
         {
             if (!IsReady(connection)) return Task.CompletedTask;
 
-            var payload = new
+            RealtimePayload payload = new()
             {
                 topic = GetTopicName(),
                 @event = "broadcast",
                 payload = new { type = "player_skin", player_id = playerId, skins = skinPresets },
-                @ref = (string)null
+                @ref = null
             };
 
             connection.Client.SendText(JsonSerializer.Serialize(payload));
