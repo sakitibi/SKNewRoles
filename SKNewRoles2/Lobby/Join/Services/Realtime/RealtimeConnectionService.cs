@@ -38,7 +38,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
             GD.Print($"🌐 [RealtimeConnection] Supabase Realtime 接続待機中 (Topic: {topicName})...");
 
             Task.Run(async () => {
-                int timeout = 0;
+                uint timeout = 0;
                 while (RealtimeClient != null && RealtimeClient.GetReadyState() == WebSocketPeer.State.Connecting && timeout < 30)
                 {
                     await Task.Delay(100);
@@ -52,7 +52,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
 
                     string token = SessionManager.SupabaseAnonKey;
 
-                    var joinPayload = new
+                    RealtimePayload joinPayload = new()
                     {
                         topic = topicName,
                         @event = "phx_join",
@@ -77,11 +77,11 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
             });
         }
 
-        public static async Task<bool> EnsureConnectedAsync(int timeoutMs = 5000)
+        public static async Task<bool> EnsureConnectedAsync(uint timeoutMs = 5000)
         {
             StartListeningLobbyChanges();
 
-            int elapsed = 0;
+            uint elapsed = 0;
             while ((!IsJoinedChannel || RealtimeClient == null || RealtimeClient.GetReadyState() != WebSocketPeer.State.Open) && elapsed < timeoutMs)
             {
                 await Task.Delay(50);

@@ -25,7 +25,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
         /// </summary>
         public static void LobbySendTransformBroadcastAll(float px, float py, float pz, float rx, float ry, float rz)
         {
-            var client = RealtimeConnectionService.RealtimeClient;
+            WebSocketPeer client = RealtimeConnectionService.RealtimeClient;
             if (client == null || client.GetReadyState() != WebSocketPeer.State.Open)
             {
                 return;
@@ -33,7 +33,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
 
             string senderId = GetSenderId();
 
-            var broadcastPayload = new
+            RealtimePayload broadcastPayload = new()
             {
                 topic = GetTopic(),
                 @event = "broadcast",
@@ -60,14 +60,14 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
         /// </summary>
         public static void LobbySendStartGame()
         {
-            var client = RealtimeConnectionService.RealtimeClient;
+            WebSocketPeer client = RealtimeConnectionService.RealtimeClient;
             if (client == null || client.GetReadyState() != WebSocketPeer.State.Open)
             {
                 GD.PrintErr("❌ [ゲーム開始送信失敗] WebSocketがオープン状態ではありません！");
                 return;
             }
 
-            var broadcastPayload = new
+            RealtimePayload broadcastPayload = new()
             {
                 topic = GetTopic(),
                 @event = "broadcast",
@@ -77,7 +77,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
                     @event = "start_game",
                     payload = new {}
                 },
-                @ref = (string)null
+                @ref = null
             };
 
             string json = JsonSerializer.Serialize(broadcastPayload);
@@ -90,7 +90,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
         /// </summary>
         public static void LobbySendLeave()
         {
-            var client = RealtimeConnectionService.RealtimeClient;
+            WebSocketPeer client = RealtimeConnectionService.RealtimeClient;
             if (client == null || client.GetReadyState() != WebSocketPeer.State.Open)
             {
                 return;
@@ -98,7 +98,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
 
             string senderId = GetSenderId();
 
-            var broadcastPayload = new
+            RealtimePayload broadcastPayload = new()
             {
                 topic = GetTopic(),
                 @event = "broadcast",
@@ -111,7 +111,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
                         player_id = senderId
                     }
                 },
-                @ref = (string)null
+                @ref = null
             };
 
             string json = JsonSerializer.Serialize(broadcastPayload);
@@ -132,7 +132,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
 
             string senderId = GetSenderId();
 
-            var broadcastPayload = new
+            RealtimePayload broadcastPayload = new()
             {
                 topic = GetTopic(),
                 @event = "broadcast",
@@ -146,7 +146,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
                         skins = skinPresets
                     }
                 },
-                @ref = (string)null
+                @ref = null
             };
 
             string json = JsonSerializer.Serialize(broadcastPayload);

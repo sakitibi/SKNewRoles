@@ -14,9 +14,9 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
         {
             if (!RealtimeConnectionService.IsListening || RealtimeConnectionService.RealtimeClient == null) return;
 
-            var client = RealtimeConnectionService.RealtimeClient;
+            WebSocketPeer client = RealtimeConnectionService.RealtimeClient;
             client.Poll();
-            var state = client.GetReadyState();
+            WebSocketPeer.State state = client.GetReadyState();
 
             if (state == WebSocketPeer.State.Open)
             {

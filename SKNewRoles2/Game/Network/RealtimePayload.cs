@@ -1,6 +1,6 @@
 namespace SKNewRoles2.Game.Network
 {
-    public struct RealtimePayload
+    public class RealtimePayload
     {
         public string topic { get; set; }
         public string @event { get; set; }
