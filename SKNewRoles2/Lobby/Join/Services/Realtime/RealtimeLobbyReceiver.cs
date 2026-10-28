@@ -1,147 +1,97 @@
-using Godot;
 using System;
-using System.Collections.Generic;
-using System.Text.Json;
+using System.Threading.Tasks;
+using Godot;
+using SKNewRoles2.Game.Network;
+using SKNewRoles2.Game.Player;
+using SKNewRoles2.SessionManagerSystem;
 
-namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
+namespace SKNewRoles2.Game
 {
-    public static class RealtimeLobbyReceiver
+    public class GameInitializer
     {
-        /// <summary>
-        /// 毎フレーム呼び出し、WebSocketパケットの回収と各イベントの発火を行います。
-        /// </summary>
-        public static void PollRealtimeEvents()
+        public static async Task InitializeAsync(
+            MainGameScene scene,
+            RealtimeConnection connection,
+            GameRoleManager roleManager,
+            RemotePlayerManager remotePlayerManager,
+            PackedScene opponentScene,
+            Node3D chunkManager,
+            GameUIController uiController)
         {
-            if (!RealtimeConnectionService.IsListening || RealtimeConnectionService.RealtimeClient == null) return;
-
-            WebSocketPeer client = RealtimeConnectionService.RealtimeClient;
-            client.Poll();
-            WebSocketPeer.State state = client.GetReadyState();
-
-            if (state == WebSocketPeer.State.Open)
+            try
             {
-                while (client.GetAvailablePacketCount() > 0)
+                if (connection == null) GD.PrintErr("❌ [GameInitializer] 引数 'connection' が null です！");
+                if (roleManager == null) GD.PrintErr("❌ [GameInitializer] 引数 'roleManager' が null です！");
+                if (remotePlayerManager == null) GD.PrintErr("❌ [GameInitializer] 引数 'remotePlayerManager' が null です！");
+                if (scene == null) GD.PrintErr("❌ [GameInitializer] 引数 'scene' が null です！");
+                if (chunkManager == null) GD.PrintErr("❌ [GameInitializer] 引数 'chunkManager' が null です！");
+
+                if (connection != null)
                 {
-                    byte[] rawPacket = client.GetPacket();
-                    string message = rawPacket.GetStringFromUtf8();
-                    
-                    if (string.IsNullOrEmpty(message)) continue;
-
-                    try
+                    bool isConnected = await connection.EnsureConnectedAsync();
+                    if (!isConnected)
                     {
-                        using JsonDocument doc = JsonDocument.Parse(message);
-                        JsonElement root = doc.RootElement;
-                        
-                        if (root.TryGetProperty("event", out JsonElement evElem))
-                        {
-                            string ev = evElem.GetString();
-
-                            if (ev == "broadcast")
-                            {
-                                ParseBroadcastMessage(root);
-                                continue;
-                            }
-                            else if (ev == "system")
-                            {
-                                ParseSystemMessage(root);
-                                continue;
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        GD.PrintErr($"❌ [Realtime] パース例外: {ex.Message} | 対象メッセージ: {message}");
+                        GD.PrintErr("❌ [Realtime] MainGameScene での WebSocket 接続に失敗しました。");
                     }
                 }
-            }
-            else if (state == WebSocketPeer.State.Closed)
-            {
-                RealtimeConnectionService.IsListening = false;
-                RealtimeConnectionService.IsJoinedChannel = false;
-                GD.Print("⚠️ Supabase WebSocket が切断されました。再接続を実行します...");
-                RealtimeConnectionService.StartListeningLobbyChanges();
-            }
-        }
 
-        private static void ParseBroadcastMessage(JsonElement root)
-        {
-            if (root.TryGetProperty("payload", out JsonElement outerPayload))
-            {
-                if (outerPayload.TryGetProperty("event", out JsonElement customEventElem))
+                Node roleNode = scene?.GetNodeOrNull<Node>("RoleManager");
+                if (roleNode == null)
                 {
-                    string customEvent = customEventElem.GetString();
+                    GD.PrintErr("⚠️ [GameInitializer] シーン内に 'RoleManager' ノードが見つかりません。");
+                }
 
-                    if (outerPayload.TryGetProperty("payload", out JsonElement innerPayload))
+                roleManager?.Initialize(roleNode, connection);
+
+                string myUserId = MainGameScene.GetMyUserId();
+                if (string.IsNullOrEmpty(myUserId))
+                {
+                    GD.PrintErr("⚠️ [GameInitializer] myUserId が取得できなかったか、空です。");
+                }
+
+                remotePlayerManager?.Initialize(opponentScene, myUserId, connection);
+
+                if (chunkManager != null)
+                {
+                    await ChunkLoader.WaitForInitialChunksLoadedAsync(chunkManager);
+                }
+                else
+                {
+                    GD.PrintErr("⚠️ [GameInitializer] chunkManager が null のためチャンク待機をスキップします。");
+                }
+
+                // ホストのみが役職の割り当て・送信を実行する
+                bool isHost = SessionManager.Instance != null && SessionManager.Instance.IsHost;
+                if (isHost)
+                {
+                    GD.Print("👑 [GameInitializer] ホストとして全員の役職割り当てを開始します。");
+                    if (roleManager != null)
                     {
-                        switch (customEvent)
-                        {
-                            case "transform_all":
-                            {
-                                string pId = innerPayload.GetProperty("player_id").GetString();
-                                float px = (float)innerPayload.GetProperty("px").GetDouble();
-                                float py = (float)innerPayload.GetProperty("py").GetDouble();
-                                float pz = (float)innerPayload.GetProperty("pz").GetDouble();
-                                float rx = (float)innerPayload.GetProperty("rx").GetDouble();
-                                float ry = (float)innerPayload.GetProperty("ry").GetDouble();
-                                float rz = (float)innerPayload.GetProperty("rz").GetDouble();
+                        await roleManager.AssignRolesToAllPlayers(myUserId);
+                    }
+                }
+                else
+                {
+                    GD.Print("⏳ [GameInitializer] ゲストとしてホストからの役職受信を待機します。");
+                }
 
-                                RealtimeEvents.RaisePlayerTransformReceivedAll(pId, px, py, pz, rx, ry, rz);
-                                break;
-                            }
-                            case "assign_role":
-                            {
-                                string targetPlayerId = innerPayload.GetProperty("target_player_id").GetString();
-                                int role = innerPayload.GetProperty("role").GetInt32();
-                                int faction = innerPayload.GetProperty("faction").GetInt32();
-
-                                GD.Print($"👑 役職データ受信成功: Target={targetPlayerId}, Role={role}");
-                                RealtimeEvents.RaiseRoleAssignedReceived(targetPlayerId, role, faction);
-                                break;
-                            }
-                            case "start_game":
-                            {
-                                GD.Print("🎮 [Realtime] ホストからゲーム開始シグナルを受信しました！");
-                                RealtimeEvents.RaiseGameStartReceived();
-                                break;
-                            }
-                            case "player_leave":
-                            {
-                                string pId = innerPayload.GetProperty("player_id").GetString();
-                                GD.Print($"👋 [Realtime] プレイヤーの退出を受信しました: {pId}");
-                                RealtimeEvents.RaisePlayerLeaveReceived(pId);
-                                break;
-                            }
-                            case "player_skin":
-                            {
-                                string pId = innerPayload.GetProperty("player_id").GetString();
-                                var skinsDict = new Dictionary<string, string>();
-                                
-                                if (innerPayload.TryGetProperty("skins", out JsonElement skinsElem))
-                                {
-                                    foreach (var prop in skinsElem.EnumerateObject())
-                                    {
-                                        skinsDict[prop.Name] = prop.Value.GetString();
-                                    }
-                                }
-
-                                GD.Print($"🎨 [Realtime] プレイヤーのスキン情報を受信しました: {pId}");
-                                RealtimeEvents.RaisePlayerSkinReceived(pId, skinsDict);
-                                break;
-                            }
-                        }
+                if (roleManager != null)
+                {
+                    bool received = await roleManager.WaitForRoleAssignedAsync(timeoutMs: 1000000);
+                    if (!received)
+                    {
+                        GD.PrintErr("⚠️ [GameInitializer] 役職受信タイムアウトのため、デフォルト(生徒)を適用します。");
+                        roleManager.ApplyRole(0, 0);
                     }
                 }
             }
-        }
-
-        private static void ParseSystemMessage(JsonElement root)
-        {
-            if (root.TryGetProperty("payload", out JsonElement sysPayload))
+            catch (Exception ex)
             {
-                if (sysPayload.TryGetProperty("message", out JsonElement msgElem))
-                {
-                    GD.PrintErr($"⚠️ [Realtime System制限通知] {msgElem.GetString()}");
-                }
+                GD.PrintErr($"❌ [GameInitializer] 初期化待機中にエラーが発生しました: {ex.Message} \nStackTrace: {ex.StackTrace}");
+            }
+            finally
+            {
+                uiController?.HideLoadingScene();
             }
         }
     }
