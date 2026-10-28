@@ -54,7 +54,6 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
             string json = JsonSerializer.Serialize(broadcastPayload);
             Error err = client.SendText(json);
             
-            // ★ 送信失敗時にエラーコードをログ出力
             if (err != Error.Ok)
             {
                 GD.PrintErr($"❌ [LobbySendTransform 失敗] Error Code: {err} | Topic: {GetTopic()}");
