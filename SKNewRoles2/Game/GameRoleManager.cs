@@ -16,8 +16,8 @@ namespace SKNewRoles2.Game
         public uint MyRole { get; private set; } = 0;
         public uint MyFaction { get; private set; } = 0;
         public bool HasRoleReceived { get; private set; } = false;
-        public Dictionary RoleCountsDict { get; set; }
-        public Dictionary RoleFactionsDict { get; set; }
+        public Dictionary RoleCountsDict { get; set; } = [];
+        public Dictionary RoleFactionsDict { get; set; } = [];
 
         public event Action<uint, uint> OnRoleApplied;
 
@@ -47,11 +47,12 @@ namespace SKNewRoles2.Game
 
             Godot.Collections.Array playerIdsArray = [];
             List<string> roomPlayers = SessionManager.Instance?.CurrentRoomPlayerIds;
-            int roomPlayersCount = roomPlayers.Count;
+            
+            int roomPlayersCount = roomPlayers?.Count ?? 0;
 
             if (roomPlayers != null && roomPlayersCount > 0)
             {
-                for (int i = 0;i < roomPlayersCount; i++)
+                for (int i = 0; i < roomPlayersCount; i++)
                 {
                     playerIdsArray.Add(roomPlayers[i]);
                     GD.Print($"📋 [AssignRoles] ルーム参加者IDを追加: {roomPlayers[i]}");
@@ -65,8 +66,11 @@ namespace SKNewRoles2.Game
 
             uint witchRoleId = RoleInfo.RoleIdDictionary["witch"];
 
-            RoleCountsDict.Add(witchRoleId, 1);
-            RoleFactionsDict.Add(witchRoleId, 1);
+            RoleCountsDict ??= [];
+            RoleFactionsDict ??= [];
+
+            RoleCountsDict[witchRoleId] = 1;
+            RoleFactionsDict[witchRoleId] = 1;
 
             GD.Print($"🎲 [AssignRoles] {playerIdsArray.Count} 人のプレイヤーに役職を割り当てます (Witch ID: {witchRoleId})");
 
