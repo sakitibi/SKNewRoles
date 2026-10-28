@@ -8,6 +8,13 @@ namespace SKNewRoles2.Game.Network
 {
     public static class RealtimeBroadcaster
     {
+        private static Vector3 _lastSentPosition = Vector3.Zero;
+        private static Vector3 _lastSentRotation = Vector3.Zero;
+        private static ulong _lastSendTick = 0;
+        private const ulong SendIntervalMs = 300;
+        private const float PosThreshold = 0.02f;
+        private const float RotThreshold = 0.02f;
+
         private static string GetTopicName()
         {
             string topic = RealtimeTopicProvider.GetCurrentTopic();
@@ -19,9 +26,33 @@ namespace SKNewRoles2.Game.Network
             return topic;
         }
 
+        /// <summary>
+        /// プレイヤーの座標を送信します
+        /// </summary>
         public static Task SendTransformAsync(RealtimeConnection connection, float px, float py, float pz, float rx, float ry, float rz)
         {
             if (!IsReady(connection)) return Task.CompletedTask;
+
+            ulong currentTick = Time.GetTicksMsec();
+            if (currentTick - _lastSendTick < SendIntervalMs)
+            {
+                return Task.CompletedTask;
+            }
+
+            Vector3 currentPos = new(px, py, pz);
+            Vector3 currentRot = new(rx, ry, rz);
+
+            bool hasMoved = currentPos.DistanceSquaredTo(_lastSentPosition) > (PosThreshold * PosThreshold);
+            bool hasRotated = currentRot.DistanceSquaredTo(_lastSentRotation) > (RotThreshold * RotThreshold);
+
+            if (!hasMoved && !hasRotated)
+            {
+                return Task.CompletedTask;
+            }
+
+            _lastSentPosition = currentPos;
+            _lastSentRotation = currentRot;
+            _lastSendTick = currentTick;
 
             string senderId = SessionManager.Instance?.CurrentSession?.User?.Id ?? $"Guest_{SessionManager.Instance?.CurrentRoomCode}";
 
