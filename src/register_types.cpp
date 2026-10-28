@@ -23,6 +23,7 @@
 #include "Game/fall_damage_component.h"
 #include "Game/hunger_component.h"
 #include "Game/hotbar.h"
+#include "Game/combat_registry.h"
 
 #ifndef GDEXTENSION_API_CC
 #define GDEXTENSION_API_CC
@@ -53,6 +54,7 @@ void initialize_player_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<FallDamageComponent>();
     ClassDB::register_class<HungerComponent>();
     ClassDB::register_class<Hotbar>();
+    ClassDB::register_class<CombatRegistry>();
 }
 
 void uninitialize_player_module(ModuleInitializationLevel p_level) {

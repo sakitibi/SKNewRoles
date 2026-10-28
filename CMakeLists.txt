@@ -52,6 +52,7 @@ set(SOURCES
     src/Game/fall_damage_component.cpp
     src/Game/hunger_component.cpp
     src/Game/hotbar.cpp
+    src/Game/combat_registry.cpp
     src/Player/player.cpp
     src/Player/player_skin.cpp
     src/Player/player_movement.cpp

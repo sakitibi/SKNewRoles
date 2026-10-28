@@ -6,6 +6,8 @@
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include "../Game/health_component.h"
+#include "../Game/hotbar.h"
+#include "../Game/combat_registry.h"
 
 using namespace godot;
 
@@ -45,9 +47,29 @@ String PlayerAttack::process_attack(Node3D *player_node, Camera3D *camera) {
 
             HealthComponent *health = Object::cast_to<HealthComponent>(hit_node->get_node_or_null(NodePath("HealthComponent")));
             if (health) {
-                uint32_t damage = 1;
+                uint32_t damage = 1; // デフォルトダメージ
+
+                // ホットバーから現在手に持っているアイテムを取得
+                Hotbar *hotbar = Object::cast_to<Hotbar>(player_node->get_node_or_null(NodePath("Hotbar")));
+                if (!hotbar) {
+                    hotbar = Object::cast_to<Hotbar>(player_node->find_child("Hotbar", true, false));
+                }
+
+                if (hotbar) {
+                    int selected_slot = hotbar->get_selected_slot();
+                    Dictionary slot_data = hotbar->get_slot_item(selected_slot);
+                    if (slot_data.has("item_id")) {
+                        String held_item = slot_data["item_id"];
+                        
+                        CombatRegistry *registry = CombatRegistry::get_singleton();
+                        if (registry) {
+                            damage = registry->get_weapon_damage(held_item);
+                        }
+                    }
+                }
+
                 health->take_damage(damage);
-                UtilityFunctions::print("[PlayerAttack] You dealt damage to the target!");
+                UtilityFunctions::print(vformat("[PlayerAttack] You dealt %d damage to the target!", damage));
                 return "";
             }
             else {
