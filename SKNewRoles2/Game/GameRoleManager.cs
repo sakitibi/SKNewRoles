@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using SKNewRoles2.Game.Network;
 using SKNewRoles2.SessionManagerSystem;
 using System.Collections.Generic;
-using SKNewRoles2.Lobby.JOIN.Services;
 
 namespace SKNewRoles2.Game
 {
@@ -141,7 +140,6 @@ namespace SKNewRoles2.Game
 
                 if (loopCheck % 10 == 0)
                 {
-                    await LobbyQueryService.JoinLobbyAsync(SessionManager.Instance.CurrentRoomCode);
                     GD.Print($"⏳ [WaitForRoleAssignedAsync] 待機中... ({loopCheck * checkIntervalMs}ms / {timeoutMs}ms)");
                 }
 

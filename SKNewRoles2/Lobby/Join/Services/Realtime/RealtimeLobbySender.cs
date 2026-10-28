@@ -52,7 +52,13 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
             };
 
             string json = JsonSerializer.Serialize(broadcastPayload);
-            client.SendText(json);
+            Error err = client.SendText(json);
+            
+            // ★ 送信失敗時にエラーコードをログ出力
+            if (err != Error.Ok)
+            {
+                GD.PrintErr($"❌ [LobbySendTransform 失敗] Error Code: {err} | Topic: {GetTopic()}");
+            }
         }
 
         /// <summary>
@@ -63,7 +69,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
             WebSocketPeer client = RealtimeConnectionService.RealtimeClient;
             if (client == null || client.GetReadyState() != WebSocketPeer.State.Open)
             {
-                GD.PrintErr("❌ [ゲーム開始送信失敗] WebSocketがオープン状態ではありません！");
+                GD.PrintErr($"❌ [ゲーム開始送信失敗] WebSocketがオープン状態ではありません！ ReadyState: {client?.GetReadyState()}");
                 return;
             }
 
@@ -81,8 +87,16 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
             };
 
             string json = JsonSerializer.Serialize(broadcastPayload);
-            client.SendText(json);
-            GD.Print($"📡 [ゲーム開始送信成功] JSONを送信しました -> Topic: {GetTopic()} | JSON: {json}");
+            Error err = client.SendText(json);
+            
+            if (err == Error.Ok)
+            {
+                GD.Print($"📡 [ゲーム開始送信成功] JSONを送信しました -> Topic: {GetTopic()} | JSON: {json}");
+            }
+            else
+            {
+                GD.PrintErr($"❌ [ゲーム開始送信エラー] SendText Failed with Error: {err}");
+            }
         }
 
         /// <summary>
@@ -93,6 +107,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
             WebSocketPeer client = RealtimeConnectionService.RealtimeClient;
             if (client == null || client.GetReadyState() != WebSocketPeer.State.Open)
             {
+                GD.PrintErr($"⚠️ [退出通知スキップ] WebSocketがオープンではありません。ReadyState: {client?.GetReadyState()}");
                 return;
             }
 
@@ -115,8 +130,16 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
             };
 
             string json = JsonSerializer.Serialize(broadcastPayload);
-            client.SendText(json);
-            GD.Print($"📡 [退出通知送信] 退出ブロードキャストを送信しました -> Topic: {GetTopic()} | PlayerID: {senderId}");
+            Error err = client.SendText(json);
+
+            if (err == Error.Ok)
+            {
+                GD.Print($"📡 [退出通知送信] 退出ブロードキャストを送信しました -> Topic: {GetTopic()} | PlayerID: {senderId}");
+            }
+            else
+            {
+                GD.PrintErr($"❌ [退出通知送信エラー] Error: {err}");
+            }
         }
 
         /// <summary>
@@ -127,6 +150,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
             var client = RealtimeConnectionService.RealtimeClient;
             if (client == null || client.GetReadyState() != WebSocketPeer.State.Open)
             {
+                GD.PrintErr($"⚠️ [スキン送信スキップ] WebSocketがオープンではありません。ReadyState: {client?.GetReadyState()}");
                 return;
             }
 
@@ -150,8 +174,16 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
             };
 
             string json = JsonSerializer.Serialize(broadcastPayload);
-            client.SendText(json);
-            GD.Print($"📡 [スキン送信] スキン情報をブロードキャストしました -> PlayerID: {senderId}");
+            Error err = client.SendText(json);
+
+            if (err == Error.Ok)
+            {
+                GD.Print($"📡 [スキン送信] スキン情報をブロードキャストしました -> PlayerID: {senderId}");
+            }
+            else
+            {
+                GD.PrintErr($"❌ [スキン送信エラー] Error: {err}");
+            }
         }
     }
 }
