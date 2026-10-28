@@ -56,25 +56,17 @@ namespace SKNewRoles2.Lobby
         {
             RealtimeLobbyReceiver.PollRealtimeEvents();
 
-            _broadcastTimer += (float)delta;
-            if (_broadcastTimer >= BroadcastInterval)
+            if (_cppLobbyManager is Node3D lobbyNode3D)
             {
-                _broadcastTimer = 0.0f;
-
-                if (_cppLobbyManager is Node3D lobbyNode3D)
+                var myPlayer = lobbyNode3D.GetNodeOrNull<Node3D>("MyPlayer");
+                if (myPlayer != null && IsInstanceValid(myPlayer))
                 {
-                    var myPlayer = lobbyNode3D.GetNodeOrNull<Node3D>("MyPlayer");
-                    if (myPlayer != null && IsInstanceValid(myPlayer))
-                    {
-                        RealtimeLobbySender.LobbySendTransformBroadcastAll(
-                            myPlayer.Position.X,
-                            myPlayer.Position.Y,
-                            myPlayer.Position.Z,
-                            myPlayer.Rotation.X,
-                            myPlayer.Rotation.Y,
-                            myPlayer.Rotation.Z
-                        );
-                    }
+                    LobbyRealtimeHelper.UpdatePlayerTransformBroadcast(
+                        myPlayer, 
+                        ref _broadcastTimer, 
+                        (float)delta, 
+                        BroadcastInterval
+                    );
                 }
             }
         }
