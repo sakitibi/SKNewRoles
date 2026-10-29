@@ -1,12 +1,8 @@
 [gd_scene format=3 uid="uid://h00w6tjsows6"]
 
-[ext_resource type="Script" uid="uid://b64jmas7aigau" path="res://SKNewRoles2/Game/SkinEditScene.cs" id="1_script"]
 [ext_resource type="FontFile" uid="uid://bcuxsq3rxn1b4" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="2_w0jo3"]
-[ext_resource type="Shader" path="res://Shaders/box_uv_atlas.gdshader" id="3_shader"]
-[ext_resource type="Script" path="res://SKNewRoles2/Game/SkinPainter.cs" id="4_painter"]
 
-[node name="SkinEditScene" type="Node3D" unique_id=362765023]
-script = ExtResource("1_script")
+[node name="SkinEditScene" type="SkinEditScene" unique_id=987305668]
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=1484829999]
 transform = Transform3D(1, 0, 0, 0, 0.984808, 0.173648, 0, -0.173648, 0.984808, 0, 0.6, 1.8)
@@ -18,9 +14,7 @@ shadow_enabled = true
 
 [node name="SkinModelContainer" type="Node3D" parent="." unique_id=255342988]
 
-[node name="SkinPainter" type="Node3D" parent="." unique_id=987654321]
-script = ExtResource("4_painter")
-_atlasShader = ExtResource("3_shader")
+[node name="SkinPainter" type="SkinPainter" parent="." unique_id=1763763487]
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=446115870]
 
@@ -32,7 +26,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-; 左下パネル（保存・戻る）
 [node name="MarginContainer" type="Panel" parent="CanvasLayer/Control" unique_id=588184237]
 layout_mode = 1
 anchors_preset = 2
@@ -75,7 +68,6 @@ theme_override_fonts/font = ExtResource("2_w0jo3")
 theme_override_font_sizes/font_size = 36
 text = "戻る"
 
-; 右下パネル（部位選択ボタン）
 [node name="PartSelectPanel" type="Panel" parent="CanvasLayer/Control" unique_id=112233445]
 layout_mode = 1
 anchors_preset = 3
