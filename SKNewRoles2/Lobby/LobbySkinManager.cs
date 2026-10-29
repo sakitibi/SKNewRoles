@@ -1,5 +1,4 @@
 using Godot;
-using SKNewRoles2.Game;
 using System.Collections.Generic;
 
 namespace SKNewRoles2.Lobby
@@ -23,7 +22,7 @@ namespace SKNewRoles2.Lobby
         {
             if (playerInstance == null || !GodotObject.IsInstanceValid(playerInstance)) return new(DefaultPresets);
 
-            var config = new ConfigFile();
+            ConfigFile config = new();
             Error err = config.Load("user://player_skin.cfg");
             
             Dictionary<string, string> equippedPresets = new(DefaultPresets);
@@ -55,16 +54,29 @@ namespace SKNewRoles2.Lobby
             if (playerInstance == null || !GodotObject.IsInstanceValid(playerInstance)) return;
             if (skinPresets == null || skinPresets.Count == 0) return;
 
-            var painter = playerInstance.GetNodeOrNull<SkinPainter>("SkinPainter");
+            Node painter = playerInstance.GetNodeOrNull("SkinPainter");
             if (painter == null)
             {
-                painter = new SkinPainter();
-                playerInstance.AddChild(painter);
-                painter.Name = "SkinPainter";
+                Variant variant = ClassDB.Instantiate("SkinPainter");
+                if (variant.Obj is Node nodeInstance)
+                {
+                    painter = nodeInstance;
+                    painter.Name = "SkinPainter";
+                    playerInstance.AddChild(painter);
+                }
             }
 
-            painter.Initialize(playerInstance);
-            painter.ApplyPresetToAllParts(skinPresets);
+            if (painter != null && GodotObject.IsInstanceValid(painter))
+            {
+                painter.Call("initialize", playerInstance);
+
+                var godotDict = new Godot.Collections.Dictionary<string, string>();
+                foreach (var kvp in skinPresets)
+                {
+                    godotDict[kvp.Key] = kvp.Value;
+                }
+                painter.Call("apply_preset_to_all_parts", godotDict);
+            }
         }
     }
 }
