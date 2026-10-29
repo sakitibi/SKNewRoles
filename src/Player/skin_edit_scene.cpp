@@ -192,8 +192,8 @@ void SkinEditScene::on_save_button_pressed() {
 }
 
 void SkinEditScene::on_back_button_pressed() {
-    Ref<SceneTree> st = get_tree();
-    if (st.is_valid()) {
+    SceneTree *st = get_tree();
+    if (st) {
         st->change_scene_to_file(lobby_select_scene_path);
     }
 }

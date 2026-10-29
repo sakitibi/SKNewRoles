@@ -34,7 +34,7 @@ uint32_t CombatRegistry::get_weapon_damage(const String &item_id) const {
     std::string id = item_id.utf8().get_data();
     auto it = weapon_damages_.find(id);
     if (it != weapon_damages_.end()) {
-        it->second;
+        return it->second;
     }
     return 1;
 }
