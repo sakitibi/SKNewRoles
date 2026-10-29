@@ -99,7 +99,7 @@ void SkinEditScene::select_preset_for_all(const String &preset_id) {
     if (painter) {
         painter->apply_preset_to_all_parts(equipped_presets);
     }
-    UtilityFunctions::print(vformat("[SkinEdit] 全部位のプリセットを一括切り替えました: %s", preset_id));
+    UtilityFunctions::print(vformat("[SkinEdit] Switched presets for all parts: %s", preset_id));
 }
 
 void SkinEditScene::cycle_part_preset(const String &part_name) {
@@ -165,12 +165,12 @@ void SkinEditScene::load_player_preview() {
             }
         }
     } else {
-        UtilityFunctions::push_error(vformat("[SkinEdit] ダミーモデルのロードに失敗しました: %s", dummy_scene_path));
+        UtilityFunctions::push_error(vformat("[SkinEdit] Failed to load dummy model: %s", dummy_scene_path));
     }
 }
 
 void SkinEditScene::on_save_button_pressed() {
-    UtilityFunctions::print("[SkinEdit] スキン設定を確定しました:");
+    UtilityFunctions::print("[SkinEdit] Skin settings confirmed:");
 
     Ref<ConfigFile> config;
     config.instantiate();
@@ -185,9 +185,9 @@ void SkinEditScene::on_save_button_pressed() {
 
     Error err = config->save("user://player_skin.cfg");
     if (err == OK) {
-        UtilityFunctions::print("[SkinEdit] スキン設定の保存に成功しました。");
+        UtilityFunctions::print("[SkinEdit] Skin settings saved successfully.");
     } else {
-        UtilityFunctions::push_error("[SkinEdit] スキン設定の保存に失敗しました。");
+        UtilityFunctions::push_error("[SkinEdit] Failed to save skin settings.");
     }
 }
 

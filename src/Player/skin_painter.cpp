@@ -90,25 +90,25 @@ void SkinPainter::setup_part(Node3D *root, const String &node_path) {
         part_textures[part_name] = dyn_texture;
         part_materials[part_name] = mat;
     } else {
-        UtilityFunctions::push_error(vformat("[SkinPainter] %s の ShaderMaterial 取得に失敗しました。", part_name));
+        UtilityFunctions::push_error(vformat("[SkinPainter] Failed to get ShaderMaterial for %s.", part_name));
     }
 }
 
 bool SkinPainter::apply_preset_to_part(const String &part_name, const String &res_path) {
     if (part_images.find(part_name) == part_images.end()) {
-        UtilityFunctions::push_error(vformat("[SkinPainter] 未登録の部位です: %s", part_name));
+        UtilityFunctions::push_error(vformat("[SkinPainter] Unregistered part: %s", part_name));
         return false;
     }
 
     ResourceLoader *rl = ResourceLoader::get_singleton();
     if (!rl->exists(res_path)) {
-        UtilityFunctions::push_error(vformat("[SkinPainter] プリセット画像が見つかりません: %s", res_path));
+        UtilityFunctions::push_error(vformat("[SkinPainter] Preset image not found: %s", res_path));
         return false;
     }
 
     Ref<Texture2D> texture = rl->load(res_path);
     if (!texture.is_valid()) {
-        UtilityFunctions::push_error(vformat("[SkinPainter] テクスチャのロードに失敗しました: %s", res_path));
+        UtilityFunctions::push_error(vformat("[SkinPainter] Failed to load texture: %s", res_path));
         return false;
     }
 
@@ -149,7 +149,7 @@ bool SkinPainter::apply_preset_to_part(const String &part_name, const String &re
         mat->set_shader_parameter("box_size", box_size);
     }
 
-    UtilityFunctions::print(vformat("[SkinPainter] %s にプリセットを適用しました: %s", part_name, res_path));
+    UtilityFunctions::print(vformat("[SkinPainter] Applied preset to %s: %s", part_name, res_path));
     return true;
 }
 
