@@ -5,6 +5,8 @@
 #include "./Player/player.h"
 #include "./Player/player_attack.h"
 #include "./Player/remote_player.h"
+#include "./Player/skin_painter.h"
+#include "./Player/skin_edit_scene.h"
 #include "lobby_manager.h"
 #include "config_manager.h"
 
@@ -55,6 +57,8 @@ void initialize_player_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<HungerComponent>();
     ClassDB::register_class<Hotbar>();
     ClassDB::register_class<CombatRegistry>();
+    ClassDB::register_class<SkinPainter>();
+    ClassDB::register_class<SkinEditScene>();
 }
 
 void uninitialize_player_module(ModuleInitializationLevel p_level) {

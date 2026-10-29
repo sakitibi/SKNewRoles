@@ -28,6 +28,6 @@ namespace godot {
     class ChunkLoader {
         public:
             static void async_load_worker(void *p_userdata);
-            static Node3D *create_chunk_node(const Vector2i &coord, float chunk_size, const PureChunkData &built_data); // ★ 変更: 引数を PureChunkData に
+            static Node3D *create_chunk_node(const Vector2i &coord, float chunk_size, const PureChunkData &built_data);
     };
 }

@@ -59,6 +59,8 @@ set(SOURCES
     src/Player/player_attack.cpp
     src/Player/player_camera.cpp
     src/Player/remote_player.cpp
+    src/Player/skin_edit_scene.cpp
+    src/Player/skin_painter.cpp
 )
 
 # 共有ライブラリとしてビルド

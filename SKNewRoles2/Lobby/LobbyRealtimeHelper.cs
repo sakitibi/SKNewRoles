@@ -39,7 +39,7 @@ namespace SKNewRoles2.Lobby
             RealtimeConnectionService.StopListeningLobbyChanges();
         }
 
-        public static void UpdatePlayerTransformBroadcast(Node3D targetNode, ref float broadcastTimer, float delta, float interval = 0.3f) // ★ 間隔を 0.1秒 から 0.3秒 に拡大
+        public static void UpdatePlayerTransformBroadcast(Node3D targetNode, ref float broadcastTimer, float delta, float interval = 0.3f)
         {
             if (targetNode == null || !GodotObject.IsInstanceValid(targetNode)) return;
 
