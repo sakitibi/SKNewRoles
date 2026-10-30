@@ -75,7 +75,7 @@ namespace SKNewRoles2.Lobby
                 return false;
             }
 
-            var httpRequest = new HttpRequest();
+            HttpRequest httpRequest = new();
             SessionManager.Instance.AddChild(httpRequest);
 
             string url = $"{SessionManager.SupabaseUrl}/rest/v1/lobbies?room_code=eq.{roomCode}";
@@ -92,9 +92,9 @@ namespace SKNewRoles2.Lobby
             };
             string jsonBody = JsonSerializer.Serialize(payload);
 
-            var tcs = new TaskCompletionSource<(long result, long responseCode, byte[] body)>(TaskCreationOptions.RunContinuationsAsynchronously);
-            HttpRequest.RequestCompletedEventHandler onCompleted = null;
-            onCompleted = (result, responseCode, responseHeaders, body) =>
+            TaskCompletionSource<(long result, long responseCode, byte[] body)> tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            void onCompleted (long result, long responseCode, string[] responseHeaders, byte[] body)
             {
                 httpRequest.RequestCompleted -= onCompleted;
                 tcs.SetResult((result, responseCode, body));
@@ -109,7 +109,7 @@ namespace SKNewRoles2.Lobby
                 return false;
             }
 
-            var (res, code, bodyData) = await tcs.Task;
+            (long res, long code, byte[] bodyData) = await tcs.Task;
             httpRequest.QueueFree();
 
             string resBody = bodyData != null ? Encoding.UTF8.GetString(bodyData) : "空データ";

@@ -20,7 +20,7 @@ namespace SKNewRoles2.Game
             Node targetNode = (scene.HealthComponent != null && GodotObject.IsInstanceValid(scene.HealthComponent)) ? scene.HealthComponent : scene.MyPlayerInstance;
 
             string[] curHpKeys = ["CurrentHp", "current_hp", "hp", "Health", "health", "CurrentHealth"];
-            foreach (var key in curHpKeys)
+            foreach (string key in curHpKeys)
             {
                 Variant val = targetNode.Get(key);
                 if (TryConvertToInt(val, out int hpVal))
@@ -31,7 +31,7 @@ namespace SKNewRoles2.Game
             }
 
             string[] maxHpKeys = ["MaxHp", "max_hp", "max_health", "MaxHealth"];
-            foreach (var key in maxHpKeys)
+            foreach (string key in maxHpKeys)
             {
                 Variant val = targetNode.Get(key);
                 if (TryConvertToInt(val, out int maxVal))
@@ -55,9 +55,9 @@ namespace SKNewRoles2.Game
             }
 
             string[] curHungerKeys = ["CurrentHunger", "current_hunger", "hunger", "CurrentFood", "food"];
-            foreach (var key in curHungerKeys)
+            foreach (string key in curHungerKeys)
             {
-                var val = targetNode.Get(key);
+                Variant val = targetNode.Get(key);
                 if (TryConvertToInt(val, out int hungerVal))
                 {
                     scene.CurrentHunger = hungerVal;
@@ -66,9 +66,9 @@ namespace SKNewRoles2.Game
             }
 
             string[] maxHungerKeys = ["MaxHunger", "max_hunger", "max_food", "MaxFood"];
-            foreach (var key in maxHungerKeys)
+            foreach (string key in maxHungerKeys)
             {
-                var val = targetNode.Get(key);
+                Variant val = targetNode.Get(key);
                 if (TryConvertToInt(val, out int maxVal))
                 {
                     scene.MaxHunger = maxVal;

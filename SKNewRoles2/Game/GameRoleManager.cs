@@ -88,7 +88,7 @@ namespace SKNewRoles2.Game
                 return;
             }
 
-            var keysList = new Array<Variant>(assignmentResult.Keys);
+            Array<Variant> keysList = (Array<Variant>)assignmentResult.Keys;
             int count = keysList.Count;
 
             for (int i = 0; i < count; i++)
