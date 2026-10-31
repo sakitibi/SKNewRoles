@@ -10,10 +10,10 @@ namespace SKNewRoles2.Game.Player
         /// </summary>
         public static void UpdateRightArmItem(Node3D remotePlayer, string itemId)
         {
-            var rightArm = remotePlayer.GetNodeOrNull<Node3D>("SkinModel/RightArm");
+            Node3D rightArm = remotePlayer.GetNodeOrNull<Node3D>("SkinModel/RightArm");
             if (rightArm == null) return;
 
-            var existingItemNode = rightArm.GetNodeOrNull<Node3D>("HandHeldItem");
+            Node3D existingItemNode = rightArm.GetNodeOrNull<Node3D>("HandHeldItem");
             existingItemNode?.QueueFree();
 
             if (string.IsNullOrEmpty(itemId) || itemId == "none" || itemId == "air")
@@ -24,7 +24,7 @@ namespace SKNewRoles2.Game.Player
             Texture2D iconTexture = null;
             if (ItemDatabase.Instance != null)
             {
-                var itemData = ItemDatabase.Instance.GetItem(itemId);
+                ItemData itemData = ItemDatabase.Instance.GetItem(itemId);
                 iconTexture = itemData?.Icon;
             }
 
