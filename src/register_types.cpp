@@ -7,6 +7,7 @@
 #include "./Player/remote_player.h"
 #include "./Player/skin_painter.h"
 #include "./Player/skin_edit_scene.h"
+#include "./Player/player_spawner.h"
 #include "lobby_manager.h"
 #include "config_manager.h"
 
@@ -38,6 +39,7 @@ void initialize_player_module(ModuleInitializationLevel p_level) {
         return;
     }
     ClassDB::register_class<SNR2Player>();
+    ClassDB::register_class<PlayerSpawner>();
     ClassDB::register_class<PlayerAttack>();
     ClassDB::register_class<BlockRegistry>();
     ClassDB::register_class<BlockMeshCache>();

@@ -61,6 +61,7 @@ set(SOURCES
     src/Player/remote_player.cpp
     src/Player/skin_edit_scene.cpp
     src/Player/skin_painter.cpp
+    src/Player/player_spawner.cpp
 )
 
 # 共有ライブラリとしてビルド

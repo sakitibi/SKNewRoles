@@ -1,42 +1,40 @@
 using Godot;
 using System.Threading.Tasks;
 using SKNewRoles2.Lobby;
+using System.Collections.Generic;
 
 namespace SKNewRoles2.Game.Player
 {
     public class PlayerSpawner
     {
-        private readonly PackedScene _playerScene = GD.Load<PackedScene>("res://Scenes/Prefabs/Player.tscn");
-
-        /// <summary>
-        /// 自プレイヤーを生成し、スキン適用・ネットワーク送信・シグナル接続までを安全に行います。
-        /// </summary>
-        public async Task<(Node3D PlayerInstance, Node HealthComponent)> SpawnAndSetupMyPlayerAsync(
+        public static async Task<(Node3D PlayerInstance, Node HealthComponent)> SpawnAndSetupMyPlayerAsync(
             Node parent, 
             MainGameNetworkHandler networkHandler)
         {
-            if (_playerScene == null)
+            GodotObject cppSpawner = ClassDB.Instantiate("PlayerSpawner").AsGodotObject();
+            if (cppSpawner == null)
             {
-                GD.PrintErr("❌ [PlayerSpawner] Player.tscn のロードに失敗しています。");
+                GD.PrintErr("[PlayerSpawner] Error: Failed to instantiate C++ PlayerSpawner.");
                 return (null, null);
             }
 
-            var playerInstance = _playerScene.Instantiate<Node3D>();
-            playerInstance.Name = "MyPlayer";
-            parent.AddChild(playerInstance);
+            Node3D playerInstance = cppSpawner.Call("spawn_player", parent).As<Node3D>();
+            cppSpawner.Dispose();
 
-            // 保存済みスキンの適用と、他のプレイヤーへの送信を自動実行
-            var mySkins = LobbySkinManager.ApplySavedSkinAndGetPresets(playerInstance);
+            if (playerInstance == null || !GodotObject.IsInstanceValid(playerInstance))
+            {
+                GD.PrintErr("[PlayerSpawner] Error: C++ spawn_player returned a null or invalid node.");
+                return (null, null);
+            }
+
+            Dictionary<string, string> mySkins = LobbySkinManager.ApplySavedSkinAndGetPresets(playerInstance);
             await networkHandler.SendMySkinAsync(mySkins);
 
-            Vector3 spawnPos = new(0, 100, 0);
-            playerInstance.GlobalPosition = spawnPos;
-
-            var healthComponent = playerInstance.GetNodeOrNull<Node>("HealthComponent");
+            Node healthComponent = playerInstance.GetNodeOrNull<Node>("HealthComponent");
             Node targetNode = healthComponent ?? playerInstance;
 
             string[] signalNames = ["HpChanged", "hp_changed", "HealthChanged", "health_changed"];
-            foreach (var sig in signalNames)
+            foreach (string sig in signalNames)
             {
                 if (targetNode.HasSignal(sig))
                 {
@@ -47,7 +45,8 @@ namespace SKNewRoles2.Game.Player
 
             _ = networkHandler?.UpdateHpUIFromPlayer();
             SetPlayerPhysicsEnabled(playerInstance, false);
-            GD.Print($"👤 [PlayerSpawner] 自プレイヤーを生成し、スキンを適用・送信しました。(Pos: {spawnPos})");
+            
+            GD.Print("[PlayerSpawner] My player successfully spawned, skin applied and sent. (Pos: 0, 100, 0)");
 
             return (playerInstance, healthComponent);
         }
@@ -56,19 +55,22 @@ namespace SKNewRoles2.Game.Player
         {
             if (playerInstance == null || !GodotObject.IsInstanceValid(playerInstance))
             {
-                GD.PrintErr("⚠️ [PlayerSpawner] playerInstance が無効または null です。");
+                GD.PrintErr("[PlayerSpawner] Warning: playerInstance is invalid or null.");
                 return;
             }
 
-            // メソッドが存在するかチェック
-            if (playerInstance.HasMethod("set_movement_enabled"))
+            GodotObject cppSpawner = ClassDB.Instantiate("PlayerSpawner").AsGodotObject();
+            if (cppSpawner != null)
             {
-                playerInstance.Call("set_movement_enabled", enabled);
-                GD.Print($"✅ [PlayerSpawner] set_movement_enabled({enabled}) を正常に呼び出しました。 (Node: {playerInstance.Name})");
+                cppSpawner.Call("set_player_physics_enabled", playerInstance, enabled);
+                cppSpawner.Dispose();
             }
             else
             {
-                GD.PrintErr($"❌ [PlayerSpawner] エラー: このノード ({playerInstance.GetClass()}) に 'set_movement_enabled' メソッドが存在しません！");
+                if (playerInstance.HasMethod("set_movement_enabled"))
+                {
+                    playerInstance.Call("set_movement_enabled", enabled);
+                }
             }
         }
     }
