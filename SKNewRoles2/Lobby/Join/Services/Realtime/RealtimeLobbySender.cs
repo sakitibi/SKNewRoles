@@ -27,7 +27,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
         public static async Task LobbySendTransformBroadcastAll(float px, float py, float pz, float rx, float ry, float rz)
         {
             string userId = SessionManager.Instance?.CurrentSession?.User?.Id ?? "Unknown";
-            GD.Print($"LobbySendSkinBroadcast を実行 user_id: {userId}");
+            GD.Print($"LobbySendTransformBroadcastAll を実行 user_id: {userId}");
 
             int retryCount = 0;
             WebSocketPeer client = RealtimeConnectionService.RealtimeClient;

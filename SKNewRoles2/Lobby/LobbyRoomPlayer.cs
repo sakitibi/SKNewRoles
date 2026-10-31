@@ -110,17 +110,18 @@ namespace SKNewRoles2.Lobby
         /// <summary>
         /// 他人のキャラクター（ダミー）を動的にインスタンス化する安全なメソッド
         /// </summary>
+        /// 
         private void SpawnRemotePlayerAll(string playerId, float px, float py, float pz, float rx, float ry, float rz)
         {
             if (dummyPlayerPrefab == null)
             {
-                GD.PrintErr($"❌ 相手プレイヤー(ID: {playerId})を生成しようとしましたが, _dummyPlayerPrefab が null です！");
+                GD.PrintErr($"❌ [LobbyRoomPlayer] 相手プレイヤー(ID: {playerId})を生成しようとしましたが, _dummyPlayerPrefab が null です！");
                 return;
             }
 
             if (otherPlayers.ContainsKey(playerId)) return;
 
-            GD.Print($"✨ 新しいリモートプレイヤーを検知・生成します！ ID: {playerId}");
+            GD.Print($"✨ [LobbyRoomPlayer] 新しいリモートプレイヤーを検知・生成します！ ID: {playerId}");
             
             Node3D remotePlayer = dummyPlayerPrefab.Instantiate<Node3D>();
             remotePlayer.Position = new Vector3(px, py, pz);
@@ -135,10 +136,21 @@ namespace SKNewRoles2.Lobby
             owner.AddChild(remotePlayer);
             otherPlayers[playerId] = remotePlayer;
 
-            // 生成時に既に相手のスキン情報を受信していれば、即座に適用する
             if (_remotePlayerSkins.TryGetValue(playerId, out var skinPresets))
             {
-                LobbySkinManager.ApplySkinPresets(remotePlayer, skinPresets);
+                GD.Print($"🎨 [LobbyRoomPlayer] プレハブ生成完了。キャッシュされたスキンを遅延適用します: ID={playerId}, Count={skinPresets?.Count ?? 0}");
+                
+                Callable.From(() => {
+                    if (GodotObject.IsInstanceValid(remotePlayer))
+                    {
+                        LobbySkinManager.ApplySkinPresets(remotePlayer, skinPresets);
+                        GD.Print($"🎨 [LobbyRoomPlayer] Deferred application of skin completed for: {playerId}");
+                    }
+                }).CallDeferred();
+            }
+            else
+            {
+                GD.Print($"⚠️ [LobbyRoomPlayer] 生成時、ID={playerId} のスキンキャッシュはまだありません。");
             }
         }
 
