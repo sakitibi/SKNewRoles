@@ -63,7 +63,7 @@ namespace SKNewRoles2.Lobby
                     _lastSentPosition = currentPos;
                     _lastSentRotation = currentRot;
 
-                    RealtimeLobbySender.LobbySendTransformBroadcastAll(
+                    _ = RealtimeLobbySender.LobbySendTransformBroadcastAll(
                         currentPos.X,
                         currentPos.Y,
                         currentPos.Z,

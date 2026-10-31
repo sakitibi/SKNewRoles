@@ -24,9 +24,21 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
         /// <summary>
         /// 自分の最新の3D座標を送信します。
         /// </summary>
-        public static void LobbySendTransformBroadcastAll(float px, float py, float pz, float rx, float ry, float rz)
+        public static async Task LobbySendTransformBroadcastAll(float px, float py, float pz, float rx, float ry, float rz)
         {
+            string userId = SessionManager.Instance?.CurrentSession?.User?.Id ?? "Unknown";
+            GD.Print($"LobbySendSkinBroadcast を実行 user_id: {userId}");
+
+            int retryCount = 0;
             WebSocketPeer client = RealtimeConnectionService.RealtimeClient;
+            
+            while ((client == null || client.GetReadyState() != WebSocketPeer.State.Open) && retryCount < 10)
+            {
+                await Task.Delay(500);
+                client = RealtimeConnectionService.RealtimeClient;
+                retryCount++;
+            }
+
             if (client == null || client.GetReadyState() != WebSocketPeer.State.Open)
             {
                 return;
@@ -49,7 +61,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
                         rx, ry, rz
                     }
                 },
-                @ref = (string)null
+                @ref = null
             };
 
             string json = JsonSerializer.Serialize(broadcastPayload);
@@ -147,9 +159,19 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
         /// </summary>
         public static async Task LobbySendSkinBroadcast(Dictionary<string, string> skinPresets)
         {
-            GD.Print($"LobbySendSkinBroadcast を実行 user_id: {SessionManager.Instance.CurrentSession.User.Id}");
-            await Task.Delay(300);
+            string userId = SessionManager.Instance?.CurrentSession?.User?.Id ?? "Unknown";
+            GD.Print($"LobbySendSkinBroadcast を実行 user_id: {userId}");
+
+            int retryCount = 0;
             WebSocketPeer client = RealtimeConnectionService.RealtimeClient;
+            
+            while ((client == null || client.GetReadyState() != WebSocketPeer.State.Open) && retryCount < 10)
+            {
+                await Task.Delay(500);
+                client = RealtimeConnectionService.RealtimeClient;
+                retryCount++;
+            }
+
             if (client == null || client.GetReadyState() != WebSocketPeer.State.Open)
             {
                 GD.PrintErr($"⚠️ [スキン送信スキップ] WebSocketがオープンではありません。ReadyState: {client?.GetReadyState()}");
