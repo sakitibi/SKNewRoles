@@ -89,23 +89,23 @@ namespace SKNewRoles2.Game
                 return;
             }
 
-            Array<Variant> keysList = [..assignmentResult.Keys];
-            int count = keysList.Count;
+            Godot.Collections.Array keysArray = [..assignmentResult.Keys];
+            int count = keysArray.Count;
 
             for (int i = 0; i < count; i++)
             {
-                Variant key = keysList[i];
+                Variant key = keysArray[i];
                 string targetUserId = key.AsString();
                 Dictionary roleData = assignmentResult[key].AsGodotDictionary();
 
                 uint assignedRole = roleData["role"].AsUInt32();
                 uint assignedFaction = roleData["faction"].AsUInt32();
 
-                GD.Print($"🎭 割り当て結果: TargetUser={targetUserId}, Role={assignedRole}, Faction={assignedFaction}");
+                GD.Print($"[AssignRoles] Result: TargetUser={targetUserId}, Role={assignedRole}, Faction={assignedFaction}");
 
                 if (targetUserId == myUserId)
                 {
-                    GD.Print("👑 [AssignRoles] 自分自身の役職を直接適用します。");
+                    GD.Print("[AssignRoles] Applying role to myself directly.");
                     ApplyRole(assignedRole, assignedFaction);
                 }
                 else
@@ -116,7 +116,7 @@ namespace SKNewRoles2.Game
                     }
                     else
                     {
-                        GD.PrintErr("❌ [AssignRoles] Connection が null のためゲストへ送信できません。");
+                        GD.PrintErr("[AssignRoles] Error: Connection is null, cannot send to guest.");
                     }
                 }
             }
