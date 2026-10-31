@@ -14,6 +14,6 @@ namespace godot {
     public:
         Node3D *spawn_player(Node *parent);
 
-        static void set_player_physics_enabled(Node3D *player_instance, bool enabled);
+        void set_player_physics_enabled(Node3D *player_instance, bool enabled);
     };
 }

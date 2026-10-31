@@ -35,10 +35,8 @@ Node3D *PlayerSpawner::spawn_player(Node *parent) {
     player_instance->set_name("MyPlayer");
     parent->add_child(player_instance);
 
-    // スポーン位置の設定
     player_instance->set_global_position(Vector3(0, 100, 0));
 
-    // 初期状態では物理移動を無効化
     set_player_physics_enabled(player_instance, false);
 
     UtilityFunctions::print("[PlayerSpawner] My player spawned successfully on C++ side. (Pos: 0, 100, 0)");
