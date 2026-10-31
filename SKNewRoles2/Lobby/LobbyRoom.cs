@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using SKNewRoles2.SessionManagerSystem;
 using SKNewRoles2.Lobby.JOIN.Services.Realtime;
 using SKNewRoles2.Game.BGM;
-using System.Threading.Tasks;
 
 namespace SKNewRoles2.Lobby
 {

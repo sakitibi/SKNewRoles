@@ -160,12 +160,12 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
         public static async Task LobbySendSkinBroadcast(Dictionary<string, string> skinPresets)
         {
             string userId = SessionManager.Instance?.CurrentSession?.User?.Id ?? "Unknown";
-            GD.Print($"LobbySendSkinBroadcast を実行 user_id: {userId}");
+            GD.Print($"[RealtimeLobbySender] LobbySendSkinBroadcast called for user_id: {userId}");
 
             int retryCount = 0;
             WebSocketPeer client = RealtimeConnectionService.RealtimeClient;
             
-            while ((client == null || client.GetReadyState() != WebSocketPeer.State.Open) && retryCount < 10)
+            while ((client == null || client.GetReadyState() != WebSocketPeer.State.Open) && retryCount < 20)
             {
                 await Task.Delay(500);
                 client = RealtimeConnectionService.RealtimeClient;
@@ -198,15 +198,22 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
             };
 
             string json = JsonSerializer.Serialize(broadcastPayload);
-            Error err = client.SendText(json);
 
-            if (err == Error.Ok)
+            for (byte i = 0; i < 3; i++)
             {
-                GD.Print($"📡 [スキン送信] スキン情報をブロードキャストしました -> PlayerID: {senderId}");
-            }
-            else
-            {
-                GD.PrintErr($"❌ [スキン送信エラー] Error: {err}");
+                if (client.GetReadyState() != WebSocketPeer.State.Open) break;
+
+                Error err = client.SendText(json);
+                if (err == Error.Ok)
+                {
+                    GD.Print($"📡 [スキン送信] スキン情報をブロードキャストしました (Attempt {i + 1}/3) -> PlayerID: {senderId}");
+                }
+                else
+                {
+                    GD.PrintErr($"❌ [スキン送信エラー] Error: {err} (Attempt {i + 1}/3)");
+                }
+
+                if (i < 2) await Task.Delay(1000);
             }
         }
     }
