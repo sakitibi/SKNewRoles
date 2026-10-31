@@ -1,0 +1,7 @@
+if [ "$1" == "2" ]; then
+    APP_NAME="SKNewRoles2"
+else
+    APP_NAME="SKNewRoles"
+fi
+touch ${APP_NAME}_log.txt
+echo "$(/Applications/SKNewRoles/${APP_NAME}.app/Contents/MacOS/SKNewRoles > ${APP_NAME}_log.txt 2>&1)"
