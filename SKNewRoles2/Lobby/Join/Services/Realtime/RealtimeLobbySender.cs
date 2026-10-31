@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Collections.Generic;
 using SKNewRoles2.SessionManagerSystem;
 using SKNewRoles2.Game.Network;
+using System.Threading.Tasks;
 
 namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
 {
@@ -144,10 +145,11 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
         /// <summary>
         /// 自分のスキン設定を全員に送信します。
         /// </summary>
-        public static void LobbySendSkinBroadcast(Dictionary<string, string> skinPresets)
+        public static async Task LobbySendSkinBroadcast(Dictionary<string, string> skinPresets)
         {
             GD.Print($"LobbySendSkinBroadcast を実行 user_id: {SessionManager.Instance.CurrentSession.User.Id}");
-            var client = RealtimeConnectionService.RealtimeClient;
+            await Task.Delay(300);
+            WebSocketPeer client = RealtimeConnectionService.RealtimeClient;
             if (client == null || client.GetReadyState() != WebSocketPeer.State.Open)
             {
                 GD.PrintErr($"⚠️ [スキン送信スキップ] WebSocketがオープンではありません。ReadyState: {client?.GetReadyState()}");

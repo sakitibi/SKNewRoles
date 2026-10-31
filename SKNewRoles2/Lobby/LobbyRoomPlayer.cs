@@ -38,7 +38,15 @@ namespace SKNewRoles2.Lobby
 
                 // 保存済みスキンを適用し、その設定内容を他のプレイヤーへブロードキャスト
                 Dictionary<string, string> mySkins = LobbySkinManager.ApplySavedSkinAndGetPresets(_myPlayerInstance);
-                RealtimeLobbySender.LobbySendSkinBroadcast(mySkins);
+                await RealtimeLobbySender.LobbySendSkinBroadcast(mySkins);
+                RealtimeLobbySender.LobbySendTransformBroadcastAll(
+                    _myPlayerInstance.Position.X,
+                    _myPlayerInstance.Position.Y,
+                    _myPlayerInstance.Position.Z,
+                    _myPlayerInstance.Rotation.X,
+                    _myPlayerInstance.Rotation.Y,
+                    _myPlayerInstance.Rotation.Z
+                );
 
                 await owner.ToSignal(owner.GetTree(), "process_frame");
 

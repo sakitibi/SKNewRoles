@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using SKNewRoles2.SessionManagerSystem;
 using SKNewRoles2.Lobby.JOIN.Services.Realtime;
 using SKNewRoles2.Game.BGM;
+using System.Threading.Tasks;
 
 namespace SKNewRoles2.Lobby
 {
@@ -78,7 +79,7 @@ namespace SKNewRoles2.Lobby
             RealtimeEvents.OnPlayerLeaveReceived += OnRemotePlayerLeaveReceived;
             RealtimeEvents.OnPlayerSkinReceived += _roomPlayer.OnRemotePlayerSkinReceived;
 
-            LobbyRealtimeHelper.RegisterListeners(OnRoomSettingsChangedFromServer, _roomPlayer.OnRemotePlayerTransformReceived);
+            await LobbyRealtimeHelper.RegisterListeners(OnRoomSettingsChangedFromServer, _roomPlayer.OnRemotePlayerTransformReceived);
 
             _roomUIInstance.UpdateRoomInfoUI();
             _roomUIInstance.UpdatePrivacyButtonVisual(SessionManager.Instance.IsPublic);
@@ -124,7 +125,7 @@ namespace SKNewRoles2.Lobby
             LobbyNavigation.TransitionToGameStage(GetTree(), _otherPlayers.Keys, CleanupEvents);
         }
 
-        private void CleanupEvents()
+        private async void CleanupEvents()
         {
             RealtimeEvents.OnGameStartReceived -= TransitionToGameStage;
             RealtimeEvents.OnPlayerLeaveReceived -= OnRemotePlayerLeaveReceived;
@@ -132,7 +133,7 @@ namespace SKNewRoles2.Lobby
             {
                 RealtimeEvents.OnPlayerSkinReceived -= _roomPlayer.OnRemotePlayerSkinReceived;
             }
-            LobbyRealtimeHelper.UnregisterListeners(OnRoomSettingsChangedFromServer, _roomPlayer != null ? _roomPlayer.OnRemotePlayerTransformReceived : null);
+            await LobbyRealtimeHelper.UnregisterListeners(OnRoomSettingsChangedFromServer, _roomPlayer != null ? _roomPlayer.OnRemotePlayerTransformReceived : null);
             _otherPlayers.Clear();
         }
 

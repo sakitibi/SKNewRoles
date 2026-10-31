@@ -1,6 +1,7 @@
 using Godot;
 using SKNewRoles2.Lobby.JOIN.Services.Realtime;
 using System;
+using System.Threading.Tasks;
 
 namespace SKNewRoles2.Lobby
 {
@@ -9,7 +10,7 @@ namespace SKNewRoles2.Lobby
         private static Vector3 _lastSentPosition = Vector3.Zero;
         private static Vector3 _lastSentRotation = Vector3.Zero;
 
-        public static void RegisterListeners(
+        public static async Task RegisterListeners(
             Action onTableChanged, 
             Action<string, float, float, float, float, float, float> onTransformReceived)
         {
@@ -25,7 +26,7 @@ namespace SKNewRoles2.Lobby
             RealtimeConnectionService.StartListeningLobbyChanges();
         }
 
-        public static void UnregisterListeners(
+        public static async Task UnregisterListeners(
             Action onTableChanged, 
             Action<string, float, float, float, float, float, float> onTransformReceived)
         {
