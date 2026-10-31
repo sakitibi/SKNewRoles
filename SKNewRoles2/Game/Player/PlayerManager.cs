@@ -1,5 +1,4 @@
 using Godot;
-using System.Threading.Tasks;
 using SKNewRoles2.Game.Inventory;
 using System.Collections.Generic;
 
@@ -9,27 +8,6 @@ namespace SKNewRoles2.Game.Player
     {
         public Node3D MyPlayerInstance { get; private set; }
         public Node HealthComponent { get; private set; }
-
-        public async Task SpawnPlayerAsync(
-            MainGameScene scene,
-            MainGameNetworkHandler networkHandler,
-            Node3D chunkManager
-        )
-        {
-            (MyPlayerInstance, HealthComponent) = await PlayerSpawner.SpawnAndSetupMyPlayerAsync(scene, networkHandler);
-            PlayerSpawner.SetPlayerPhysicsEnabled(MyPlayerInstance, false);
-
-            if (MyPlayerInstance != null)
-            {
-                MyPlayerInstance.Visible = false;
-
-                if (chunkManager != null && GodotObject.IsInstanceValid(chunkManager))
-                {
-                    chunkManager.Call("set_player_path", MyPlayerInstance.GetPath());
-                    GD.Print($"✅ [PlayerManager] ChunkManager に PlayerPath ({MyPlayerInstance.GetPath()}) を設定しました。");
-                }
-            }
-        }
 
         public void SetVisible(bool visible)
         {

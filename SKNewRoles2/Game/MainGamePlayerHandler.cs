@@ -9,9 +9,9 @@ namespace SKNewRoles2.Game
         public Node3D MyPlayerInstance { get; private set; }
         public Node HealthComponent { get; private set; }
 
-        public async Task SpawnPlayerAsync(PlayerSpawner spawner, MainGameNetworkHandler networkHandler)
+        public async Task SpawnPlayerAsync(MainGameNetworkHandler networkHandler)
         {
-            var (playerInst, healthComp) = await spawner.SpawnAndSetupMyPlayerAsync(scene, networkHandler);
+            (Node3D playerInst, Node healthComp) = await PlayerSpawner.SpawnAndSetupMyPlayerAsync(scene, networkHandler);
             
             MyPlayerInstance = playerInst;
             HealthComponent = healthComp;
@@ -26,7 +26,7 @@ namespace SKNewRoles2.Game
         {
             if (MyPlayerInstance == null || !GodotObject.IsInstanceValid(MyPlayerInstance)) return;
 
-            var hungerComp = MyPlayerInstance.GetNodeOrNull("HungerComponent");
+            Node hungerComp = MyPlayerInstance.GetNodeOrNull<Node>("HungerComponent");
             if (hungerComp != null && GodotObject.IsInstanceValid(hungerComp))
             {
                 if (!hungerComp.IsConnected("hunger_changed", Callable.From<int, int>(networkHandler.OnMyPlayerHungerChanged)))
