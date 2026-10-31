@@ -38,16 +38,16 @@ namespace SKNewRoles2.Lobby
         {
             if (_cppLobbyManager is Node3D lobbyNode3D)
             {
-                var myPlayer = lobbyNode3D.GetNodeOrNull<Node3D>("MyPlayer");
+                Node3D myPlayer = lobbyNode3D.GetNodeOrNull<Node3D>("MyPlayer");
                 if (myPlayer != null && IsInstanceValid(myPlayer))
                 {
-                    var mySkins = LobbySkinManager.ApplySavedSkinAndGetPresets(myPlayer);
-                    RealtimeLobbySender.LobbySendSkinBroadcast(mySkins);
+                    Dictionary<string, string> mySkins = LobbySkinManager.ApplySavedSkinAndGetPresets(myPlayer);
+                    _ = RealtimeLobbySender.LobbySendSkinBroadcast(mySkins);
                 }
                 else
                 {
-                    var defaultSkins = LobbySkinManager.ApplySavedSkinAndGetPresets(new Node3D());
-                    RealtimeLobbySender.LobbySendSkinBroadcast(defaultSkins);
+                    Dictionary<string, string> defaultSkins = LobbySkinManager.ApplySavedSkinAndGetPresets(new Node3D());
+                    _ = RealtimeLobbySender.LobbySendSkinBroadcast(defaultSkins);
                 }
             }
         }
@@ -58,7 +58,7 @@ namespace SKNewRoles2.Lobby
 
             if (_cppLobbyManager is Node3D lobbyNode3D)
             {
-                var myPlayer = lobbyNode3D.GetNodeOrNull<Node3D>("MyPlayer");
+                Node3D myPlayer = lobbyNode3D.GetNodeOrNull<Node3D>("MyPlayer");
                 if (myPlayer != null && IsInstanceValid(myPlayer))
                 {
                     LobbyRealtimeHelper.UpdatePlayerTransformBroadcast(
@@ -92,7 +92,7 @@ namespace SKNewRoles2.Lobby
                 if (_cppLobbyManager.HasMethod("update_remote_player_skin"))
                 {
                     var godotDict = new Godot.Collections.Dictionary<string, string>();
-                    foreach (var kvp in skinPresets)
+                    foreach (KeyValuePair<string, string> kvp in skinPresets)
                     {
                         godotDict[kvp.Key] = kvp.Value;
                     }
