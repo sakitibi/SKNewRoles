@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using SKNewRoles2.Game.Network;
+using SKNewRoles2.Lobby;
 
 namespace SKNewRoles2.Game
 {
@@ -15,12 +16,14 @@ namespace SKNewRoles2.Game
         {
             if (connection == null) return;
             connection.OnAttackReceived += OnRemoteAttackReceived;
+            connection.OnSkinReceived += OnRemoteSkinReceived;
         }
 
         public void UnregisterEvents(RealtimeConnection connection)
         {
             if (connection == null) return;
             connection.OnAttackReceived -= OnRemoteAttackReceived;
+            connection.OnSkinReceived -= OnRemoteSkinReceived;
         }
 
         public void OnMyPlayerHpChanged(int currentHp, int maxHp)
@@ -51,7 +54,7 @@ namespace SKNewRoles2.Game
             string myUserId = MainGameScene.GetMyUserId();
             if (!string.IsNullOrEmpty(targetPlayerId))
             {
-                GD.Print($"⚔️ [Network送信前] Attacker={myUserId} -> Target={targetPlayerId} へダメージ {damage} を送信します。");
+                GD.Print($"[MainGameNetworkHandler] Sending damage {damage} from Attacker={myUserId} to Target={targetPlayerId}.");
                 _ = SafeSendAttackAsync(myUserId, targetPlayerId, damage);
             }
         }
@@ -59,23 +62,45 @@ namespace SKNewRoles2.Game
         public void OnRemoteAttackReceived(string attackerId, string targetId, uint damage)
         {
             string myUserId = MainGameScene.GetMyUserId();
-            GD.Print($"📥 [Network受信] 攻撃イベントを受信: Attacker={attackerId}, Target={targetId}, 自分のID={myUserId}");
+            GD.Print($"[MainGameNetworkHandler] Received attack event: Attacker={attackerId}, Target={targetId}, MyID={myUserId}");
 
             if (targetId == myUserId)
             {
                 if (scene.HealthComponent != null && GodotObject.IsInstanceValid(scene.HealthComponent))
                 {
-                    GD.Print($"💥 [被弾処理成功] プレイヤーが {attackerId} から {damage} のダメージを受けました！");
+                    GD.Print($"[MainGameNetworkHandler] Player successfully took {damage} damage from {attackerId}!");
                     scene.HealthComponent.Call("take_damage", damage);
                 }
                 else
                 {
-                    GD.PrintErr("❌ [被弾エラー] HealthComponent が無効なためダメージを適用できません。");
+                    GD.PrintErr("[MainGameNetworkHandler] Error: HealthComponent is invalid, cannot apply damage.");
                 }
             }
             else
             {
-                GD.Print("ℹ️ [Network受信] 自分宛ての攻撃ではないため無視しました。");
+                GD.Print("[MainGameNetworkHandler] Ignored attack event as it is not for me.");
+            }
+        }
+
+        /// <summary>
+        /// 他のプレイヤーからスキンデータを受信したときの処理
+        /// </summary>
+        private void OnRemoteSkinReceived(string playerId, Dictionary<string, string> skinsDict)
+        {
+            string myUserId = MainGameScene.GetMyUserId();
+            if (playerId == myUserId) return; // 自分自身のデータは無視
+
+            GD.Print($"[MainGameNetworkHandler] Received skin data for remote player: {playerId}");
+
+            Node3D remotePlayer = scene.GetNodeOrNull<Node3D>($"RemotePlayers/{playerId}");
+            if (remotePlayer != null && GodotObject.IsInstanceValid(remotePlayer))
+            {
+                LobbySkinManager.ApplySkinPresets(remotePlayer, skinsDict);
+                GD.Print($"[MainGameNetworkHandler] Successfully applied skin to remote player: {playerId}");
+            }
+            else
+            {
+                GD.PrintErr($"[MainGameNetworkHandler] Warning: Remote player node not found for ID: {playerId}");
             }
         }
 
@@ -115,24 +140,21 @@ namespace SKNewRoles2.Game
             }
             catch (Exception ex)
             {
-                GD.PrintErr($"⚠️ [Realtime] Transform送信時例外: {ex.Message}");
+                GD.PrintErr($"[Realtime] Exception on sending transform: {ex.Message}");
             }
         }
 
-        /// <summary>
-        /// 自分のスキン情報をサーバーへ送信する
-        /// </summary>
         public async Task SendMySkinAsync(Dictionary<string, string> skinPresets)
         {
             string myUserId = MainGameScene.GetMyUserId();
             try
             {
                 await RealtimeBroadcaster.SendSkinAsync(scene.Connection, myUserId, skinPresets);
-                GD.Print("✅ [Realtime] 自分のスキン情報をゲームステージ内で送信しました。");
+                GD.Print("[Realtime] Sent my skin info in game stage successfully.");
             }
             catch (Exception ex)
             {
-                GD.PrintErr($"⚠️ [Realtime] スキン送信時例外: {ex.Message}");
+                GD.PrintErr($"[Realtime] Exception on sending skin: {ex.Message}");
             }
         }
 
@@ -144,7 +166,7 @@ namespace SKNewRoles2.Game
             }
             catch (Exception ex)
             {
-                GD.PrintErr($"⚠️ [Realtime] HP送信時例外: {ex.Message}");
+                GD.PrintErr($"[Realtime] Exception on sending HP: {ex.Message}");
             }
         }
 
@@ -156,7 +178,7 @@ namespace SKNewRoles2.Game
             }
             catch (Exception ex)
             {
-                GD.PrintErr($"⚠️ [Realtime] 満腹度送信時例外: {ex.Message}");
+                GD.PrintErr($"[Realtime] Exception on sending hunger: {ex.Message}");
             }
         }
 
@@ -168,7 +190,7 @@ namespace SKNewRoles2.Game
             }
             catch (Exception ex)
             {
-                GD.PrintErr($"⚠️ [Realtime] 攻撃送信時例外: {ex.Message}");
+                GD.PrintErr($"[Realtime] Exception on sending attack: {ex.Message}");
             }
         }
 
