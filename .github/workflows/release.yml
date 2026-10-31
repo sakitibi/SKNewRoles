@@ -31,14 +31,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install LZMA SDK
-        shell: bash
-        run: |
-          mkdir -p src/System/Assets
-          git clone --branch 26.05 --depth 1 https://github.com/ip7z/7zip.git temp_lzma
-          cp -r temp_lzma/C src/System/Assets/lzma
-          rm -rf temp_lzma
-
       - name: Install LLVM (macOS)
         if: matrix.os == 'macos-latest'
         run: |
