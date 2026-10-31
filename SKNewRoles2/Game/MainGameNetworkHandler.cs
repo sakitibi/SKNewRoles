@@ -106,7 +106,7 @@ namespace SKNewRoles2.Game
 
         public void ProcessMovementSync()
         {
-            var player = scene.MyPlayerInstance;
+            Node3D player = scene.MyPlayerInstance;
             if (player != null && GodotObject.IsInstanceValid(player) && player.Visible)
             {
                 Vector3 playerPos = player.GlobalPosition;
@@ -201,7 +201,7 @@ namespace SKNewRoles2.Game
             Node targetNode = (scene.HealthComponent != null && GodotObject.IsInstanceValid(scene.HealthComponent)) ? scene.HealthComponent : scene.MyPlayerInstance;
 
             string[] curHpKeys = ["CurrentHp", "current_hp", "hp", "Health", "health", "CurrentHealth"];
-            foreach (var key in curHpKeys)
+            foreach (string key in curHpKeys)
             {
                 Variant val = targetNode.Get(key);
                 if (TryConvertToInt(val, out int hpVal))
@@ -212,7 +212,7 @@ namespace SKNewRoles2.Game
             }
 
             string[] maxHpKeys = ["MaxHp", "max_hp", "max_health", "MaxHealth"];
-            foreach (var key in maxHpKeys)
+            foreach (string key in maxHpKeys)
             {
                 Variant val = targetNode.Get(key);
                 if (TryConvertToInt(val, out int maxVal))

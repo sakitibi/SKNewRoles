@@ -76,6 +76,16 @@ namespace SKNewRoles2.Game
 
             _chunkManagerCpp = GetNode<Node3D>("ChunkManager");
 
+            await GameInitializer.InitializeAsync(
+                this,
+                _connection,
+                _roleManager,
+                _remotePlayerManager,
+                _opponentScene,
+                _chunkManagerCpp,
+                _uiController
+            );
+
             await _playerHandler.SpawnPlayerAsync(_networkHandler);
             _playerHandler.SetupHungerSignal(_networkHandler);
 
@@ -90,16 +100,6 @@ namespace SKNewRoles2.Game
                 GD.PrintErr("❌ [MainGameScene] HotbarManager ノードが見つかりません。");
             }
 
-            await GameInitializer.InitializeAsync(
-                this,
-                _connection,
-                _roleManager,
-                _remotePlayerManager,
-                _opponentScene,
-                _chunkManagerCpp,
-                _uiController
-            );
-
             _ = _bgmManager?.PlayBgm(0.0f, BGMList);
             PlayerManager.GrantInitialItems(_hotbarManager, GrantItemDic);
 
@@ -109,7 +109,6 @@ namespace SKNewRoles2.Game
                 PlayerSpawner.SetPlayerPhysicsEnabled(_playerHandler.MyPlayerInstance, true);
             }
         }
-
         public override void _Input(InputEvent @event)
         {
             _combatHandler?.HandleInput(@event);
