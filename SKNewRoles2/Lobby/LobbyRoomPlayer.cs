@@ -110,7 +110,6 @@ namespace SKNewRoles2.Lobby
         /// <summary>
         /// 他人のキャラクター（ダミー）を動的にインスタンス化する安全なメソッド
         /// </summary>
-        /// 
         private void SpawnRemotePlayerAll(string playerId, float px, float py, float pz, float rx, float ry, float rz)
         {
             if (dummyPlayerPrefab == null)
@@ -136,6 +135,7 @@ namespace SKNewRoles2.Lobby
             owner.AddChild(remotePlayer);
             otherPlayers[playerId] = remotePlayer;
 
+            // 生成時に既に相手のスキン情報を受信していれば、初期化完了後に遅延適用する
             if (_remotePlayerSkins.TryGetValue(playerId, out var skinPresets))
             {
                 GD.Print($"🎨 [LobbyRoomPlayer] プレハブ生成完了。キャッシュされたスキンを遅延適用します: ID={playerId}, Count={skinPresets?.Count ?? 0}");
@@ -151,6 +151,22 @@ namespace SKNewRoles2.Lobby
             else
             {
                 GD.Print($"⚠️ [LobbyRoomPlayer] 生成時、ID={playerId} のスキンキャッシュはまだありません。");
+            }
+
+            _ = SendMySkinResyncAsync();
+        }
+
+        /// <summary>
+        /// 新しいプレイヤーの参加を検知した際、自分のスキンを再送するヘルパー
+        /// </summary>
+        private async Task SendMySkinResyncAsync()
+        {
+            await Task.Delay(1000); // プレハブの生成と同期が落ち着くのを1秒待つ
+            if (_myPlayerInstance != null && GodotObject.IsInstanceValid(_myPlayerInstance))
+            {
+                var mySkins = LobbySkinManager.ApplySavedSkinAndGetPresets(_myPlayerInstance);
+                await RealtimeLobbySender.LobbySendSkinBroadcast(mySkins);
+                GD.Print("[LobbyRoomPlayer] Resent my skin broadcast to sync with newly detected player.");
             }
         }
 
