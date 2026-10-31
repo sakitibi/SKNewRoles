@@ -148,17 +148,18 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
 							case "player_skin":
 							{
 								string pId = innerPayload.GetProperty("player_id").GetString();
-								var skinsDict = new Dictionary<string, string>();
+								Dictionary<string, string> skinsDict = [];
 								
 								if (innerPayload.TryGetProperty("skins", out JsonElement skinsElem))
 								{
-									foreach (var prop in skinsElem.EnumerateObject())
+									foreach (JsonProperty prop in skinsElem.EnumerateObject())
 									{
 										skinsDict[prop.Name] = prop.Value.GetString();
+										GD.Print($"[RealtimeLobbyReceiver] Skin item -> Key: {prop.Name}, Value: {prop.Value.GetString()}");
 									}
 								}
 
-								GD.Print($"🎨 [Realtime] プレイヤーのスキン情報を受信しました: {pId}");
+								GD.Print($"[RealtimeLobbyReceiver] Successfully received skin broadcast for player: {pId}, Total items: {skinsDict.Count}");
 								RealtimeEvents.RaisePlayerSkinReceived(pId, skinsDict);
 								break;
 							}

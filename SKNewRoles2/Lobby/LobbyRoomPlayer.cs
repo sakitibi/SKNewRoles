@@ -148,7 +148,13 @@ namespace SKNewRoles2.Lobby
         public void OnRemotePlayerSkinReceived(string playerId, Dictionary<string, string> skinPresets)
         {
             string myId = SessionManager.Instance?.CurrentSession?.User?.Id;
-            if (!string.IsNullOrEmpty(myId) && playerId == myId) return;
+            GD.Print($"[LobbyRoomPlayer] OnRemotePlayerSkinReceived triggered. TargetID: {playerId}, MyID: {myId}, SkinsCount: {skinPresets?.Count ?? 0}");
+
+            if (!string.IsNullOrEmpty(myId) && playerId == myId)
+            {
+                GD.Print("[LobbyRoomPlayer] Ignored skin broadcast from myself.");
+                return;
+            }
 
             // キャッシュに保存
             _remotePlayerSkins[playerId] = skinPresets;
@@ -157,7 +163,11 @@ namespace SKNewRoles2.Lobby
             if (otherPlayers.TryGetValue(playerId, out Node3D remotePlayerNode) && GodotObject.IsInstanceValid(remotePlayerNode))
             {
                 LobbySkinManager.ApplySkinPresets(remotePlayerNode, skinPresets);
-                GD.Print($"🎨 [LobbyRoomPlayer] リモートプレイヤー ({playerId}) のスキンを更新しました。");
+                GD.Print($"[LobbyRoomPlayer] Successfully applied skin to existing remote player: {playerId}");
+            }
+            else
+            {
+                GD.Print($"[LobbyRoomPlayer] Remote player node for ID {playerId} not found in scene yet. Cached the skin data.");
             }
         }
 
