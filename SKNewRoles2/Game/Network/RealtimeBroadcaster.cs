@@ -20,7 +20,7 @@ namespace SKNewRoles2.Game.Network
             string topic = RealtimeTopicProvider.GetCurrentTopic();
             if (string.IsNullOrEmpty(topic))
             {
-                GD.PrintErr("⚠️ [RealtimeBroadcaster] 取得したトピック名が空です！");
+                GD.PrintErr("[RealtimeBroadcaster] Error: Topic name is empty.");
                 return "realtime:public:lobbies";
             }
             return topic;
@@ -72,12 +72,12 @@ namespace SKNewRoles2.Game.Network
         {
             if (!IsReady(connection))
             {
-                GD.PrintErr("❌ [Realtime] チャンネル参加が完了していないため SendRoleAsync を送信できませんでした。");
+                GD.PrintErr("[Realtime] Error: Channel join is not completed, cannot send role.");
                 return Task.CompletedTask;
             }
 
             string currentTopic = GetTopicName();
-            GD.Print($"📡 [Realtime] 送信トピック確認: {currentTopic} (Target={targetPlayerId}, Role={role})");
+            GD.Print($"[Realtime] Sending role data: Topic={currentTopic}, Target={targetPlayerId}, Role={role}");
 
             RealtimePayload payload = new()
             {
@@ -88,7 +88,7 @@ namespace SKNewRoles2.Game.Network
             };
 
             connection.Client.SendText(JsonSerializer.Serialize(payload));
-            GD.Print($"📡 [Realtime] 役職データ送信成功: Target={targetPlayerId}, Role={role}, Faction={faction}");
+            GD.Print($"[Realtime] Role data sent successfully: Target={targetPlayerId}, Role={role}");
             return Task.CompletedTask;
         }
 
@@ -172,20 +172,35 @@ namespace SKNewRoles2.Game.Network
             return Task.CompletedTask;
         }
 
-        public static Task SendSkinAsync(RealtimeConnection connection, string playerId, Dictionary<string, string> skinPresets)
+        /// <summary>
+        /// スキン情報を送信します
+        /// </summary>
+        public static async Task SendSkinAsync(RealtimeConnection connection, string playerId, Dictionary<string, string> skinPresets)
         {
-            if (!IsReady(connection)) return Task.CompletedTask;
+            int retryCount = 0;
+            while (!IsReady(connection) && retryCount < 20)
+            {
+                await Task.Delay(500);
+                retryCount++;
+            }
 
+            if (!IsReady(connection))
+            {
+                GD.PrintErr("[RealtimeBroadcaster] Error: Failed to send skin because connection is not ready after timeout.");
+                return;
+            }
+
+            string currentTopic = GetTopicName();
             RealtimePayload payload = new()
             {
-                topic = GetTopicName(),
+                topic = currentTopic,
                 @event = "broadcast",
                 payload = new { type = "player_skin", player_id = playerId, skins = skinPresets },
                 @ref = null
             };
 
             connection.Client.SendText(JsonSerializer.Serialize(payload));
-            return Task.CompletedTask;
+            GD.Print($"[RealtimeBroadcaster] Skin data sent successfully for player: {playerId}");
         }
 
         private static bool IsReady(RealtimeConnection connection)
