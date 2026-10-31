@@ -146,6 +146,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services.Realtime
         /// </summary>
         public static void LobbySendSkinBroadcast(Dictionary<string, string> skinPresets)
         {
+            GD.Print($"LobbySendSkinBroadcast を実行 user_id: {SessionManager.Instance.CurrentSession.User.Id}");
             var client = RealtimeConnectionService.RealtimeClient;
             if (client == null || client.GetReadyState() != WebSocketPeer.State.Open)
             {
