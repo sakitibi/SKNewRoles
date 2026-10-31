@@ -12,6 +12,7 @@ namespace SKNewRoles2.Game
     {
         private Node _roleManagerCpp;
         private RealtimeConnection _connection;
+        private Dictionary assignmentResult;
 
         public uint MyRole { get; private set; } = 0;
         public uint MyFaction { get; private set; } = 0;
@@ -80,7 +81,7 @@ namespace SKNewRoles2.Game
                 RoleCountsDict,
                 RoleFactionsDict
             );
-            Dictionary assignmentResult = rawResult.AsGodotDictionary();
+            assignmentResult = rawResult.AsGodotDictionary();
 
             if (assignmentResult == null || assignmentResult.Count == 0)
             {
@@ -88,7 +89,7 @@ namespace SKNewRoles2.Game
                 return;
             }
 
-            Array<Variant> keysList = (Array<Variant>)assignmentResult.Keys;
+            Array<Variant> keysList = [..assignmentResult.Keys];
             int count = keysList.Count;
 
             for (int i = 0; i < count; i++)
