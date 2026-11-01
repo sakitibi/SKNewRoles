@@ -23,17 +23,17 @@ namespace SKNewRoles2.Game.Inventory
 
             if (_hotbarNode != null && IsInstanceValid(_hotbarNode))
             {
-                GD.Print("✅ [HotbarManager] Hotbar ノードとの連携を開始しました。");
+                GD.Print("✅ [HotbarManager] C++ Hotbar ノードとの連携を開始しました。");
 
                 if (_hotbarNode.HasSignal("slot_changed"))
                 {
-                    if (!_hotbarNode.IsConnected("slot_changed", Callable.From<ushort>(OnSlotChanged)))
-                        _hotbarNode.Connect("slot_changed", Callable.From<ushort>(OnSlotChanged));
+                    if (!_hotbarNode.IsConnected("slot_changed", Callable.From<int>(OnSlotChanged)))
+                        _hotbarNode.Connect("slot_changed", Callable.From<int>(OnSlotChanged));
                 }
                 if (_hotbarNode.HasSignal("item_changed"))
                 {
-                    if (!_hotbarNode.IsConnected("item_changed", Callable.From<int, string, ushort>(OnItemChanged)))
-                        _hotbarNode.Connect("item_changed", Callable.From<int, string, ushort>(OnItemChanged));
+                    if (!_hotbarNode.IsConnected("item_changed", Callable.From<int, string, int>(OnItemChanged)))
+                        _hotbarNode.Connect("item_changed", Callable.From<int, string, int>(OnItemChanged));
                 }
             }
             else
@@ -44,7 +44,7 @@ namespace SKNewRoles2.Game.Inventory
 
         public override void _UnhandledInput(InputEvent @event)
         {
-            for (ushort i = 0; i < 9; i++)
+            for (int i = 0; i < 9; i++)
             {
                 if (@event.IsActionPressed($"hotbar_slot_{i + 1}"))
                 {
@@ -56,7 +56,7 @@ namespace SKNewRoles2.Game.Inventory
                     }
                     else
                     {
-                        SelectSlot(i);
+                        SelectSlot((ushort)i);
                     }
                     break;
                 }
@@ -65,21 +65,11 @@ namespace SKNewRoles2.Game.Inventory
 
         public void SwapSlots(int slotA, int slotB)
         {
-            if (slotA == slotB) return;
-            if (slotA < 0 || slotA >= 9 || slotB < 0 || slotB >= 9) return;
+            if (slotA == slotB || slotA < 0 || slotA >= 9 || slotB < 0 || slotB >= 9) return;
 
             if (_hotbarNode != null && IsInstanceValid(_hotbarNode) && _hotbarNode.HasMethod("swap_slots"))
             {
                 _hotbarNode.Call("swap_slots", slotA, slotB);
-            }
-            else if (_hotbarNode != null && IsInstanceValid(_hotbarNode) &&
-                _hotbarNode.HasMethod("get_item") && _hotbarNode.HasMethod("set_item"))
-            {
-                Variant itemA = _hotbarNode.Call("get_item", slotA);
-                Variant itemB = _hotbarNode.Call("get_item", slotB);
-
-                _hotbarNode.Call("set_item", slotA, itemB);
-                _hotbarNode.Call("set_item", slotB, itemA);
             }
         }
 
@@ -95,7 +85,7 @@ namespace SKNewRoles2.Game.Inventory
 
         public void SelectSlot(ushort index)
         {
-            if (index < 0 || index >= 9) return;
+            if (index >= 9) return;
             _currentSlotIndex = index;
 
             if (_hotbarNode != null && IsInstanceValid(_hotbarNode) && _hotbarNode.HasMethod("select_slot"))
@@ -104,20 +94,20 @@ namespace SKNewRoles2.Game.Inventory
             }
         }
 
-        private void OnSlotChanged(ushort newIndex)
+        private void OnSlotChanged(int newIndex)
         {
             _currentSlotIndex = newIndex;
             _uiController?.UpdateSelectedSlot(newIndex);
             _ = SendHotbarSlotAsync(newIndex);
         }
 
-        private void OnItemChanged(int slotIndex, string itemId, ushort count)
+        private void OnItemChanged(int slotIndex, string itemId, int count)
         {
             ItemData data = _itemDatabase?.GetItem(itemId);
             Texture2D iconTexture = data?.Icon;
 
             _uiController?.UpdateSlotItem(slotIndex, iconTexture, count);
-            _ = SendHotbarItemAsync(slotIndex, itemId, count);
+            _ = SendHotbarItemAsync(slotIndex, itemId, (ushort)count);
         }
 
         private async Task SendHotbarSlotAsync(int slotIndex)

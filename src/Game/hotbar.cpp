@@ -64,7 +64,6 @@ void Hotbar::swap_slots(int slot_a, int slot_b) {
     if (slot_a == slot_b) return;
     if (slot_a < 0 || slot_a >= 9 || slot_b < 0 || slot_b >= 9) return;
 
-    // スロットの内部構造体を入れ替え
     std::swap(slots_[slot_a], slots_[slot_b]);
 
     emit_signal("item_changed", slot_a, slots_[slot_a].item_id, slots_[slot_a].count);
@@ -76,7 +75,6 @@ bool Hotbar::add_item(const String &item_id, uint16_t count) {
 
     const uint16_t max_stack = 64;
 
-    // 既存の同一アイテムのスロットへ加算
     for (int i = 0; i < 9; ++i) {
         if (slots_[i].item_id == item_id && slots_[i].count < max_stack) {
             uint16_t available_space = max_stack - slots_[i].count;
@@ -90,7 +88,6 @@ bool Hotbar::add_item(const String &item_id, uint16_t count) {
         }
     }
 
-    // 空きスロットへ配置
     for (int i = 0; i < 9; ++i) {
         if (slots_[i].item_id.is_empty()) {
             uint16_t add_amount = (count <= max_stack) ? count : max_stack;
