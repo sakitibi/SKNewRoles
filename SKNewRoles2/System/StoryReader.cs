@@ -124,7 +124,6 @@ namespace SKNewRoles2.SNRSystem
         {
             uint[] buttonClickSoundIdx = [5];
             _ = _bgmManager.PlayBgm(2.0f, buttonClickSoundIdx, false);
-            await Task.Delay(250); // クリック音を鳴らす為
             _currentPageIndex++;
             ShowCurrentPage();
         }
