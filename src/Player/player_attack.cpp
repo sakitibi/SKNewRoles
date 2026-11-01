@@ -8,7 +8,7 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 #include "../Game/health_component.h"
 #include "../Game/hotbar.h"
-#include "combat_registry.h"
+#include "../Game/combat_registry.h"
 
 using namespace godot;
 
