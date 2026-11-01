@@ -9,6 +9,7 @@ namespace SKNewRoles2.Game.Player
     {
         private PackedScene _opponentScene;
         private RealtimeConnection _connection;
+        private MainGameNetworkHandler _networkHandler;
         private readonly Dictionary<string, Node3D> _otherPlayers = [];
         private readonly Dictionary<string, int> _otherPlayerHps = [];
         private readonly Dictionary<string, Dictionary<int, string>> _otherPlayerInventories = [];
@@ -18,7 +19,12 @@ namespace SKNewRoles2.Game.Player
         private string _myUserId;
         private int _myHp = 20;
 
-        public void Initialize(PackedScene opponentScene, string myUserId, RealtimeConnection connection)
+        public void Initialize(
+            PackedScene opponentScene,
+            string myUserId,
+            RealtimeConnection connection,
+            MainGameScene mainGameScene
+        )
         {
             _opponentScene = opponentScene;
             _myUserId = myUserId;
@@ -32,6 +38,8 @@ namespace SKNewRoles2.Game.Player
                 _connection.OnHotbarItemReceived += OnOtherPlayerHotbarItemReceived;
                 _connection.OnSkinReceived += OnOtherPlayerSkinReceived;
             }
+            _networkHandler = new(mainGameScene);
+            _ = _networkHandler.SendMySkinAsync(PlayerSpawner.MySkins);
         }
 
         public void SetMyHp(int hp)

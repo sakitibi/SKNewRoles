@@ -49,7 +49,7 @@ namespace SKNewRoles2.Game
                     GD.PrintErr("⚠️ [GameInitializer] myUserId が取得できなかったか、空です。");
                 }
 
-                remotePlayerManager?.Initialize(opponentScene, myUserId, connection);
+                remotePlayerManager?.Initialize(opponentScene, myUserId, connection, scene);
 
                 if (chunkManager != null)
                 {

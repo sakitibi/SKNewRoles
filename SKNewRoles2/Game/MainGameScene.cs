@@ -13,8 +13,6 @@ namespace SKNewRoles2.Game
     {
         private Node3D _chunkManagerCpp;
         private readonly PackedScene _opponentScene = GD.Load<PackedScene>("res://Scenes/Prefabs/LobbyPlayerDummy.tscn");
-
-        private readonly PlayerSpawner _playerSpawner = new();
         private MainGamePlayerHandler _playerHandler;
         private MainGameCombatHandler _combatHandler;
         private MainGameUIHandler _uiHandler;

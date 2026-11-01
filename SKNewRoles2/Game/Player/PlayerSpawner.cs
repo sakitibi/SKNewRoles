@@ -7,6 +7,7 @@ namespace SKNewRoles2.Game.Player
 {
     public class PlayerSpawner
     {
+        public static Dictionary<string, string> MySkins { get; set; } = [];
         public static async Task<(Node3D PlayerInstance, Node HealthComponent)> SpawnAndSetupMyPlayerAsync(
             Node parent, 
             MainGameNetworkHandler networkHandler)
@@ -27,8 +28,8 @@ namespace SKNewRoles2.Game.Player
                 return (null, null);
             }
 
-            Dictionary<string, string> mySkins = LobbySkinManager.ApplySavedSkinAndGetPresets(playerInstance);
-            await networkHandler.SendMySkinAsync(mySkins);
+            MySkins = LobbySkinManager.ApplySavedSkinAndGetPresets(playerInstance);
+            await networkHandler.SendMySkinAsync(MySkins);
 
             Node healthComponent = playerInstance.GetNodeOrNull<Node>("HealthComponent");
             Node targetNode = healthComponent ?? playerInstance;
