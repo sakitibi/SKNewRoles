@@ -4,6 +4,7 @@
 #include <godot_cpp/classes/physics_ray_query_parameters3d.hpp>
 #include <godot_cpp/classes/collision_object3d.hpp>
 #include <godot_cpp/classes/node.hpp>
+#include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include "../Game/health_component.h"
 #include "../Game/hotbar.h"
@@ -45,7 +46,18 @@ Dictionary PlayerAttack::process_attack(Node3D *player_node, Camera3D *camera) {
 
     uint32_t damage = 1;
     
-    Hotbar *hotbar = Object::cast_to<Hotbar>(player_node->find_child("Hotbar", true, false));
+    Hotbar *hotbar = nullptr;
+    Node *parent = player_node->get_parent();
+    if (parent) {
+        hotbar = Object::cast_to<Hotbar>(parent->find_child("Hotbar", true, false));
+    }
+    if (!hotbar && player_node->get_tree()) {
+        Node *root = player_node->get_tree()->get_current_scene();
+        if (root) {
+            hotbar = Object::cast_to<Hotbar>(root->find_child("Hotbar", true, false));
+        }
+    }
+
     if (hotbar) {
         int selected_slot = hotbar->get_selected_slot();
         Dictionary slot_data = hotbar->get_slot_item(selected_slot);
@@ -64,7 +76,7 @@ Dictionary PlayerAttack::process_attack(Node3D *player_node, Camera3D *camera) {
             UtilityFunctions::print(vformat("[PlayerAttack] Weapon damage resolved -> Item: %s, Damage: %d", held_item, damage));
         }
     } else {
-        UtilityFunctions::push_error("[PlayerAttack] Error: Hotbar node could not be found.");
+        UtilityFunctions::push_error("[PlayerAttack] Error: Hotbar node could not be found anywhere!");
     }
 
     Dictionary result = space_state->intersect_ray(query);
