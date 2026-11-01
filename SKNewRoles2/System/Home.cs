@@ -1,4 +1,4 @@
-using System.Threading;
+using System.Threading.Tasks;
 using Godot;
 using SKNewRoles2.Game.BGM;
 
@@ -60,11 +60,11 @@ namespace SKNewRoles2.SNRSystem
             tween.TweenProperty(button, "scale", targetScale, duration);
         }
 
-        private void OnStartButtonPressed()
+        private async void OnStartButtonPressed()
         {
             uint[] buttonClickSoundIdx = [5];
             _ = _bgmManager.PlayBgm(2.0f, buttonClickSoundIdx, false);
-            Thread.Sleep(250); // クリック音を鳴らす為
+            await Task.Delay(250); // クリック音を鳴らす為
             string storyScenePath = "res://Scenes/StoryReader.tscn";
 
             Error error = GetTree().ChangeSceneToFile(storyScenePath);

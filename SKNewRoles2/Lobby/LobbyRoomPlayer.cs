@@ -154,6 +154,14 @@ namespace SKNewRoles2.Lobby
             }
 
             _ = SendMySkinResyncAsync();
+            _ = RealtimeLobbySender.LobbySendTransformBroadcastAll(
+                _myPlayerInstance.Position.X,
+                _myPlayerInstance.Position.Y,
+                _myPlayerInstance.Position.Z,
+                _myPlayerInstance.Rotation.X,
+                _myPlayerInstance.Rotation.Y,
+                _myPlayerInstance.Rotation.Z
+            );
         }
 
         /// <summary>
