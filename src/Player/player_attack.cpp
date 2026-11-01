@@ -6,7 +6,6 @@
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include "../Game/health_component.h"
-#include "../Game/hotbar.h"
 #include "../Game/combat_registry.h"
 
 using namespace godot;
@@ -44,37 +43,23 @@ Dictionary PlayerAttack::process_attack(Node3D *player_node, Camera3D *camera) {
     }
 
     uint32_t damage = 1;
-    Hotbar *hotbar = Object::cast_to<Hotbar>(player_node->get_node_or_null(NodePath("Hotbar")));
-    if (!hotbar) {
-        hotbar = Object::cast_to<Hotbar>(player_node->find_child("Hotbar", true, false));
-        if (hotbar) {
-            UtilityFunctions::print("[PlayerAttack] Hotbar found via find_child.");
-        }
-    } else {
-        UtilityFunctions::print("[PlayerAttack] Hotbar found directly.");
-    }
-
+    Node *hotbar = player_node->find_child("Hotbar", true, false);
     if (hotbar) {
-        int selected_slot = hotbar->get_selected_slot();
-        Dictionary slot_data = hotbar->get_slot_item(selected_slot);
-        UtilityFunctions::print(vformat("[PlayerAttack] Selected slot: %d, Slot data size: %d", selected_slot, slot_data.size()));
-
+        int selected_slot = hotbar->call("get_selected_slot");
+        Dictionary slot_data = hotbar->call("get_slot_item", selected_slot);
+        
         if (slot_data.has("item_id")) {
             String held_item = slot_data["item_id"];
-            UtilityFunctions::print("[PlayerAttack] Held item ID: ", held_item);
+            UtilityFunctions::print("[PlayerAttack] Successfully retrieved held item ID: ", held_item);
 
             CombatRegistry *registry = CombatRegistry::get_singleton();
             if (registry) {
                 damage = registry->get_weapon_damage(held_item);
-                UtilityFunctions::print(vformat("[PlayerAttack] Retrieved weapon damage for %s: %d", held_item, damage));
-            } else {
-                UtilityFunctions::print("[PlayerAttack] Error: CombatRegistry singleton is null.");
+                UtilityFunctions::print(vformat("[PlayerAttack] Weapon damage resolved -> Item: %s, Damage: %d", held_item, damage));
             }
-        } else {
-            UtilityFunctions::print("[PlayerAttack] Slot data does not have 'item_id'.");
         }
     } else {
-        UtilityFunctions::print("[PlayerAttack] Error: Hotbar node could not be found.");
+        UtilityFunctions::push_error("[PlayerAttack] Error: Hotbar node could not be found.");
     }
 
     Dictionary result = space_state->intersect_ray(query);
