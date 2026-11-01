@@ -27,12 +27,20 @@ corner_radius_bottom_left = 40
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0iane"]
 bg_color = Color(1, 0, 0, 1)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1fclr"]
 bg_color = Color(0.64705884, 0, 0, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hs5rb"]
 bg_color = Color(1, 0.22352941, 0.22352941, 1)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_f0tek"]
 bg_color = Color(0.70980394, 0, 0, 1)
@@ -48,12 +56,24 @@ bg_color = Color(0.8156863, 0.33333334, 1, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qbopc"]
 bg_color = Color(0, 0.6117647, 1, 1)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_oihaf"]
 bg_color = Color(0, 0.38039216, 1, 1)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_d45k3"]
 bg_color = Color(0.43529412, 1, 1, 1)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
 
 [node name="LobbySelect" type="Control" unique_id=1271688958]
 layout_mode = 3
