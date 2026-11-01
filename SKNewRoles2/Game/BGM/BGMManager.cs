@@ -14,6 +14,7 @@ namespace SKNewRoles2.Game.BGM
         private float _currentVolumeDb = 0.0f;
         private uint[] _currentCandidateIndices = null;
         private bool _isStopping = false;
+        private bool _isLoop = true;
 
         public List<string> BgmPaths { get; set; } =
         [
@@ -32,6 +33,8 @@ namespace SKNewRoles2.Game.BGM
 
         private void EnsurePlayerExists(bool isLoop)
         {
+            _isLoop = isLoop;
+
             if (_bgmPlayer == null)
             {
                 _bgmPlayer = new AudioStreamPlayer
@@ -40,22 +43,20 @@ namespace SKNewRoles2.Game.BGM
                     Bus = "Master"
                 };
                 
-                _bgmPlayer.Finished += () => OnBgmFinished(isLoop);
+                _bgmPlayer.Finished += () => _ = OnBgmFinished();
                 AddChild(_bgmPlayer);
             }
         }
 
-        private async void OnBgmFinished(bool isLoop)
+        private async Task OnBgmFinished()
         {
-            if (_isStopping || !isLoop) return;
-
             GD.Print($"🎵 [BGMManager] BGM終了。{WaitDelaySeconds}秒待機してから次の曲を再生します...");
 
             await ToSignal(GetTree().CreateTimer(WaitDelaySeconds), SceneTreeTimer.SignalName.Timeout);
 
-            if (!_isStopping && IsInsideTree())
+            if (!_isStopping && IsInsideTree() && _isLoop)
             {
-                _ = PlayBgm(_currentVolumeDb, candidates: _currentCandidateIndices, isLoop);
+                _ = PlayBgm(_currentVolumeDb, candidates: _currentCandidateIndices, _isLoop);
             }
         }
 
