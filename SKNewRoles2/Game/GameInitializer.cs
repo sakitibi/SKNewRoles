@@ -16,7 +16,9 @@ namespace SKNewRoles2.Game
             RemotePlayerManager remotePlayerManager,
             PackedScene opponentScene,
             Node3D chunkManager,
-            GameUIController uiController)
+            GameUIController uiController,
+            PlayerSpawner playerSpawner
+        )
         {
             try
             {
@@ -49,7 +51,7 @@ namespace SKNewRoles2.Game
                     GD.PrintErr("⚠️ [GameInitializer] myUserId が取得できなかったか、空です。");
                 }
 
-                remotePlayerManager?.Initialize(opponentScene, myUserId, connection, scene);
+                remotePlayerManager?.Initialize(opponentScene, myUserId, connection, scene, playerSpawner);
 
                 if (chunkManager != null)
                 {

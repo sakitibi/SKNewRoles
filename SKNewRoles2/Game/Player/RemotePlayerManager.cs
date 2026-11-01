@@ -1,5 +1,6 @@
 using Godot;
 using SKNewRoles2.Game.Network;
+using SKNewRoles2.Game.Player.Handler;
 using SKNewRoles2.Lobby;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -10,7 +11,7 @@ namespace SKNewRoles2.Game.Player
     {
         private PackedScene _opponentScene;
         private RealtimeConnection _connection;
-        private MainGameNetworkHandler _networkHandler;
+        private PlayerSkinSyncHandler _playerSkinSyncHandler;
         private readonly Dictionary<string, Node3D> _otherPlayers = [];
         private readonly Dictionary<string, int> _otherPlayerHps = [];
         private readonly Dictionary<string, Dictionary<int, string>> _otherPlayerInventories = [];
@@ -24,7 +25,8 @@ namespace SKNewRoles2.Game.Player
             PackedScene opponentScene,
             string myUserId,
             RealtimeConnection connection,
-            MainGameScene mainGameScene
+            MainGameScene mainGameScene,
+            PlayerSpawner playerSpawner
         )
         {
             _opponentScene = opponentScene;
@@ -39,14 +41,14 @@ namespace SKNewRoles2.Game.Player
                 _connection.OnHotbarItemReceived += OnOtherPlayerHotbarItemReceived;
                 _connection.OnSkinReceived += OnOtherPlayerSkinReceived;
             }
-            _networkHandler = new(mainGameScene);
+            _playerSkinSyncHandler = new(mainGameScene);
             
             // 自分のスキン送信を非同期で再送付き実行
             _ = Task.Run(async () =>
             {
                 for (int i = 0; i < 3; i++)
                 {
-                    await _networkHandler.SendMySkinAsync(PlayerSpawner.MySkins);
+                    await _playerSkinSyncHandler.SendMySkinAsync(playerSpawner.MySkins);
                     await Task.Delay(2000);
                 }
             });

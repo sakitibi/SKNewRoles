@@ -6,6 +6,7 @@ using SKNewRoles2.Game.Inventory;
 using SKNewRoles2.Game.Player;
 using SKNewRoles2.Game.BGM;
 using System.Collections.Generic;
+using SKNewRoles2.Game.Player.Handler;
 
 namespace SKNewRoles2.Game
 {
@@ -17,6 +18,9 @@ namespace SKNewRoles2.Game
         private MainGameCombatHandler _combatHandler;
         private MainGameUIHandler _uiHandler;
         private MainGameNetworkHandler _networkHandler;
+        private PlayerCombatSyncHandler _playerCombatSyncHandler;
+        private PlayerTransformSyncHandler _playerTransformSyncHandler;
+        private PlayerStatusSyncHandler _playerStatusSyncHandler;
 
         public Node3D MyPlayerInstance => _playerHandler?.MyPlayerInstance;
         public Node HealthComponent => _playerHandler?.HealthComponent;
@@ -29,6 +33,7 @@ namespace SKNewRoles2.Game
         private GameUIController _uiController;
         private GameRoleManager _roleManager;
         private HotbarManager _hotbarManager;
+        private PlayerSpawner _playerSpawner;
 
         public RealtimeConnection Connection => _connection;
         private readonly RealtimeConnection _connection = new();
@@ -50,10 +55,15 @@ namespace SKNewRoles2.Game
         {
             GD.Print("[_Ready] 開始");
 
+            _playerCombatSyncHandler = new(this);
+            _playerTransformSyncHandler = new(this);
+            _playerStatusSyncHandler = new(this);
+
             _playerHandler = new(this);
             _uiHandler = new(this);
             _networkHandler = new(this);
-            _combatHandler = new(this, _networkHandler);
+            _combatHandler = new(this, _playerCombatSyncHandler);
+            _playerSpawner = new(this);
 
             _networkHandler.RegisterEvents(_connection);
 
@@ -81,11 +91,12 @@ namespace SKNewRoles2.Game
                 _remotePlayerManager,
                 _opponentScene,
                 _chunkManagerCpp,
-                _uiController
+                _uiController,
+                _playerSpawner
             );
 
-            await _playerHandler.SpawnPlayerAsync(_networkHandler);
-            _playerHandler.SetupHungerSignal(_networkHandler);
+            await _playerHandler.SpawnPlayerAsync();
+            _playerHandler.SetupHungerSignal(_playerStatusSyncHandler);
 
             _hotbarManager = GetNodeOrNull<HotbarManager>("HotbarManager");
             _hotbarNode = GetNodeOrNull<Node>("Hotbar");
@@ -127,7 +138,7 @@ namespace SKNewRoles2.Game
             _ = _uiHandler?.UpdateHpUIFromPlayer();
             _uiHandler?.UpdateHungerUIFromPlayer();
 
-            _networkHandler?.ProcessMovementSync();
+            _playerTransformSyncHandler?.ProcessMovementSync();
         }
 
         public static string GetMyUserId()

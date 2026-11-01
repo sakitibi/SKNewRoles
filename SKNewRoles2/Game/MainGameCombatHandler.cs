@@ -1,8 +1,9 @@
 using Godot;
+using SKNewRoles2.Game.Player.Handler;
 
 namespace SKNewRoles2.Game
 {
-    public class MainGameCombatHandler(MainGameScene scene, MainGameNetworkHandler networkHandler)
+    public class MainGameCombatHandler(MainGameScene scene, PlayerCombatSyncHandler playerCombatSyncHandler)
     {
         public Camera3D camera;
         public void HandleInput(InputEvent @event)
@@ -34,7 +35,7 @@ namespace SKNewRoles2.Game
                         if (!string.IsNullOrEmpty(targetPlayerId))
                         {
                             GD.Print($"⚔️ [MainGameCombatHandler] リモートプレイヤー攻撃検知: Target={targetPlayerId}, Damage={damage}");
-                            networkHandler.OnPlayerAttackedRemote(targetPlayerId, damage);
+                            playerCombatSyncHandler.OnPlayerAttackedRemote(targetPlayerId, damage);
                         }
                     }
                 }

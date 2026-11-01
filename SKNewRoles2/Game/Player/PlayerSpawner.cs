@@ -2,15 +2,19 @@ using Godot;
 using System.Threading.Tasks;
 using SKNewRoles2.Lobby;
 using System.Collections.Generic;
+using SKNewRoles2.Game.Player.Handler;
 
 namespace SKNewRoles2.Game.Player
 {
-    public class PlayerSpawner
+    public class PlayerSpawner(MainGameScene scene)
     {
-        public static Dictionary<string, string> MySkins { get; set; } = [];
-        public static async Task<(Node3D PlayerInstance, Node HealthComponent)> SpawnAndSetupMyPlayerAsync(
-            Node parent, 
-            MainGameNetworkHandler networkHandler)
+        private readonly PlayerStatusSyncHandler _playerStatusSyncHandler = new(scene);
+        private readonly PlayerSkinSyncHandler _playerSkinSyncHandler = new(scene);
+        private readonly MainGameUIHandler _uiHandler = new(scene);
+
+        public Dictionary<string, string> MySkins { get; set; } = [];
+
+        public async Task<(Node3D PlayerInstance, Node HealthComponent)> SpawnAndSetupMyPlayerAsync(Node parent)
         {
             GodotObject cppSpawner = ClassDB.Instantiate("PlayerSpawner").AsGodotObject();
             if (cppSpawner == null)
@@ -30,14 +34,13 @@ namespace SKNewRoles2.Game.Player
 
             MySkins = LobbySkinManager.ApplySavedSkinAndGetPresets(playerInstance);
             
-            // スキン送信の再送対応付き非同期送信
             _ = Task.Run(async () =>
             {
                 int retryCount = 0;
                 while (retryCount < 5)
                 {
-                    await networkHandler.SendMySkinAsync(MySkins);
-                    await Task.Delay(1500); // 1.5秒おきに数回再送して確実に同期させる
+                    await _playerSkinSyncHandler.SendMySkinAsync(MySkins);
+                    await Task.Delay(1500);
                     retryCount++;
                 }
             });
@@ -50,12 +53,12 @@ namespace SKNewRoles2.Game.Player
             {
                 if (targetNode.HasSignal(sig))
                 {
-                    targetNode.Connect(sig, Callable.From<int, int>(networkHandler.OnMyPlayerHpChanged));
+                    targetNode.Connect(sig, Callable.From<int, int>(_playerStatusSyncHandler.OnMyPlayerHpChanged));
                     break;
                 }
             }
 
-            _ = networkHandler?.UpdateHpUIFromPlayer();
+            _ = _uiHandler.UpdateHpUIFromPlayer();
             SetPlayerPhysicsEnabled(playerInstance, false);
             
             GD.Print("[PlayerSpawner] My player successfully spawned, skin applied and sent. (Pos: 0, 100, 0)");
