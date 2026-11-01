@@ -37,7 +37,7 @@ namespace SKNewRoles2.SNRSystem
         /// <summary>
         /// ボタンにホバー時・押下時の滑らかな拡大縮小アニメーションを設定
         /// </summary>
-        private void SetupButtonAnimation(Button button)
+        internal void SetupButtonAnimation(Button button)
         {
             button.PivotOffset = button.Size / 2;
 
@@ -75,8 +75,11 @@ namespace SKNewRoles2.SNRSystem
             }
         }
 
-        private void QuitGame()
+        private async void QuitGame()
         {
+            uint[] buttonClickSoundIdx = [5];
+            _ = _bgmManager.PlayBgm(2.0f, buttonClickSoundIdx, false);
+            await Task.Delay(250); // クリック音を鳴らす為
             GetTree().Quit();
         }
     }

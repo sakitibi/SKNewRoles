@@ -1,4 +1,5 @@
 using Godot;
+using SKNewRoles2.Game.BGM;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,6 +19,7 @@ namespace SKNewRoles2.SNRSystem
         private static MemoryStream _inputStream;
         private static BrotliStream _brotliStream;
         private static MemoryStream _outputStream;
+        private readonly BGMManager _bgmManager = new();
 
         private List<string> _storyPages = [];
         private int _currentPageIndex = 0;
@@ -117,14 +119,20 @@ namespace SKNewRoles2.SNRSystem
             }
         }
 
-        private void OnNextButtonPressed()
+        private async void OnNextButtonPressed()
         {
             _currentPageIndex++;
             ShowCurrentPage();
+            uint[] buttonClickSoundIdx = [5];
+            _ = _bgmManager.PlayBgm(2.0f, buttonClickSoundIdx, false);
+            await Task.Delay(250); // クリック音を鳴らす為
         }
 
-        private void OnSkipButtonPressed()
+        private async void OnSkipButtonPressed()
         {
+            uint[] buttonClickSoundIdx = [5];
+            _ = _bgmManager.PlayBgm(2.0f, buttonClickSoundIdx, false);
+            await Task.Delay(250); // クリック音を鳴らす為
             ProceedToLobbySelect();
         }
 

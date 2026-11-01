@@ -25,6 +25,20 @@ corner_radius_top_right = 40
 corner_radius_bottom_right = 40
 corner_radius_bottom_left = 40
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_h2smu"]
+bg_color = Color(0.6, 0.6, 0.6, 0.1254902)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_flbh5"]
+bg_color = Color(0.6, 0.6, 0.6, 0.1254902)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0iane"]
 bg_color = Color(1, 0, 0, 1)
 corner_radius_top_left = 40
@@ -32,7 +46,7 @@ corner_radius_top_right = 40
 corner_radius_bottom_right = 40
 corner_radius_bottom_left = 40
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1fclr"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tleu7"]
 bg_color = Color(0.64705884, 0, 0, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hs5rb"]
@@ -42,17 +56,46 @@ corner_radius_top_right = 40
 corner_radius_bottom_right = 40
 corner_radius_bottom_left = 40
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_d365a"]
+bg_color = Color(0.6, 0.6, 0.6, 0.1254902)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_w2toh"]
+bg_color = Color(0.6, 0.6, 0.6, 0.1254902)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1fclr"]
+bg_color = Color(0.64705884, 0, 0, 1)
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_f0tek"]
 bg_color = Color(0.70980394, 0, 0, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1dar7"]
 bg_color = Color(0.54901963, 0, 0.85882354, 1)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3sqh0"]
 bg_color = Color(0.33333334, 0.09803922, 0.67058825, 1)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lbo2f"]
 bg_color = Color(0.8156863, 0.33333334, 1, 1)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qbopc"]
 bg_color = Color(0, 0.6117647, 1, 1)
@@ -107,6 +150,8 @@ theme_override_font_sizes/font_size = 40
 theme_override_styles/normal = SubResource("StyleBoxFlat_jrcml")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_411oe")
 theme_override_styles/hover = SubResource("StyleBoxFlat_lceui")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_h2smu")
+theme_override_styles/disabled_mirrored = SubResource("StyleBoxFlat_flbh5")
 text = "ログイン"
 
 [node name="CreateRoomButton" type="Button" parent="MarginContainer/VBoxContainer/LobbySelectPanel" unique_id=199705501]
@@ -147,9 +192,10 @@ offset_transform_enabled = true
 theme_override_fonts/font = ExtResource("1_4a7xb")
 theme_override_font_sizes/font_size = 40
 theme_override_styles/normal = SubResource("StyleBoxFlat_0iane")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_1fclr")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_tleu7")
 theme_override_styles/hover = SubResource("StyleBoxFlat_hs5rb")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_f0tek")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_d365a")
+theme_override_styles/disabled_mirrored = SubResource("StyleBoxFlat_w2toh")
 text = "ログアウト
 "
 
