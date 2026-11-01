@@ -7,7 +7,7 @@
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include "../Game/health_component.h"
-#include "hotbar.h"
+#include "../Game/hotbar.h"
 #include "combat_registry.h"
 
 using namespace godot;
