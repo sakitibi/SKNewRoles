@@ -42,7 +42,6 @@ namespace SKNewRoles2.Game
         public Dictionary<string, ushort> GrantItemDic { get; set; } = new() {
             {"iron_axe", 1},
             {"iron_pickaxe", 1},
-            {"iron_sword", 1}
         };
 
         private readonly uint[] BGMList = [0, 1];
@@ -51,26 +50,26 @@ namespace SKNewRoles2.Game
         {
             GD.Print("[_Ready] 開始");
 
-            _playerHandler = new MainGamePlayerHandler(this);
-            _uiHandler = new MainGameUIHandler(this);
-            _networkHandler = new MainGameNetworkHandler(this);
-            _combatHandler = new MainGameCombatHandler(this, _networkHandler);
+            _playerHandler = new(this);
+            _uiHandler = new(this);
+            _networkHandler = new(this);
+            _combatHandler = new(this, _networkHandler);
 
             _networkHandler.RegisterEvents(_connection);
 
-            _bgmManager = new BGMManager();
+            _bgmManager = new();
             AddChild(_bgmManager);
 
-            _uiController = new GameUIController();
+            _uiController = new();
             AddChild(_uiController);
             await _uiController.Initialize(this);
             _uiController.SetFpsLabelPathToHud("FPSText");
             _uiController.SetLabelPathToHud("PositionText");
 
-            _roleManager = new GameRoleManager();
+            _roleManager = new();
             AddChild(_roleManager);
 
-            _remotePlayerManager = new RemotePlayerManager();
+            _remotePlayerManager = new();
             AddChild(_remotePlayerManager);
 
             _chunkManagerCpp = GetNode<Node3D>("ChunkManager");

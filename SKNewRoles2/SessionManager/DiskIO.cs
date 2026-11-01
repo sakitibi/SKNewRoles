@@ -4,6 +4,7 @@ using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using SKNewRoles2.SessionManagerSystem.Services;
+using System.Threading.Tasks;
 
 namespace SKNewRoles2.SessionManagerSystem
 {
@@ -40,7 +41,7 @@ namespace SKNewRoles2.SessionManagerSystem
             }
         }
 
-        private void LoadSessionFromDisk()
+        private async Task LoadSessionFromDisk()
         {
             if (!File.Exists(TokenFilePath))
             {
@@ -51,7 +52,7 @@ namespace SKNewRoles2.SessionManagerSystem
             try
             {
                 string jsonText = File.ReadAllText(TokenFilePath);
-                var session = JsonSerializer.Deserialize<SessionData>(jsonText);
+                SessionData session = JsonSerializer.Deserialize<SessionData>(jsonText);
 
                 if (session != null && !string.IsNullOrEmpty(session.AccessToken))
                 {
@@ -59,7 +60,7 @@ namespace SKNewRoles2.SessionManagerSystem
                     string email = session.User?.Email ?? $"ID: {session.User?.Id ?? "Unknown"}";
                     GD.Print($"✨ セッションファイルの読み込みに成功！自動ログインしました: {email}");
                     
-                    UserInfoService.StartUserInfoSync();
+                    await UserInfoService.StartUserInfoSync();
                 }
             }
             catch (Exception ex)

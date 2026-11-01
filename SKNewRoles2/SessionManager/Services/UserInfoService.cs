@@ -11,7 +11,7 @@ namespace SKNewRoles2.SessionManagerSystem.Services
         /// <summary>
         /// 安全なタイミングでユーザー情報の同期を開始します。
         /// </summary>
-        public static void StartUserInfoSync()
+        public static async Task StartUserInfoSync()
         {
             SessionManager manager = SessionManager.Instance;
             if (manager == null) return;
@@ -36,7 +36,7 @@ namespace SKNewRoles2.SessionManagerSystem.Services
         /// </summary>
         public static async Task<bool> FetchUserInfoAsync()
         {
-            var manager = SessionManager.Instance;
+            SessionManager manager = SessionManager.Instance;
 
             if (manager == null || manager.CurrentSession == null || string.IsNullOrEmpty(manager.CurrentSession.AccessToken))
             {
@@ -72,7 +72,7 @@ namespace SKNewRoles2.SessionManagerSystem.Services
                 return false;
             }
 
-            var (res, code, bodyData) = await tcs.Task;
+            (long res, long code, byte[] bodyData) = await tcs.Task;
             httpRequest.QueueFree();
 
             if (res != (long)HttpRequest.Result.Success)

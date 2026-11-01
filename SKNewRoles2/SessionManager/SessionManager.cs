@@ -68,7 +68,7 @@ namespace SKNewRoles2.SessionManagerSystem
                     return _instance;
                 }
 
-                var mainLoop = Engine.GetMainLoop();
+                MainLoop mainLoop = Engine.GetMainLoop();
                 if (mainLoop is SceneTree tree)
                 {
                     Node node = tree.Root.GetNodeOrNull("SessionManager");
@@ -93,9 +93,6 @@ namespace SKNewRoles2.SessionManagerSystem
             }
         }
 
-        // ==========================================
-        // 3. ライフサイクル
-        // ==========================================
         public override void _Ready()
         {
             if (_instance == null)
@@ -108,14 +105,14 @@ namespace SKNewRoles2.SessionManagerSystem
                 return;
             }
 
-            LoadSessionFromDisk();
+            _ = LoadSessionFromDisk();
         }
 
         private static void FetchConfigFromCpp()
         {
             if (ClassDB.ClassExists("ConfigManager"))
             {
-                using var configObj = ClassDB.Instantiate("ConfigManager").As<Node>();
+                using Node configObj = ClassDB.Instantiate("ConfigManager").As<Node>();
                 if (configObj != null)
                 {
                     _cachedSupabaseUrl = configObj.Call("get_supabase_url").AsString();
@@ -134,7 +131,7 @@ namespace SKNewRoles2.SessionManagerSystem
             GD.Print($"👤 [MOD] セッションがセットされました: {email}");
             
             SaveSessionToDisk();
-            UserInfoService.StartUserInfoSync();
+            _ = UserInfoService.StartUserInfoSync();
         }
 
         public void ClearSession()
