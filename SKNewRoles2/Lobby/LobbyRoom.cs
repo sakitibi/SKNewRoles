@@ -14,12 +14,15 @@ namespace SKNewRoles2.Lobby
         internal Button StartGameButton;
 
         internal Dictionary<string, Node3D> _otherPlayers = [];
+        private readonly Dictionary<string, Dictionary<string, string>> _remotePlayerSkins = [];
 
         private PackedScene _playerPrefab;
         private PackedScene _dummyPlayerPrefab;
-        private LobbyRoomPlayer _roomPlayer;
-        private RoomUI _roomUIInstance;
+        private LobbyMyPlayerManager _myPlayerManager;
+        private LobbyRemotePlayerManager _remotePlayerManager;
+        private LobbyPlayerSkinSyncHandler _skinSyncHandler;
 
+        private RoomUI _roomUIInstance;
         private bool _isTransitioning = false;
         private readonly BGMManager _bgmManager = new();
 
@@ -70,15 +73,16 @@ namespace SKNewRoles2.Lobby
                 ? GD.Load<PackedScene>("res://Scenes/Prefabs/LobbyPlayerDummy.tscn")
                 : _playerPrefab;
 
-            // 独立クラスのインスタンス化
-            _roomPlayer = new LobbyRoomPlayer(this, _playerPrefab, _dummyPlayerPrefab, _otherPlayers);
+            _myPlayerManager = new LobbyMyPlayerManager(this, _playerPrefab);
+            _remotePlayerManager = new LobbyRemotePlayerManager(this, _dummyPlayerPrefab, _otherPlayers);
+            _skinSyncHandler = new LobbyPlayerSkinSyncHandler(_remotePlayerSkins, _otherPlayers);
 
-            // イベントの購読登録（独立クラスのメソッドを割り当て）
+            // イベントの購読登録
             RealtimeEvents.OnGameStartReceived += TransitionToGameStage;
             RealtimeEvents.OnPlayerLeaveReceived += OnRemotePlayerLeaveReceived;
-            RealtimeEvents.OnPlayerSkinReceived += _roomPlayer.OnRemotePlayerSkinReceived;
+            RealtimeEvents.OnPlayerSkinReceived += _skinSyncHandler.OnRemotePlayerSkinReceived;
 
-            await LobbyRealtimeHelper.RegisterListeners(OnRoomSettingsChangedFromServer, _roomPlayer.OnRemotePlayerTransformReceived);
+            await LobbyRealtimeHelper.RegisterListeners(OnRoomSettingsChangedFromServer, OnRemotePlayerTransformReceived);
 
             _roomUIInstance.UpdateRoomInfoUI();
             _roomUIInstance.UpdatePrivacyButtonVisual(SessionManager.Instance.IsPublic);
@@ -86,7 +90,7 @@ namespace SKNewRoles2.Lobby
             // マテリアルの Triplanar 自動適用
             LobbyMeshUtility.ApplyTriplanarToAllMeshes(this);
 
-            await _roomPlayer.SpawnPlayerPrefab(GrassBlockColor);
+            await _myPlayerManager.SpawnAndSetupPlayerAsync(GrassBlockColor);
 
             _bgmManager?.StopBgm();
         }
@@ -95,6 +99,23 @@ namespace SKNewRoles2.Lobby
         {
             if (_isTransitioning || !IsInstanceValid(this) || !IsInsideTree()) return;
             _roomUIInstance.OnRoomSettingsChangedFromServer();
+        }
+
+        // ▼ 欠落していた OnRemotePlayerTransformReceived メソッドを追加・修正
+        private void OnRemotePlayerTransformReceived(string playerId, float px, float py, float pz, float rx, float ry, float rz)
+        {
+            _remotePlayerManager.HandleTransformReceived(
+                playerId, px, py, pz, rx, ry, rz, 
+                async (id, x, y, z, rxVal, ryVal, rzVal) =>
+                {
+                    await _remotePlayerManager.SpawnRemotePlayerAsync(
+                        id, x, y, z, rxVal, ryVal, rzVal, 
+                        _remotePlayerSkins, 
+                        _myPlayerManager?.MyPlayerInstance
+                    );
+                    _ = LobbyPlayerSkinSyncHandler.SendMySkinResyncAsync(_myPlayerManager?.MyPlayerInstance);
+                }
+            );
         }
 
         private void OnRemotePlayerLeaveReceived(string playerId)
@@ -128,12 +149,15 @@ namespace SKNewRoles2.Lobby
         {
             RealtimeEvents.OnGameStartReceived -= TransitionToGameStage;
             RealtimeEvents.OnPlayerLeaveReceived -= OnRemotePlayerLeaveReceived;
-            if (_roomPlayer != null)
+            
+            if (_skinSyncHandler != null)
             {
-                RealtimeEvents.OnPlayerSkinReceived -= _roomPlayer.OnRemotePlayerSkinReceived;
+                RealtimeEvents.OnPlayerSkinReceived -= _skinSyncHandler.OnRemotePlayerSkinReceived;
             }
-            await LobbyRealtimeHelper.UnregisterListeners(OnRoomSettingsChangedFromServer, _roomPlayer != null ? _roomPlayer.OnRemotePlayerTransformReceived : null);
+
+            await LobbyRealtimeHelper.UnregisterListeners(OnRoomSettingsChangedFromServer, OnRemotePlayerTransformReceived);
             _otherPlayers.Clear();
+            _remotePlayerSkins.Clear();
         }
 
         public override void _ExitTree()
