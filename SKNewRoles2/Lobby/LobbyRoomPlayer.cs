@@ -103,14 +103,14 @@ namespace SKNewRoles2.Lobby
             }
             else
             {
-                SpawnRemotePlayerAll(playerId, px, py, pz, rx, ry, rz);
+                _ = SpawnRemotePlayerAll(playerId, px, py, pz, rx, ry, rz);
             }
         }
 
         /// <summary>
         /// 他人のキャラクター（ダミー）を動的にインスタンス化する安全なメソッド
         /// </summary>
-        private void SpawnRemotePlayerAll(string playerId, float px, float py, float pz, float rx, float ry, float rz)
+        private async Task SpawnRemotePlayerAll(string playerId, float px, float py, float pz, float rx, float ry, float rz)
         {
             if (dummyPlayerPrefab == null)
             {
@@ -172,7 +172,7 @@ namespace SKNewRoles2.Lobby
             await Task.Delay(1000); // プレハブの生成と同期が落ち着くのを1秒待つ
             if (_myPlayerInstance != null && GodotObject.IsInstanceValid(_myPlayerInstance))
             {
-                var mySkins = LobbySkinManager.ApplySavedSkinAndGetPresets(_myPlayerInstance);
+                Dictionary<string, string> mySkins = LobbySkinManager.ApplySavedSkinAndGetPresets(_myPlayerInstance);
                 await RealtimeLobbySender.LobbySendSkinBroadcast(mySkins);
                 GD.Print("[LobbyRoomPlayer] Resent my skin broadcast to sync with newly detected player.");
             }
