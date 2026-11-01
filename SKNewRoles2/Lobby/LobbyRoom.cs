@@ -101,7 +101,6 @@ namespace SKNewRoles2.Lobby
             _roomUIInstance.OnRoomSettingsChangedFromServer();
         }
 
-        // ▼ 欠落していた OnRemotePlayerTransformReceived メソッドを追加・修正
         private void OnRemotePlayerTransformReceived(string playerId, float px, float py, float pz, float rx, float ry, float rz)
         {
             _remotePlayerManager.HandleTransformReceived(
