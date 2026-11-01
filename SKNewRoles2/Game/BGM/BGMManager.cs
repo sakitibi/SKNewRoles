@@ -130,7 +130,7 @@ namespace SKNewRoles2.Game.BGM
             _bgmPlayer.VolumeDb = volumeDb;
             _bgmPlayer.Play();
 
-            GD.Print($"🎵 [BGMManager] BGM再生開始: {selectedPath} (Index: {selectedIndex})");
+            GD.Print($"🎵 [BGMManager] BGM再生開始: {selectedPath} (Index: {selectedIndex}) (Loop: {isLoop})");
         }
 
         public void StopBgm()
