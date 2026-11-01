@@ -12,7 +12,7 @@ namespace godot {
         GDCLASS(CombatRegistry, Object)
 
         private:
-            std::unordered_map<std::string, uint32_t> weapon_damages_;
+            static std::unordered_map<std::string, uint32_t> weapon_damages_;
             static CombatRegistry *singleton_;
 
         protected:
@@ -26,5 +26,8 @@ namespace godot {
 
             void register_weapon_damage(const String &item_id, uint32_t damage);
             uint32_t get_weapon_damage(const String &item_id) const;
+
+            static void add_weapon(const std::string &item_id, uint32_t damage);
+            static uint32_t get_damage(const std::string &item_id);
     };
 }

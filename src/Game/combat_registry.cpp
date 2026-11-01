@@ -5,13 +5,13 @@ using namespace godot;
 
 CombatRegistry *CombatRegistry::singleton_ = nullptr;
 
+// 静的マップの初期化
+std::unordered_map<std::string, uint32_t> CombatRegistry::weapon_damages_ = {
+    {"iron_sword", 6},
+};
+
 CombatRegistry::CombatRegistry() {
-    if (singleton_ == nullptr) {
-        singleton_ = this;
-    }
-    // デフォルトのダメージ設定を確実に登録
-    weapon_damages_["iron_sword"] = 6;
-    UtilityFunctions::print("[CombatRegistry] ⚔️ CombatRegistry が初期化され、iron_sword = 6 が登録されました。");
+    singleton_ = this;
 }
 
 CombatRegistry::~CombatRegistry() {
@@ -31,19 +31,23 @@ void CombatRegistry::_bind_methods() {
 
 void CombatRegistry::register_weapon_damage(const String &item_id, uint32_t damage) {
     std::string id = item_id.utf8().get_data();
-    weapon_damages_[id] = damage;
-    UtilityFunctions::print(vformat("[CombatRegistry] 武器ダメージ登録: %s = %d", item_id, damage));
+    add_weapon(id, damage);
+    UtilityFunctions::print(vformat("[CombatRegistry] 🔧 武器ダメージ動的登録: %s = %d", item_id, damage));
 }
 
 uint32_t CombatRegistry::get_weapon_damage(const String &item_id) const {
     std::string id = item_id.utf8().get_data();
-    
-    auto it = weapon_damages_.find(id);
+    return get_damage(id);
+}
+
+void CombatRegistry::add_weapon(const std::string &item_id, uint32_t damage) {
+    weapon_damages_[item_id] = damage;
+}
+
+uint32_t CombatRegistry::get_damage(const std::string &item_id) {
+    auto it = weapon_damages_.find(item_id);
     if (it != weapon_damages_.end()) {
-        UtilityFunctions::print(vformat("[CombatRegistry] 🔍 武器ダメージ取得: %s -> %d", item_id, it->second));
         return it->second;
     }
-
-    UtilityFunctions::print(vformat("[CombatRegistry] ⚠️ 未登録の武器ID '%s' のため、デフォルトダメージ 1 を返します。", item_id));
     return 1;
 }
