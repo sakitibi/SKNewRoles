@@ -15,8 +15,12 @@ void PlayerAttack::_bind_methods() {
     ClassDB::bind_method(D_METHOD("process_attack", "player_node", "camera"), &PlayerAttack::process_attack);
 }
 
-String PlayerAttack::process_attack(Node3D *player_node, Camera3D *camera) {
-    if (!player_node || !camera) return "";
+Dictionary PlayerAttack::process_attack(Node3D *player_node, Camera3D *camera) {
+    Dictionary result_dict;
+    result_dict["target_player_id"] = "";
+    result_dict["damage"] = 1;
+
+    if (!player_node || !camera) return result_dict;
 
     Transform3D cam_transform = camera->get_global_transform();
     Vector3 origin = cam_transform.origin;
@@ -24,10 +28,10 @@ String PlayerAttack::process_attack(Node3D *player_node, Camera3D *camera) {
     Vector3 target = origin + forward * 3.0f;
 
     Ref<World3D> world = player_node->get_world_3d();
-    if (!world.is_valid()) return "";
+    if (!world.is_valid()) return result_dict;
 
     PhysicsDirectSpaceState3D *space_state = world->get_direct_space_state();
-    if (!space_state) return "";
+    if (!space_state) return result_dict;
 
     Ref<PhysicsRayQueryParameters3D> query = PhysicsRayQueryParameters3D::create(origin, target);
     query->set_collide_with_areas(true);
@@ -39,6 +43,26 @@ String PlayerAttack::process_attack(Node3D *player_node, Camera3D *camera) {
         query->set_exclude(exclude_array);
     }
 
+    // 共通の武器ダメージ計算ロジック
+    uint32_t damage = 1;
+    Hotbar *hotbar = Object::cast_to<Hotbar>(player_node->get_node_or_null(NodePath("Hotbar")));
+    if (!hotbar) {
+        hotbar = Object::cast_to<Hotbar>(player_node->find_child("Hotbar", true, false));
+    }
+
+    if (hotbar) {
+        int selected_slot = hotbar->get_selected_slot();
+        Dictionary slot_data = hotbar->get_slot_item(selected_slot);
+        if (slot_data.has("item_id")) {
+            String held_item = slot_data["item_id"];
+            
+            CombatRegistry *registry = CombatRegistry::get_singleton();
+            if (registry) {
+                damage = registry->get_weapon_damage(held_item);
+            }
+        }
+    }
+
     Dictionary result = space_state->intersect_ray(query);
     if (!result.is_empty()) {
         Node *hit_node = Object::cast_to<Node>(result["collider"]);
@@ -47,30 +71,10 @@ String PlayerAttack::process_attack(Node3D *player_node, Camera3D *camera) {
 
             HealthComponent *health = Object::cast_to<HealthComponent>(hit_node->get_node_or_null(NodePath("HealthComponent")));
             if (health) {
-                uint32_t damage = 1; // デフォルトダメージ
-
-                // ホットバーから現在手に持っているアイテムを取得
-                Hotbar *hotbar = Object::cast_to<Hotbar>(player_node->get_node_or_null(NodePath("Hotbar")));
-                if (!hotbar) {
-                    hotbar = Object::cast_to<Hotbar>(player_node->find_child("Hotbar", true, false));
-                }
-
-                if (hotbar) {
-                    int selected_slot = hotbar->get_selected_slot();
-                    Dictionary slot_data = hotbar->get_slot_item(selected_slot);
-                    if (slot_data.has("item_id")) {
-                        String held_item = slot_data["item_id"];
-                        
-                        CombatRegistry *registry = CombatRegistry::get_singleton();
-                        if (registry) {
-                            damage = registry->get_weapon_damage(held_item);
-                        }
-                    }
-                }
-
+                // 通常のオブジェクトやモブへのダメージ適用
                 health->take_damage(damage);
                 UtilityFunctions::print(vformat("[PlayerAttack] You dealt %d damage to the target!", damage));
-                return "";
+                return result_dict;
             }
             else {
                 Node *current = hit_node;
@@ -85,8 +89,10 @@ String PlayerAttack::process_attack(Node3D *player_node, Camera3D *camera) {
                 }
 
                 if (!target_player_id.is_empty()) {
-                    UtilityFunctions::print("[PlayerAttack] Hit remote player ID: ", target_player_id);
-                    return target_player_id;
+                    UtilityFunctions::print("[PlayerAttack] Hit remote player ID: ", target_player_id, " with damage: ", damage);
+                    result_dict["target_player_id"] = target_player_id;
+                    result_dict["damage"] = (int)damage;
+                    return result_dict;
                 } else {
                     UtilityFunctions::print("[PlayerAttack] Hit an object, but player_id metadata was not found.");
                 }
@@ -96,5 +102,5 @@ String PlayerAttack::process_attack(Node3D *player_node, Camera3D *camera) {
         UtilityFunctions::print("[PlayerAttack] There were no targets within range.");
     }
 
-    return "";
+    return result_dict;
 }

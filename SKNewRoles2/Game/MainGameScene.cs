@@ -43,7 +43,8 @@ namespace SKNewRoles2.Game
         public int MaxHunger { get; set; } = 20;
         public Dictionary<string, ushort> GrantItemDic { get; set; } = new() {
             {"iron_axe", 1},
-            {"iron_pickaxe", 1}
+            {"iron_pickaxe", 1},
+            {"iron_sword", 1}
         };
 
         private readonly uint[] BGMList = [0, 1];

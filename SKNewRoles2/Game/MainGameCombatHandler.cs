@@ -24,14 +24,18 @@ namespace SKNewRoles2.Game
             {
                 using (playerAttack)
                 {
-                    Variant targetIdVar = playerAttack.Call("process_attack", scene.MyPlayerInstance, camera);
-                    string targetPlayerId = targetIdVar.AsString();
-
-                    if (!string.IsNullOrEmpty(targetPlayerId))
+                    Variant resultVar = playerAttack.Call("process_attack", scene.MyPlayerInstance, camera);
+                    if (resultVar.VariantType == Variant.Type.Dictionary)
                     {
-                        uint damage = 1;
-                        GD.Print($"⚔️ [MainGameCombatHandler] リモートプレイヤー攻撃検知: Target={targetPlayerId}");
-                        networkHandler.OnPlayerAttackedRemote(targetPlayerId, damage);
+                        Godot.Collections.Dictionary resultDict = resultVar.AsGodotDictionary();
+                        string targetPlayerId = resultDict.ContainsKey("target_player_id") ? resultDict["target_player_id"].AsString() : "";
+                        uint damage = resultDict.ContainsKey("damage") ? resultDict["damage"].AsUInt32() : 1;
+
+                        if (!string.IsNullOrEmpty(targetPlayerId))
+                        {
+                            GD.Print($"⚔️ [MainGameCombatHandler] リモートプレイヤー攻撃検知: Target={targetPlayerId}, Damage={damage}");
+                            networkHandler.OnPlayerAttackedRemote(targetPlayerId, damage);
+                        }
                     }
                 }
             }
