@@ -16,10 +16,10 @@ namespace SKNewRoles2.SNRSystem
         private RichTextLabel _storyLabel;
         private Button _nextButton;
         private Button _skipButton;
+        private BGMManager _bgmManager;
         private static MemoryStream _inputStream;
         private static BrotliStream _brotliStream;
         private static MemoryStream _outputStream;
-        private readonly BGMManager _bgmManager = new();
 
         private List<string> _storyPages = [];
         private int _currentPageIndex = 0;
@@ -32,6 +32,7 @@ namespace SKNewRoles2.SNRSystem
             _storyLabel = GetNode<RichTextLabel>("MarginContainer/VBoxContainer/StoryPanel/MarginContainer/StoryLabel");
             _nextButton = GetNode<Button>("MarginContainer/VBoxContainer/ButtonContainer/NextButton");
             _skipButton = GetNode<Button>("MarginContainer/VBoxContainer/ButtonContainer/SkipButton");
+            _bgmManager = GetNode<BGMManager>("BGMManager");
 
             _nextButton.Pressed += OnNextButtonPressed;
             _skipButton.Pressed += OnSkipButtonPressed;
@@ -121,11 +122,11 @@ namespace SKNewRoles2.SNRSystem
 
         private async void OnNextButtonPressed()
         {
-            _currentPageIndex++;
-            ShowCurrentPage();
             uint[] buttonClickSoundIdx = [5];
             _ = _bgmManager.PlayBgm(2.0f, buttonClickSoundIdx, false);
             await Task.Delay(250); // クリック音を鳴らす為
+            _currentPageIndex++;
+            ShowCurrentPage();
         }
 
         private async void OnSkipButtonPressed()

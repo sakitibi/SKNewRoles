@@ -1,8 +1,9 @@
 [gd_scene format=3 uid="uid://ck1y7dmff0gd"]
 
-[ext_resource type="Script" uid="uid://casib2a8n3k3e" path="res://SKNewRoles2/System/StoryReader.cs" id="1_story_reader"]
-[ext_resource type="FontFile" uid="uid://br5t7n57fruc7" path="res:///Fonts/UDDigiKyokashoProN-Regular.ttf" id="2_27n8y"]
-[ext_resource type="FontFile" uid="uid://bcuxsq3rxn1b4" path="res:///Fonts/UDDigiKyokashoProN-Bold.ttf" id="3_fc8g7"]
+[ext_resource type="Script" uid="uid://d15r8i6g3llyr" path="res://SKNewRoles2/System/StoryReader.cs" id="1_story_reader"]
+[ext_resource type="FontFile" uid="uid://br5t7n57fruc7" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="2_27n8y"]
+[ext_resource type="FontFile" uid="uid://bcuxsq3rxn1b4" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="3_fc8g7"]
+[ext_resource type="Script" uid="uid://c3no22e8pac6a" path="res://SKNewRoles2/Game/BGM/BGMManager.cs" id="4_fc8g7"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0iane"]
 bg_color = Color(0, 0.6754706, 0.7593185, 1)
@@ -121,3 +122,6 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_27n8y")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_fc8g7")
 theme_override_styles/hover = SubResource("StyleBoxFlat_cy6aj")
 text = "次へ"
+
+[node name="BGMManager" type="Node" parent="." unique_id=899908239]
+script = ExtResource("4_fc8g7")
