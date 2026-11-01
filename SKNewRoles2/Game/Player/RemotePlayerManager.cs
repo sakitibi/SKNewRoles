@@ -2,6 +2,7 @@ using Godot;
 using SKNewRoles2.Game.Network;
 using SKNewRoles2.Lobby;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SKNewRoles2.Game.Player
 {
@@ -39,7 +40,16 @@ namespace SKNewRoles2.Game.Player
                 _connection.OnSkinReceived += OnOtherPlayerSkinReceived;
             }
             _networkHandler = new(mainGameScene);
-            _ = _networkHandler.SendMySkinAsync(PlayerSpawner.MySkins);
+            
+            // 自分のスキン送信を非同期で再送付き実行
+            _ = Task.Run(async () =>
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    await _networkHandler.SendMySkinAsync(PlayerSpawner.MySkins);
+                    await Task.Delay(2000);
+                }
+            });
         }
 
         public void SetMyHp(int hp)
@@ -130,17 +140,12 @@ namespace SKNewRoles2.Game.Player
             RefreshRemotePlayerHandItem(senderId);
         }
 
-        /// <summary>
-        /// 他プレイヤーからスキン情報を受信した際の処理
-        /// </summary>
         private void OnOtherPlayerSkinReceived(string senderId, Dictionary<string, string> skinPresets)
         {
             if (senderId == _myUserId) return;
 
-            // キャッシュに保存
             _otherPlayerSkins[senderId] = skinPresets;
 
-            // すでにプレイヤーインスタンスが存在していれば、すぐにスキンを適用
             if (_otherPlayers.TryGetValue(senderId, out Node3D remotePlayer) && IsInstanceValid(remotePlayer))
             {
                 LobbySkinManager.ApplySkinPresets(remotePlayer, skinPresets);

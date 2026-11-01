@@ -29,7 +29,18 @@ namespace SKNewRoles2.Game.Player
             }
 
             MySkins = LobbySkinManager.ApplySavedSkinAndGetPresets(playerInstance);
-            await networkHandler.SendMySkinAsync(MySkins);
+            
+            // スキン送信の再送対応付き非同期送信
+            _ = Task.Run(async () =>
+            {
+                int retryCount = 0;
+                while (retryCount < 5)
+                {
+                    await networkHandler.SendMySkinAsync(MySkins);
+                    await Task.Delay(1500); // 1.5秒おきに数回再送して確実に同期させる
+                    retryCount++;
+                }
+            });
 
             Node healthComponent = playerInstance.GetNodeOrNull<Node>("HealthComponent");
             Node targetNode = healthComponent ?? playerInstance;
