@@ -16,6 +16,7 @@ namespace SKNewRoles2.Game.Network
         private bool _disposed = false;
 
         public WebSocketPeer Client => _cppConnection?.Call("get_client").As<WebSocketPeer>();
+        public GodotObject CppObject => _cppConnection;
 
         public bool IsJoinedChannel
         {

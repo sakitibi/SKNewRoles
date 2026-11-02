@@ -24,13 +24,16 @@ RealtimeBroadcaster::RealtimeBroadcaster() {
     _last_send_tick = 0;
 }
 
-bool RealtimeBroadcaster::is_ready(RealtimeConnection* connection) {
+bool RealtimeBroadcaster::is_ready(Object* p_connection) {
+    if (p_connection == nullptr) return false;
+    RealtimeConnection* connection = Object::cast_to<RealtimeConnection>(p_connection);
     if (connection == nullptr) return false;
     return connection->is_ready_to_broadcast();
 }
 
-void RealtimeBroadcaster::send_transform(RealtimeConnection* connection, const String& topic, const String& sender_id, float px, float py, float pz, float rx, float ry, float rz) {
-    if (!is_ready(connection)) return;
+void RealtimeBroadcaster::send_transform(Object* p_connection, const String& topic, const String& sender_id, float px, float py, float pz, float rx, float ry, float rz) {
+    if (!is_ready(p_connection)) return;
+    RealtimeConnection* connection = Object::cast_to<RealtimeConnection>(p_connection);
 
     uint64_t current_tick = Time::get_singleton()->get_ticks_msec();
     if (current_tick - _last_send_tick < SEND_INTERVAL_MS) {
@@ -70,11 +73,12 @@ void RealtimeBroadcaster::send_transform(RealtimeConnection* connection, const S
     connection->send_text(JSON::stringify(payload));
 }
 
-void RealtimeBroadcaster::send_role(RealtimeConnection* connection, const String& topic, const String& target_player_id, uint32_t role, uint32_t faction) {
-    if (!is_ready(connection)) {
+void RealtimeBroadcaster::send_role(Object* p_connection, const String& topic, const String& target_player_id, uint32_t role, uint32_t faction) {
+    if (!is_ready(p_connection)) {
         UtilityFunctions::push_error("[RealtimeBroadcaster] Error: Channel join is not completed, cannot send role.");
         return;
     }
+    RealtimeConnection* connection = Object::cast_to<RealtimeConnection>(p_connection);
 
     Dictionary payload_inner;
     payload_inner["type"] = "assign_role";
@@ -92,8 +96,9 @@ void RealtimeBroadcaster::send_role(RealtimeConnection* connection, const String
     UtilityFunctions::print("[RealtimeBroadcaster] Info: Role data sent successfully for target: ", target_player_id);
 }
 
-void RealtimeBroadcaster::send_hp(RealtimeConnection* connection, const String& topic, const String& player_id, uint32_t current_hp, uint32_t max_hp) {
-    if (!is_ready(connection)) return;
+void RealtimeBroadcaster::send_hp(Object* p_connection, const String& topic, const String& player_id, uint32_t current_hp, uint32_t max_hp) {
+    if (!is_ready(p_connection)) return;
+    RealtimeConnection* connection = Object::cast_to<RealtimeConnection>(p_connection);
 
     Dictionary payload_inner;
     payload_inner["type"] = "player_hp";
@@ -110,8 +115,9 @@ void RealtimeBroadcaster::send_hp(RealtimeConnection* connection, const String& 
     connection->send_text(JSON::stringify(payload));
 }
 
-void RealtimeBroadcaster::send_hunger(RealtimeConnection* connection, const String& topic, const String& player_id, uint32_t current_hunger, uint32_t max_hunger) {
-    if (!is_ready(connection)) return;
+void RealtimeBroadcaster::send_hunger(Object* p_connection, const String& topic, const String& player_id, uint32_t current_hunger, uint32_t max_hunger) {
+    if (!is_ready(p_connection)) return;
+    RealtimeConnection* connection = Object::cast_to<RealtimeConnection>(p_connection);
 
     Dictionary payload_inner;
     payload_inner["type"] = "player_hunger";
@@ -128,8 +134,9 @@ void RealtimeBroadcaster::send_hunger(RealtimeConnection* connection, const Stri
     connection->send_text(JSON::stringify(payload));
 }
 
-void RealtimeBroadcaster::send_hotbar_slot(RealtimeConnection* connection, const String& topic, const String& player_id, int32_t slot_index) {
-    if (!is_ready(connection)) return;
+void RealtimeBroadcaster::send_hotbar_slot(Object* p_connection, const String& topic, const String& player_id, int32_t slot_index) {
+    if (!is_ready(p_connection)) return;
+    RealtimeConnection* connection = Object::cast_to<RealtimeConnection>(p_connection);
 
     Dictionary payload_inner;
     payload_inner["type"] = "hotbar_slot";
@@ -145,8 +152,9 @@ void RealtimeBroadcaster::send_hotbar_slot(RealtimeConnection* connection, const
     connection->send_text(JSON::stringify(payload));
 }
 
-void RealtimeBroadcaster::send_hotbar_item(RealtimeConnection* connection, const String& topic, const String& player_id, int32_t slot_index, const String& item_id, uint16_t count) {
-    if (!is_ready(connection)) return;
+void RealtimeBroadcaster::send_hotbar_item(Object* p_connection, const String& topic, const String& player_id, int32_t slot_index, const String& item_id, uint16_t count) {
+    if (!is_ready(p_connection)) return;
+    RealtimeConnection* connection = Object::cast_to<RealtimeConnection>(p_connection);
 
     Dictionary payload_inner;
     payload_inner["type"] = "hotbar_item";
@@ -164,8 +172,9 @@ void RealtimeBroadcaster::send_hotbar_item(RealtimeConnection* connection, const
     connection->send_text(JSON::stringify(payload));
 }
 
-void RealtimeBroadcaster::send_attack(RealtimeConnection* connection, const String& topic, const String& attacker_id, const String& target_id, uint32_t damage) {
-    if (!is_ready(connection)) return;
+void RealtimeBroadcaster::send_attack(Object* p_connection, const String& topic, const String& attacker_id, const String& target_id, uint32_t damage) {
+    if (!is_ready(p_connection)) return;
+    RealtimeConnection* connection = Object::cast_to<RealtimeConnection>(p_connection);
 
     Dictionary payload_inner;
     payload_inner["type"] = "player_attack";
@@ -182,22 +191,23 @@ void RealtimeBroadcaster::send_attack(RealtimeConnection* connection, const Stri
     connection->send_text(JSON::stringify(payload));
 }
 
-void RealtimeBroadcaster::send_skin(RealtimeConnection* connection, const String& topic, const String& player_id, const Dictionary& skin_presets) {
+void RealtimeBroadcaster::send_skin(Object* p_connection, const String& topic, const String& player_id, const Dictionary& skin_presets) {
     int retry_count = 0;
     const int max_retries = 20;
 
     UtilityFunctions::print("[RealtimeBroadcaster] Info: Waiting for connection readiness to send skin for player: ", player_id);
 
-    while (!is_ready(connection) && retry_count < max_retries) {
+    while (!is_ready(p_connection) && retry_count < max_retries) {
         UtilityFunctions::print("[RealtimeBroadcaster] Warning: Connection not ready yet, retrying... Attempt: ", retry_count + 1, "/", max_retries);
         OS::get_singleton()->delay_msec(500);
         retry_count++;
     }
 
-    if (!is_ready(connection)) {
+    if (!is_ready(p_connection)) {
         UtilityFunctions::push_error("[RealtimeBroadcaster] Error: Failed to send skin because connection is not ready after timeout.");
         return;
     }
+    RealtimeConnection* connection = Object::cast_to<RealtimeConnection>(p_connection);
 
     Dictionary payload_inner;
     payload_inner["type"] = "player_skin";

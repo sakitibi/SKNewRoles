@@ -18,7 +18,7 @@ namespace godot {
             static constexpr float POS_THRESHOLD = 0.02f;
             static constexpr float ROT_THRESHOLD = 0.02f;
 
-            bool is_ready(RealtimeConnection* connection);
+            bool is_ready(Object* p_connection);
 
         protected:
             static void _bind_methods();
@@ -27,13 +27,13 @@ namespace godot {
             RealtimeBroadcaster();
             ~RealtimeBroadcaster() = default;
 
-            void send_transform(RealtimeConnection* connection, const String& topic, const String& sender_id, float px, float py, float pz, float rx, float ry, float rz);
-            void send_role(RealtimeConnection* connection, const String& topic, const String& target_player_id, uint32_t role, uint32_t faction);
-            void send_hp(RealtimeConnection* connection, const String& topic, const String& player_id, uint32_t current_hp, uint32_t max_hp);
-            void send_hunger(RealtimeConnection* connection, const String& topic, const String& player_id, uint32_t current_hunger, uint32_t max_hunger);
-            void send_hotbar_slot(RealtimeConnection* connection, const String& topic, const String& player_id, int32_t slot_index);
-            void send_hotbar_item(RealtimeConnection* connection, const String& topic, const String& player_id, int32_t slot_index, const String& item_id, uint16_t count);
-            void send_attack(RealtimeConnection* connection, const String& topic, const String& attacker_id, const String& target_id, uint32_t damage);
-            void send_skin(RealtimeConnection* connection, const String& topic, const String& player_id, const Dictionary& skin_presets);
+            void send_transform(Object* p_connection, const String& topic, const String& sender_id, float px, float py, float pz, float rx, float ry, float rz);
+            void send_role(Object* p_connection, const String& topic, const String& target_player_id, uint32_t role, uint32_t faction);
+            void send_hp(Object* p_connection, const String& topic, const String& player_id, uint32_t current_hp, uint32_t max_hp);
+            void send_hunger(Object* p_connection, const String& topic, const String& player_id, uint32_t current_hunger, uint32_t max_hunger);
+            void send_hotbar_slot(Object* p_connection, const String& topic, const String& player_id, int32_t slot_index);
+            void send_hotbar_item(Object* p_connection, const String& topic, const String& player_id, int32_t slot_index, const String& item_id, uint16_t count);
+            void send_attack(Object* p_connection, const String& topic, const String& attacker_id, const String& target_id, uint32_t damage);
+            void send_skin(Object* p_connection, const String& topic, const String& player_id, const Dictionary& skin_presets);
     };
 }

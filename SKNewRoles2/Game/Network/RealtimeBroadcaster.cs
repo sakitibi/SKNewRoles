@@ -38,7 +38,7 @@ namespace SKNewRoles2.Game.Network
             string senderId = SessionManager.Instance?.CurrentSession?.User?.Id ?? $"Guest_{SessionManager.Instance?.CurrentRoomCode}";
 
             Node node = GetBroadcasterNode();
-            node?.Call("send_transform", connection.Client, topic, senderId, px, py, pz, rx, ry, rz);
+            node?.Call("send_transform", connection.CppObject, topic, senderId, px, py, pz, rx, ry, rz);
 
             return Task.CompletedTask;
         }
@@ -49,7 +49,7 @@ namespace SKNewRoles2.Game.Network
 
             string topic = GetTopicName();
             Node node = GetBroadcasterNode();
-            node?.Call("send_role", connection.Client, topic, targetPlayerId, role, faction);
+            node?.Call("send_role", connection.CppObject, topic, targetPlayerId, role, faction);
 
             return Task.CompletedTask;
         }
@@ -60,7 +60,7 @@ namespace SKNewRoles2.Game.Network
 
             string topic = GetTopicName();
             Node node = GetBroadcasterNode();
-            node?.Call("send_hp", connection.Client, topic, playerId, currentHp, maxHp);
+            node?.Call("send_hp", connection.CppObject, topic, playerId, currentHp, maxHp);
 
             return Task.CompletedTask;
         }
@@ -71,7 +71,7 @@ namespace SKNewRoles2.Game.Network
 
             string topic = GetTopicName();
             Node node = GetBroadcasterNode();
-            node?.Call("send_hunger", connection.Client, topic, playerId, currentHunger, maxHunger);
+            node?.Call("send_hunger", connection.CppObject, topic, playerId, currentHunger, maxHunger);
 
             return Task.CompletedTask;
         }
@@ -82,7 +82,7 @@ namespace SKNewRoles2.Game.Network
 
             string topic = GetTopicName();
             Node node = GetBroadcasterNode();
-            node?.Call("send_hotbar_slot", connection.Client, topic, playerId, slotIndex);
+            node?.Call("send_hotbar_slot", connection.CppObject, topic, playerId, slotIndex);
 
             return Task.CompletedTask;
         }
@@ -93,7 +93,7 @@ namespace SKNewRoles2.Game.Network
 
             string topic = GetTopicName();
             Node node = GetBroadcasterNode();
-            node?.Call("send_hotbar_item", connection.Client, topic, playerId, slotIndex, itemId, count);
+            node?.Call("send_hotbar_item", connection.CppObject, topic, playerId, slotIndex, itemId, count);
 
             return Task.CompletedTask;
         }
@@ -104,7 +104,7 @@ namespace SKNewRoles2.Game.Network
 
             string topic = GetTopicName();
             Node node = GetBroadcasterNode();
-            node?.Call("send_attack", connection.Client, topic, attackerId, targetId, damage);
+            node?.Call("send_attack", connection.CppObject, topic, attackerId, targetId, damage);
 
             return Task.CompletedTask;
         }
@@ -120,7 +120,7 @@ namespace SKNewRoles2.Game.Network
             Godot.Collections.Dictionary<string, string> godotDict = new(skinPresets);
             
             Node node = GetBroadcasterNode();
-            node?.Call("send_skin", connection.Client, topic, playerId, godotDict);
+            node?.Call("send_skin", connection.CppObject, topic, playerId, godotDict);
 
             await Task.CompletedTask;
         }
