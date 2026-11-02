@@ -19,6 +19,8 @@
 #include "Game/world/chunk/chunk_block_editor.h"
 #include "Game/world/chunk/chunk_manager.h"
 #include "Game/world/chunk/chunk_mesh_builder.h"
+#include "Game/realtime/realtime_broadcaster.h"
+#include "Game/realtime/realtime_connection.h"
 #include "Game/role_manager.h"
 #include "Game/hud_manager.h"
 #include "Game/health_component.h"
@@ -52,6 +54,8 @@ void initialize_player_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<ChunkBlockEditor>();
     ClassDB::register_class<ChunkManager>();
     ClassDB::register_class<ChunkMeshBuilder>();
+    ClassDB::register_class<RealtimeBroadcaster>();
+    ClassDB::register_class<RealtimeConnection>();
     ClassDB::register_class<HUDManager>();
     ClassDB::register_class<HealthComponent>();
     ClassDB::register_class<SpectatorComponent>();
