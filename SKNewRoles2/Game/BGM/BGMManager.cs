@@ -4,153 +4,153 @@ using System.Threading.Tasks;
 
 namespace SKNewRoles2.Game.BGM
 {
-    public partial class BGMManager : Node
-    {
-        private AudioStreamPlayer _bgmPlayer;
-        private static readonly string BgmPathBases = "user://game_asset/Audio/";
+	public partial class BGMManager : Node
+	{
+		private AudioStreamPlayer _bgmPlayer;
+		private static readonly string BgmPathBases = "user://game_asset/Audio/";
 
-        [Export] public float WaitDelaySeconds { get; set; } = 5.0f;
+		[Export] public float WaitDelaySeconds { get; set; } = 5.0f;
 
-        private float _currentVolumeDb = 0.0f;
-        private uint[] _currentCandidateIndices = null;
-        private bool _isStopping = false;
-        private bool _isLoop = true;
+		private float _currentVolumeDb = 0.0f;
+		private uint[] _currentCandidateIndices = null;
+		private bool _isStopping = false;
+		private bool _isLoop = true;
 
-        public List<string> BgmPaths { get; set; } =
-        [
-            $"{BgmPathBases}BGM/game_bgm1.mp3",
-            $"{BgmPathBases}BGM/game_bgm2.ogg",
-            $"{BgmPathBases}BGM/title_bgm1.mp3",
-            $"{BgmPathBases}BGM/title_bgm2.mp3",
-            $"{BgmPathBases}BGM/title_bgm3.mp3",
-            $"{BgmPathBases}button_click.ogg"
-        ];
+		public List<string> BgmPaths { get; set; } =
+		[
+			$"{BgmPathBases}BGM/game_bgm1.mp3",
+			$"{BgmPathBases}BGM/game_bgm2.ogg",
+			$"{BgmPathBases}BGM/title_bgm1.mp3",
+			$"{BgmPathBases}BGM/title_bgm2.mp3",
+			$"{BgmPathBases}BGM/title_bgm3.mp3",
+			$"{BgmPathBases}button_click.ogg"
+		];
 
-        public override void _Ready()
-        {
-            EnsurePlayerExists(true);
-        }
+		public override void _Ready()
+		{
+			EnsurePlayerExists(true);
+		}
 
-        private void EnsurePlayerExists(bool isLoop)
-        {
-            _isLoop = isLoop;
+		private void EnsurePlayerExists(bool isLoop)
+		{
+			_isLoop = isLoop;
 
-            if (_bgmPlayer == null)
-            {
-                _bgmPlayer = new AudioStreamPlayer
-                {
-                    Name = "BGMPlayer",
-                    Bus = "Master"
-                };
-                
-                _bgmPlayer.Finished += () => _ = OnBgmFinished();
-                AddChild(_bgmPlayer);
-            }
-        }
+			if (_bgmPlayer == null)
+			{
+				_bgmPlayer = new AudioStreamPlayer
+				{
+					Name = "BGMPlayer",
+					Bus = "Master"
+				};
+				
+				_bgmPlayer.Finished += () => _ = OnBgmFinished();
+				AddChild(_bgmPlayer);
+			}
+		}
 
-        private async Task OnBgmFinished()
-        {
-            GD.Print($"🎵 [BGMManager] BGM終了。{WaitDelaySeconds}秒待機してから次の曲を再生します...");
+		private async Task OnBgmFinished()
+		{
+			GD.Print($"🎵 [BGMManager] BGM終了。{WaitDelaySeconds}秒待機してから次の曲を再生します...");
 
-            await ToSignal(GetTree().CreateTimer(WaitDelaySeconds), SceneTreeTimer.SignalName.Timeout);
+			await ToSignal(GetTree().CreateTimer(WaitDelaySeconds), SceneTreeTimer.SignalName.Timeout);
 
-            if (!_isStopping && IsInsideTree() && _isLoop)
-            {
-                _ = PlayBgm(_currentVolumeDb, candidates: _currentCandidateIndices, _isLoop);
-            }
-        }
+			if (!_isStopping && IsInsideTree() && _isLoop)
+			{
+				_ = PlayBgm(_currentVolumeDb, candidates: _currentCandidateIndices, _isLoop);
+			}
+		}
 
-        public void AddBgmPath(string path)
-        {
-            if (!string.IsNullOrEmpty(path) && !BgmPaths.Contains(path))
-            {
-                BgmPaths.Add(path);
-                GD.Print($"🎵 [BGMManager] MOD等からBGMを追加しました: {path}");
-            }
-        }
+		public void AddBgmPath(string path)
+		{
+			if (!string.IsNullOrEmpty(path) && !BgmPaths.Contains(path))
+			{
+				BgmPaths.Add(path);
+				GD.Print($"🎵 [BGMManager] MOD等からBGMを追加しました: {path}");
+			}
+		}
 
-        public void RemoveBgmPath(string path)
-        {
-            if (BgmPaths.Remove(path))
-            {
-                GD.Print($"🎵 [BGMManager] BGMを削除しました: {path}");
-            }
-        }
+		public void RemoveBgmPath(string path)
+		{
+			if (BgmPaths.Remove(path))
+			{
+				GD.Print($"🎵 [BGMManager] BGMを削除しました: {path}");
+			}
+		}
 
-        public void ClearBgmPaths()
-        {
-            BgmPaths.Clear();
-            GD.Print("🎵 [BGMManager] すべてのBGMパスをクリアしました。");
-        }
+		public void ClearBgmPaths()
+		{
+			BgmPaths.Clear();
+			GD.Print("🎵 [BGMManager] すべてのBGMパスをクリアしました。");
+		}
 
-        public async Task PlayBgm(float volumeDb = 0.0f, uint[] candidates = null, bool isLoop = true)
-        {
-            _isStopping = false;
-            _currentVolumeDb = volumeDb;
-            _currentCandidateIndices = candidates;
+		public async Task PlayBgm(float volumeDb = 0.0f, uint[] candidates = null, bool isLoop = true)
+		{
+			_isStopping = false;
+			_currentVolumeDb = volumeDb;
+			_currentCandidateIndices = candidates;
 
-            int selectedIndex = BGMSelector.SelectIndex(BgmPaths, candidates);
-            if (selectedIndex < 0)
-            {
-                GD.PrintErr("⚠️ [BGMManager] 再生可能な BGM パスが存在しないか選曲に失敗しました。");
-                return;
-            }
+			int selectedIndex = BGMSelector.SelectIndex(BgmPaths, candidates);
+			if (selectedIndex < 0)
+			{
+				GD.PrintErr("⚠️ [BGMManager] 再生可能な BGM パスが存在しないか選曲に失敗しました。");
+				return;
+			}
 
-            string selectedPath = BgmPaths[selectedIndex];
-            AudioStream stream = BGMAudioLoader.LoadAudioStream(selectedPath);
+			string selectedPath = BgmPaths[selectedIndex];
+			AudioStream stream = BGMAudioLoader.LoadAudioStream(selectedPath);
 
-            if (stream == null)
-            {
-                GD.PrintErr($"⚠️ [BGMManager] BGMファイルのロードに失敗しました: {selectedPath}");
-                return;
-            }
+			if (stream == null)
+			{
+				GD.PrintErr($"⚠️ [BGMManager] BGMファイルのロードに失敗しました: {selectedPath}");
+				return;
+			}
 
-            if (stream is AudioStreamMP3 mp3Stream)
-            {
-                mp3Stream.Loop = false;
-            }
-            else if (stream is AudioStreamOggVorbis oggStream)
-            {
-                oggStream.Loop = false;
-            }
-            else if (stream is AudioStreamWav wavStream)
-            {
-                wavStream.LoopMode = AudioStreamWav.LoopModeEnum.Disabled;
-            }
+			if (stream is AudioStreamMP3 mp3Stream)
+			{
+				mp3Stream.Loop = false;
+			}
+			else if (stream is AudioStreamOggVorbis oggStream)
+			{
+				oggStream.Loop = false;
+			}
+			else if (stream is AudioStreamWav wavStream)
+			{
+				wavStream.LoopMode = AudioStreamWav.LoopModeEnum.Disabled;
+			}
 
-            EnsurePlayerExists(isLoop);
+			EnsurePlayerExists(isLoop);
 
-            if (!IsInsideTree())
-            {
-                GD.PrintErr("⚠️ [BGMManager] BGMManager 自身がシーンツリーに追加されていません。");
-                return;
-            }
+			if (!IsInsideTree())
+			{
+				GD.PrintErr("⚠️ [BGMManager] BGMManager 自身がシーンツリーに追加されていません。");
+				return;
+			}
 
-            _bgmPlayer.Stop();
-            _bgmPlayer.Stream = stream;
-            _bgmPlayer.VolumeDb = volumeDb;
-            _bgmPlayer.Play();
+			_bgmPlayer.Stop();
+			_bgmPlayer.Stream = stream;
+			_bgmPlayer.VolumeDb = volumeDb;
+			_bgmPlayer.Play();
 
-            GD.Print($"🎵 [BGMManager] BGM再生開始: {selectedPath} (Index: {selectedIndex}) (Loop: {isLoop})");
-        }
+			GD.Print($"🎵 [BGMManager] BGM再生開始: {selectedPath} (Index: {selectedIndex}) (Loop: {isLoop})");
+		}
 
-        public void StopBgm()
-        {
-            _isStopping = true;
-            if (_bgmPlayer != null && _bgmPlayer.Playing)
-            {
-                _bgmPlayer.Stop();
-                GD.Print("🎵 [BGMManager] BGMを停止しました。");
-            }
-        }
+		public void StopBgm()
+		{
+			_isStopping = true;
+			if (_bgmPlayer != null && _bgmPlayer.Playing)
+			{
+				_bgmPlayer.Stop();
+				GD.Print("🎵 [BGMManager] BGMを停止しました。");
+			}
+		}
 
-        public void SetVolume(float volumeDb)
-        {
-            _currentVolumeDb = volumeDb;
-            if (_bgmPlayer != null)
-            {
-                _bgmPlayer.VolumeDb = volumeDb;
-            }
-        }
-    }
+		public void SetVolume(float volumeDb)
+		{
+			_currentVolumeDb = volumeDb;
+			if (_bgmPlayer != null)
+			{
+				_bgmPlayer.VolumeDb = volumeDb;
+			}
+		}
+	}
 }
