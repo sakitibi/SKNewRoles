@@ -21,6 +21,7 @@ void RealtimeConnection::_bind_methods() {
 RealtimeConnection::RealtimeConnection() {
     _client.instantiate();
     _is_joined_channel = false;
+    UtilityFunctions::print("[RealtimeConnection] Info: RealtimeConnection instance created in C++.");
 }
 
 RealtimeConnection::~RealtimeConnection() {
@@ -34,6 +35,7 @@ Error RealtimeConnection::connect_to_url(const String& p_url) {
         _client.instantiate();
     }
     _is_joined_channel = false;
+    UtilityFunctions::print("[RealtimeConnection] Info: Connecting to URL: ", p_url);
     return _client->connect_to_url(p_url);
 }
 
@@ -99,6 +101,7 @@ String RealtimeConnection::get_next_packet_string() {
 
 void RealtimeConnection::send_join_channel(const String& topic, const String& p_ref) {
     if (_client.is_null() || _client->get_ready_state() != WebSocketPeer::STATE_OPEN) {
+        UtilityFunctions::push_error("[RealtimeConnection] Error: Cannot send join channel because WebSocket is not open.");
         return;
     }
 
@@ -116,5 +119,6 @@ void RealtimeConnection::send_join_channel(const String& topic, const String& p_
 
     String json_str = JSON::stringify(join_payload);
     _client->send_text(json_str);
-    UtilityFunctions::print("📡 [RealtimeConnection] phx_join リクエストをC++側から送信しました: ", topic);
+    
+    UtilityFunctions::print("[RealtimeConnection] Info: phx_join request sent from C++ for topic: ", topic);
 }
