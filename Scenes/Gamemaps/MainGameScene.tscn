@@ -102,7 +102,9 @@ _uiController = NodePath("../UILayer/HotbarUI/HotbarUIController")
 
 [node name="ItemDatabase" type="Node" parent="." unique_id=1868778557]
 script = ExtResource("2_247uh")
-_itemList = Array[ExtResource("3_pspun")]([SubResource("Resource_247uh"), SubResource("Resource_pspun"), SubResource("Resource_hx67e"), SubResource("Resource_7yt2m")])
+_itemList = [SubResource("Resource_247uh"), SubResource("Resource_pspun"), SubResource("Resource_hx67e"), SubResource("Resource_7yt2m")]
+
+[node name="RealtimeBroadcaster" type="RealtimeBroadcaster" parent="." unique_id=546843032]
 
 [node name="UILayer" type="CanvasLayer" parent="." unique_id=217740970]
 
@@ -189,9 +191,9 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_hotbar_bg")
 [node name="HotbarUIController" type="Control" parent="UILayer/HotbarUI" unique_id=336542986 node_paths=PackedStringArray("_slotContainer")]
 layout_mode = 2
 script = ExtResource("13_hx67e")
-_slotContainer = NodePath("../SlotContainer")
 _normalSlotStyle = ExtResource("14_7yt2m")
 _selectedSlotStyle = ExtResource("15_f3uto")
+_slotContainer = NodePath("../SlotContainer")
 
 [node name="SlotContainer" type="HBoxContainer" parent="UILayer/HotbarUI" unique_id=1827491023]
 layout_mode = 2
