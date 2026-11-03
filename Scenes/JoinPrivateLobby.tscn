@@ -6,15 +6,45 @@
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_a4jbr"]
 bg_color = Color(0, 0.6509804, 0, 1)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rvuea"]
-bg_color = Color(0.6862745, 0, 0, 1)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_q6lyr"]
+bg_color = Color(0, 0.61960787, 0, 1)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_p5vxj"]
-bg_color = Color(0, 0.7085541, 0.31796217, 1)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gm6ev"]
+bg_color = Color(0.36078432, 0.8666667, 0.5176471, 1)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t7xwt"]
 bg_color = Color(1, 0, 0, 1)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rvuea"]
+bg_color = Color(0.6862745, 0, 0, 1)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_p5vxj"]
+bg_color = Color(1, 0.39215687, 0.42745098, 1)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
 
 [node name="JoinPrivateLobby" type="Control" unique_id=1815666183]
 layout_mode = 3
@@ -83,8 +113,8 @@ offset_transform_enabled = true
 theme_override_fonts/font = ExtResource("2_rvuea")
 theme_override_font_sizes/font_size = 60
 theme_override_styles/normal = SubResource("StyleBoxFlat_a4jbr")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_rvuea")
-theme_override_styles/hover = SubResource("StyleBoxFlat_p5vxj")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_q6lyr")
+theme_override_styles/hover = SubResource("StyleBoxFlat_gm6ev")
 text = "部屋に参加する"
 
 [node name="CancelButton" type="Button" parent="ColorRect/CenterContainer/VBoxContainer/Panel" unique_id=986198632]

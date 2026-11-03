@@ -8,21 +8,45 @@
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0iane"]
 bg_color = Color(0, 0.6754706, 0.7593185, 1)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1fclr"]
 bg_color = Color(0, 0.50980395, 0.79607844, 1)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hs5rb"]
 bg_color = Color(0, 0.83137256, 0.84705883, 1)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_27n8y"]
 bg_color = Color(0, 0.6440618, 0.34929883, 1)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fc8g7"]
 bg_color = Color(0, 0.5686275, 0.27058825, 1)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cy6aj"]
 bg_color = Color(0, 0.8784314, 0.31764707, 1)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
 
 [node name="StoryReader" type="Control" unique_id=400905262]
 layout_mode = 3
@@ -78,11 +102,11 @@ theme_override_fonts/bold_font = ExtResource("3_fc8g7")
 theme_override_fonts/bold_italics_font = ExtResource("3_fc8g7")
 theme_override_fonts/italics_font = ExtResource("2_27n8y")
 theme_override_fonts/mono_font = ExtResource("2_27n8y")
-theme_override_font_sizes/normal_font_size = 30
-theme_override_font_sizes/bold_font_size = 30
-theme_override_font_sizes/bold_italics_font_size = 30
-theme_override_font_sizes/italics_font_size = 30
-theme_override_font_sizes/mono_font_size = 30
+theme_override_font_sizes/normal_font_size = 40
+theme_override_font_sizes/bold_font_size = 40
+theme_override_font_sizes/bold_italics_font_size = 40
+theme_override_font_sizes/italics_font_size = 40
+theme_override_font_sizes/mono_font_size = 40
 bbcode_enabled = true
 text = "ストーリーテキストがここに表示されます..."
 
@@ -113,10 +137,10 @@ size_flags_horizontal = 3
 [node name="NextButton" type="Button" parent="MarginContainer/VBoxContainer/ButtonContainer" unique_id=923759620]
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 0
-offset_left = 1077.0
-offset_top = -56.0
-offset_right = 1320.0
-offset_bottom = 60.0
+offset_left = 994.0
+offset_top = -70.0
+offset_right = 1274.0
+offset_bottom = 61.0
 theme_override_fonts/font = ExtResource("3_fc8g7")
 theme_override_font_sizes/font_size = 40
 theme_override_styles/normal = SubResource("StyleBoxFlat_27n8y")
