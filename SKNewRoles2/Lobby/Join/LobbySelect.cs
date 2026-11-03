@@ -1,5 +1,8 @@
+using System.Threading.Tasks;
 using Godot;
+using SKNewRoles2.Game.BGM;
 using SKNewRoles2.SessionManagerSystem;
+using SKNewRoles2.SNRSystem;
 
 namespace SKNewRoles2.Lobby.JOIN
 {
@@ -12,6 +15,8 @@ namespace SKNewRoles2.Lobby.JOIN
         private Button _joinPublicRoomButton;
         private Button _joinPrivateRoomButton;
         private Button _skinEditButton;
+        private ButtonAnimation _buttonAnimation;
+        private BGMManager _bgmManager;
         private Label _emailLabel;
 
         public override void _Ready()
@@ -25,6 +30,8 @@ namespace SKNewRoles2.Lobby.JOIN
             _joinPublicRoomButton = GetNode<Button>($"{basePath}JoinPublicRoomButton");
             _joinPrivateRoomButton = GetNode<Button>($"{basePath}JoinPrivateRoomButton");
             _skinEditButton = GetNode<Button>($"{basePath}SkinEditButton");
+            _buttonAnimation = GetNode<ButtonAnimation>("ButtonAnimation");
+            _bgmManager = GetNode<BGMManager>("BGMManager");
             _emailLabel = GetNode<Label>($"{basePath}EmailLabel");
 
             // イベントの接続
@@ -35,6 +42,14 @@ namespace SKNewRoles2.Lobby.JOIN
             _joinPublicRoomButton.Pressed += OnJoinPublicRoomButtonPressed;
             _joinPrivateRoomButton.Pressed += OnJoinPrivateRoomButtonPressed;
             _skinEditButton.Pressed += OnSkinEditButtonPressed;
+
+            _buttonAnimation.SetupButtonAnimation(_loginButton);
+            _buttonAnimation.SetupButtonAnimation(_logoutButton);
+            _buttonAnimation.SetupButtonAnimation(_backButton);
+            _buttonAnimation.SetupButtonAnimation(_createRoomButton);
+            _buttonAnimation.SetupButtonAnimation(_joinPublicRoomButton);
+            _buttonAnimation.SetupButtonAnimation(_joinPrivateRoomButton);
+            _buttonAnimation.SetupButtonAnimation(_skinEditButton);
 
             SessionManager.Instance.UserInfoUpdated += OnUserInfoUpdated;
 
@@ -79,8 +94,11 @@ namespace SKNewRoles2.Lobby.JOIN
             }
         }
 
-        private void OnLoginButtonPressed()
+        private async void OnLoginButtonPressed()
         {
+            uint[] buttonClickSoundIdx = [5];
+            _ = _bgmManager.PlayBgm(2.0f, buttonClickSoundIdx, false);
+            await Task.Delay(250); // クリック音を鳴らす為
             Error error = GetTree().ChangeSceneToFile("res://Scenes/Login.tscn");
             if (error != Error.Ok)
             {
@@ -88,8 +106,10 @@ namespace SKNewRoles2.Lobby.JOIN
             }
         }
 
-        private void OnLogoutButtonPressed()
+        private async void OnLogoutButtonPressed()
         {
+            uint[] buttonClickSoundIdx = [5];
+            _ = _bgmManager.PlayBgm(2.0f, buttonClickSoundIdx, false);
             // ログアウト処理を実行（ファイル削除＆メモリクリア）
             SessionManager.Instance.ClearSession();
             
@@ -97,8 +117,11 @@ namespace SKNewRoles2.Lobby.JOIN
             UpdateButtonStates();
         }
 
-        private void OnBackButtonPressed()
+        private async void OnBackButtonPressed()
         {
+            uint[] buttonClickSoundIdx = [5];
+            _ = _bgmManager.PlayBgm(2.0f, buttonClickSoundIdx, false);
+            await Task.Delay(250); // クリック音を鳴らす為
             Error error = GetTree().ChangeSceneToFile("res://Scenes/Home.tscn");
             if (error != Error.Ok)
             {
@@ -106,8 +129,11 @@ namespace SKNewRoles2.Lobby.JOIN
             }
         }
 
-        private void OnCreateRoomButtonPressed()
+        private async void OnCreateRoomButtonPressed()
         {
+            uint[] buttonClickSoundIdx = [5];
+            _ = _bgmManager.PlayBgm(2.0f, buttonClickSoundIdx, false);
+            await Task.Delay(250); // クリック音を鳴らす為
             Error error = GetTree().ChangeSceneToFile("res://Scenes/CreateLobby.tscn");
             if (error != Error.Ok)
             {
@@ -115,8 +141,11 @@ namespace SKNewRoles2.Lobby.JOIN
             }
         }
 
-        private void OnJoinPublicRoomButtonPressed()
+        private async void OnJoinPublicRoomButtonPressed()
         {
+            uint[] buttonClickSoundIdx = [5];
+            _ = _bgmManager.PlayBgm(2.0f, buttonClickSoundIdx, false);
+            await Task.Delay(250); // クリック音を鳴らす為
             Error error = GetTree().ChangeSceneToFile("res://Scenes/JoinPublicLobby.tscn");
             if (error != Error.Ok)
             {
@@ -124,8 +153,11 @@ namespace SKNewRoles2.Lobby.JOIN
             }
         }
 
-        private void OnJoinPrivateRoomButtonPressed()
+        private async void OnJoinPrivateRoomButtonPressed()
         {
+            uint[] buttonClickSoundIdx = [5];
+            _ = _bgmManager.PlayBgm(2.0f, buttonClickSoundIdx, false);
+            await Task.Delay(250); // クリック音を鳴らす為
             Error error = GetTree().ChangeSceneToFile("res://Scenes/JoinPrivateLobby.tscn");
             if (error != Error.Ok)
             {
@@ -133,8 +165,11 @@ namespace SKNewRoles2.Lobby.JOIN
             }
         }
 
-        private void OnSkinEditButtonPressed()
+        private async void OnSkinEditButtonPressed()
         {
+            uint[] buttonClickSoundIdx = [5];
+            _ = _bgmManager.PlayBgm(2.0f, buttonClickSoundIdx, false);
+            await Task.Delay(250); // クリック音を鳴らす為
             Error error = GetTree().ChangeSceneToFile("res://Scenes/SkinEditScene.tscn");
             if (error != Error.Ok)
             {

@@ -3,6 +3,8 @@
 [ext_resource type="FontFile" uid="uid://bcuxsq3rxn1b4" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="1_4a7xb"]
 [ext_resource type="Script" uid="uid://be05vt5csq1n" path="res://SKNewRoles2/Lobby/Join/LobbySelect.cs" id="1_jrcml"]
 [ext_resource type="FontFile" uid="uid://br5t7n57fruc7" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="3_411oe"]
+[ext_resource type="Script" uid="uid://caooojaosf0k4" path="res://SKNewRoles2/System/ButtonAnimation.cs" id="4_d365a"]
+[ext_resource type="Script" uid="uid://c3no22e8pac6a" path="res://SKNewRoles2/Game/BGM/BGMManager.cs" id="5_w2toh"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jrcml"]
 bg_color = Color(0, 0.6509804, 0, 1)
@@ -264,3 +266,9 @@ offset_bottom = 93.0
 theme_override_fonts/font = ExtResource("3_411oe")
 theme_override_font_sizes/font_size = 50
 text = "メールアドレス:"
+
+[node name="ButtonAnimation" type="Node2D" parent="." unique_id=1303310047]
+script = ExtResource("4_d365a")
+
+[node name="BGMManager" type="Node" parent="." unique_id=1318738441]
+script = ExtResource("5_w2toh")
