@@ -17,7 +17,7 @@ namespace SKNewRoles2.SNRSystem
         private Button _nextButton;
         private Button _skipButton;
         private BGMManager _bgmManager;
-        private Home _home;
+        private ButtonAnimation _buttonAnimation;
         private static MemoryStream _inputStream;
         private static BrotliStream _brotliStream;
         private static MemoryStream _outputStream;
@@ -34,13 +34,13 @@ namespace SKNewRoles2.SNRSystem
             _nextButton = GetNode<Button>("MarginContainer/VBoxContainer/ButtonContainer/NextButton");
             _skipButton = GetNode<Button>("MarginContainer/VBoxContainer/ButtonContainer/SkipButton");
             _bgmManager = GetNode<BGMManager>("BGMManager");
-            _home = GetNode<Home>("Home");
+            _buttonAnimation = GetNode<ButtonAnimation>("ButtonAnimation");
 
             _nextButton.Pressed += OnNextButtonPressed;
             _skipButton.Pressed += OnSkipButtonPressed;
 
-            _home.SetupButtonAnimation(_nextButton);
-            _home.SetupButtonAnimation(_skipButton);
+            _buttonAnimation.SetupButtonAnimation(_nextButton);
+            _buttonAnimation.SetupButtonAnimation(_skipButton);
 
             await LoadStoryData();
             ShowCurrentPage();

@@ -4,6 +4,7 @@
 [ext_resource type="FontFile" uid="uid://bcuxsq3rxn1b4" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="2_hf3nf"]
 [ext_resource type="Texture2D" uid="uid://d2oqkqps0e80m" path="res://Resources/HomeBackground.png" id="2_maaha"]
 [ext_resource type="FontFile" uid="uid://br5t7n57fruc7" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="4_vtlm0"]
+[ext_resource type="Script" uid="uid://caooojaosf0k4" path="res://SKNewRoles2/System/ButtonAnimation.cs" id="5_cxprx"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3me4c"]
 bg_color = Color(0, 0.5793735, 0.80830514, 1)
@@ -133,3 +134,6 @@ theme_override_font_sizes/font_size = 50
 text = "Copyright 2023~2026 SKNewRoles, Inc
 All Rights Reserved."
 horizontal_alignment = 1
+
+[node name="ButtonAnimation" type="Node2D" parent="." unique_id=237306273]
+script = ExtResource("5_cxprx")

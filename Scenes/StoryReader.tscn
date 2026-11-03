@@ -4,7 +4,7 @@
 [ext_resource type="FontFile" uid="uid://br5t7n57fruc7" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="2_27n8y"]
 [ext_resource type="FontFile" uid="uid://bcuxsq3rxn1b4" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="3_fc8g7"]
 [ext_resource type="Script" uid="uid://c3no22e8pac6a" path="res://SKNewRoles2/Game/BGM/BGMManager.cs" id="4_fc8g7"]
-[ext_resource type="Script" uid="uid://c5gh3g7xxp6a2" path="res://SKNewRoles2/System/Home.cs" id="5_cy6aj"]
+[ext_resource type="Script" uid="uid://caooojaosf0k4" path="res://SKNewRoles2/System/ButtonAnimation.cs" id="5_cy6aj"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0iane"]
 bg_color = Color(0, 0.6754706, 0.7593185, 1)
@@ -127,8 +127,5 @@ text = "次へ"
 [node name="BGMManager" type="Node" parent="." unique_id=899908239]
 script = ExtResource("4_fc8g7")
 
-[node name="Home" type="Control" parent="." unique_id=976312435]
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
+[node name="ButtonAnimation" type="Node2D" parent="." unique_id=1688200159]
 script = ExtResource("5_cy6aj")
