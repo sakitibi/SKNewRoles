@@ -21,7 +21,7 @@ namespace SKNewRoles2.Game.Player
         private string _myUserId;
         private int _myHp = 20;
 
-        public void Initialize(
+        public async Task Initialize(
             PackedScene opponentScene,
             string myUserId,
             RealtimeConnection connection,
@@ -42,16 +42,12 @@ namespace SKNewRoles2.Game.Player
                 _connection.OnSkinReceived += OnOtherPlayerSkinReceived;
             }
             _playerSkinSyncHandler = new(mainGameScene);
-            
-            // 自分のスキン送信を非同期で再送付き実行
-            _ = Task.Run(async () =>
+
+            for (int i = 0; i < 3; i++)
             {
-                for (int i = 0; i < 3; i++)
-                {
-                    await _playerSkinSyncHandler.SendMySkinAsync(playerSpawner.MySkins);
-                    await Task.Delay(2000);
-                }
-            });
+                await _playerSkinSyncHandler.SendMySkinAsync(playerSpawner.MySkins);
+                await Task.Delay(2000);
+            }
         }
 
         public void SetMyHp(int hp)

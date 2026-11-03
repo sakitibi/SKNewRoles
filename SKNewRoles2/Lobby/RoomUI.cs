@@ -109,8 +109,11 @@ namespace SKNewRoles2.Lobby
 
             for (int i = 0; i < states.Length; i++)
             {
-                var styleBox = new StyleBoxFlat();
-                styleBox.BgColor = colors[i];
+                StyleBoxFlat styleBox = new()
+                {
+                    BgColor = colors[i],
+                };
+
                 styleBox.SetCornerRadiusAll(5);
                 _lobbyRoom.PrivacyToggleButton.AddThemeStyleboxOverride(states[i], styleBox);
             }

@@ -103,10 +103,10 @@ namespace SKNewRoles2.SessionManagerSystem.Services
                 return false;
             }
 
-            return ApplyFreshUserData(bodyData);
+            return await ApplyFreshUserData(bodyData);
         }
 
-        private static bool ApplyFreshUserData(byte[] bodyData)
+        private static async Task<bool> ApplyFreshUserData(byte[] bodyData)
         {
             SessionManager manager = SessionManager.Instance;
             if (manager == null) return false;

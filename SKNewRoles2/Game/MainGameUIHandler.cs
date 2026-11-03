@@ -44,7 +44,7 @@ namespace SKNewRoles2.Game
             _ = scene.UIController.UpdateHp(scene.CurrentHp, scene.MaxHp);
         }
 
-        public void UpdateHungerUIFromPlayer()
+        public async Task UpdateHungerUIFromPlayer()
         {
             if (scene.MyPlayerInstance == null || !GodotObject.IsInstanceValid(scene.MyPlayerInstance) || scene.UIController == null) return;
 

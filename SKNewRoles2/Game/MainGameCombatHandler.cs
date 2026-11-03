@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Godot;
 using SKNewRoles2.Game.Player.Handler;
 
@@ -13,12 +14,12 @@ namespace SKNewRoles2.Game
                 camera = scene.GetViewport().GetCamera3D();
                 if (scene.MyPlayerInstance != null && camera != null && GodotObject.IsInstanceValid(scene.MyPlayerInstance))
                 {
-                    PerformAttack(camera);
+                    _ = PerformAttack(camera);
                 }
             }
         }
 
-        private void PerformAttack(Camera3D camera)
+        private async Task PerformAttack(Camera3D camera)
         {
             GodotObject playerAttack = ClassDB.Instantiate("PlayerAttack").AsGodotObject();
             if (playerAttack != null)

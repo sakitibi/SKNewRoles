@@ -82,9 +82,11 @@ namespace SKNewRoles2.Lobby
             }
 
             GD.Print($"🎮 [LobbyNavigation] メインステージへ遷移します。パス: {gameScenePath} | 参加者数: {SessionManager.Instance.CurrentRoomPlayerIds.Count} 人");
-            foreach (var id in SessionManager.Instance.CurrentRoomPlayerIds)
+
+            int CurrentRoomPlayerIdsCounter = SessionManager.Instance.CurrentRoomPlayerIds.Count;
+            for (int i = 0; i < CurrentRoomPlayerIdsCounter; i++)
             {
-                GD.Print($"  - 参加プレイヤーID: {id}");
+                GD.Print($"  - 参加プレイヤーID: {SessionManager.Instance.CurrentRoomPlayerIds[i]}");
             }
 
             cleanupAction?.Invoke();
