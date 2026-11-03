@@ -15,10 +15,10 @@ namespace SKNewRoles2.Lobby.JOIN.Services
             HttpClient.Method method, 
             string requestData = "")
         {
-            var httpRequest = new HttpRequest();
+            HttpRequest httpRequest = new();
             SessionManager.Instance.AddChild(httpRequest);
 
-            var tcs = new TaskCompletionSource<(long result, long responseCode, byte[] body)>(TaskCreationOptions.RunContinuationsAsynchronously);
+            TaskCompletionSource<(long result, long responseCode, byte[] body)> tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
             void OnCompleted(long result, long responseCode, string[] responseHeaders, byte[] body)
             {
@@ -35,7 +35,7 @@ namespace SKNewRoles2.Lobby.JOIN.Services
                 return ((long)HttpRequest.Result.ConnectionError, 0, System.Array.Empty<byte>());
             }
 
-            var response = await tcs.Task;
+            (long result, long responseCode, byte[] body) response = await tcs.Task;
             httpRequest.QueueFree();
 
             return response;

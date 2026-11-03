@@ -11,13 +11,13 @@ namespace SKNewRoles2.Lobby.JOIN
         private Button _refreshButton;
         private Button _backButton;
 
-        // 🎨 読み込むカスタムフォントのパス
+        // 読み込むカスタムフォントのパス
         private const string FontPath = "res:///Fonts/UDDigiKyokashoProN-Bold.ttf";
         private FontFile _cachedFont;
 
         // 生成される部屋選択ボタンのカラー設定
-        [Export] public Color ButtonNormalColor { get; set; } = new Color(0.18f, 0.24f, 0.35f, 1.0f);
-        [Export] public Color ButtonHoverColor { get; set; } = new Color(0.25f, 0.32f, 0.45f, 1.0f);
+        [Export] public Color ButtonNormalColor { get; set; } = new(0.18f, 0.24f, 0.35f, 1.0f);
+        [Export] public Color ButtonHoverColor { get; set; } = new(0.25f, 0.32f, 0.45f, 1.0f);
 
         public override void _Ready()
         {
@@ -47,10 +47,12 @@ namespace SKNewRoles2.Lobby.JOIN
 
             _refreshButton.Disabled = true;
 
+            Godot.Collections.Array<Node> lobbyListContainerChilldren = _lobbyListContainer.GetChildren();
+            int lobbyListContainerChilldrenCount = lobbyListContainerChilldren.Count;
             // コンテナ内の古い部屋ボタンを完全にクリア
-            for (int i = _lobbyListContainer.GetChildren().Count - 1; i >= 0; i--)
+            for (int i = lobbyListContainerChilldrenCount - 1; i >= 0; i--)
             {
-                _lobbyListContainer.GetChildren()[i].QueueFree();
+                lobbyListContainerChilldren[i].QueueFree();
             }
 
             GD.Print("🌐 Supabaseから公開ロビーを取得中...");
@@ -98,9 +100,15 @@ namespace SKNewRoles2.Lobby.JOIN
                     joinButton.CustomMinimumSize = new Vector2(0, 90);
 
                     // 動的ボタンの見た目（スタイル）を調整
-                    var normalStyle = new StyleBoxFlat { BgColor = ButtonNormalColor };
+                    StyleBoxFlat normalStyle = new()
+                    {
+                        BgColor = ButtonNormalColor
+                    };
                     normalStyle.SetCornerRadiusAll(8);
-                    var hoverStyle = new StyleBoxFlat { BgColor = ButtonHoverColor };
+                    StyleBoxFlat hoverStyle = new()
+                    {
+                        BgColor = ButtonHoverColor
+                    };
                     hoverStyle.SetCornerRadiusAll(8);
                     
                     joinButton.AddThemeStyleboxOverride("normal", normalStyle);
