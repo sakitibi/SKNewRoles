@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using SKNewRoles2.Lobby.JOIN.Services;
+using System.Threading.Tasks;
 
 namespace SKNewRoles2.Lobby.JOIN
 {
@@ -17,14 +18,14 @@ namespace SKNewRoles2.Lobby.JOIN
             _cancelButton = GetNode<Button>("%CancelButton");
 
             // ボタンのクリックイベントを関数に接続
-            _joinButton.Pressed += OnJoinButtonPressed;
+            _joinButton.Pressed += () => _ = OnJoinButtonPressed();
             _cancelButton.Pressed += OnCancelButtonPressed;
 
             // 入力欄でEnterキーを押したときも参加処理を走らせる
-            _roomCodeEdit.TextSubmitted += (text) => OnJoinButtonPressed();
+            _roomCodeEdit.TextSubmitted += (text) => _ = OnJoinButtonPressed();
         }
 
-        private async void OnJoinButtonPressed()
+        private async Task OnJoinButtonPressed()
         {
             // 入力された文字を取得
             string roomCode = _roomCodeEdit.Text.Trim().ToUpper();
