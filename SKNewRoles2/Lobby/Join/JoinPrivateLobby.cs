@@ -18,11 +18,11 @@ namespace SKNewRoles2.Lobby.JOIN
             _cancelButton = GetNode<Button>("%CancelButton");
 
             // ボタンのクリックイベントを関数に接続
-            _joinButton.Pressed += () => _ = OnJoinButtonPressed();
+            _joinButton.Pressed += async () => await OnJoinButtonPressed();
             _cancelButton.Pressed += OnCancelButtonPressed;
 
             // 入力欄でEnterキーを押したときも参加処理を走らせる
-            _roomCodeEdit.TextSubmitted += (text) => _ = OnJoinButtonPressed();
+            _roomCodeEdit.TextSubmitted += async (text) => await OnJoinButtonPressed();
         }
 
         private async Task OnJoinButtonPressed()
