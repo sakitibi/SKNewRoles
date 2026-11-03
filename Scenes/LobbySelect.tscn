@@ -50,6 +50,10 @@ corner_radius_bottom_left = 40
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tleu7"]
 bg_color = Color(0.64705884, 0, 0, 1)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hs5rb"]
 bg_color = Color(1, 0.22352941, 0.22352941, 1)
