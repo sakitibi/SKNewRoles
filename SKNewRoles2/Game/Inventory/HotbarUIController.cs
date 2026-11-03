@@ -1,4 +1,5 @@
 using Godot;
+using Godot.Collections;
 using System.Collections.Generic;
 
 namespace SKNewRoles2.Game.Inventory
@@ -33,9 +34,12 @@ namespace SKNewRoles2.Game.Inventory
 			_iconRects.Clear();
 			_countLabels.Clear();
 
-			foreach (Node child in _slotContainer.GetChildren())
+			Array<Node> slotContainerChilldren = _slotContainer.GetChildren();
+			int slotContainerChilldrenCount = slotContainerChilldren.Count;
+
+			for (int i = 0;i < slotContainerChilldrenCount; i++)
 			{
-				if (child is Panel slotPanel)
+				if (slotContainerChilldren[i] is Panel slotPanel)
 				{
 					_slotPanels.Add(slotPanel);
 					_iconRects.Add(slotPanel.GetNodeOrNull<TextureRect>("Icon"));
@@ -53,7 +57,7 @@ namespace SKNewRoles2.Game.Inventory
 			{
 				if (_normalSlotStyle != null && _selectedSlotStyle != null)
 				{
-					var style = (i == selectedIndex) ? _selectedSlotStyle : _normalSlotStyle;
+					StyleBox style = (i == selectedIndex) ? _selectedSlotStyle : _normalSlotStyle;
 					_slotPanels[i].AddThemeStyleboxOverride("panel", style);
 				}
 			}

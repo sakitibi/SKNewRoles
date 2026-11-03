@@ -1,3 +1,4 @@
+using System;
 using Godot;
 using SKNewRoles2.Game.Inventory.Item;
 
@@ -125,9 +126,12 @@ namespace SKNewRoles2.Game.Player
                 }
             }
 
-            foreach (Node child in node.GetChildren())
+            Godot.Collections.Array<Node> nodeChilldren = node.GetChildren();
+            int nodeChilldrenCount = nodeChilldren.Count;
+
+            for (int i = 0; i < nodeChilldrenCount; i++)
             {
-                SetNodeAlphaRecursive(child, alpha);
+                SetNodeAlphaRecursive(nodeChilldren[i], alpha);
             }
         }
     }

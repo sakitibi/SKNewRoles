@@ -85,10 +85,10 @@ namespace SKNewRoles2.Lobby
                 result.Add(node);
             }
             
-            Godot.Collections.Array<Node> children = node.GetChildren();
-            for (int i = 0; i < children.Count; i++)
+            Godot.Collections.Array<Node> chilldren = node.GetChildren();
+            for (int i = 0; i < chilldren.Count; i++)
             {
-                await FindGrassBlocksRecursive(children[i], result);
+                await FindGrassBlocksRecursive(chilldren[i], result);
             }
         }
     }
