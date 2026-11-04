@@ -9,8 +9,8 @@ namespace SKNewRoles2.SNRSystem.Assets
     public static class AssetDownloader
     {
         private const string GHUrlBase = "https://github.com/sakitibi/SKNewRoles/releases/download/v4.0.0.0/";
-        private static readonly string DirectDownloadUrl = $"{GHUrlBase}game_asset.7z";
-        private static readonly string RemoteHashUrl = $"{GHUrlBase}game_asset.7z.sha512";
+        private const string DirectDownloadUrl = $"{GHUrlBase}game_asset.7z";
+        private const string RemoteHashUrl = $"{GHUrlBase}game_asset.7z.sha512";
         private static readonly string TargetDir = ProjectSettings.GlobalizePath("user://");
         private static readonly string Save7zPath = ProjectSettings.GlobalizePath("user://assets.7z");
         private static readonly string HashTxtPath = ProjectSettings.GlobalizePath("user://assets_sha512.txt");

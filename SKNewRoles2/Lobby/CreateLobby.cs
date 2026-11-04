@@ -44,8 +44,8 @@ namespace SKNewRoles2.Lobby
             _confirmButton.Disabled = true;
             _lobbyNameInput.Editable = false;
 
-            _statusLabel.Text = "非公開ロビーを作成中...";
-            GD.Print($"🛰️ ロビーを作成します(初期状態:非公開)... 名前: {lobbyName} [Code: {roomCode}]");
+            _statusLabel.Text = "ロビーを作成中...";
+            GD.Print($"🛰️ ロビーを作成します... 名前: {lobbyName} [Code: {roomCode}]");
 
             bool success = await LobbySettings.CreateLobbyAsync(roomCode, lobbyName, isPublic);
 
@@ -57,7 +57,7 @@ namespace SKNewRoles2.Lobby
                 SessionManager.Instance.CurrentRoomCode = roomCode;
                 SessionManager.Instance.CurrentRoomName = lobbyName;
                 SessionManager.Instance.IsHost = true; 
-                SessionManager.Instance.IsPublic = isPublic; // 非公開(false)を記憶
+                SessionManager.Instance.IsPublic = isPublic;
 
                 await ToSignal(GetTree().CreateTimer(1.0f), "timeout");
                 GetTree().ChangeSceneToFile("res://Scenes/LobbyRoom3D.tscn");

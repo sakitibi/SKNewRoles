@@ -7,7 +7,7 @@ namespace SKNewRoles2.Game.BGM
 	public partial class BGMManager : Node
 	{
 		private AudioStreamPlayer _bgmPlayer;
-		private static readonly string BgmPathBases = "user://game_asset/Audio/";
+		private const string BgmPathBases = "user://game_asset/Audio/";
 
 		[Export] public float WaitDelaySeconds { get; set; } = 5.0f;
 
