@@ -5,20 +5,21 @@
 #include <godot_cpp/classes/mesh.hpp>
 #include <godot_cpp/classes/material.hpp>
 #include <godot_cpp/classes/node3d.hpp>
-#include <godot_cpp/templates/hash_map.hpp>
-#include <godot_cpp/templates/vector.hpp>
+#include <string>
+#include <vector>
+#include <unordered_map>
 
 namespace godot {
     struct BlockMeshData {
-        Vector<Ref<Material>> materials;
+        std::vector<Ref<Material>> materials;
         bool valid = false;
     };
 
     class BlockMeshCache : public Object {
         GDCLASS(BlockMeshCache, Object)
         private:
-            static HashMap<String, BlockMeshData> mesh_cache;
-            static HashMap<String, Ref<Material>> material_dedup_map;
+            static std::unordered_map<std::string, BlockMeshData> mesh_cache;
+            static std::unordered_map<std::string, Ref<Material>> material_dedup_map;
             static Ref<Material> default_material;
 
             static BlockMeshData load_single_block_mesh(const String &scene_path);

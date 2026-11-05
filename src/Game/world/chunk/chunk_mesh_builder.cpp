@@ -22,12 +22,11 @@ HashMap<String, Vector<Vector3>> ChunkMeshBuilder::parse_chunk_positions(
 }
 
 PureChunkData ChunkMeshBuilder::build_chunk_data_async(
-    const HashMap<String, Vector<Vector3>> &categorized_positions,
-    bool p_is_initial_load
+    const HashMap<String, Vector<Vector3>> &categorized_positions
 ) {
     auto start_time = std::chrono::high_resolution_clock::now();
 
-    PureChunkData result = ChunkMeshBuilderNew::build_chunk_data_async(categorized_positions, p_is_initial_load);
+    PureChunkData result = ChunkMeshBuilderNew::build_chunk_data_async(categorized_positions);
 
     auto end_time = std::chrono::high_resolution_clock::now();
     auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();

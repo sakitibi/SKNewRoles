@@ -49,8 +49,7 @@ void ChunkLoader::async_load_worker(void *p_userdata) {
 
     // メッシュ生成処理へ渡す
     data->built_data = ChunkMeshBuilder::build_chunk_data_async(
-        data->categorized_positions,
-        data->is_initial_load
+        data->categorized_positions
     );
     data->has_data = true;
     

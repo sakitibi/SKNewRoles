@@ -3,18 +3,20 @@
 #include "../Game/world/chunk/chunk_mesh_builder.h"
 
 #include <chrono>
+#include <sstream>
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/classes/mesh_instance3d.hpp>
 #include <godot_cpp/classes/standard_material3d.hpp>
 #include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/classes/array_mesh.hpp>
+#include <godot_cpp/classes/base_material3d.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 using namespace godot;
 
-HashMap<String, BlockMeshData> BlockMeshCache::mesh_cache;
-HashMap<String, Ref<Material>> BlockMeshCache::material_dedup_map;
+std::unordered_map<std::string, BlockMeshData> BlockMeshCache::mesh_cache;
+std::unordered_map<std::string, Ref<Material>> BlockMeshCache::material_dedup_map;
 Ref<Material> BlockMeshCache::default_material;
 
 BlockMeshCache::BlockMeshCache() {}
@@ -66,29 +68,36 @@ BlockMeshData BlockMeshCache::load_single_block_mesh(const String &scene_path) {
             }
 
             if (mat.is_valid()) {
-                String mat_key;
+                std::string mat_key;
                 Ref<BaseMaterial3D> base_mat = mat;
                 if (base_mat.is_valid()) {
                     Ref<Texture2D> tex = base_mat->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
                     Color c = base_mat->get_albedo();
+                    
+                    std::ostringstream oss;
                     if (tex.is_valid() && !tex->get_path().is_empty()) {
-                        mat_key = UtilityFunctions::str(tex->get_path(), "_col_", c.r, "_", c.g, "_", c.b, "_", c.a);
+                        std::string tex_path = std::string(String(tex->get_path()).utf8().get_data());
+                        oss << tex_path << "_col_" << c.r << "_" << c.g << "_" << c.b << "_" << c.a;
                     } else {
-                        mat_key = UtilityFunctions::str("col_", c.r, "_", c.g, "_", c.b, "_", c.a);
+                        oss << "col_" << c.r << "_" << c.g << "_" << c.b << "_" << c.a;
                     }
+                    mat_key = oss.str();
                 }
 
-                if (mat_key.is_empty()) mat_key = mat->get_path();
+                if (mat_key.empty() && !mat->get_path().is_empty()) {
+                    mat_key = std::string(String(mat->get_path()).utf8().get_data());
+                }
 
-                if (!mat_key.is_empty()) {
-                    if (material_dedup_map.has(mat_key)) {
-                        mat = material_dedup_map[mat_key];
+                if (!mat_key.empty()) {
+                    auto it = material_dedup_map.find(mat_key);
+                    if (it != material_dedup_map.end()) {
+                        mat = it->second;
                     } else {
                         material_dedup_map[mat_key] = mat;
                     }
                 }
             }
-            data.materials.set(i, mat);
+            data.materials[i] = mat;
         }
     }
 
@@ -106,10 +115,12 @@ void BlockMeshCache::preload_block_meshes() {
 
     for (const auto &E : registry_map) {
         String scene_path = E.value;
-        if (!mesh_cache.has(scene_path)) {
+        std::string path_str = std::string(scene_path.utf8().get_data());
+        
+        if (mesh_cache.find(path_str) == mesh_cache.end()) {
             BlockMeshData data = load_single_block_mesh(scene_path);
             if (data.valid) {
-                mesh_cache[scene_path] = data;
+                mesh_cache[path_str] = data;
             }
         }
     }
@@ -120,14 +131,16 @@ void BlockMeshCache::preload_block_meshes() {
 }
 
 BlockMeshData BlockMeshCache::get_block_mesh_data(const String &scene_path) {
-    if (mesh_cache.has(scene_path)) {
-        return mesh_cache[scene_path];
+    std::string path_str = std::string(scene_path.utf8().get_data());
+    auto it = mesh_cache.find(path_str);
+    if (it != mesh_cache.end()) {
+        return it->second;
     }
 
     if (!scene_path.is_empty()) {
         BlockMeshData data = load_single_block_mesh(scene_path);
         if (data.valid) {
-            mesh_cache[scene_path] = data;
+            mesh_cache[path_str] = data;
             return data;
         }
     }

@@ -24,7 +24,6 @@ FetchContent_MakeAvailable(godot-cpp)
 # コンパイル対象となる C++ ソースファイル
 set(SOURCES
     src/register_types.cpp
-    src/lobby_manager.cpp
     src/config_manager.cpp
     src/Blocks/falling_block.cpp
     src/Blocks/grass_block.cpp
@@ -44,6 +43,7 @@ set(SOURCES
     src/Game/world/chunk/player_finder.cpp
     src/Game/world/chunk/builders/chunk_data_parser.cpp
     src/Game/world/chunk/builders/chunk_mesh_builder_new.cpp
+    src/Game/world/chunk/builders/chunk_mesh_processor.cpp
     src/Game/world/chunk/builders/chunk_node_applier.cpp
     src/Game/realtime/realtime_broadcaster.cpp
     src/Game/realtime/realtime_connection.cpp
@@ -55,6 +55,8 @@ set(SOURCES
     src/Game/hunger_component.cpp
     src/Game/hotbar.cpp
     src/Game/combat_registry.cpp
+    src/Lobby/lobby_manager.cpp
+    src/Lobby/lobby_query_service.cpp
     src/Player/player.cpp
     src/Player/player_skin.cpp
     src/Player/player_movement.cpp

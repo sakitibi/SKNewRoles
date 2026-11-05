@@ -44,8 +44,7 @@ namespace godot {
             );
 
             static PureChunkData build_chunk_data_async(
-                const HashMap<String, Vector<Vector3>> &categorized_positions,
-                bool p_is_initial_load = false
+                const HashMap<String, Vector<Vector3>> &categorized_positions
             );
 
             static void apply_chunk_data_to_node(Node3D *parent_node, const PureChunkData &built_data);

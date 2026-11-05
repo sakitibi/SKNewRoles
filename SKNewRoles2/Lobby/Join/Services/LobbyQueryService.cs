@@ -2,7 +2,6 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using SKNewRoles2.SessionManagerSystem;
 using SKNewRoles2.Lobby.JOIN.Models;
@@ -11,6 +10,24 @@ namespace SKNewRoles2.Lobby.JOIN.Services
 {
     public static class LobbyQueryService
     {
+        private static GodotObject _cppService;
+
+        private static GodotObject GetCppService()
+        {
+            if (_cppService == null || !GodotObject.IsInstanceValid(_cppService))
+            {
+                try
+                {
+                    _cppService = (GodotObject)ClassDB.Instantiate("LobbyQueryService");
+                }
+                catch (Exception ex)
+                {
+                    GD.PrintErr($"❌ [LobbyQueryService] C++ instance creation failed: {ex.Message}");
+                }
+            }
+            return _cppService;
+        }
+
         /// <summary>
         /// 公開されているアクティブなロビーの一覧を取得します。
         /// </summary>
@@ -30,31 +47,33 @@ namespace SKNewRoles2.Lobby.JOIN.Services
 
             var (res, code, bodyData) = await HttpRequestHelper.SendAsync(url, headers, HttpClient.Method.Get);
 
-            if (res == (long)HttpRequest.Result.Success && code == 200)
+            if (res == (long)HttpRequest.Result.Success && code == 200 && bodyData != null)
             {
                 string jsonText = Encoding.UTF8.GetString(bodyData);
-                try
-                {
-                    using JsonDocument doc = JsonDocument.Parse(jsonText);
-                    JsonElement root = doc.RootElement;
+                var service = GetCppService();
 
-                    if (root.ValueKind == JsonValueKind.Array)
+                if (service != null)
+                {
+                    try
                     {
-                        int arrayLength = root.GetArrayLength();
-                        for (int i = 0; i < arrayLength; i++)
+                        // C++側の高速なJSONパーサーに処理を委譲
+                        var godotArray = service.Call("parse_public_lobbies", jsonText).AsGodotArray();
+                        foreach (var item in godotArray)
                         {
-                            JsonElement elem = root[i];
-                            resultList.Add(new LobbyData
+                            if (item.Obj is Godot.Collections.Dictionary dict)
                             {
-                                RoomCode = elem.GetProperty("room_code").GetString() ?? "",
-                                RoomName = elem.GetProperty("room_name").GetString() ?? ""
-                            });
+                                resultList.Add(new LobbyData
+                                {
+                                    RoomCode = dict.ContainsKey("room_code") ? dict["room_code"].AsString() : "",
+                                    RoomName = dict.ContainsKey("room_name") ? dict["room_name"].AsString() : ""
+                                });
+                            }
                         }
                     }
-                }
-                catch (Exception ex)
-                {
-                    GD.PrintErr($"⚠️ [Realtime] JSON 解析エラー: {ex.Message}");
+                    catch (Exception ex)
+                    {
+                        GD.PrintErr($"⚠️ [LobbyQueryService] C++ parse error (public lobbies): {ex.Message}");
+                    }
                 }
             }
             return resultList;
@@ -89,47 +108,43 @@ namespace SKNewRoles2.Lobby.JOIN.Services
             if (bodyData != null && bodyData.Length > 0)
             {
                 string rawJson = Encoding.UTF8.GetString(bodyData);
+                var service = GetCppService();
 
-                try
+                if (service != null)
                 {
-                    using JsonDocument doc = JsonDocument.Parse(rawJson);
-                    JsonElement root = doc.RootElement;
-
-                    if (root.ValueKind == JsonValueKind.Array)
+                    try
                     {
-                        if (root.GetArrayLength() == 0)
+                        string userId = SessionManager.Instance.CurrentSession.User?.Id ?? "";
+
+                        var resultDict = service.Call("parse_lobby_status", rawJson, roomCode, userId).AsGodotDictionary();
+                        int statusCode = resultDict.ContainsKey("status_code") ? resultDict["status_code"].AsInt32() : -1;
+
+                        if (statusCode == 0)
                         {
-                            GD.PrintErr("⚠️ [8] 判定結果: Supabaseから空の配列 [] が返されました（一致するデータがない、または RLS でブロックされています）");
-                            return -1;
+                            SessionManager.Instance.CurrentRoomCode = roomCode;
+                            SessionManager.Instance.CurrentRoomName = resultDict.ContainsKey("room_name") ? resultDict["room_name"].AsString() : "";
+                            SessionManager.Instance.IsHost = resultDict.ContainsKey("is_host") && resultDict["is_host"].AsBool();
+                            if (resultDict.ContainsKey("is_public"))
+                            {
+                                SessionManager.Instance.IsPublic = resultDict["is_public"].AsBool();
+                            }
+                            GD.Print("✅ [8] 判定結果: ロビー確認成功！(0を返します)");
                         }
-
-                        JsonElement lobbyElement = root[0];
-
-                        if (lobbyElement.TryGetProperty("is_active", out JsonElement activeElem) && !activeElem.GetBoolean())
+                        else if (statusCode == 1)
                         {
                             GD.Print("⚠️ [8] 判定結果: is_active が false です");
-                            return 1; 
                         }
-
-                        SessionManager.Instance.CurrentRoomCode = roomCode;
-                        SessionManager.Instance.CurrentRoomName = lobbyElement.GetProperty("room_name").GetString();
-                        SessionManager.Instance.IsHost = (
-                            lobbyElement.GetProperty("host_id").GetString() ==
-                            SessionManager.Instance.CurrentSession.User.Id
-                        );
-
-                        if (lobbyElement.TryGetProperty("is_public", out JsonElement publicElem))
+                        else
                         {
-                            SessionManager.Instance.IsPublic = publicElem.GetBoolean();
+                            GD.PrintErr("⚠️ [8] 判定結果: Supabaseから空の配列 [] が返されました（一致するデータがない、または RLS でブロックされています）");
                         }
 
-                        GD.Print("✅ [8] 判定結果: ロビー確認成功！(0を返します)");
-                        return 0;
+                        return statusCode;
                     }
-                }
-                catch (Exception ex)
-                {
-                    GD.PrintErr($"⚠️ [エラー] JSON解析失敗: {ex.Message}");
+                    catch (Exception ex)
+                    {
+                        GD.PrintErr($"⚠️ [エラー] C++ parse error (lobby status): {ex.Message}");
+                    }
                 }
             }
             else

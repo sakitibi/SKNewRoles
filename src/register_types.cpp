@@ -1,14 +1,6 @@
-#include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/godot.hpp>
 
 #include "register_types.h"
-#include "./Player/player.h"
-#include "./Player/player_attack.h"
-#include "./Player/remote_player.h"
-#include "./Player/skin_painter.h"
-#include "./Player/skin_edit_scene.h"
-#include "./Player/player_spawner.h"
-#include "lobby_manager.h"
 #include "config_manager.h"
 
 #include "Blocks/block_registry.h"
@@ -30,6 +22,16 @@
 #include "Game/hotbar.h"
 #include "Game/combat_registry.h"
 
+#include "Lobby/lobby_manager.h"
+#include "Lobby/lobby_query_service.h"
+
+#include "Player/player.h"
+#include "Player/player_attack.h"
+#include "Player/remote_player.h"
+#include "Player/skin_painter.h"
+#include "Player/skin_edit_scene.h"
+#include "Player/player_spawner.h"
+
 #ifndef GDEXTENSION_API_CC
 #define GDEXTENSION_API_CC
 #endif
@@ -47,7 +49,6 @@ void initialize_player_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<BlockMeshCache>();
     ClassDB::register_class<SNR2FallingBlock>();
     ClassDB::register_class<SNR2GrassBlock>();
-    ClassDB::register_class<LobbyManager>();
     ClassDB::register_class<RemotePlayer>();
     ClassDB::register_class<RoleManager>();
     ClassDB::register_class<ConfigManager>();
@@ -63,6 +64,8 @@ void initialize_player_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<HungerComponent>();
     ClassDB::register_class<Hotbar>();
     ClassDB::register_class<CombatRegistry>();
+    ClassDB::register_class<LobbyManager>();
+    ClassDB::register_class<LobbyQueryService>();
     ClassDB::register_class<SkinPainter>();
     ClassDB::register_class<SkinEditScene>();
 }
