@@ -21,6 +21,8 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(godot-cpp)
 
+find_package(ZLIB REQUIRED)
+
 # コンパイル対象となる C++ ソースファイル
 set(SOURCES
     src/register_types.cpp
@@ -81,7 +83,6 @@ if(SUPABASE_ANON_KEY AND NOT "${SUPABASE_ANON_KEY}" STREQUAL "")
     target_compile_definitions(${PROJECT_NAME} PRIVATE "DEFAULT_SUPABASE_ANON_KEY=\"${SUPABASE_ANON_KEY}\"")
 endif()
 
-# godot-cpp とのリンク
-target_link_libraries(${PROJECT_NAME} PRIVATE godot::cpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE godot::cpp ZLIB::ZLIB)
 
 target_include_directories(${PROJECT_NAME} PRIVATE src)
