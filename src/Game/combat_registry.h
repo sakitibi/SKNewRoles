@@ -1,10 +1,7 @@
 #pragma once
 
-#include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/classes/object.hpp>
 #include <godot_cpp/variant/string.hpp>
-#include <godot_cpp/variant/dictionary.hpp>
-#include <string>
 #include <unordered_map>
 
 namespace godot {

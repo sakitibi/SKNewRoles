@@ -30,7 +30,6 @@ set(SOURCES
     src/Blocks/block_registry.cpp
     src/Blocks/block_mesh_cache.cpp
     src/Game/world/cube_mesh_utils.cpp
-    src/Game/world/mca_parser.cpp
     src/Game/world/chunk/chunk_block_editor.cpp
     src/Game/world/chunk/chunk_manager.cpp
     src/Game/world/chunk/chunk_queue_processor.cpp
@@ -45,6 +44,9 @@ set(SOURCES
     src/Game/world/chunk/builders/chunk_mesh_builder_new.cpp
     src/Game/world/chunk/builders/chunk_mesh_processor.cpp
     src/Game/world/chunk/builders/chunk_node_applier.cpp
+    src/Game/world/nbt/mca_parser.cpp
+    src/Game/world/nbt/nbt_types.cpp
+    src/Game/world/nbt/nbt_reader.cpp
     src/Game/realtime/realtime_broadcaster.cpp
     src/Game/realtime/realtime_connection.cpp
     src/Game/role_manager.cpp

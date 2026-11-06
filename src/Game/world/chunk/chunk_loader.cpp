@@ -1,5 +1,5 @@
 #include "chunk_loader.h"
-#include "../mca_parser.h"
+#include "../nbt/mca_parser.h"
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <chrono>
 

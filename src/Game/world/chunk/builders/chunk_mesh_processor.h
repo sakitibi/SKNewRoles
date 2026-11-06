@@ -11,7 +11,6 @@
 #include "../chunk_mesh_builder.h"
 
 namespace godot {
-
     struct Vector3iHash {
         std::size_t operator()(const Vector3i &v) const {
             std::size_t h1 = std::hash<int>()(v.x);
@@ -22,9 +21,15 @@ namespace godot {
     };
 
     class ChunkMeshProcessor {
-    public:
-        static PureChunkData process_chunk(
-            const std::unordered_map<std::string, std::vector<Vector3>> &native_categorized
-        );
+        private:
+            struct BlockTask {
+                std::string block_id;
+                std::vector<Vector3> positions;
+            };
+        
+        public:
+            static PureChunkData process_chunk(
+                const std::unordered_map<std::string, std::vector<Vector3>> &native_categorized
+            );
     };
 }

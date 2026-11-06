@@ -62,11 +62,7 @@ PureChunkData ChunkMeshProcessor::process_chunk(
 
     const HashMap<String, String> &registry_map = BlockRegistry::get_block_scene_map();
 
-    struct BlockTask {
-        std::string block_id;
-        std::vector<Vector3> positions;
-    };
-    std::vector<BlockTask> tasks;
+    std::vector<ChunkMeshProcessor::BlockTask> tasks;
     tasks.reserve(native_categorized.size());
     for (const auto &pair : native_categorized) {
         tasks.push_back({pair.first, pair.second});
@@ -74,8 +70,8 @@ PureChunkData ChunkMeshProcessor::process_chunk(
 
     std::mutex result_mutex;
 
-    unsigned int hardware_threads = std::thread::hardware_concurrency();
-    unsigned int num_threads = hardware_threads == 0 ? 4 : hardware_threads;
+    uint32_t hardware_threads = std::thread::hardware_concurrency();
+    uint32_t num_threads = hardware_threads == 0 ? 4 : hardware_threads;
     
     size_t chunk_size = (tasks.size() + num_threads - 1) / num_threads;
     if (chunk_size < 1) chunk_size = 1;
