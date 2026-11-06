@@ -6,6 +6,7 @@
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include <string>
 #include "../Game/health_component.h"
 #include "../Game/hotbar.h"
 #include "../Game/combat_registry.h"
