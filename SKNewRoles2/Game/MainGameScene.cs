@@ -84,6 +84,9 @@ namespace SKNewRoles2.Game
 
             _chunkManagerCpp = GetNode<Node3D>("ChunkManager");
 
+            await _playerHandler.SpawnPlayerAsync();
+            _playerHandler.SetupHungerSignal(_playerStatusSyncHandler);
+
             await GameInitializer.InitializeAsync(
                 this,
                 _connection,
@@ -94,9 +97,6 @@ namespace SKNewRoles2.Game
                 _uiController,
                 _playerSpawner
             );
-
-            await _playerHandler.SpawnPlayerAsync();
-            _playerHandler.SetupHungerSignal(_playerStatusSyncHandler);
 
             _hotbarManager = GetNodeOrNull<HotbarManager>("HotbarManager");
             _hotbarNode = GetNodeOrNull<Node>("Hotbar");
