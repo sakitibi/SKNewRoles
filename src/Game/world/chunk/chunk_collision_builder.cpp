@@ -31,6 +31,8 @@ PackedVector3Array ChunkCollisionBuilder::build_collision_faces(
 ) {
     auto start_time = std::chrono::high_resolution_clock::now();
 
+    UtilityFunctions::print(vformat("[ChunkCollisionBuilder] Received categorized_positions size: %d", categorized_positions.size()));
+
     std::unordered_map<std::string, std::vector<Vector3>> native_categorized;
     native_categorized.reserve(categorized_positions.size());
 
@@ -38,6 +40,9 @@ PackedVector3Array ChunkCollisionBuilder::build_collision_faces(
     for (const auto &E : categorized_positions) {
         std::string b_id = std::string(E.key.utf8().get_data());
         const Vector<Vector3> &godot_vec = E.value;
+        
+        UtilityFunctions::print(vformat("[ChunkCollisionBuilder] Block ID: %s, Count: %d", E.key, godot_vec.size()));
+
         std::vector<Vector3> vec;
         vec.reserve(godot_vec.size());
         for (int i = 0; i < godot_vec.size(); ++i) {
@@ -48,6 +53,8 @@ PackedVector3Array ChunkCollisionBuilder::build_collision_faces(
             native_categorized[b_id] = std::move(vec);
         }
     }
+
+    UtilityFunctions::print(vformat("[ChunkCollisionBuilder] Total positions count: %d", (int)total_positions_count));
 
     std::unordered_set<Vector3i, CollisionVector3iHash> occupied_blocks;
     occupied_blocks.reserve(total_positions_count);
@@ -63,7 +70,6 @@ PackedVector3Array ChunkCollisionBuilder::build_collision_faces(
         }
     }
 
-    // 正確なポリゴン頂点定義
     static const Vector3 box_verts[36] = {
         // Top (+Y)
         Vector3(-0.5f, 0.5f, -0.5f), Vector3(0.5f, 0.5f, -0.5f), Vector3(0.5f, 0.5f, 0.5f),
@@ -79,7 +85,7 @@ PackedVector3Array ChunkCollisionBuilder::build_collision_faces(
         Vector3(0.5f, -0.5f, -0.5f), Vector3(-0.5f, 0.5f, -0.5f), Vector3(-0.5f, -0.5f, -0.5f),
         // Left (-X)
         Vector3(-0.5f, -0.5f, -0.5f), Vector3(-0.5f, 0.5f, -0.5f), Vector3(-0.5f, 0.5f, 0.5f),
-        Vector3(-0.5f, -0.5f, -0.5f), Vector3(-0.5f, 0.5f, 0.5f), Vector3(-0.5f, -0.5f, 0.5f),
+        Vector3(-0.5f, -0.5f, -0.5f), Vector3(-0.5f, 0.5f, -0.5f), Vector3(-0.5f, -0.5f, 0.5f),
         // Right (+X)
         Vector3(0.5f, -0.5f, 0.5f), Vector3(0.5f, 0.5f, 0.5f), Vector3(0.5f, 0.5f, -0.5f),
         Vector3(0.5f, -0.5f, 0.5f), Vector3(0.5f, 0.5f, -0.5f), Vector3(0.5f, -0.5f, -0.5f)
@@ -89,8 +95,7 @@ PackedVector3Array ChunkCollisionBuilder::build_collision_faces(
     native_collision_faces.reserve(all_positions.size() * 36);
 
     for (const Vector3 &pos : all_positions) {
-        Vector3i grid_pos = to_grid_pos(pos);
-
+        /*
         bool is_fully_surrounded =
             (occupied_blocks.find(grid_pos + Vector3i(1, 0, 0)) != occupied_blocks.end()) &&
             (occupied_blocks.find(grid_pos + Vector3i(-1, 0, 0)) != occupied_blocks.end()) &&
@@ -100,6 +105,7 @@ PackedVector3Array ChunkCollisionBuilder::build_collision_faces(
             (occupied_blocks.find(grid_pos + Vector3i(0, 0, -1)) != occupied_blocks.end());
 
         if (is_fully_surrounded) continue;
+        */
 
         Vector3 offset(pos.x + 0.5f, pos.y + 0.5f, pos.z + 0.5f);
         for (int k = 0; k < 36; ++k) {
@@ -109,13 +115,13 @@ PackedVector3Array ChunkCollisionBuilder::build_collision_faces(
 
     PackedVector3Array collision_faces;
     collision_faces.resize(native_collision_faces.size());
-    for (size_t i = 0; i < native_collision_faces.size(); ++i) {
-        collision_faces.set(i, native_collision_faces[i]);
+    if (!native_collision_faces.empty()) {
+        std::memcpy(collision_faces.ptrw(), native_collision_faces.data(), native_collision_faces.size() * sizeof(Vector3));
     }
 
     auto end_time = std::chrono::high_resolution_clock::now();
     auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
-    UtilityFunctions::print(vformat("Chunk collision build time (Native STL): %d ms", (int)duration_ms));
+    UtilityFunctions::print(vformat("Chunk collision build time (Native STL): %d ms, Polygons: %d", (int)duration_ms, (int)(collision_faces.size() / 3)));
 
     return collision_faces;
 }
