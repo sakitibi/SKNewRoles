@@ -89,7 +89,7 @@ Dictionary MCAParser::parse_chunk(const String &region_folder_path, int chunk_x,
     int rx = static_cast<int>(std::floor(chunk_x / 32.0f));
     int rz = static_cast<int>(std::floor(chunk_z / 32.0f));
     
-    String virtual_path = region_folder_path + String("r.") + String::num(rx) + String(".") + String::num(rz) + String(".mca");
+    String virtual_path = region_folder_path.path_join(vformat("r.%d.%d.mca", rx, rz));
     String global_path = ProjectSettings::get_singleton()->globalize_path(virtual_path);
     std::string mca_path = std::string(global_path.utf8().get_data());
 
