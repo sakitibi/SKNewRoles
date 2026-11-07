@@ -2,6 +2,7 @@ namespace SKNewRoles2.Game.Network
 {
     public class RealtimePayload
     {
+        public string type { get; set; }
         public string topic { get; set; }
         public string @event { get; set; }
         public object payload { get; set; }

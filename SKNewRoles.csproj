@@ -1,16 +1,16 @@
 <Project Sdk="Godot.NET.Sdk/4.7.2">
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <TargetFramework Condition=" '$(GodotTargetPlatform)' == 'android' ">net9.0</TargetFramework>
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <TargetFramework Condition=" '$(GodotTargetPlatform)' == 'android' ">net9.0</TargetFramework>
 
-    <EnableDynamicLoading>false</EnableDynamicLoading>
-    
-    <OptimizationPreference>Speed</OptimizationPreference>
-    <TieredCompilation>true</TieredCompilation>
-    <TieredCompilationQuickJit>false</TieredCompilationQuickJit>
-    <IlcGenerateCompleteTypeMetadata>false</IlcGenerateCompleteTypeMetadata>
+        <EnableDynamicLoading>false</EnableDynamicLoading>
+        
+        <OptimizationPreference>Speed</OptimizationPreference>
+        <TieredCompilation>true</TieredCompilation>
+        <TieredCompilationQuickJit>false</TieredCompilationQuickJit>
+        <IlcGenerateCompleteTypeMetadata>true</IlcGenerateCompleteTypeMetadata>
     </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="SharpCompress" Version="0.50.4" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="SharpCompress" Version="0.50.4" />
+    </ItemGroup>
 </Project>
