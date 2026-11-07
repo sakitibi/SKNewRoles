@@ -95,7 +95,8 @@ PackedVector3Array ChunkCollisionBuilder::build_collision_faces(
     native_collision_faces.reserve(all_positions.size() * 36);
 
     for (const Vector3 &pos : all_positions) {
-        /*
+        Vector3i grid_pos = to_grid_pos(pos);
+
         bool is_fully_surrounded =
             (occupied_blocks.find(grid_pos + Vector3i(1, 0, 0)) != occupied_blocks.end()) &&
             (occupied_blocks.find(grid_pos + Vector3i(-1, 0, 0)) != occupied_blocks.end()) &&
@@ -105,10 +106,9 @@ PackedVector3Array ChunkCollisionBuilder::build_collision_faces(
             (occupied_blocks.find(grid_pos + Vector3i(0, 0, -1)) != occupied_blocks.end());
 
         if (is_fully_surrounded) continue;
-        */
 
         Vector3 offset(pos.x + 0.5f, pos.y + 0.5f, pos.z + 0.5f);
-        for (int k = 0; k < 36; ++k) {
+        for (uint8_t k = 0; k < 36; ++k) {
             native_collision_faces.push_back(box_verts[k] + offset);
         }
     }
