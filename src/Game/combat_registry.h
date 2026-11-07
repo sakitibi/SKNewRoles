@@ -3,6 +3,7 @@
 #include <godot_cpp/classes/object.hpp>
 #include <godot_cpp/variant/string.hpp>
 #include <unordered_map>
+#include <string>
 
 namespace godot {
     class CombatRegistry : public Object {
