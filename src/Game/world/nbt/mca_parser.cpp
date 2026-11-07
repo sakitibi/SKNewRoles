@@ -5,6 +5,7 @@
 #include <fstream>
 #include <zlib.h>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include <godot_cpp/classes/project_settings.hpp>
 
 using namespace godot;
 
@@ -87,7 +88,10 @@ Dictionary MCAParser::parse_chunk(const String &region_folder_path, int chunk_x,
 
     int rx = static_cast<int>(std::floor(chunk_x / 32.0f));
     int rz = static_cast<int>(std::floor(chunk_z / 32.0f));
-    std::string mca_path = std::string(region_folder_path.utf8().get_data()) + "r." + std::to_string(rx) + "." + std::to_string(rz) + ".mca";
+    
+    String virtual_path = region_folder_path + String("r.") + String::num(rx) + String(".") + String::num(rz) + String(".mca");
+    String global_path = ProjectSettings::get_singleton()->globalize_path(virtual_path);
+    std::string mca_path = std::string(global_path.utf8().get_data());
 
     int rel_x = ((chunk_x % 32) + 32) % 32;
     int rel_z = ((chunk_z % 32) + 32) % 32;
