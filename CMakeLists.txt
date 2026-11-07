@@ -29,7 +29,20 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(godot-cpp)
 
-find_package(ZLIB REQUIRED)
+FetchContent_Declare(
+    zlib
+    GIT_REPOSITORY https://github.com/madler/zlib.git
+    GIT_TAG        v1.3.1
+)
+FetchContent_MakeAvailable(zlib)
+
+if(NOT TARGET ZLIB::ZLIB)
+    if(TARGET zlibstatic)
+        add_library(ZLIB::ZLIB ALIAS zlibstatic)
+    elseif(TARGET zlib)
+        add_library(ZLIB::ZLIB ALIAS zlib)
+    endif()
+endif()
 
 # コンパイル対象となる C++ ソースファイル
 set(SOURCES
