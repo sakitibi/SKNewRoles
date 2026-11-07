@@ -19,8 +19,13 @@ MCAParser::MCAParser() {}
 MCAParser::~MCAParser() {}
 
 std::vector<uint8_t> MCAParser::get_raw_chunk_nbt_native(const std::string &mca_file_path, int rel_x, int rel_z) {
+    UtilityFunctions::print(vformat("[MCAParser] Opening MCA file: %s", String::utf8(mca_file_path.c_str())));
+
     std::ifstream file(mca_file_path, std::ios::binary);
-    if (!file.is_open()) return {};
+    if (!file.is_open()) {
+        UtilityFunctions::print(vformat("[MCAParser] ERROR: Failed to open MCA file at: %s", String::utf8(mca_file_path.c_str())));
+        return {};
+    }
 
     int index = (rel_x % 32) + (rel_z % 32) * 32;
     file.seekg(index * 4);
@@ -30,7 +35,11 @@ std::vector<uint8_t> MCAParser::get_raw_chunk_nbt_native(const std::string &mca_
     location_raw = bswap32_native(location_raw);
 
     uint32_t sector_offset = location_raw >> 8;
-    if (sector_offset == 0) return {};
+
+    if (sector_offset == 0) {
+        UtilityFunctions::print(vformat("[MCAParser] Chunk (%d, %d) is not generated yet (sector_offset == 0)", rel_x, rel_z));
+        return {};
+    }
 
     file.seekg(sector_offset * 4096);
     uint32_t length = 0;
@@ -39,7 +48,13 @@ std::vector<uint8_t> MCAParser::get_raw_chunk_nbt_native(const std::string &mca_
 
     uint8_t compression_type = 0;
     file.read(reinterpret_cast<char*>(&compression_type), 1);
-    if (length <= 1) return {};
+
+    UtilityFunctions::print(vformat("[MCAParser] Chunk found at rel(%d, %d) -> length: %d, compression: %d", rel_x, rel_z, length, compression_type));
+
+    if (length <= 1) {
+        UtilityFunctions::print(vformat("[MCAParser] WARNING: Invalid chunk length (%d) at rel(%d, %d)", length, rel_x, rel_z));
+        return {};
+    }
 
     std::vector<uint8_t> compressed_data(length - 1);
     file.read(reinterpret_cast<char*>(compressed_data.data()), length - 1);
@@ -55,9 +70,15 @@ std::vector<uint8_t> MCAParser::get_raw_chunk_nbt_native(const std::string &mca_
 
         if (res == Z_OK) {
             decompressed.resize(dest_len);
+            UtilityFunctions::print(vformat("[MCAParser] zlib uncompress SUCCESS: %d bytes -> %d bytes", (int)compressed_data.size(), (int)dest_len));
             return decompressed;
+        } else {
+            UtilityFunctions::print(vformat("[MCAParser] ERROR: zlib uncompress FAILED with error code: %d (Z_MEM_ERROR=-2, Z_BUF_ERROR=-5, Z_DATA_ERROR=-3)", res));
         }
+    } else {
+        UtilityFunctions::print(vformat("[MCAParser] WARNING: Unsupported compression type: %d (Expected 2 for zlib)", compression_type));
     }
+
     return {};
 }
 
@@ -72,7 +93,10 @@ Dictionary MCAParser::parse_chunk(const String &region_folder_path, int chunk_x,
     int rel_z = ((chunk_z % 32) + 32) % 32;
 
     std::vector<uint8_t> raw_nbt = get_raw_chunk_nbt_native(mca_path, rel_x, rel_z);
-    if (raw_nbt.empty()) return Dictionary();
+    if (raw_nbt.empty()) {
+        UtilityFunctions::print(vformat("[MCAParser] parse_chunk: raw_nbt is empty for chunk (%d, %d)", chunk_x, chunk_z));
+        return Dictionary();
+    }
 
     NBTReader reader(raw_nbt.data(), raw_nbt.size());
     NBTCompound root_compound = reader.parse_root();
