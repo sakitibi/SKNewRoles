@@ -6,15 +6,15 @@ namespace SKNewRoles2.Game
 {
     public class MainGameCombatHandler(MainGameScene scene, PlayerCombatSyncHandler playerCombatSyncHandler)
     {
-        public Camera3D camera;
+        public Camera3D Camera { get; set; }
         public void HandleInput(InputEvent @event)
         {
             if (@event is InputEventMouseButton mouseEvent && mouseEvent.Pressed && mouseEvent.ButtonIndex == MouseButton.Left)
             {
-                camera = scene.GetViewport().GetCamera3D();
-                if (scene.MyPlayerInstance != null && camera != null && GodotObject.IsInstanceValid(scene.MyPlayerInstance))
+                Camera = scene.GetViewport().GetCamera3D();
+                if (scene.MyPlayerInstance != null && Camera != null && GodotObject.IsInstanceValid(scene.MyPlayerInstance))
                 {
-                    _ = PerformAttack(camera);
+                    _ = PerformAttack(Camera);
                 }
             }
         }

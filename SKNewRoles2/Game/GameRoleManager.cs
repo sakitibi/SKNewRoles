@@ -65,7 +65,7 @@ namespace SKNewRoles2.Game
                 GD.Print($"📋 [AssignRoles] ルーム参加者が見つからないため自分のIDのみ追加: {myUserId}");
             }
 
-            uint witchRoleId = RoleInfo.RoleIdDictionary["witch"];
+            uint witchRoleId = RoleInfo.GetRoleId("witch");
 
             RoleCountsDict ??= [];
             RoleFactionsDict ??= [];
