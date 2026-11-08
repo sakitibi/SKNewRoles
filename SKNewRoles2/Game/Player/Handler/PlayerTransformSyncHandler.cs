@@ -23,7 +23,7 @@ namespace SKNewRoles2.Game.Player.Handler
                 bool hasMoved = playerPos.DistanceSquaredTo(_lastSentPosition) > (posThreshold * posThreshold);
                 bool hasRotated = playerRot.DistanceSquaredTo(_lastSentRotation) > (rotThreshold * rotThreshold);
 
-                if (hasMoved && hasRotated)
+                if (hasMoved || hasRotated)
                 {
                     _lastSentPosition = playerPos;
                     _lastSentRotation = playerRot;
