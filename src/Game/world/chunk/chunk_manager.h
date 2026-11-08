@@ -5,6 +5,8 @@
 #include <godot_cpp/templates/hash_map.hpp>
 #include <godot_cpp/variant/vector2i.hpp>
 #include <godot_cpp/variant/node_path.hpp>
+#include <godot_cpp/variant/string.hpp>
+#include <godot_cpp/variant/vector3.hpp>
 
 #include "chunk_loader.h"
 #include "chunk_queue_processor.h"
@@ -33,6 +35,8 @@ namespace godot {
             HashMap<Vector2i, Node3D *> loaded_chunks;
             HashMap<Vector2i, int64_t> pending_tasks;
             HashMap<Vector2i, HashMap<String, Vector<Vector3>>> chunk_block_data_map;
+            
+            HashMap<Vector2i, HashMap<Vector3, String>> chunk_biome_data_map;
 
             ChunkQueueProcessor queue_processor;
             String region_folder_path = "user://game_asset/regions/";
@@ -61,6 +65,8 @@ namespace godot {
             HashMap<Vector2i, Node3D *> &get_loaded_chunks() { return loaded_chunks; }
             HashMap<Vector2i, int64_t> &get_pending_tasks() { return pending_tasks; }
             HashMap<Vector2i, HashMap<String, Vector<Vector3>>> &get_chunk_block_data_map() { return chunk_block_data_map; }
+            
+            HashMap<Vector2i, HashMap<Vector3, String>> &get_chunk_biome_data_map() { return chunk_biome_data_map; }
 
             void unload_chunk(const Vector2i &coord);
 

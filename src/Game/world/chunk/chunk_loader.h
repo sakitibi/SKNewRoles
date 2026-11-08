@@ -20,6 +20,9 @@ namespace godot {
         float max_height = 320.0f;     // ワールド全体の最大Y座標
 
         HashMap<String, Vector<Vector3>> categorized_positions;
+        
+        HashMap<Vector3, String> block_biomes;
+
         PureChunkData built_data;
         bool has_data = false;
         bool is_initial_load = false;

@@ -134,6 +134,8 @@ void ChunkManager::unload_chunk(const Vector2i &coord) {
     Node3D *chunk_node = loaded_chunks[coord];
     loaded_chunks.erase(coord);
     chunk_block_data_map.erase(coord);
+    
+    chunk_biome_data_map.erase(coord);
 
     if (chunk_node) {
         chunk_node->queue_free();
@@ -160,6 +162,10 @@ void ChunkManager::_on_chunk_loaded(Variant p_userdata) {
     pending_tasks.erase(coord);
 
     if (data->has_data) {
+        if (!data->block_biomes.is_empty()) {
+            chunk_biome_data_map[coord] = data->block_biomes;
+        }
+
         queue_processor.push_completed_data(data);
     } else {
         delete data;
