@@ -174,7 +174,7 @@ void ChunkManager::_on_chunk_loaded(Variant p_userdata) {
 
 void ChunkManager::verity_initial_collisions() {
     UtilityFunctions::print("[ChunkManager] Verifying initial collisions on main thread...");
-    ChunkVeritier::verity_initial_collisions(loaded_chunks);
+    ChunkVeritier::verity_initial_collisions(chunk_block_data_map);
 }
 
 void ChunkManager::set_chunk_size(float p_size) { chunk_size = p_size; }

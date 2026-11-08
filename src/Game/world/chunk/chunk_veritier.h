@@ -7,6 +7,6 @@
 namespace godot {
     class ChunkVeritier {
         public:
-            static void verity_initial_collisions(const HashMap<Vector2i, Node3D *> &loaded_chunks);
+            static void verity_initial_collisions(const HashMap<Vector2i, HashMap<String, Vector<Vector3>>> &chunk_block_data_map);
     };
 }

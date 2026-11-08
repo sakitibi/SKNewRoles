@@ -7,46 +7,31 @@
 
 using namespace godot;
 
-void ChunkVeritier::verity_initial_collisions(const HashMap<Vector2i, Node3D *> &loaded_chunks) {
+void ChunkVeritier::verity_initial_collisions(const HashMap<Vector2i, HashMap<String, Vector<Vector3>>> &chunk_block_data_map) {
     auto start_time = std::chrono::high_resolution_clock::now();
 
-    UtilityFunctions::print("[ChunkManager Veritication] --- Chunk Hit Detection Veritication Log ---");
+    UtilityFunctions::print("[ChunkManager Veritication] --- Block Data & Collision Source Veritication ---");
 
-    int total_collision_shapes = 0;
-    int total_faces = 0;
+    int total_chunks = chunk_block_data_map.size();
+    int total_blocks = 0;
 
-    for (const auto &E : loaded_chunks) {
-        Node3D *chunk_node = E.value;
-        if (!chunk_node) continue;
-
-        for (int i = 0; i < chunk_node->get_child_count(); ++i) {
-            StaticBody3D *sb = Object::cast_to<StaticBody3D>(chunk_node->get_child(i));
-            if (!sb) continue;
-
-            for (int j = 0; j < sb->get_child_count(); ++j) {
-                CollisionShape3D *cs = Object::cast_to<CollisionShape3D>(sb->get_child(j));
-                if (!cs) continue;
-
-                total_collision_shapes++;
-                Ref<ConcavePolygonShape3D> shape = cs->get_shape();
-                if (shape.is_valid()) {
-                    PackedVector3Array faces = shape->get_faces();
-                    total_faces += faces.size() / 3;
-                }
-            }
+    for (const auto &E : chunk_block_data_map) {
+        const HashMap<String, Vector<Vector3>> &block_map = E.value;
+        for (const auto &subE : block_map) {
+            total_blocks += subE.value.size();
         }
     }
 
-    UtilityFunctions::print(vformat("[ChunkManager Veritication] Number of loaded collision shapes: %d", total_collision_shapes));
-    UtilityFunctions::print(vformat("[ChunkManager Veritication] Total collision polygon count (Triangle Count): %d", total_faces));
+    UtilityFunctions::print(vformat("[ChunkManager Veritication] Loaded chunks count: %d", total_chunks));
+    UtilityFunctions::print(vformat("[ChunkManager Veritication] Total registered block positions: %d", total_blocks));
 
-    if (total_faces == 0) {
-        UtilityFunctions::printerr("[ChunkManager ERROR] There are zero collision polygons! Collision detection has not been generated!");
+    if (total_blocks == 0) {
+        UtilityFunctions::printerr("[ChunkManager ERROR] There are zero block data positions! Collision generation will fail because no blocks were parsed!");
     } else {
-        UtilityFunctions::print("[ChunkManager Veritication] SUCCESS: The polygons are correctly registered in the physical space.");
+        UtilityFunctions::print("[ChunkManager Veritication] SUCCESS: Block data exists and is ready for collision generation.");
     }
 
     auto end_time = std::chrono::high_resolution_clock::now();
     auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
-    UtilityFunctions::print(vformat("Chunk verity time: %d ms", (int)duration_ms));
+    UtilityFunctions::print(vformat("Chunk data veritication time: %d ms", (int)duration_ms));
 }
