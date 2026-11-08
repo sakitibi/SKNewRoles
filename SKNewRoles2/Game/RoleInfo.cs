@@ -61,7 +61,7 @@ namespace SKNewRoles2.Game
 
         public static uint GetFactionId(string factionName)
         {
-            FactionData faction = FactionNames.Values.FirstOrDefault(f => f.Name == factionName);
+            FactionData faction = FactionNames[factionName];
             return faction.Id;
         }
 
@@ -73,7 +73,7 @@ namespace SKNewRoles2.Game
 
         public static uint GetRoleId(string roleName)
         {
-            RoleData role = RoleNames.Values.FirstOrDefault(r => r.Name == roleName);
+            RoleData role = RoleNames[roleName];
             return role.Id;
         }
 
