@@ -100,10 +100,7 @@ namespace SKNewRoles2.Game
                 _hpBar.Value = currentHp;
             }
 
-            if (_hpLabel != null)
-            {
-                _hpLabel.Text = $"{currentHp}";
-            }
+                _hpLabel?.Text = $"{currentHp}" ?? "";
         }
 
         public void UpdateHunger(int currentHunger, int maxHunger)
