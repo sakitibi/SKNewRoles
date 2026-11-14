@@ -41,7 +41,7 @@ namespace SKNewRoles2.Game.Inventory.Item
                 return;
             }
 
-            if (_database.TryGetValue(item.ItemId, out var existingItem))
+            if (_database.TryGetValue(item.ItemId, out ItemData _))
             {
                 GD.Print($"⚠️ [ItemDatabase] アイテムID '{item.ItemId}' は既に登録されています。上書きします。");
                 _database[item.ItemId] = item;
@@ -50,6 +50,17 @@ namespace SKNewRoles2.Game.Inventory.Item
             {
                 _database.Add(item.ItemId, item);
                 GD.Print($"✅ [ItemDatabase] MOD/外部からアイテムを登録しました: {item.ItemId} ({item.ItemName})");
+            }
+
+            GodotObject combatRegistry = ClassDB.Instantiate("CombatRegistry").AsGodotObject();
+            if (combatRegistry == null)
+            {
+                GD.PrintErr("[ItemDatabase] Error: Failed to instantiate C++ CombatRegistry.");
+                return;
+            }
+            else
+            {
+                combatRegistry.Call("register_weapon_damage", item.ItemId, item.WeaponDamage);
             }
         }
 

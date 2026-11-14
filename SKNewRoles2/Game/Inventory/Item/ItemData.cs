@@ -10,6 +10,7 @@ namespace SKNewRoles2.Game.Inventory.Item
         [Export] public string ItemName { get; set; } = "";
         [Export] public Texture2D Icon { get; set; }
         [Export] public byte MaxStack { get; set; } = 64;
+        [Export] public uint WeaponDamage { get; set; } = 1;
         public Action<Node> OnUseAction { get; set; }
 
         /// <summary>
