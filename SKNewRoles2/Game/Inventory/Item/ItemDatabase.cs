@@ -15,12 +15,10 @@ namespace SKNewRoles2.Game.Inventory.Item
         {
             Instance = this;
 
+            // 初期リストの登録
             foreach (var item in _itemList)
             {
-                if (item != null && !string.IsNullOrEmpty(item.ItemId) && !_database.ContainsKey(item.ItemId))
-                {
-                    _database.Add(item.ItemId, item);
-                }
+                RegisterItem(item);
             }
         }
 
@@ -29,6 +27,40 @@ namespace SKNewRoles2.Game.Inventory.Item
             if (Instance == this)
             {
                 Instance = null;
+            }
+        }
+
+        /// <summary>
+        /// 外部から新しいアイテムを動的に登録します
+        /// </summary>
+        public void RegisterItem(ItemData item)
+        {
+            if (item == null || string.IsNullOrEmpty(item.ItemId))
+            {
+                GD.PrintErr("⚠️ [ItemDatabase] 無効なアイテムデータまたはItemIdです。");
+                return;
+            }
+
+            if (_database.TryGetValue(item.ItemId, out var existingItem))
+            {
+                GD.Print($"⚠️ [ItemDatabase] アイテムID '{item.ItemId}' は既に登録されています。上書きします。");
+                _database[item.ItemId] = item;
+            }
+            else
+            {
+                _database.Add(item.ItemId, item);
+                GD.Print($"✅ [ItemDatabase] MOD/外部からアイテムを登録しました: {item.ItemId} ({item.ItemName})");
+            }
+        }
+
+        /// <summary>
+        /// 複数のアイテムをまとめて登録します
+        /// </summary>
+        public void RegisterItems(IEnumerable<ItemData> items)
+        {
+            foreach (var item in items)
+            {
+                RegisterItem(item);
             }
         }
 

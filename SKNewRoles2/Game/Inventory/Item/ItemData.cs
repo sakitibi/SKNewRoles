@@ -1,4 +1,5 @@
 using Godot;
+using System;
 
 namespace SKNewRoles2.Game.Inventory.Item
 {
@@ -9,13 +10,17 @@ namespace SKNewRoles2.Game.Inventory.Item
         [Export] public string ItemName { get; set; } = "";
         [Export] public Texture2D Icon { get; set; }
         [Export] public byte MaxStack { get; set; } = 64;
+        public Action<Node> OnUseAction { get; set; }
 
         /// <summary>
         /// アイテムを持ちながら右クリックしたときの処理テンプレート
         /// </summary>
-        public virtual void UseItem(Node user)
+        public void UseItem(Node user)
         {
-            GD.Print($"[ItemData] {ItemName} (ID: {ItemId}) が使用されました。");
+            GD.Print($"[ItemData] {ItemName} が使用されました。");
+            
+            // MOD側から設定されたカスタム処理があれば実行する
+            OnUseAction?.Invoke(user);
         }
     }
 }
