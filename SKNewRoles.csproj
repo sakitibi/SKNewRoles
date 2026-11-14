@@ -9,6 +9,7 @@
         <TieredCompilation>true</TieredCompilation>
         <TieredCompilationQuickJit>false</TieredCompilationQuickJit>
         <IlcGenerateCompleteTypeMetadata>true</IlcGenerateCompleteTypeMetadata>
+        <DebugType>portable</DebugType>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="SharpCompress" Version="0.50.4" />
