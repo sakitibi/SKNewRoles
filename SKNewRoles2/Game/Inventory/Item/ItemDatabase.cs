@@ -16,7 +16,7 @@ namespace SKNewRoles2.Game.Inventory.Item
             Instance = this;
 
             // 初期リストの登録
-            foreach (var item in _itemList)
+            foreach (ItemData item in _itemList)
             {
                 RegisterItem(item);
             }
@@ -69,7 +69,7 @@ namespace SKNewRoles2.Game.Inventory.Item
         /// </summary>
         public void RegisterItems(IEnumerable<ItemData> items)
         {
-            foreach (var item in items)
+            foreach (ItemData item in items)
             {
                 RegisterItem(item);
             }
