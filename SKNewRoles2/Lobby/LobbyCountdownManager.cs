@@ -39,7 +39,7 @@ namespace SKNewRoles2.Lobby
                 AnchorTop = 0,
                 AnchorRight = 1,
                 AnchorBottom = 1,
-                Color = new Color(0, 0, 0, 0.5f)
+                Color = new Color(0, 0, 0, 0.4f)
             };
             overlay.AddChild(bg);
 
@@ -54,8 +54,8 @@ namespace SKNewRoles2.Lobby
                 GrowVertical = Control.GrowDirection.Both,
                 ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
                 StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
-                CustomMinimumSize = new Vector2(400, 400),
-                PivotOffset = new Vector2(200, 200),
+                CustomMinimumSize = new Vector2(600, 600),
+                PivotOffset = new Vector2(300, 300),
             };
             
             overlay.AddChild(countdownTextureRect);
