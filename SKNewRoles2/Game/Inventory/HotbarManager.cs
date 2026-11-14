@@ -167,6 +167,7 @@ namespace SKNewRoles2.Game.Inventory
             Texture2D iconTexture = data?.Icon;
 
             _uiController?.UpdateSlotItem(slotIndex, iconTexture, count);
+            if (itemId.EndsWith("_skill")) return;
             _ = SendHotbarItemAsync(slotIndex, itemId, (ushort)count);
         }
 
