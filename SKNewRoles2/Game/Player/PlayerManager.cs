@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace SKNewRoles2.Game.Player
 {
-    public class PlayerManager
+    public class PlayerManager(MainGameScene scene)
     {
         public Node3D MyPlayerInstance { get; private set; }
         public Node HealthComponent { get; private set; }
@@ -40,6 +40,28 @@ namespace SKNewRoles2.Game.Player
             {
                 GD.PrintErr("⚠️ [PlayerManager] HotbarManager が見つからないため、初期アイテムを配布できませんでした。");
             }
+        }
+
+        /// <summary>
+        /// プレイヤーノードの自動取得メソッド
+        /// </summary>
+        public Node GetPlayerNode()
+        {
+            if (scene != null && GodotObject.IsInstanceValid(scene))
+            {
+                // シーン内のすべてのノードを走査
+                Godot.Collections.Array<Node> allNodes = scene.FindChildren("*", "", true, false);
+                foreach (Node node in allNodes)
+                {
+                    if (node is Node3D && node.HasNode("HealthComponent"))
+                    {
+                        return node;
+                    }
+                }
+            }
+
+            GD.PrintErr("⚠️ [PlayerManager] HealthComponent を持つプレイヤーノードが見つかりませんでした。");
+            return scene;
         }
     }
 }

@@ -7,6 +7,9 @@ using SKNewRoles2.Game.Player;
 using SKNewRoles2.Game.BGM;
 using System.Collections.Generic;
 using SKNewRoles2.Game.Player.Handler;
+using SKNewRoles2.Game.Inventory.Item;
+
+using SKNewRoles2.Game.Skill.Witch.Witch;
 
 namespace SKNewRoles2.Game
 {
@@ -34,6 +37,7 @@ namespace SKNewRoles2.Game
         private GameRoleManager _roleManager;
         private HotbarManager _hotbarManager;
         private PlayerSpawner _playerSpawner;
+        private WitchMagic _witchMagic;
 
         public RealtimeConnection Connection => _connection;
         private readonly RealtimeConnection _connection = new();
@@ -64,6 +68,8 @@ namespace SKNewRoles2.Game
             _networkHandler = new(this);
             _combatHandler = new(this, _playerCombatSyncHandler);
             _playerSpawner = new(this);
+
+            _witchMagic = new(this, _playerCombatSyncHandler);
 
             _networkHandler.RegisterEvents(_connection);
 
@@ -117,6 +123,9 @@ namespace SKNewRoles2.Game
                 await _uiController.ShowRoleRevealAsync(_roleManager?.MyRole ?? 0, _roleManager?.MyFaction ?? 0, 5000);
                 PlayerSpawner.SetPlayerPhysicsEnabled(_playerHandler.MyPlayerInstance, true);
             }
+
+            ItemData witchMagicSkill = ItemDatabase.Instance.GetItem("witch_magic_skill");
+            witchMagicSkill.OnUseAction = (user) => _witchMagic.UseSkill(user);
         }
         public override void _Input(InputEvent @event)
         {

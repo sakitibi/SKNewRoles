@@ -4,15 +4,17 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using SKNewRoles2.Game.Network;
 using SKNewRoles2.Game.Inventory.Item;
+using SKNewRoles2.Game.Player;
 
 namespace SKNewRoles2.Game.Inventory
 {
     [GlobalClass]
-    public partial class HotbarManager : Node
+    public partial class HotbarManager(MainGameScene scene) : Node
     {
         private MainGameScene _scene;
         private Node _hotbarNode;
         private int _currentSlotIndex = 0;
+        private readonly PlayerManager _playerManager = new(scene);
 
         [Export] private ItemDatabase _itemDatabase;
         [Export] private HotbarUIController _uiController;
@@ -89,32 +91,10 @@ namespace SKNewRoles2.Game.Inventory
                 {
                     GD.Print($"🖱️ [HotbarManager] スロット {_currentSlotIndex} のアイテム「{itemId}」を使用します。");
                     
-                    Node playerNode = GetPlayerNode();
+                    Node playerNode = _playerManager.GetPlayerNode();
                     _ = itemData.UseItem(playerNode);
                 }
             }
-        }
-
-        /// <summary>
-        /// プレイヤーノードの自動取得メソッド
-        /// </summary>
-        private Node GetPlayerNode()
-        {
-            if (_scene != null && IsInstanceValid(_scene))
-            {
-                // シーン内のすべてのノードを走査
-                var allNodes = _scene.FindChildren("*", "", true, false);
-                foreach (var node in allNodes)
-                {
-                    if (node is Node3D && node.HasNode("HealthComponent"))
-                    {
-                        return node;
-                    }
-                }
-            }
-
-            GD.PrintErr("⚠️ [HotbarManager] HealthComponent を持つプレイヤーノードが見つかりませんでした。");
-            return this;
         }
 
         public void SwapSlots(int slotA, int slotB)

@@ -17,7 +17,7 @@ namespace SKNewRoles2.Game.Inventory.Item
         /// <summary>
         /// アイテムを持ちながら右クリックしたときの処理テンプレート
         /// </summary>
-        public async Task UseItem(Node user)
+        public virtual async Task UseItem(Node user)
         {
             GD.Print($"[ItemData] {ItemName} が使用されました。");
             
