@@ -96,26 +96,24 @@ namespace SKNewRoles2.Game.Inventory
         }
 
         /// <summary>
-        /// Hotbar側だけで完結するプレイヤーノードの自動取得メソッド
+        /// プレイヤーノードの自動取得メソッド
         /// </summary>
         private Node GetPlayerNode()
         {
             if (_scene != null && IsInstanceValid(_scene))
             {
-                Node player = _scene.FindChild("Player", true, false);
-                if (player != null && IsInstanceValid(player))
+                // シーン内のすべてのノードを走査
+                var allNodes = _scene.FindChildren("*", "", true, false);
+                foreach (var node in allNodes)
                 {
-                    return player;
+                    if (node is Node3D && node.HasNode("HealthComponent"))
+                    {
+                        return node;
+                    }
                 }
             }
 
-            var rootPlayer = GetTree()?.Root.FindChild("Player", true, false);
-            if (rootPlayer != null && IsInstanceValid(rootPlayer))
-            {
-                return rootPlayer;
-            }
-
-            GD.PrintErr("⚠️ [HotbarManager] プレイヤーノードが見つかりませんでした。");
+            GD.PrintErr("⚠️ [HotbarManager] HealthComponent を持つプレイヤーノードが見つかりませんでした。");
             return this;
         }
 
