@@ -7,6 +7,38 @@ namespace SKNewRoles2.Lobby
 {
     public static class LobbyCountdownManager
     {
+        public static Control Overlay { set; get; } = new()
+        {
+            AnchorLeft = 0,
+            AnchorTop = 0,
+            AnchorRight = 1,
+            AnchorBottom = 1
+        };
+        
+        // 半透明の黒背景
+        public static ColorRect Bg { set; get; } = new()
+        {
+            AnchorLeft = 0,
+            AnchorTop = 0,
+            AnchorRight = 1,
+            AnchorBottom = 1,
+            Color = new Color(0, 0, 0, 0.25f)
+        };
+
+        // 中央に配置するカウントダウン用画像
+        public static TextureRect CountdownTextureRect { set; get; } = new()
+        {
+            AnchorLeft = 0.5f,
+            AnchorTop = 0.5f,
+            AnchorRight = 0.5f,
+            AnchorBottom = 0.5f,
+            GrowHorizontal = Control.GrowDirection.Both,
+            GrowVertical = Control.GrowDirection.Both,
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+            CustomMinimumSize = new Vector2(700, 700),
+            PivotOffset = new Vector2(350, 350),
+        };
         /// <summary>
         /// 画面中央に3秒間のカウントダウン画像を順番に表示し、その後にゲームステージへ遷移します
         /// </summary>
@@ -24,42 +56,10 @@ namespace SKNewRoles2.Lobby
             if (startGameButton != null && GodotObject.IsInstanceValid(startGameButton)) startGameButton.Disabled = true;
             if (leaveButton != null && GodotObject.IsInstanceValid(leaveButton)) leaveButton.Disabled = true;
 
-            Control overlay = new()
-            {
-                AnchorLeft = 0,
-                AnchorTop = 0,
-                AnchorRight = 1,
-                AnchorBottom = 1
-            };
-            
-            // 半透明の黒背景
-            ColorRect bg = new()
-            {
-                AnchorLeft = 0,
-                AnchorTop = 0,
-                AnchorRight = 1,
-                AnchorBottom = 1,
-                Color = new Color(0, 0, 0, 0.3f)
-            };
-            overlay.AddChild(bg);
 
-            // 中央に配置するカウントダウン用画像
-            TextureRect countdownTextureRect = new()
-            {
-                AnchorLeft = 0.5f,
-                AnchorTop = 0.5f,
-                AnchorRight = 0.5f,
-                AnchorBottom = 0.5f,
-                GrowHorizontal = Control.GrowDirection.Both,
-                GrowVertical = Control.GrowDirection.Both,
-                ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-                StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
-                CustomMinimumSize = new Vector2(700, 700),
-                PivotOffset = new Vector2(350, 350),
-            };
-            
-            overlay.AddChild(countdownTextureRect);
-            lobbyRoomNode.AddChild(overlay);
+            Overlay.AddChild(Bg);
+            Overlay.AddChild(CountdownTextureRect);
+            lobbyRoomNode.AddChild(Overlay);
 
             string[] counts = ["3", "2", "1"];
             foreach (string countStr in counts)
@@ -71,7 +71,7 @@ namespace SKNewRoles2.Lobby
                 if (FileAccess.FileExists(imagePath))
                 {
                     Image img = Image.LoadFromFile(ProjectSettings.GlobalizePath(imagePath));
-                    countdownTextureRect.Texture = ImageTexture.CreateFromImage(img);
+                    CountdownTextureRect.Texture = ImageTexture.CreateFromImage(img);
                 }
                 else
                 {
