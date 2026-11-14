@@ -21,7 +21,7 @@ namespace SKNewRoles2.Lobby
         }
 
         /// <summary>
-        /// ホストが「ゲーム開始」ボタンを押したときの処理（データベース側ロビーを非アクティブ化）
+        /// ホストが「ゲーム開始」ボタンを押したときの処理
         /// </summary>
         public async void OnStartGameButtonPressed()
         {
@@ -36,7 +36,7 @@ namespace SKNewRoles2.Lobby
             if (success)
             {
                 GD.Print("✅ ホスト側のロビー非アクティブ化に成功しました。ホスト自身もメインステージへ遷移します。");
-                _lobbyRoom.TransitionToGameStage();
+                _ = _lobbyRoom.TriggerCountdownAndTransition();
             }
             else
             {
@@ -67,7 +67,7 @@ namespace SKNewRoles2.Lobby
             else if (lobbyStatus == 1)
             {
                 GD.Print("🚀 【ゲーム開始フラグ検知】全員同時にメインステージ「MainGameScene」に遷移します！");
-                _lobbyRoom.TransitionToGameStage();
+                _ = _lobbyRoom.TriggerCountdownAndTransition();
             }
             else
             {
@@ -76,9 +76,6 @@ namespace SKNewRoles2.Lobby
             }
         }
 
-        /// <summary>
-        /// 公開状態（is_public）に応じて、トグルボタンのテキストとテーマ色（スタイルボックス）を即座に書き換えます。
-        /// </summary>
         public void UpdatePrivacyButtonVisual(bool isPublic)
         {
             if (_lobbyRoom.PrivacyToggleButton == null) return;

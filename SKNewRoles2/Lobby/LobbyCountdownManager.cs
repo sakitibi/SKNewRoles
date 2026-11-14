@@ -1,0 +1,87 @@
+using Godot;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace SKNewRoles2.Lobby
+{
+    public static class LobbyCountdownManager
+    {
+        /// <summary>
+        /// 画面中央に3秒間のカウントダウン画像を順番に表示し、その後にゲームステージへ遷移します
+        /// </summary>
+        public static async Task StartCountdownAndTransitionAsync(
+            Node3D lobbyRoomNode, 
+            Button startGameButton, 
+            Button leaveButton, 
+            IEnumerable<string> remotePlayerIds, 
+            Action cleanupAction
+        )
+        {
+            if (!GodotObject.IsInstanceValid(lobbyRoomNode) || !lobbyRoomNode.IsInsideTree()) return;
+
+            // ボタンなどを無効化
+            if (startGameButton != null && GodotObject.IsInstanceValid(startGameButton)) startGameButton.Disabled = true;
+            if (leaveButton != null && GodotObject.IsInstanceValid(leaveButton)) leaveButton.Disabled = true;
+
+            Control overlay = new()
+            {
+                AnchorLeft = 0,
+                AnchorTop = 0,
+                AnchorRight = 1,
+                AnchorBottom = 1
+            };
+            
+            // 半透明の黒背景
+            ColorRect bg = new()
+            {
+                AnchorLeft = 0,
+                AnchorTop = 0,
+                AnchorRight = 1,
+                AnchorBottom = 1,
+                Color = new Color(0, 0, 0, 0.5f)
+            };
+            overlay.AddChild(bg);
+
+            // 中央に配置するカウントダウン用画像
+            TextureRect countdownTextureRect = new()
+            {
+                AnchorLeft = 0.5f,
+                AnchorTop = 0.5f,
+                AnchorRight = 0.5f,
+                AnchorBottom = 0.5f,
+                GrowHorizontal = Control.GrowDirection.Both,
+                GrowVertical = Control.GrowDirection.Both,
+                ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+                StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+                CustomMinimumSize = new Vector2(256, 256),
+                PivotOffset = new Vector2(128, 128),
+            };
+            
+            overlay.AddChild(countdownTextureRect);
+            lobbyRoomNode.AddChild(overlay);
+
+            string[] counts = ["3", "2", "1"];
+            foreach (string countStr in counts)
+            {
+                if (!GodotObject.IsInstanceValid(lobbyRoomNode)) break;
+
+                string imagePath = $"user://game_asset/UI/countdown_{countStr}.png";
+                
+                if (ResourceLoader.Exists(imagePath))
+                {
+                    countdownTextureRect.Texture = GD.Load<Texture2D>(imagePath);
+                }
+                else
+                {
+                    GD.PrintErr($"⚠️ [LobbyCountdownManager] カウントダウン画像が見つかりません: {imagePath}");
+                }
+                
+                // 1秒待機
+                await lobbyRoomNode.ToSignal(lobbyRoomNode.GetTree().CreateTimer(1.0f), SceneTreeTimer.SignalName.Timeout);
+            }
+
+            LobbyNavigation.TransitionToGameStage(lobbyRoomNode.GetTree(), remotePlayerIds, cleanupAction);
+        }
+    }
+}
