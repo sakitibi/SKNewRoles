@@ -90,7 +90,7 @@ namespace SKNewRoles2.Game.Inventory
                     GD.Print($"🖱️ [HotbarManager] スロット {_currentSlotIndex} のアイテム「{itemId}」を使用します。");
                     
                     Node playerNode = GetPlayerNode();
-                    itemData.UseItem(playerNode);
+                    _ = itemData.UseItem(playerNode);
                 }
             }
         }

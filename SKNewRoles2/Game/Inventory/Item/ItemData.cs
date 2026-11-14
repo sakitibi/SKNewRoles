@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Threading.Tasks;
 
 namespace SKNewRoles2.Game.Inventory.Item
 {
@@ -11,17 +12,17 @@ namespace SKNewRoles2.Game.Inventory.Item
         [Export] public Texture2D Icon { get; set; }
         [Export] public byte MaxStack { get; set; } = 64;
         [Export] public uint WeaponDamage { get; set; } = 1;
-        public Action<Node> OnUseAction { get; set; }
+        public Func<Node, Task> OnUseAction { get; set; }
 
         /// <summary>
         /// アイテムを持ちながら右クリックしたときの処理テンプレート
         /// </summary>
-        public void UseItem(Node user)
+        public async Task UseItem(Node user)
         {
             GD.Print($"[ItemData] {ItemName} が使用されました。");
             
             // MOD側から設定されたカスタム処理があれば実行する
-            OnUseAction?.Invoke(user);
+            await OnUseAction?.Invoke(user);
         }
     }
 }
