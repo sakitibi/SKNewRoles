@@ -10,6 +10,8 @@ using SKNewRoles2.Game.Player.Handler;
 using SKNewRoles2.Game.Inventory.Item;
 
 using SKNewRoles2.Game.Skill.Witch.Witch;
+using SKNewRoles2.Game.Skill;
+using System.Linq;
 
 namespace SKNewRoles2.Game
 {
@@ -115,17 +117,25 @@ namespace SKNewRoles2.Game
                 GD.PrintErr("❌ [MainGameScene] HotbarManager ノードが見つかりません。");
             }
 
+            ItemData witchMagicSkill = ItemDatabase.Instance.GetItem("witch_magic_skill");
+            witchMagicSkill.OnUseAction = (user) => _witchMagic.UseSkill(user);
+
             _ = _bgmManager?.PlayBgm(0.0f, BGMList);
+
             PlayerManager.GrantInitialItems(_hotbarManager, GrantItemDic);
+            
+            List<string> myHaveSkills = RoleInfo.RoleSkillIds[_roleManager?.MyRole ?? 0];
+            ushort myHaveSkillsCount = (ushort)myHaveSkills.Count;
+            for (ushort i = 0; i < myHaveSkillsCount; i++)
+            {
+                GrantSkillItems.GrantInitialSkillItems(_hotbarManager, myHaveSkills[i]);
+            }
 
             if (_uiController != null)
             {
                 await _uiController.ShowRoleRevealAsync(_roleManager?.MyRole ?? 0, _roleManager?.MyFaction ?? 0, 5000);
                 PlayerSpawner.SetPlayerPhysicsEnabled(_playerHandler.MyPlayerInstance, true);
             }
-
-            ItemData witchMagicSkill = ItemDatabase.Instance.GetItem("witch_magic_skill");
-            witchMagicSkill.OnUseAction = (user) => _witchMagic.UseSkill(user);
         }
         public override void _Input(InputEvent @event)
         {

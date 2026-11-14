@@ -40,6 +40,11 @@ namespace SKNewRoles2.Game
                 "other", new() { Id = 2, Name = "第三陣営" }
             }
         };
+        public static Dictionary<uint, List<string>> RoleSkillIds { get; set; } = new()
+        {
+            {0, []},
+            {1, ["witch_magic"]},
+        };
 
         public static void RegisterRole(string roleKey, uint roleId, string roleName, string description)
         {
