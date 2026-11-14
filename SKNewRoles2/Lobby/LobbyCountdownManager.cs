@@ -67,14 +67,15 @@ namespace SKNewRoles2.Lobby
                 if (!GodotObject.IsInstanceValid(lobbyRoomNode)) break;
 
                 string imagePath = $"user://game_asset/UI/countdown_{countStr}.png";
-                
-                if (ResourceLoader.Exists(imagePath))
+
+                if (FileAccess.FileExists(imagePath))
                 {
-                    countdownTextureRect.Texture = GD.Load<Texture2D>(imagePath);
+                    Image img = Image.LoadFromFile(ProjectSettings.GlobalizePath(imagePath));
+                    countdownTextureRect.Texture = ImageTexture.CreateFromImage(img);
                 }
                 else
                 {
-                    GD.PrintErr($"⚠️ [LobbyCountdownManager] カウントダウン画像が見つかりません: {imagePath}");
+                    GD.PrintErr($"⚠️ [LobbyCountdownManager] ファイルが存在しません: {imagePath}");
                 }
                 
                 // 1秒待機
