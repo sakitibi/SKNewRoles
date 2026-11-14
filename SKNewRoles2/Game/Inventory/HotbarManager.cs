@@ -71,7 +71,11 @@ namespace SKNewRoles2.Game.Inventory
             }
 
             // 右クリック（アイテム使用）の検知
-            if (@event is InputEventMouseButton mouseEvent && mouseEvent.Pressed && mouseEvent.ButtonIndex == MouseButton.Right)
+            if (
+                @event is InputEventMouseButton mouseEvent &&
+                mouseEvent.Pressed &&
+                mouseEvent.ButtonIndex == MouseButton.Right
+            )
             {
                 TryUseCurrentSelectedItem();
             }
