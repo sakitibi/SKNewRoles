@@ -54,8 +54,8 @@ namespace SKNewRoles2.Lobby
                 GrowVertical = Control.GrowDirection.Both,
                 ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
                 StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
-                CustomMinimumSize = new Vector2(256, 256),
-                PivotOffset = new Vector2(128, 128),
+                CustomMinimumSize = new Vector2(400, 400),
+                PivotOffset = new Vector2(200, 200),
             };
             
             overlay.AddChild(countdownTextureRect);
