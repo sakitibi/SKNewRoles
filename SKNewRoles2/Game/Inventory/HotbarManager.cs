@@ -154,21 +154,27 @@ namespace SKNewRoles2.Game.Inventory
 
         private void OnItemChanged(int slotIndex, string itemId, int count)
         {
-            if (string.IsNullOrEmpty(itemId) || count <= 0)
+            string validItemId = itemId ?? "empty";
+            if (validItemId.EndsWith("_skill"))
+            {
+                validItemId = "empty";
+            }
+
+            if (string.IsNullOrEmpty(validItemId) || count <= 0)
             {
                 _slotCache.Remove(slotIndex);
             }
             else
             {
-                _slotCache[slotIndex] = (itemId, count);
+                _slotCache[slotIndex] = (validItemId, count);
             }
 
-            ItemData data = _itemDatabase?.GetItem(itemId);
+            ItemData data = _itemDatabase?.GetItem(validItemId);
             Texture2D iconTexture = data?.Icon;
 
             _uiController?.UpdateSlotItem(slotIndex, iconTexture, count);
-            if (itemId.EndsWith("_skill")) return;
-            _ = SendHotbarItemAsync(slotIndex, itemId, (ushort)count);
+            
+            _ = SendHotbarItemAsync(slotIndex, validItemId, (ushort)Math.Max(0, count));
         }
 
         private async Task SendHotbarSlotAsync(int slotIndex)
