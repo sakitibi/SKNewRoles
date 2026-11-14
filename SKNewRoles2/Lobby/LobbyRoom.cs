@@ -1,5 +1,6 @@
 using Godot;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using SKNewRoles2.SessionManagerSystem;
 using SKNewRoles2.Lobby.JOIN.Services.Realtime;
 using SKNewRoles2.Game.BGM;
@@ -57,7 +58,7 @@ namespace SKNewRoles2.Lobby
                     if (SessionManager.Instance.IsHost && !_isTransitioning)
                     {
                         RealtimeLobbySender.LobbySendStartGame();
-                        TransitionToGameStage();
+                        _ = StartCountdownAndTransitionAsync(); 
                     }
                 };
                 StartGameButton.Disabled = !SessionManager.Instance.IsHost;
@@ -78,7 +79,7 @@ namespace SKNewRoles2.Lobby
             _skinSyncHandler = new LobbyPlayerSkinSyncHandler(_remotePlayerSkins, _otherPlayers);
 
             // イベントの購読登録
-            RealtimeEvents.OnGameStartReceived += TransitionToGameStage;
+            RealtimeEvents.OnGameStartReceived += HandleGameStartReceived;
             RealtimeEvents.OnPlayerLeaveReceived += OnRemotePlayerLeaveReceived;
             RealtimeEvents.OnPlayerSkinReceived += _skinSyncHandler.OnRemotePlayerSkinReceived;
 
@@ -93,6 +94,11 @@ namespace SKNewRoles2.Lobby
             await _myPlayerManager.SpawnAndSetupPlayerAsync(GrassBlockColor);
 
             _bgmManager?.StopBgm();
+        }
+
+        private void HandleGameStartReceived()
+        {
+            _ = StartCountdownAndTransitionAsync();
         }
 
         private void OnRoomSettingsChangedFromServer()
@@ -136,17 +142,79 @@ namespace SKNewRoles2.Lobby
             LobbyNavigation.LeaveLobbyCleanup(GetTree(), CleanupEvents);
         }
 
-        public void TransitionToGameStage()
+        /// <summary>
+        /// 画面中央に3秒間のカウントダウン画像を順番に表示し、その後にゲームステージへ遷移します
+        /// </summary>
+        public async Task StartCountdownAndTransitionAsync()
         {
             if (_isTransitioning || !IsInstanceValid(this) || !IsInsideTree()) return;
             _isTransitioning = true;
+
+            // ボタンなどを無効化
+            if (StartGameButton != null) StartGameButton.Disabled = true;
+            if (LeaveButton != null) LeaveButton.Disabled = true;
+
+            Control overlay = new()
+            {
+                AnchorLeft = 0,
+                AnchorTop = 0,
+                AnchorRight = 1,
+                AnchorBottom = 1
+            };
+            
+            // 半透明の黒背景
+            ColorRect bg = new()
+            {
+                AnchorLeft = 0,
+                AnchorTop = 0,
+                AnchorRight = 1,
+                AnchorBottom = 1,
+                Color = new Color(0, 0, 0, 0.5f)
+            };
+            overlay.AddChild(bg);
+
+            TextureRect countdownTextureRect = new()
+            {
+                AnchorLeft = 0.5f,
+                AnchorTop = 0.5f,
+                AnchorRight = 0.5f,
+                AnchorBottom = 0.5f,
+                GrowHorizontal = Control.GrowDirection.Both,
+                GrowVertical = Control.GrowDirection.Both,
+                ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+                StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+                CustomMinimumSize = new Vector2(256, 256),
+                PivotOffset = new Vector2(128, 128),
+            };
+            
+            overlay.AddChild(countdownTextureRect);
+
+            AddChild(overlay);
+
+            string[] counts = ["3", "2", "1"];
+            foreach (string countStr in counts)
+            {
+                string imagePath = $"user://game_asset/UI/countdown_{countStr}.png";
+                
+                if (ResourceLoader.Exists(imagePath))
+                {
+                    countdownTextureRect.Texture = GD.Load<Texture2D>(imagePath);
+                }
+                else
+                {
+                    GD.PrintErr($"⚠️ [LobbyRoom] カウントダウン画像が見つかりません: {imagePath}");
+                }
+                
+                // 1秒待機
+                await ToSignal(GetTree().CreateTimer(1.0f), SceneTreeTimer.SignalName.Timeout);
+            }
 
             LobbyNavigation.TransitionToGameStage(GetTree(), _otherPlayers.Keys, CleanupEvents);
         }
 
         private async void CleanupEvents()
         {
-            RealtimeEvents.OnGameStartReceived -= TransitionToGameStage;
+            RealtimeEvents.OnGameStartReceived -= HandleGameStartReceived;
             RealtimeEvents.OnPlayerLeaveReceived -= OnRemotePlayerLeaveReceived;
             
             if (_skinSyncHandler != null)
