@@ -9,12 +9,12 @@ using SKNewRoles2.Game.Player;
 namespace SKNewRoles2.Game.Inventory
 {
     [GlobalClass]
-    public partial class HotbarManager(MainGameScene scene) : Node
+    public partial class HotbarManager : Node
     {
         private MainGameScene _scene;
         private Node _hotbarNode;
         private int _currentSlotIndex = 0;
-        private readonly PlayerManager _playerManager = new(scene);
+        private PlayerManager _playerManager;
 
         [Export] private ItemDatabase _itemDatabase;
         [Export] private HotbarUIController _uiController;
@@ -25,6 +25,7 @@ namespace SKNewRoles2.Game.Inventory
         public void Initialize(MainGameScene scene, Node hotbarNode)
         {
             _scene = scene;
+            _playerManager = new(_scene);
             _hotbarNode = hotbarNode;
 
             if (_hotbarNode != null && IsInstanceValid(_hotbarNode))
