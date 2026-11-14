@@ -32,7 +32,7 @@ void CombatRegistry::_bind_methods() {
 void CombatRegistry::register_weapon_damage(const String &item_id, uint32_t damage) {
     std::string id = item_id.utf8().get_data();
     add_weapon(id, damage);
-    UtilityFunctions::print(vformat("[CombatRegistry] 🔧 武器ダメージ動的登録: %s = %d", item_id, damage));
+    UtilityFunctions::print(vformat("[CombatRegistry] Dynamic Weapon Damage Registration: %s = %d", item_id, damage));
 }
 
 uint32_t CombatRegistry::get_weapon_damage(const String &item_id) const {
