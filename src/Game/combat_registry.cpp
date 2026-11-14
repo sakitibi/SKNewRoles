@@ -8,9 +8,7 @@ using namespace godot;
 CombatRegistry *CombatRegistry::singleton_ = nullptr;
 
 // 静的マップの初期化
-std::unordered_map<std::string, uint32_t> CombatRegistry::weapon_damages_ = {
-    {"iron_sword", 6},
-};
+std::unordered_map<std::string, uint32_t> CombatRegistry::weapon_damages_ = {};
 
 CombatRegistry::CombatRegistry() {
     singleton_ = this;
