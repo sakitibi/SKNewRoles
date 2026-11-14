@@ -65,7 +65,6 @@ namespace godot {
             HashMap<Vector2i, Node3D *> &get_loaded_chunks() { return loaded_chunks; }
             HashMap<Vector2i, int64_t> &get_pending_tasks() { return pending_tasks; }
             HashMap<Vector2i, HashMap<String, Vector<Vector3>>> &get_chunk_block_data_map() { return chunk_block_data_map; }
-            
             HashMap<Vector2i, HashMap<Vector3, String>> &get_chunk_biome_data_map() { return chunk_biome_data_map; }
 
             void unload_chunk(const Vector2i &coord);

@@ -91,7 +91,6 @@ void ChunkManager::_safe_preload_block_meshes() {
 void ChunkManager::_process(double delta) {
     if (Engine::get_singleton()->is_editor_hint()) return;
 
-    // キューからチャンクを取り出して適用
     queue_processor.process_queue(this, chunk_size, loaded_chunks, chunk_block_data_map);
 
     if (!initial_load_complete && pending_tasks.is_empty() && queue_processor.is_queue_empty()) {
@@ -162,10 +161,7 @@ void ChunkManager::_on_chunk_loaded(Variant p_userdata) {
     pending_tasks.erase(coord);
 
     if (data->has_data) {
-        if (!data->block_biomes.is_empty()) {
-            chunk_biome_data_map[coord] = data->block_biomes;
-        }
-
+        chunk_biome_data_map[coord] = data->block_biomes;
         queue_processor.push_completed_data(data);
     } else {
         delete data;
