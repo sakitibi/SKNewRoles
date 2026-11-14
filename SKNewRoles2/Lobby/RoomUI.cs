@@ -15,9 +15,8 @@ namespace SKNewRoles2.Lobby
         {
             if (_lobbyRoom?.RoomInfoLabel == null) return;
 
-            string roomName = SessionManager.Instance.CurrentRoomName;
             string roomCode = SessionManager.Instance.CurrentRoomCode;
-            _lobbyRoom.RoomInfoLabel.Text = $"ルーム名: {roomName}\n部屋コード: {roomCode}";
+            _lobbyRoom.RoomInfoLabel.Text = $"部屋コード: {roomCode}";
         }
 
         /// <summary>
