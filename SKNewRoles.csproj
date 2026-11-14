@@ -9,7 +9,11 @@
         <TieredCompilation>true</TieredCompilation>
         <TieredCompilationQuickJit>false</TieredCompilationQuickJit>
         <IlcGenerateCompleteTypeMetadata>true</IlcGenerateCompleteTypeMetadata>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+        <DebugSymbols>true</DebugSymbols>
         <DebugType>portable</DebugType>
+        <Optimize>true</Optimize>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="SharpCompress" Version="0.50.4" />
