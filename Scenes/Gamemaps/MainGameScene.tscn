@@ -21,7 +21,6 @@ script = ExtResource("3_pspun")
 ItemId = "gold_ingot"
 ItemName = "金の延べ棒"
 Icon = ExtResource("4_tdlc4")
-metadata/_custom_type_script = "uid://d0xldisbft3j5"
 
 [sub_resource type="Resource" id="Resource_pspun"]
 script = ExtResource("3_pspun")
@@ -29,7 +28,6 @@ ItemId = "iron_axe"
 ItemName = "鉄の斧"
 Icon = ExtResource("5_fe0dp")
 MaxStack = 1
-metadata/_custom_type_script = "uid://d0xldisbft3j5"
 
 [sub_resource type="Resource" id="Resource_hx67e"]
 script = ExtResource("3_pspun")
@@ -37,7 +35,6 @@ ItemId = "iron_pickaxe"
 ItemName = "鉄のツルハシ"
 Icon = ExtResource("6_wrt32")
 MaxStack = 1
-metadata/_custom_type_script = "uid://d0xldisbft3j5"
 
 [sub_resource type="Resource" id="Resource_7yt2m"]
 script = ExtResource("3_pspun")
@@ -45,7 +42,7 @@ ItemId = "iron_sword"
 ItemName = "鉄の剣"
 Icon = ExtResource("7_r7ao7")
 MaxStack = 1
-metadata/_custom_type_script = "uid://d0xldisbft3j5"
+WeaponDamage = 6
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0iane"]
 bg_color = Color(0, 0, 0, 0)
@@ -191,9 +188,9 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_hotbar_bg")
 [node name="HotbarUIController" type="Control" parent="UILayer/HotbarUI" unique_id=336542986 node_paths=PackedStringArray("_slotContainer")]
 layout_mode = 2
 script = ExtResource("13_hx67e")
+_slotContainer = NodePath("../SlotContainer")
 _normalSlotStyle = ExtResource("14_7yt2m")
 _selectedSlotStyle = ExtResource("15_f3uto")
-_slotContainer = NodePath("../SlotContainer")
 
 [node name="SlotContainer" type="HBoxContainer" parent="UILayer/HotbarUI" unique_id=1827491023]
 layout_mode = 2
