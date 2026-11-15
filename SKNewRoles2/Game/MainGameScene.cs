@@ -120,7 +120,7 @@ namespace SKNewRoles2.Game
             }
 
             ItemData witchMagicSkill = ItemDatabase.Instance.GetItem("witch_magic_skill");
-            witchMagicSkill.OnUseAction = (user) => _witchMagic.UseSkill(user);
+            witchMagicSkill.OnUseAction = async (user) => await _witchMagic.UseSkill(user);
 
             _ = _bgmManager?.PlayBgm(0.0f, BGMList);
 
