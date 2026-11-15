@@ -64,17 +64,15 @@ void PlayerCamera::handle_input(Node3D *player, const Ref<InputEvent> &event, In
         }
     }
 
-    if (input->is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_RIGHT)) {
-        Ref<InputEventMouseMotion> mouse_motion = event;
-        if (mouse_motion.is_valid()) {
-            Vector2 delta = mouse_motion->get_relative();
+    Ref<InputEventMouseMotion> mouse_motion = event;
+    if (mouse_motion.is_valid()) {
+        Vector2 delta = mouse_motion->get_relative();
 
-            player->rotate_y(-delta.x * mouse_sensitivity);
+        player->rotate_y(-delta.x * mouse_sensitivity);
 
-            camera_rotation_x -= delta.y * mouse_sensitivity;
-            camera_rotation_x = Math::clamp(camera_rotation_x, -LIMIT_ANGLE_X, LIMIT_ANGLE_X);
+        camera_rotation_x -= delta.y * mouse_sensitivity;
+        camera_rotation_x = Math::clamp(camera_rotation_x, -LIMIT_ANGLE_X, LIMIT_ANGLE_X);
 
-            update_transform();
-        }
+        update_transform();
     }
 }
