@@ -150,20 +150,14 @@ void RealtimeBroadcaster::send_skin(Object* p_connection, const String& topic, c
     }
     RealtimeConnection* connection = Object::cast_to<RealtimeConnection>(p_connection);
 
-    Dictionary payload_inner;
-    payload_inner["type"] = "player_skin";
-    payload_inner["player_id"] = player_id;
-    payload_inner["skins"] = skin_presets;
-
-    Dictionary payload;
-    payload["topic"] = topic.is_empty() ? "realtime:public:lobbies" : topic;
-    payload["event"] = "broadcast";
-    payload["payload"] = payload_inner;
-    payload["ref"] = Variant();
-
     Ref<JSON> json_instance = memnew(JSON);
-    String json_str = json_instance->stringify(payload);
-    
-    connection->send_text(json_str);
+    String skin_json_godot = json_instance->stringify(skin_presets);
+    std::string skin_json_str = skin_json_godot.utf8().get_data();
+
+    std::string json_str = RealtimePacketBuilder::build_skin_payload(
+        topic.utf8().get_data(), player_id.utf8().get_data(), skin_json_str
+    );
+
+    connection->send_text(String(json_str.c_str()));
     UtilityFunctions::print("[RealtimeBroadcaster] Info: Skin data sent successfully for player: ", player_id);
 }
