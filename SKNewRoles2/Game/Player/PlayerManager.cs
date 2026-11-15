@@ -8,6 +8,18 @@ namespace SKNewRoles2.Game.Player
     {
         public Node3D MyPlayerInstance { get; private set; }
         public Node HealthComponent { get; private set; }
+        public static PlayerManager Instance { get; private set; }
+        public void InitializePlayerManager()
+        {
+            Instance = this;
+        }
+        public void RemovePlayerManager()
+        {
+            if (Instance == this)
+            {
+                Instance = null;
+            }
+        }
 
         public void SetVisible(bool visible)
         {

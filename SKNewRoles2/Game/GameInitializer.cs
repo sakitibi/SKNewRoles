@@ -17,7 +17,8 @@ namespace SKNewRoles2.Game
             PackedScene opponentScene,
             Node3D chunkManager,
             GameUIController uiController,
-            PlayerSpawner playerSpawner
+            PlayerSpawner playerSpawner,
+            PlayerManager playerManager
         )
         {
             try
@@ -44,6 +45,7 @@ namespace SKNewRoles2.Game
                 }
 
                 roleManager?.Initialize(roleNode, connection);
+                playerManager?.InitializePlayerManager();
 
                 string myUserId = MainGameScene.GetMyUserId();
                 if (string.IsNullOrEmpty(myUserId))

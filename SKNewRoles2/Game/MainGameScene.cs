@@ -11,7 +11,6 @@ using SKNewRoles2.Game.Inventory.Item;
 
 using SKNewRoles2.Game.Skill.Witch.Witch;
 using SKNewRoles2.Game.Skill;
-using System.Linq;
 
 namespace SKNewRoles2.Game
 {
@@ -38,6 +37,7 @@ namespace SKNewRoles2.Game
         private GameUIController _uiController;
         private GameRoleManager _roleManager;
         private HotbarManager _hotbarManager;
+        private PlayerManager _playerManager;
         private PlayerSpawner _playerSpawner;
         private WitchMagic _witchMagic;
 
@@ -70,6 +70,7 @@ namespace SKNewRoles2.Game
             _networkHandler = new(this);
             _combatHandler = new(this, _playerCombatSyncHandler);
             _playerSpawner = new(this);
+            _playerManager = new(this);
 
             _witchMagic = new(this, _playerCombatSyncHandler);
 
@@ -103,7 +104,8 @@ namespace SKNewRoles2.Game
                 _opponentScene,
                 _chunkManagerCpp,
                 _uiController,
-                _playerSpawner
+                _playerSpawner,
+                _playerManager
             );
 
             _hotbarManager = GetNodeOrNull<HotbarManager>("HotbarManager");
@@ -176,6 +178,7 @@ namespace SKNewRoles2.Game
 
             GD.Print("🚪 [MainGameScene] _ExitTree: シーン破棄のため通信とBGMを安全に停止します。");
             _bgmManager?.StopBgm();
+            _playerManager?.RemovePlayerManager();
 
             if (_connection != null && _networkHandler != null)
             {
