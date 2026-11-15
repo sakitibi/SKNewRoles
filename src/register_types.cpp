@@ -22,6 +22,8 @@
 #include "Game/hotbar.h"
 #include "Game/combat_registry.h"
 
+#include "Game/skills/witch/witch/witch_magic.h"
+
 #include "Lobby/lobby_manager.h"
 #include "Lobby/lobby_query_service.h"
 
@@ -68,6 +70,7 @@ void initialize_player_module(ModuleInitializationLevel p_level) {
     ClassDB::register_class<LobbyQueryService>();
     ClassDB::register_class<SkinPainter>();
     ClassDB::register_class<SkinEditScene>();
+    ClassDB::register_class<WitchMagic>();
 }
 
 void uninitialize_player_module(ModuleInitializationLevel p_level) {

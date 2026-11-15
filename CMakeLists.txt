@@ -82,6 +82,7 @@ set(SOURCES
     src/Game/hunger_component.cpp
     src/Game/hotbar.cpp
     src/Game/combat_registry.cpp
+    src/Game/skills/witch/witch/witch_magic.cpp
     src/Lobby/lobby_manager.cpp
     src/Lobby/lobby_query_service.cpp
     src/Player/player.cpp
