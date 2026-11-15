@@ -1,4 +1,5 @@
 #include "realtime_connection.h"
+#include "realtime_packet_builder.h"
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/classes/json.hpp>
 
@@ -105,20 +106,8 @@ void RealtimeConnection::send_join_channel(const String& topic, const String& p_
         return;
     }
 
-    Dictionary broadcast_config;
-    broadcast_config["self"] = false;
-
-    Dictionary payload_config;
-    payload_config["broadcast"] = broadcast_config;
-
-    Dictionary join_payload;
-    join_payload["topic"] = topic;
-    join_payload["event"] = "phx_join";
-    join_payload["payload"] = payload_config;
-    join_payload["ref"] = p_ref;
-
-    String json_str = JSON::stringify(join_payload);
-    _client->send_text(json_str);
+    std::string json_str = RealtimePacketBuilder::build_join_payload(topic.utf8().get_data());
+    _client->send_text(String(json_str.c_str()));
     
     UtilityFunctions::print("[RealtimeConnection] Info: phx_join request sent from C++ for topic: ", topic);
 }
