@@ -22,7 +22,7 @@ namespace SKNewRoles2.Lobby
             AnchorTop = 0,
             AnchorRight = 1,
             AnchorBottom = 1,
-            Color = new Color(0, 0, 0, 0.25f)
+            Color = new Color(0, 0, 0, 0.2f)
         };
 
         // 中央に配置するカウントダウン用画像

@@ -1,4 +1,3 @@
-using System;
 using Godot;
 using SKNewRoles2.Game.Inventory.Item;
 
