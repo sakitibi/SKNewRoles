@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Godot;
 using SKNewRoles2.Game.Player.Handler;
 
@@ -5,7 +6,7 @@ namespace SKNewRoles2.Game.Skill.Witch.Witch
 {
     public class WitchMagic(MainGameScene scene, PlayerCombatSyncHandler playerCombatSyncHandler)
     {
-        public void UseSkill(Node user)
+        public async Task UseSkill(Node user)
         {
             if (user == null || !GodotObject.IsInstanceValid(user)) return;
 
