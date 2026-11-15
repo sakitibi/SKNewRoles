@@ -92,15 +92,20 @@ std::string RealtimePacketBuilder::build_attack_payload(const std::string& topic
     return ss.str();
 }
 
-std::string RealtimePacketBuilder::build_join_payload(const std::string& topic) {
+std::string RealtimePacketBuilder::build_join_payload(const std::string& topic, const std::string& p_ref) {
     std::ostringstream ss;
     std::string safe_topic = topic.empty() ? "realtime:public:lobbies" : topic;
+    std::string ref_str = p_ref.empty() ? "1" : p_ref;
 
     ss << "{"
        << "\"topic\":\"" << safe_topic << "\","
        << "\"event\":\"phx_join\","
-       << "\"payload\":{},"
-       << "\"ref\":null"
+       << "\"payload\":{"
+       << "\"config\":{"
+       << "\"broadcast\":{\"self\":false}"
+       << "}"
+       << "},"
+       << "\"ref\":\"" << ref_str << "\""
        << "}";
        
     return ss.str();

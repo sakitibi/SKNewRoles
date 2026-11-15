@@ -106,7 +106,7 @@ void RealtimeConnection::send_join_channel(const String& topic, const String& p_
         return;
     }
 
-    std::string json_str = RealtimePacketBuilder::build_join_payload(topic.utf8().get_data());
+    std::string json_str = RealtimePacketBuilder::build_join_payload(topic.utf8().get_data(), p_ref.utf8().get_data());
     _client->send_text(String(json_str.c_str()));
     
     UtilityFunctions::print("[RealtimeConnection] Info: phx_join request sent from C++ for topic: ", topic);
