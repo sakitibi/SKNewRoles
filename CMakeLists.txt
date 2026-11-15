@@ -74,6 +74,7 @@ set(SOURCES
     src/Game/world/nbt/nbt_reader.cpp
     src/Game/realtime/realtime_broadcaster.cpp
     src/Game/realtime/realtime_connection.cpp
+    src/Game/realtime/realtime_packet_builder.cpp
     src/Game/role_manager.cpp
     src/Game/hud_manager.cpp
     src/Game/health_component.cpp

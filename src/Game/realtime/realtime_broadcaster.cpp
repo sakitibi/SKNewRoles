@@ -1,4 +1,5 @@
 #include "realtime_broadcaster.h"
+#include "realtime_packet_builder.h"
 #include <godot_cpp/classes/time.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/json.hpp>
@@ -54,23 +55,11 @@ void RealtimeBroadcaster::send_transform(Object* p_connection, const String& top
     _last_sent_rotation = current_rot;
     _last_send_tick = current_tick;
 
-    Dictionary payload_inner;
-    payload_inner["type"] = "transform_all";
-    payload_inner["player_id"] = sender_id;
-    payload_inner["px"] = px;
-    payload_inner["py"] = py;
-    payload_inner["pz"] = pz;
-    payload_inner["rx"] = rx;
-    payload_inner["ry"] = ry;
-    payload_inner["rz"] = rz;
+    std::string json_str = RealtimePacketBuilder::build_transform_payload(
+        topic.utf8().get_data(), sender_id.utf8().get_data(), px, py, pz, rx, ry, rz
+    );
 
-    Dictionary payload;
-    payload["topic"] = topic.is_empty() ? "realtime:public:lobbies" : topic;
-    payload["event"] = "broadcast";
-    payload["payload"] = payload_inner;
-    payload["ref"] = Variant();
-
-    connection->send_text(JSON::stringify(payload));
+    connection->send_text(String(json_str.c_str()));
 }
 
 void RealtimeBroadcaster::send_role(Object* p_connection, const String& topic, const String& target_player_id, uint32_t role, uint32_t faction) {
@@ -80,19 +69,11 @@ void RealtimeBroadcaster::send_role(Object* p_connection, const String& topic, c
     }
     RealtimeConnection* connection = Object::cast_to<RealtimeConnection>(p_connection);
 
-    Dictionary payload_inner;
-    payload_inner["type"] = "assign_role";
-    payload_inner["target_player_id"] = target_player_id;
-    payload_inner["role"] = role;
-    payload_inner["faction"] = faction;
+    std::string json_str = RealtimePacketBuilder::build_role_payload(
+        topic.utf8().get_data(), target_player_id.utf8().get_data(), role, faction
+    );
 
-    Dictionary payload;
-    payload["topic"] = topic.is_empty() ? "realtime:public:lobbies" : topic;
-    payload["event"] = "broadcast";
-    payload["payload"] = payload_inner;
-    payload["ref"] = Variant();
-
-    connection->send_text(JSON::stringify(payload));
+    connection->send_text(String(json_str.c_str()));
     UtilityFunctions::print("[RealtimeBroadcaster] Info: Role data sent successfully for target: ", target_player_id);
 }
 
@@ -100,95 +81,55 @@ void RealtimeBroadcaster::send_hp(Object* p_connection, const String& topic, con
     if (!is_ready(p_connection)) return;
     RealtimeConnection* connection = Object::cast_to<RealtimeConnection>(p_connection);
 
-    Dictionary payload_inner;
-    payload_inner["type"] = "player_hp";
-    payload_inner["player_id"] = player_id;
-    payload_inner["current_hp"] = current_hp;
-    payload_inner["max_hp"] = max_hp;
+    std::string json_str = RealtimePacketBuilder::build_hp_payload(
+        topic.utf8().get_data(), player_id.utf8().get_data(), current_hp, max_hp
+    );
 
-    Dictionary payload;
-    payload["topic"] = topic.is_empty() ? "realtime:public:lobbies" : topic;
-    payload["event"] = "broadcast";
-    payload["payload"] = payload_inner;
-    payload["ref"] = Variant();
-
-    connection->send_text(JSON::stringify(payload));
+    connection->send_text(String(json_str.c_str()));
 }
 
 void RealtimeBroadcaster::send_hunger(Object* p_connection, const String& topic, const String& player_id, uint32_t current_hunger, uint32_t max_hunger) {
     if (!is_ready(p_connection)) return;
     RealtimeConnection* connection = Object::cast_to<RealtimeConnection>(p_connection);
 
-    Dictionary payload_inner;
-    payload_inner["type"] = "player_hunger";
-    payload_inner["player_id"] = player_id;
-    payload_inner["current_hunger"] = current_hunger;
-    payload_inner["max_hunger"] = max_hunger;
+    std::string json_str = RealtimePacketBuilder::build_hunger_payload(
+        topic.utf8().get_data(), player_id.utf8().get_data(), current_hunger, max_hunger
+    );
 
-    Dictionary payload;
-    payload["topic"] = topic.is_empty() ? "realtime:public:lobbies" : topic;
-    payload["event"] = "broadcast";
-    payload["payload"] = payload_inner;
-    payload["ref"] = Variant();
-
-    connection->send_text(JSON::stringify(payload));
+    connection->send_text(String(json_str.c_str()));
 }
 
 void RealtimeBroadcaster::send_hotbar_slot(Object* p_connection, const String& topic, const String& player_id, int32_t slot_index) {
     if (!is_ready(p_connection)) return;
     RealtimeConnection* connection = Object::cast_to<RealtimeConnection>(p_connection);
 
-    Dictionary payload_inner;
-    payload_inner["type"] = "hotbar_slot";
-    payload_inner["player_id"] = player_id;
-    payload_inner["slot_index"] = slot_index;
+    std::string json_str = RealtimePacketBuilder::build_hotbar_slot_payload(
+        topic.utf8().get_data(), player_id.utf8().get_data(), slot_index
+    );
 
-    Dictionary payload;
-    payload["topic"] = topic.is_empty() ? "realtime:public:lobbies" : topic;
-    payload["event"] = "broadcast";
-    payload["payload"] = payload_inner;
-    payload["ref"] = Variant();
-
-    connection->send_text(JSON::stringify(payload));
+    connection->send_text(String(json_str.c_str()));
 }
 
 void RealtimeBroadcaster::send_hotbar_item(Object* p_connection, const String& topic, const String& player_id, int32_t slot_index, const String& item_id, uint16_t count) {
     if (!is_ready(p_connection)) return;
     RealtimeConnection* connection = Object::cast_to<RealtimeConnection>(p_connection);
 
-    Dictionary payload_inner;
-    payload_inner["type"] = "hotbar_item";
-    payload_inner["player_id"] = player_id;
-    payload_inner["slot_index"] = slot_index;
-    payload_inner["item_id"] = item_id;
-    payload_inner["count"] = count;
+    std::string json_str = RealtimePacketBuilder::build_hotbar_item_payload(
+        topic.utf8().get_data(), player_id.utf8().get_data(), slot_index, item_id.utf8().get_data(), count
+    );
 
-    Dictionary payload;
-    payload["topic"] = topic.is_empty() ? "realtime:public:lobbies" : topic;
-    payload["event"] = "broadcast";
-    payload["payload"] = payload_inner;
-    payload["ref"] = Variant();
-
-    connection->send_text(JSON::stringify(payload));
+    connection->send_text(String(json_str.c_str()));
 }
 
 void RealtimeBroadcaster::send_attack(Object* p_connection, const String& topic, const String& attacker_id, const String& target_id, uint32_t damage) {
     if (!is_ready(p_connection)) return;
     RealtimeConnection* connection = Object::cast_to<RealtimeConnection>(p_connection);
 
-    Dictionary payload_inner;
-    payload_inner["type"] = "player_attack";
-    payload_inner["attacker_id"] = attacker_id;
-    payload_inner["target_id"] = target_id;
-    payload_inner["damage"] = damage;
+    std::string json_str = RealtimePacketBuilder::build_attack_payload(
+        topic.utf8().get_data(), attacker_id.utf8().get_data(), target_id.utf8().get_data(), damage
+    );
 
-    Dictionary payload;
-    payload["topic"] = topic.is_empty() ? "realtime:public:lobbies" : topic;
-    payload["event"] = "broadcast";
-    payload["payload"] = payload_inner;
-    payload["ref"] = Variant();
-
-    connection->send_text(JSON::stringify(payload));
+    connection->send_text(String(json_str.c_str()));
 }
 
 void RealtimeBroadcaster::send_skin(Object* p_connection, const String& topic, const String& player_id, const Dictionary& skin_presets) {
@@ -220,6 +161,9 @@ void RealtimeBroadcaster::send_skin(Object* p_connection, const String& topic, c
     payload["payload"] = payload_inner;
     payload["ref"] = Variant();
 
-    connection->send_text(JSON::stringify(payload));
+    Ref<JSON> json_instance = memnew(JSON);
+    String json_str = json_instance->stringify(payload);
+    
+    connection->send_text(json_str);
     UtilityFunctions::print("[RealtimeBroadcaster] Info: Skin data sent successfully for player: ", player_id);
 }
