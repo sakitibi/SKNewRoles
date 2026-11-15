@@ -56,73 +56,73 @@ namespace SKNewRoles2.Game.Network
 
         public static Task SendHpAsync(RealtimeConnection connection, string playerId, uint currentHp, uint maxHp)
         {
-            if (connection == null || !connection.IsJoinedChannel) return Task.CompletedTask;
+        	if (connection == null || !connection.IsJoinedChannel) return Task.CompletedTask;
 
-            string topic = GetTopicName();
-            Node node = GetBroadcasterNode();
-            node?.Call("send_hp", connection.CppObject, topic, playerId, currentHp, maxHp);
+			string topic = GetTopicName();
+			Node node = GetBroadcasterNode();
+			node?.Call("send_hp", connection.CppObject, topic, playerId, currentHp, maxHp);
 
-            return Task.CompletedTask;
-        }
+			return Task.CompletedTask;
+		}
 
-        public static Task SendHungerAsync(RealtimeConnection connection, string playerId, uint currentHunger, uint maxHunger)
-        {
-            if (connection == null || !connection.IsJoinedChannel) return Task.CompletedTask;
+		public static Task SendHungerAsync(RealtimeConnection connection, string playerId, uint currentHunger, uint maxHunger)
+		{
+			if (connection == null || !connection.IsJoinedChannel) return Task.CompletedTask;
 
-            string topic = GetTopicName();
-            Node node = GetBroadcasterNode();
-            node?.Call("send_hunger", connection.CppObject, topic, playerId, currentHunger, maxHunger);
+			string topic = GetTopicName();
+			Node node = GetBroadcasterNode();
+			node?.Call("send_hunger", connection.CppObject, topic, playerId, currentHunger, maxHunger);
 
-            return Task.CompletedTask;
-        }
+			return Task.CompletedTask;
+		}
 
-        public static Task SendHotbarSlotAsync(RealtimeConnection connection, string playerId, int slotIndex)
-        {
-            if (connection == null || !connection.IsJoinedChannel) return Task.CompletedTask;
+		public static Task SendHotbarSlotAsync(RealtimeConnection connection, string playerId, int slotIndex)
+		{
+			if (connection == null || !connection.IsJoinedChannel) return Task.CompletedTask;
 
-            string topic = GetTopicName();
-            Node node = GetBroadcasterNode();
-            node?.Call("send_hotbar_slot", connection.CppObject, topic, playerId, slotIndex);
+			string topic = GetTopicName();
+			Node node = GetBroadcasterNode();
+			node?.Call("send_hotbar_slot", connection.CppObject, topic, playerId, slotIndex);
 
-            return Task.CompletedTask;
-        }
+			return Task.CompletedTask;
+		}
 
-        public static Task SendHotbarItemAsync(RealtimeConnection connection, string playerId, int slotIndex, string itemId, ushort count)
-        {
-            if (connection == null || !connection.IsJoinedChannel) return Task.CompletedTask;
+		public static Task SendHotbarItemAsync(RealtimeConnection connection, string playerId, int slotIndex, string itemId, ushort count)
+		{
+			if (connection == null || !connection.IsJoinedChannel) return Task.CompletedTask;
 
-            string topic = GetTopicName();
-            Node node = GetBroadcasterNode();
-            node?.Call("send_hotbar_item", connection.CppObject, topic, playerId, slotIndex, itemId, count);
+			string topic = GetTopicName();
+			Node node = GetBroadcasterNode();
+			node?.Call("send_hotbar_item", connection.CppObject, topic, playerId, slotIndex, itemId, count);
 
-            return Task.CompletedTask;
-        }
+			return Task.CompletedTask;
+		}
 
-        public static Task SendAttackAsync(RealtimeConnection connection, string attackerId, string targetId, uint damage)
-        {
-            if (connection == null || !connection.IsJoinedChannel) return Task.CompletedTask;
+		public static Task SendAttackAsync(RealtimeConnection connection, string attackerId, string targetId, uint damage)
+		{
+			if (connection == null || !connection.IsJoinedChannel) return Task.CompletedTask;
 
-            string topic = GetTopicName();
-            Node node = GetBroadcasterNode();
-            node?.Call("send_attack", connection.CppObject, topic, attackerId, targetId, damage);
+			string topic = GetTopicName();
+			Node node = GetBroadcasterNode();
+			node?.Call("send_attack", connection.CppObject, topic, attackerId, targetId, damage);
 
-            return Task.CompletedTask;
-        }
+			return Task.CompletedTask;
+		}
 
-        /// <summary>
-        /// スキン情報を送信します
-        /// </summary>
-        public static async Task SendSkinAsync(RealtimeConnection connection, string playerId, Dictionary<string, string> skinPresets)
-        {
-            if (connection == null || !connection.IsJoinedChannel) return;
+		/// <summary>
+		/// スキン情報を送信します
+		/// </summary>
+		public static async Task SendSkinAsync(RealtimeConnection connection, string playerId, Dictionary<string, string> skinPresets)
+		{
+			if (connection == null || !connection.IsJoinedChannel) return;
 
-            string topic = GetTopicName();
-            Godot.Collections.Dictionary<string, string> godotDict = new(skinPresets);
-            
-            Node node = GetBroadcasterNode();
-            node?.Call("send_skin", connection.CppObject, topic, playerId, godotDict);
+			string topic = GetTopicName();
+			Godot.Collections.Dictionary<string, string> godotDict = new(skinPresets);
+			
+			Node node = GetBroadcasterNode();
+			node?.Call("send_skin", connection.CppObject, topic, playerId, godotDict);
 
-            await Task.CompletedTask;
-        }
-    }
+			await Task.CompletedTask;
+		}
+	}
 }
