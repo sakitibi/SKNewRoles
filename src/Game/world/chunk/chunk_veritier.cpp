@@ -12,8 +12,8 @@ void ChunkVeritier::verity_initial_collisions(const HashMap<Vector2i, HashMap<St
 
     UtilityFunctions::print("[ChunkManager Veritication] --- Block Data & Collision Source Veritication ---");
 
-    int total_chunks = chunk_block_data_map.size();
-    int total_blocks = 0;
+    uint32_t total_chunks = chunk_block_data_map.size();
+    uint32_t total_blocks = 0;
 
     for (const auto &E : chunk_block_data_map) {
         const HashMap<String, Vector<Vector3>> &block_map = E.value;

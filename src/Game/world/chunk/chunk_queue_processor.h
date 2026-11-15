@@ -12,7 +12,7 @@ namespace godot {
     class ChunkQueueProcessor {
         private:
             std::queue<ChunkLoadData *> completed_queue;
-            int max_chunks_per_frame = 1;
+            uint32_t max_chunks_per_frame = 1;
 
         public:
             ChunkQueueProcessor();

@@ -35,7 +35,7 @@ void ChunkQueueProcessor::process_queue(
 ) {
     if (!parent_node) return;
 
-    int processed_count = 0;
+    uint32_t processed_count = 0;
 
     while (!completed_queue.empty() && processed_count < max_chunks_per_frame) {
         ChunkLoadData *data = completed_queue.front();

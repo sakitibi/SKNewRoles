@@ -25,7 +25,7 @@ void ChunkLoader::async_load_worker(void *p_userdata) {
     Array sections;
     sections = chunk_data["sections"];
 
-    for (int i = 0; i < sections.size(); ++i) {
+    for (uint32_t i = 0; i < static_cast<uint32_t>(sections.size()); ++i) {
         Dictionary section = sections[i];
         if (!section.has("Y") && !section.has("y")) continue;
         
@@ -78,15 +78,15 @@ void ChunkLoader::async_load_worker(void *p_userdata) {
     for (const KeyValue<String, Vector<Vector3>> &entry : raw_positions) {
         String block_type = entry.key;
         const Vector<Vector3> &pos_list = entry.value;
-        int size = pos_list.size();
+        uint32_t size = pos_list.size();
 
         if (size == 0) continue;
 
         Vector<Vector3> valid_positions;
         valid_positions.resize(size);
-        int valid_count = 0;
+        uint32_t valid_count = 0;
 
-        for (int i = 0; i < size; ++i) {
+        for (uint32_t i = 0; i < size; ++i) {
             const Vector3 &block_pos = pos_list[i];
             float world_y = data->base_y_position + block_pos.y;
             

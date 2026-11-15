@@ -14,16 +14,6 @@ namespace SKNewRoles2.Lobby
             AnchorRight = 1,
             AnchorBottom = 1
         };
-        
-        // 半透明の黒背景
-        public static ColorRect Bg { set; get; } = new()
-        {
-            AnchorLeft = 0,
-            AnchorTop = 0,
-            AnchorRight = 1,
-            AnchorBottom = 1,
-            Color = new Color(0, 0, 0, 0.2f)
-        };
 
         // 中央に配置するカウントダウン用画像
         public static TextureRect CountdownTextureRect { set; get; } = new()
@@ -56,8 +46,6 @@ namespace SKNewRoles2.Lobby
             if (startGameButton != null && GodotObject.IsInstanceValid(startGameButton)) startGameButton.Disabled = true;
             if (leaveButton != null && GodotObject.IsInstanceValid(leaveButton)) leaveButton.Disabled = true;
 
-
-            Overlay.AddChild(Bg);
             Overlay.AddChild(CountdownTextureRect);
             lobbyRoomNode.AddChild(Overlay);
 

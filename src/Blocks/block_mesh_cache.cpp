@@ -57,7 +57,7 @@ BlockMeshData BlockMeshCache::load_single_block_mesh(const String &scene_path) {
 
     data.materials.resize(6);
 
-    for (int i = 0; i < 6; ++i) {
+    for (uint8_t i = 0; i < 6; ++i) {
         Node *child = inst->find_child(FACE_NODE_NAMES[i], true, false);
         MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(child);
 
