@@ -13,6 +13,14 @@ namespace godot {
             static std::unordered_map<std::string, uint32_t> weapon_damages_;
             static CombatRegistry *singleton_;
 
+            inline static uint32_t calculate_clamped_damage(uint32_t damage, uint32_t max_limit = 9999) {
+                return (damage > max_limit) ? max_limit : damage;
+            }
+
+            inline static bool validate_weapon_id(const std::string &item_id) {
+                return !item_id.empty();
+            }
+
         protected:
             static void _bind_methods();
 
@@ -27,5 +35,6 @@ namespace godot {
 
             static void add_weapon(const std::string &item_id, uint32_t damage);
             static uint32_t get_damage(const std::string &item_id);
+            static void clear_registry();
     };
 }

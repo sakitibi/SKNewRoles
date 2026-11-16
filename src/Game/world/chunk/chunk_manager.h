@@ -44,6 +44,13 @@ namespace godot {
             Node3D *find_local_player();
             void _safe_preload_block_meshes();
 
+            inline std::pair<int, int> calculate_native_chunk_coord(float x, float z, float size) const {
+                return {
+                    static_cast<int>(std::floor(x / size)),
+                    static_cast<int>(std::floor(z / size))
+                };
+            }
+
         protected:
             static void _bind_methods();
 
@@ -53,6 +60,7 @@ namespace godot {
 
             void _ready() override;
             void _process(double delta) override;
+            void _exit_tree() override;
 
             void _async_load_task(Variant p_userdata);
             void _on_chunk_loaded(Variant p_userdata);

@@ -10,7 +10,7 @@
 #include <godot_cpp/core/object.hpp>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
-#include <cmath>
+#include <utility>
 
 using namespace godot;
 
@@ -59,7 +59,20 @@ void ChunkManager::_bind_methods() {
 }
 
 ChunkManager::ChunkManager() {}
-ChunkManager::~ChunkManager() {}
+
+ChunkManager::~ChunkManager() {
+    loaded_chunks.clear();
+    chunk_block_data_map.clear();
+    chunk_biome_data_map.clear();
+    pending_tasks.clear();
+}
+
+void ChunkManager::_exit_tree() {
+    loaded_chunks.clear();
+    chunk_block_data_map.clear();
+    chunk_biome_data_map.clear();
+    pending_tasks.clear();
+}
 
 void ChunkManager::spawn_falling_block(const Vector3 &spawn_pos, const String &block_type) {
     ChunkSpawner::spawn_falling_block(this, spawn_pos, block_type);
@@ -113,10 +126,8 @@ void ChunkManager::_process(double delta) {
         }
     }
 
-    Vector2i new_chunk_coord = Vector2i(
-        std::floor(center_pos.x / chunk_size),
-        std::floor(center_pos.z / chunk_size)
-    );
+    auto [native_x, native_z] = calculate_native_chunk_coord(center_pos.x, center_pos.z, chunk_size);
+    Vector2i new_chunk_coord = Vector2i(native_x, native_z);
 
     if (first_update || new_chunk_coord != current_chunk_coord) {
         first_update = false;

@@ -19,28 +19,41 @@ void WitchMagic::_bind_methods() {
     ClassDB::bind_method(D_METHOD("_on_timer_timeout", "user", "target_player_id", "damage_amount"), &WitchMagic::_on_timer_timeout);
 }
 
+WitchMagic::WitchMagic() {}
+
+WitchMagic::~WitchMagic() {
+    scene = nullptr;
+    player_combat_sync_handler = nullptr;
+}
+
+void WitchMagic::_exit_tree() {
+    scene = nullptr;
+    player_combat_sync_handler = nullptr;
+}
+
 void WitchMagic::initialize(Node* p_scene, Object* p_sync_handler) {
     scene = p_scene;
     player_combat_sync_handler = p_sync_handler;
 }
 
 void WitchMagic::use_skill(Node* user) {
-    if (!user || !user->is_inside_tree()) {
+    const uint16_t base_damage = 20;
+    const double delay_seconds = 10.0;
+
+    if (!validate_skill_parameters(user, delay_seconds) || !user->is_inside_tree()) {
         return;
     }
 
-    const uint16_t damage_amount = 20;
-    const double delay_seconds = 10.0;
+    uint16_t damage_amount = calculate_native_damage(base_damage, 1.0f);
 
-    // 使用タイミングでターゲットを特定
     String target_player_id = get_target_player_id(user);
     if (target_player_id.is_empty()) {
-        UtilityFunctions::print("[WitchMagic] 5ブロック以内にターゲットが見つからないため、スキルをキャンセルします。");
+        UtilityFunctions::print("[WitchMagic] Target not found within range, canceling skill.");
         return;
     }
 
     UtilityFunctions::print(
-        String("[WitchMagic] 「魔女の魔法」を使用しました！ ターゲット: {0}。{1}秒後に魔法が発動します。")
+        String("[WitchMagic] Witch magic used! Target: {0}. Skill will trigger in {1} seconds.")
             .format(Array::make(target_player_id, delay_seconds))
     );
 
@@ -59,7 +72,7 @@ void WitchMagic::_on_timer_timeout(Node* user, String target_player_id, uint16_t
     }
 
     UtilityFunctions::print(
-        String("[WitchMagic] 10秒経過！ 対象 ({0}) に {1} のダメージを与えます。")
+        String("[WitchMagic] 10 seconds elapsed! Dealing {1} damage to target ({0}).")
             .format(Array::make(target_player_id, (int64_t)damage_amount))
     );
 
