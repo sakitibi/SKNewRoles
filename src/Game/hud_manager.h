@@ -29,6 +29,7 @@ namespace godot {
 
         void _ready() override;
         void _process(double delta) override;
+        void _exit_tree() override;
 
         void set_player_path(const NodePath &p_path);
         NodePath get_player_path() const;

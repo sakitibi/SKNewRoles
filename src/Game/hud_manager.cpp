@@ -20,7 +20,12 @@ void HUDManager::_bind_methods() {
 }
 
 HUDManager::HUDManager() {}
-HUDManager::~HUDManager() {}
+
+HUDManager::~HUDManager() {
+    player_node = nullptr;
+    position_label = nullptr;
+    fps_label = nullptr;
+}
 
 void HUDManager::_ready() {
     if (Engine::get_singleton()->is_editor_hint()) {
@@ -40,6 +45,12 @@ void HUDManager::_ready() {
     }
 
     player_node = find_local_player();
+}
+
+void HUDManager::_exit_tree() {
+    player_node = nullptr;
+    position_label = nullptr;
+    fps_label = nullptr;
 }
 
 void HUDManager::_process(double delta) {
