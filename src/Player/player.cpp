@@ -39,7 +39,14 @@ void SNR2Player::_bind_methods() {
 }
 
 SNR2Player::SNR2Player() {}
-SNR2Player::~SNR2Player() {}
+SNR2Player::~SNR2Player() {
+    health_component = nullptr;
+    spectator_component = nullptr;
+    fall_damage_component = nullptr;
+    hunger_component = nullptr;
+    camera = nullptr;
+    input = nullptr;
+}
 
 void SNR2Player::_ready() {
     input = Input::get_singleton();
@@ -90,6 +97,15 @@ void SNR2Player::_ready() {
     }
 }
 
+void SNR2Player::_exit_tree() {
+    health_component = nullptr;
+    spectator_component = nullptr;
+    fall_damage_component = nullptr;
+    hunger_component = nullptr;
+    camera = nullptr;
+    input = nullptr;
+}
+
 void SNR2Player::apply_custom_skins() {
     PlayerSkin::apply_custom_skins(this);
 }
@@ -131,12 +147,13 @@ void SNR2Player::_input(const Ref<InputEvent> &event) {
 
     player_camera.handle_input(this, event, input);
 
-    // 攻撃処理
     Ref<InputEventMouseButton> mouse_button = event;
-    Ref<PlayerAttack> attack = memnew(PlayerAttack);
     if (mouse_button.is_valid() && mouse_button->is_pressed() && mouse_button->get_button_index() == MouseButton::MOUSE_BUTTON_LEFT) {
         if (!is_spectator()) {
-            attack->process_attack(this, camera);
+            Ref<PlayerAttack> attack = memnew(PlayerAttack);
+            if (attack.is_valid()) {
+                attack->process_attack(this, camera);
+            }
         }
     }
 }

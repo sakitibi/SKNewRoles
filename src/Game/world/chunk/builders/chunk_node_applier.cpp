@@ -5,7 +5,9 @@
 #include <godot_cpp/classes/concave_polygon_shape3d.hpp>
 #include <godot_cpp/classes/array_mesh.hpp>
 #include <godot_cpp/classes/base_material3d.hpp>
+#include <godot_cpp/variant/utility_functions.hpp>
 #include <unordered_map>
+#include <vector>
 
 using namespace godot;
 
@@ -43,7 +45,7 @@ void ChunkNodeApplier::apply_chunk_data_to_node(Node3D *parent_node, const PureC
 
             int base_index_offset = target.vertex_count;
 
-            // C++側のバッファに一括で追加
+            // ネイティブコンテナ間での一括結合
             target.vertices.insert(target.vertices.end(), surf.vertices.begin(), surf.vertices.end());
             target.normals.insert(target.normals.end(), surf.normals.begin(), surf.normals.end());
             target.uvs.insert(target.uvs.end(), surf.uvs.begin(), surf.uvs.end());
