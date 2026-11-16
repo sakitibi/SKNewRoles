@@ -59,11 +59,16 @@ namespace SKNewRoles2.Lobby.JOIN
 
 		public override void _ExitTree()
 		{
-			// メモリリーク防止のため、シーンが破棄される時にイベント接続を解除
-			if (SessionManager.Instance != null)
-			{
-				SessionManager.Instance.UserInfoUpdated -= OnUserInfoUpdated;
-			}
+			
+			SessionManager.Instance?.UserInfoUpdated -= OnUserInfoUpdated;
+
+			_loginButton?.Pressed -= OnLoginButtonPressed;
+			_logoutButton?.Pressed -= OnLogoutButtonPressed;
+			_backButton?.Pressed -= OnBackButtonPressed;
+			_createRoomButton?.Pressed -= OnCreateRoomButtonPressed;
+			_joinPublicRoomButton?.Pressed -= OnJoinPublicRoomButtonPressed;
+			_joinPrivateRoomButton?.Pressed -= OnJoinPrivateRoomButtonPressed;
+			_skinEditButton?.Pressed -= OnSkinEditButtonPressed;
 		}
 
 		private void OnUserInfoUpdated()
@@ -74,7 +79,6 @@ namespace SKNewRoles2.Lobby.JOIN
 
 		private void UpdateButtonStates()
 		{
-			// SessionManager を見てログイン中かどうかを判断
 			bool isLoggedIn = SessionManager.Instance.IsLoggedIn;
 
 			_loginButton.Disabled = isLoggedIn;	  // ログイン済なら押せない
@@ -109,10 +113,8 @@ namespace SKNewRoles2.Lobby.JOIN
 		private async void OnLogoutButtonPressed()
 		{
 			_ = _bgmManager.PlayBgm(2.0f, _buttonClickSoundIdx, false);
-			// ログアウト処理を実行（ファイル削除＆メモリクリア）
 			SessionManager.Instance.ClearSession();
 			
-			// ボタンやテキストの状態を「未ログイン状態」に戻す
 			UpdateButtonStates();
 		}
 

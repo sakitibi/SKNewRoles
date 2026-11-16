@@ -207,10 +207,7 @@ namespace SKNewRoles2.Game
 
         public override void _ExitTree()
         {
-            if (_connection != null)
-            {
-                _connection.OnRoleAssignedReceived -= OnRoleAssignedReceived;
-            }
+            _connection?.OnRoleAssignedReceived -= OnRoleAssignedReceived;
         }
     }
 }
