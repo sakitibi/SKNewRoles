@@ -9,8 +9,8 @@ using System.Collections.Generic;
 using SKNewRoles2.Game.Player.Handler;
 using SKNewRoles2.Game.Inventory.Item;
 
-using SKNewRoles2.Game.Skill.Witch.Witch;
 using SKNewRoles2.Game.Skill;
+using SKNewRoles2.Game.Skill.Witch.Witch;
 
 namespace SKNewRoles2.Game
 {
@@ -50,6 +50,9 @@ namespace SKNewRoles2.Game
         public uint MyFaction => _roleManager?.MyFaction ?? 0;
         public int CurrentHunger { get; set; } = 20;
         public int MaxHunger { get; set; } = 20;
+        /// <summary>
+        /// <b>ゲーム開始時に全員に配布されるアイテム一覧</b>
+        /// </summary>
         public Dictionary<string, ushort> GrantItemDic { get; set; } = new() {
             {"iron_axe", 1},
             {"iron_pickaxe", 1},
