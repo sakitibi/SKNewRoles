@@ -49,11 +49,11 @@ namespace SKNewRoles2.Game
             Godot.Collections.Array playerIdsArray = [];
             List<string> roomPlayers = SessionManager.Instance?.CurrentRoomPlayerIds;
             
-            int roomPlayersCount = roomPlayers?.Count ?? 0;
+            byte roomPlayersCount = (byte)(roomPlayers?.Count ?? 0);
 
             if (roomPlayers != null && roomPlayersCount > 0)
             {
-                for (int i = 0; i < roomPlayersCount; i++)
+                for (byte i = 0; i < roomPlayersCount; i++)
                 {
                     playerIdsArray.Add(roomPlayers[i]);
                     GD.Print($"📋 [AssignRoles] ルーム参加者IDを追加: {roomPlayers[i]}");
