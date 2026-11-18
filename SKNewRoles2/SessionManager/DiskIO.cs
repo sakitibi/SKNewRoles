@@ -20,9 +20,6 @@ namespace SKNewRoles2.SessionManagerSystem
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
-        // ==========================================
-        // 4. ディスク I/O ヘルパー関数 (ローカルファイル関連)
-        // ==========================================
         public void SaveSessionToDisk()
         {
             if (CurrentSession == null) return;
@@ -89,7 +86,7 @@ namespace SKNewRoles2.SessionManagerSystem
         {
             if (CurrentSession != null && CurrentSession.User == null)
             {
-                CurrentSession.User = new UserInfo();
+                CurrentSession.User = new();
             }
         }
     }

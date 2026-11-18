@@ -13,7 +13,7 @@ namespace SKNewRoles2.SessionManagerSystem.Services
         /// </summary>
         public static async Task<bool> RefreshSessionAsync()
         {
-            var manager = SessionManager.Instance;
+            SessionManager manager = SessionManager.Instance;
             if (manager == null || manager.CurrentSession == null || string.IsNullOrEmpty(manager.CurrentSession.RefreshToken))
             {
                 GD.PrintErr("❌ リフレッシュトークンがありません。");
