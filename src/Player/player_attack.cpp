@@ -7,6 +7,7 @@
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <string>
+#include <utility>
 #include "../Game/health_component.h"
 #include "../Game/hotbar.h"
 #include "../Game/combat_registry.h"
@@ -17,6 +18,9 @@ void PlayerAttack::_bind_methods() {
     ClassDB::bind_method(D_METHOD("process_attack", "player_node", "camera"), &PlayerAttack::process_attack);
 }
 
+PlayerAttack::PlayerAttack() {}
+PlayerAttack::~PlayerAttack() {}
+
 Dictionary PlayerAttack::process_attack(Node3D *player_node, Camera3D *camera) {
     Dictionary result_dict;
     result_dict["target_player_id"] = "";
@@ -25,9 +29,8 @@ Dictionary PlayerAttack::process_attack(Node3D *player_node, Camera3D *camera) {
     if (!player_node || !camera) return result_dict;
 
     Transform3D cam_transform = camera->get_global_transform();
-    Vector3 origin = cam_transform.origin;
-    Vector3 forward = -cam_transform.basis.get_column(2);
-    Vector3 target = origin + forward * 3.0f;
+    
+    auto [origin, target] = calculate_native_ray_endpoints(cam_transform, 3.0f);
 
     Ref<World3D> world = player_node->get_world_3d();
     if (!world.is_valid()) return result_dict;
@@ -73,6 +76,8 @@ Dictionary PlayerAttack::process_attack(Node3D *player_node, Camera3D *camera) {
             } else {
                 damage = CombatRegistry::get_damage(held_item.utf8().get_data());
             }
+
+            damage = calculate_native_clamped_damage(damage);
 
             UtilityFunctions::print(vformat("[PlayerAttack] Weapon damage resolved -> Item: %s, Damage: %d", held_item, damage));
         }
