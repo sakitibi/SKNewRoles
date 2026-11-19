@@ -111,10 +111,7 @@ namespace SKNewRoles2.Game
 				_hungerBar.Value = currentHunger;
 			}
 
-			if (_hungerLabel != null)
-			{
-				_hungerLabel.Text = $"{currentHunger}";
-			}
+			_hungerLabel?.Text = $"{currentHunger}";
 		}
 
 		public async Task UpdateCoords(Vector3 position)

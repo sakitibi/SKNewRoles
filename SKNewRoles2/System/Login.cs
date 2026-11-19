@@ -2,6 +2,7 @@ using Godot;
 using System;
 using System.Text.Json;
 using SKNewRoles2.SessionManagerSystem;
+using SKNewRoles2.Game.BGM;
 
 namespace SKNewRoles2.SNRSystem
 {
@@ -10,6 +11,8 @@ namespace SKNewRoles2.SNRSystem
         private LineEdit _codeInput;
         private Button _submitButton;
         private Button _cancelButton;
+        private ButtonAnimation _buttonAnimation;
+        private readonly BGMManager _bgmManager = new();
         private Label _errorMessageLabel;
         private HttpRequest _supabaseRequest;
         public override async void _Ready()
@@ -19,6 +22,7 @@ namespace SKNewRoles2.SNRSystem
             _submitButton = GetNode<Button>("MarginContainer/VBoxContainer/LoginPanel/SubmitButton");
             _cancelButton = GetNode<Button>("MarginContainer/VBoxContainer/LoginPanel/CancelButton");
             _errorMessageLabel = GetNode<Label>("MarginContainer/VBoxContainer/LoginPanel/ErrorMessageLabel");
+            _buttonAnimation = GetNode<ButtonAnimation>("ButtonAnimation");
             
             // HTTPRequestノードの取得
             _supabaseRequest = GetNode<HttpRequest>("SupabaseRequest");
@@ -28,6 +32,9 @@ namespace SKNewRoles2.SNRSystem
             _submitButton.Pressed += OnSubmitButtonPressed;
             _cancelButton.Pressed += OnCancelButtonPressed;
             _codeInput.TextChanged += OnInputTextChanged;
+
+            _buttonAnimation.SetupButtonAnimation(_submitButton);
+            _buttonAnimation.SetupButtonAnimation(_cancelButton);
             
             _errorMessageLabel.Text = "";
             _submitButton.Disabled = true;
@@ -41,6 +48,9 @@ namespace SKNewRoles2.SNRSystem
 
         private async void OnSubmitButtonPressed()
         {
+            uint[] buttonClickSoundIdx = [5];
+            _ = _bgmManager.PlayBgm(2.0f, buttonClickSoundIdx, false);
+
             _submitButton.Disabled = true;
             _codeInput.Editable = false;
             _errorMessageLabel.Text = "認証中...";
