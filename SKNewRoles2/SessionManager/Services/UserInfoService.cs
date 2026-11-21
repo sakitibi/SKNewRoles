@@ -158,7 +158,7 @@ namespace SKNewRoles2.SessionManagerSystem.Services
                     manager.CurrentSession.User.Id = freshUser.Id;
                     manager.CurrentSession.User.Email = freshUser.Email;
                     
-                    manager.SaveSessionToDisk();
+                    DiskIO.SaveSessionToDisk(manager.CurrentSession);
 
                     GD.Print($"👤 最新のユーザー情報を同期しました: {freshUser.Email} (ID: {freshUser.Id})");
                     return true;
