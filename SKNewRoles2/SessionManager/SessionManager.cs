@@ -141,5 +141,13 @@ namespace SKNewRoles2.SessionManagerSystem
             GD.Print("🚪 [MOD] セッションがクリアされました。");
             UserInfoUpdated?.Invoke();
         }
+
+        public override void _ExitTree()
+        {
+            if (_instance == this)
+            {
+                _instance = null;
+            }
+        }
     }
 }
