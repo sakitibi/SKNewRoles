@@ -71,39 +71,16 @@ namespace SKNewRoles2.SessionManagerSystem
                 MainLoop mainLoop = Engine.GetMainLoop();
                 if (mainLoop is SceneTree tree)
                 {
-                    Node node = tree.Root.GetNodeOrNull("SessionManager");
-                    if (node is SessionManager manager)
-                    {
-                        _instance = manager;
-                    }
-                    else if (node != null)
-                    {
-                        _instance = node as SessionManager;
-                    }
-
-                    // ツリー上に存在しない場合は、ゲーム本体のルート配下に生成
-                    if (_instance == null)
-                    {
-                        GD.Print("[MOD API] SessionManagerをオートロード空間に動的生成します。");
-                        _instance = new SessionManager { Name = "SessionManager" };
-                        tree.Root.AddChild(_instance); 
-                    }
+                    _instance = tree.Root.GetNodeOrNull<SessionManager>("SessionManager");
                 }
+                
                 return _instance;
             }
         }
 
         public override void _Ready()
         {
-            if (_instance == null)
-            {
-                _instance = this;
-            }
-            else if (_instance != this)
-            {
-                QueueFree();
-                return;
-            }
+            _instance ??= this;
 
             _ = LoadSessionFromDisk();
         }
@@ -144,6 +121,7 @@ namespace SKNewRoles2.SessionManagerSystem
 
         public override void _ExitTree()
         {
+            // 非同期通信やサービスの停止
             UserInfoService.CancelAll();
 
             if (_instance == this)
@@ -151,6 +129,7 @@ namespace SKNewRoles2.SessionManagerSystem
                 _instance = null;
             }
         }
+
         public override void _Notification(int what)
         {
             if (what == NotificationExitTree || what == NotificationPredelete)
