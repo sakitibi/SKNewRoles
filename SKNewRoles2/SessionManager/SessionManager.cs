@@ -84,7 +84,7 @@ namespace SKNewRoles2.SessionManagerSystem
         {
             if (ClassDB.ClassExists("ConfigManager"))
             {
-                using Node configObj = ClassDB.Instantiate("ConfigManager").As<Node>();
+                using RefCounted configObj = ClassDB.Instantiate("ConfigManager").As<RefCounted>();
                 if (configObj != null)
                 {
                     _cachedSupabaseUrl = configObj.Call("get_supabase_url").AsString();
