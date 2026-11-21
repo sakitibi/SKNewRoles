@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://xi22tei46sks"]
+
+[ext_resource type="Script" uid="uid://e2u5ma57dx8b" path="res://SKNewRoles2/SessionManager/SessionManager.cs" id="1_om7hp"]
+
+[node name="SessionManager" type="Node" unique_id=61310863]
+script = ExtResource("1_om7hp")

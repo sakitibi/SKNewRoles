@@ -19,7 +19,7 @@ config/icon="res://Resources/Charactors/sakitibi.png"
 
 [autoload]
 
-SessionManager="*uid://e2u5ma57dx8b"
+SessionManager="*uid://xi22tei46sks"
 
 [display]
 

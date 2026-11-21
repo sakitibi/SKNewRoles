@@ -59,21 +59,19 @@ namespace SKNewRoles2.Lobby.JOIN
 
 		public override void _ExitTree()
 		{
-			
 			SessionManager.Instance?.UserInfoUpdated -= OnUserInfoUpdated;
 
-			_loginButton?.Pressed -= OnLoginButtonPressed;
-			_logoutButton?.Pressed -= OnLogoutButtonPressed;
-			_backButton?.Pressed -= OnBackButtonPressed;
-			_createRoomButton?.Pressed -= OnCreateRoomButtonPressed;
-			_joinPublicRoomButton?.Pressed -= OnJoinPublicRoomButtonPressed;
-			_joinPrivateRoomButton?.Pressed -= OnJoinPrivateRoomButtonPressed;
-			_skinEditButton?.Pressed -= OnSkinEditButtonPressed;
+			_loginButton.Pressed -= OnLoginButtonPressed;
+			_logoutButton.Pressed -= OnLogoutButtonPressed;
+			_backButton.Pressed -= OnBackButtonPressed;
+			_createRoomButton.Pressed -= OnCreateRoomButtonPressed;
+			_joinPublicRoomButton.Pressed -= OnJoinPublicRoomButtonPressed;
+			_joinPrivateRoomButton.Pressed -= OnJoinPrivateRoomButtonPressed;
+			_skinEditButton.Pressed -= OnSkinEditButtonPressed;
 		}
 
 		private void OnUserInfoUpdated()
 		{
-			// データが更新されたので画面をリフレッシュ
 			UpdateButtonStates();
 		}
 
@@ -81,13 +79,13 @@ namespace SKNewRoles2.Lobby.JOIN
 		{
 			bool isLoggedIn = SessionManager.Instance.IsLoggedIn;
 
-			_loginButton.Disabled = isLoggedIn;	  // ログイン済なら押せない
-			_logoutButton.Disabled = !isLoggedIn;	// ログイン済なら押せる
-			_createRoomButton.Disabled = !isLoggedIn; // ログイン済なら押せる
-			// ラベルがある場合、Emailの表示も連動させる
+			_loginButton.Disabled = isLoggedIn;
+			_logoutButton.Disabled = !isLoggedIn;
+			_createRoomButton.Disabled = !isLoggedIn;
+
 			if (_emailLabel != null)
 			{
-				if (isLoggedIn && SessionManager.Instance.CurrentSession.User != null)
+				if (isLoggedIn && SessionManager.Instance.CurrentSession?.User != null)
 				{
 					string email = SessionManager.Instance.CurrentSession.User.Email;
 					_emailLabel.Text = (email == "Authenticating...") ? "ログイン情報を取得中..." : $"{email}";
@@ -102,7 +100,7 @@ namespace SKNewRoles2.Lobby.JOIN
 		private async void OnLoginButtonPressed()
 		{
 			_ = _bgmManager.PlayBgm(2.0f, _buttonClickSoundIdx, false);
-			await Task.Delay(250); // クリック音を鳴らす為
+			await Task.Delay(250);
 			Error error = GetTree().ChangeSceneToFile("res://Scenes/Login.tscn");
 			if (error != Error.Ok)
 			{
@@ -114,14 +112,13 @@ namespace SKNewRoles2.Lobby.JOIN
 		{
 			_ = _bgmManager.PlayBgm(2.0f, _buttonClickSoundIdx, false);
 			SessionManager.Instance.ClearSession();
-			
 			UpdateButtonStates();
 		}
 
 		private async void OnBackButtonPressed()
 		{
 			_ = _bgmManager.PlayBgm(2.0f, _buttonClickSoundIdx, false);
-			await Task.Delay(250); // クリック音を鳴らす為
+			await Task.Delay(250);
 			Error error = GetTree().ChangeSceneToFile("res://Scenes/Home.tscn");
 			if (error != Error.Ok)
 			{
@@ -132,7 +129,7 @@ namespace SKNewRoles2.Lobby.JOIN
 		private async void OnCreateRoomButtonPressed()
 		{
 			_ = _bgmManager.PlayBgm(2.0f, _buttonClickSoundIdx, false);
-			await Task.Delay(250); // クリック音を鳴らす為
+			await Task.Delay(250);
 			Error error = GetTree().ChangeSceneToFile("res://Scenes/CreateLobby.tscn");
 			if (error != Error.Ok)
 			{
@@ -143,7 +140,7 @@ namespace SKNewRoles2.Lobby.JOIN
 		private async void OnJoinPublicRoomButtonPressed()
 		{
 			_ = _bgmManager.PlayBgm(2.0f, _buttonClickSoundIdx, false);
-			await Task.Delay(250); // クリック音を鳴らす為
+			await Task.Delay(250);
 			Error error = GetTree().ChangeSceneToFile("res://Scenes/JoinPublicLobby.tscn");
 			if (error != Error.Ok)
 			{
@@ -154,7 +151,7 @@ namespace SKNewRoles2.Lobby.JOIN
 		private async void OnJoinPrivateRoomButtonPressed()
 		{
 			_ = _bgmManager.PlayBgm(2.0f, _buttonClickSoundIdx, false);
-			await Task.Delay(250); // クリック音を鳴らす為
+			await Task.Delay(250);
 			Error error = GetTree().ChangeSceneToFile("res://Scenes/JoinPrivateLobby.tscn");
 			if (error != Error.Ok)
 			{
@@ -165,7 +162,7 @@ namespace SKNewRoles2.Lobby.JOIN
 		private async void OnSkinEditButtonPressed()
 		{
 			_ = _bgmManager.PlayBgm(2.0f, _buttonClickSoundIdx, false);
-			await Task.Delay(250); // クリック音を鳴らす為
+			await Task.Delay(250);
 			Error error = GetTree().ChangeSceneToFile("res://Scenes/SkinEditScene.tscn");
 			if (error != Error.Ok)
 			{
