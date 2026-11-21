@@ -53,12 +53,16 @@ namespace SKNewRoles2.Lobby.JOIN
 			_buttonAnimation.SetupButtonAnimation(_joinPrivateRoomButton);
 			_buttonAnimation.SetupButtonAnimation(_skinEditButton);
 
-			UpdateButtonStates();
 			_sessionManager = SessionManager.Instance;
+
 			if (_sessionManager != null)
 			{
 				_sessionManager.UserInfoUpdated += OnUserInfoUpdated;
 				UpdateButtonStates();
+			}
+			else
+			{
+				GD.PrintErr("[LobbySelect] Error: SessionManager.Instance is null.");
 			}
 		}
 
