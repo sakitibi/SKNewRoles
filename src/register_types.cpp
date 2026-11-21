@@ -77,6 +77,11 @@ void uninitialize_player_module(ModuleInitializationLevel p_level) {
     if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
         return;
     }
+
+    CombatRegistry *registry = CombatRegistry::get_singleton();
+    if (registry != nullptr) {
+        CombatRegistry::clear_registry();
+    }
 }
 
 extern "C" {
