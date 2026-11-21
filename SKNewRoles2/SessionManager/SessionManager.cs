@@ -5,9 +5,6 @@ using SKNewRoles2.SessionManagerSystem.Services;
 
 namespace SKNewRoles2.SessionManagerSystem
 {
-    /// <summary>
-    /// 外部のMODや別アセンブリから完全にアクセス可能な、ゲームのコアセッションマネージャー
-    /// </summary>
     public partial class SessionManager : Node
     {
         public string CurrentRoomCode { get; set; } = "";
@@ -19,7 +16,6 @@ namespace SKNewRoles2.SessionManagerSystem
         public SessionData CurrentSession { get; set; }
         public bool IsLoggedIn => CurrentSession != null;
         
-        // MODがユーザー更新タイミングを検知するためのイベント
         public event Action UserInfoUpdated;
 
         public int MyRole { get; set; } = -1;
@@ -52,37 +48,30 @@ namespace SKNewRoles2.SessionManagerSystem
             }
         }
 
-        private static SessionManager _instance;
-
         /// <summary>
-        /// MODを含む、すべての外部スクリプトからこのシステムにアクセスするための唯一の窓口。
-        /// 型の競合やアセンブリの差異を無視して、確実にゲーム本体のインスタンスを返します。
+        /// 静的キャッシュを持たず、オートロード空間から常に安全にインスタンスを取得します。
         /// </summary>
         public static SessionManager Instance
         {
             get
             {
-                // すでにキャッシュがある場合はそれを即座に返す
-                if (_instance != null && IsInstanceValid(_instance))
-                {
-                    return _instance;
-                }
-
                 MainLoop mainLoop = Engine.GetMainLoop();
                 if (mainLoop is SceneTree tree)
                 {
-                    _instance = tree.Root.GetNodeOrNull<SessionManager>("SessionManager");
+                    return tree.Root.GetNodeOrNull<SessionManager>("SessionManager");
                 }
-                
-                return _instance;
+                return null;
             }
         }
 
         public override void _Ready()
         {
-            _instance ??= this;
-
             _ = LoadSessionFromDisk();
+        }
+
+        public override void _ExitTree()
+        {
+            UserInfoService.CancelAll();
         }
 
         private static void FetchConfigFromCpp()
@@ -98,7 +87,7 @@ namespace SKNewRoles2.SessionManagerSystem
                     return;
                 }
             }
-            GD.PrintErr("❌ [C++ Config] ConfigManager クラスが見つかりません。C++ モジュールのビルドを確認してください。");
+            GD.PrintErr("❌ [C++ Config] ConfigManager クラスが見つかりません。");
         }
 
         public void SetSession(SessionData session)
@@ -117,28 +106,6 @@ namespace SKNewRoles2.SessionManagerSystem
             DeleteSessionFile();
             GD.Print("🚪 [MOD] セッションがクリアされました。");
             UserInfoUpdated?.Invoke();
-        }
-
-        public override void _ExitTree()
-        {
-            // 非同期通信やサービスの停止
-            UserInfoService.CancelAll();
-
-            if (_instance == this)
-            {
-                _instance = null;
-            }
-        }
-
-        public override void _Notification(int what)
-        {
-            if (what == NotificationExitTree || what == NotificationPredelete)
-            {
-                if (_instance == this)
-                {
-                    _instance = null;
-                }
-            }
         }
     }
 }
