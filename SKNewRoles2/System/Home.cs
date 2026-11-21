@@ -11,7 +11,7 @@ namespace SKNewRoles2.SNRSystem
         private ButtonAnimation _buttonAnimation;
         private readonly BGMManager _bgmManager = new();
         private readonly uint[] BGMList = [
-            1, 2, 3,
+            1U, 2U, 3U,
         ];
 
         public override void _Ready()

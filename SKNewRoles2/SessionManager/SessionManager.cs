@@ -149,5 +149,16 @@ namespace SKNewRoles2.SessionManagerSystem
                 _instance = null;
             }
         }
+
+        public override void _Notification(int what)
+        {
+            if (what == NotificationExitTree || what == NotificationPredelete)
+            {
+                if (_instance == this)
+                {
+                    _instance = null;
+                }
+            }
+        }
     }
 }
