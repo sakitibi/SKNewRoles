@@ -17,6 +17,7 @@ namespace SKNewRoles2.Lobby.JOIN
 		private Button _skinEditButton;
 		private ButtonAnimation _buttonAnimation;
 		private BGMManager _bgmManager;
+		private SessionManager _sessionManager;
 		private Label _emailLabel;
 		private readonly uint[] _buttonClickSoundIdx = [5];
 
@@ -52,14 +53,18 @@ namespace SKNewRoles2.Lobby.JOIN
 			_buttonAnimation.SetupButtonAnimation(_joinPrivateRoomButton);
 			_buttonAnimation.SetupButtonAnimation(_skinEditButton);
 
-			SessionManager.Instance.UserInfoUpdated += OnUserInfoUpdated;
-
 			UpdateButtonStates();
+			_sessionManager = SessionManager.Instance;
+			if (_sessionManager != null)
+			{
+				_sessionManager.UserInfoUpdated += OnUserInfoUpdated;
+				UpdateButtonStates();
+			}
 		}
 
 		public override void _ExitTree()
 		{
-			SessionManager.Instance?.UserInfoUpdated -= OnUserInfoUpdated;
+			_sessionManager?.UserInfoUpdated -= OnUserInfoUpdated;
 
 			_loginButton.Pressed -= OnLoginButtonPressed;
 			_logoutButton.Pressed -= OnLogoutButtonPressed;
@@ -77,7 +82,7 @@ namespace SKNewRoles2.Lobby.JOIN
 
 		private void UpdateButtonStates()
 		{
-			bool isLoggedIn = SessionManager.Instance.IsLoggedIn;
+			bool isLoggedIn = _sessionManager.IsLoggedIn;
 
 			_loginButton.Disabled = isLoggedIn;
 			_logoutButton.Disabled = !isLoggedIn;
@@ -85,9 +90,9 @@ namespace SKNewRoles2.Lobby.JOIN
 
 			if (_emailLabel != null)
 			{
-				if (isLoggedIn && SessionManager.Instance.CurrentSession?.User != null)
+				if (isLoggedIn && _sessionManager.CurrentSession?.User != null)
 				{
-					string email = SessionManager.Instance.CurrentSession.User.Email;
+					string email = _sessionManager.CurrentSession.User.Email;
 					_emailLabel.Text = (email == "Authenticating...") ? "ログイン情報を取得中..." : $"{email}";
 				}
 				else
@@ -111,7 +116,7 @@ namespace SKNewRoles2.Lobby.JOIN
 		private async void OnLogoutButtonPressed()
 		{
 			_ = _bgmManager.PlayBgm(2.0f, _buttonClickSoundIdx, false);
-			SessionManager.Instance.ClearSession();
+			_sessionManager.ClearSession();
 			UpdateButtonStates();
 		}
 
