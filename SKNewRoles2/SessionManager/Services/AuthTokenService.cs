@@ -66,7 +66,7 @@ namespace SKNewRoles2.SessionManagerSystem.Services
                         }
 
                         manager.CurrentSession = newSession;
-                        manager.SaveSessionToDisk(); 
+                        DiskIO.SaveSessionToDisk(newSession); 
                         GD.Print("✨ トークンのリフレッシュに成功しました！");
                         return true;
                     }
