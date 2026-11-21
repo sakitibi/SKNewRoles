@@ -144,12 +144,13 @@ namespace SKNewRoles2.SessionManagerSystem
 
         public override void _ExitTree()
         {
+            UserInfoService.CancelAll();
+
             if (_instance == this)
             {
                 _instance = null;
             }
         }
-
         public override void _Notification(int what)
         {
             if (what == NotificationExitTree || what == NotificationPredelete)
