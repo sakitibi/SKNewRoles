@@ -20,21 +20,19 @@ void ConfigManager::_bind_methods() {
 ConfigManager::ConfigManager() {
     supabase_url = String(DEFAULT_SUPABASE_URL);
     supabase_anon_key = String(DEFAULT_SUPABASE_ANON_KEY);
-}
 
-ConfigManager::~ConfigManager() {}
-
-void ConfigManager::_ready() {
     if (supabase_url.is_empty()) {
-        UtilityFunctions::printerr("⚠️ [ConfigManager] DEFAULT_SUPABASE_URL が空です。");
+        UtilityFunctions::printerr("[ConfigManager] DEFAULT_SUPABASE_URL is empty.");
     } else {
-        UtilityFunctions::print("[ConfigManager] SUPABASE_URL を正常にロードしました: ", supabase_url);
+        UtilityFunctions::print("[ConfigManager] SUPABASE_URL successfully loaded: ", supabase_url);
     }
 
     if (supabase_anon_key.is_empty()) {
-        UtilityFunctions::printerr("⚠️ [ConfigManager] DEFAULT_SUPABASE_ANON_KEY が空です。");
+        UtilityFunctions::printerr("[ConfigManager] DEFAULT_SUPABASE_ANON_KEY is empty.");
     }
 }
+
+ConfigManager::~ConfigManager() {}
 
 String ConfigManager::get_supabase_url() const {
     return supabase_url;
