@@ -208,6 +208,10 @@ namespace SKNewRoles2.SNRSystem
             {
                 _progressTween.Kill();
             }
+
+            OnModLoadingSequence = null;
+            OnStartupVisualInitialized = null;
+
             base._ExitTree();
         }
     }
