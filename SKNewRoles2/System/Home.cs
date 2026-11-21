@@ -58,5 +58,16 @@ namespace SKNewRoles2.SNRSystem
             await Task.Delay(250); // クリック音を鳴らす為
             GetTree().Quit();
         }
+
+        public override void _ExitTree()
+        {
+            _startButton?.Pressed -= OnStartButtonPressed;
+            _exitButton?.Pressed -= QuitGame;
+
+            if(_bgmManager != null && _bgmManager.IsInsideTree())
+            {
+                _bgmManager.QueueFree();
+            }
+        }
     }
 }

@@ -43,7 +43,7 @@ namespace SKNewRoles2.Game.BGM
                     Bus = "Master"
                 };
                 
-                _bgmPlayer.Finished += () => _ = OnBgmFinished();
+                _bgmPlayer.Finished += OnBgmFinishedLambda;
                 AddChild(_bgmPlayer);
             }
         }
@@ -147,10 +147,18 @@ namespace SKNewRoles2.Game.BGM
         public void SetVolume(float volumeDb)
         {
             _currentVolumeDb = volumeDb;
-            if (_bgmPlayer != null)
-            {
-                _bgmPlayer.VolumeDb = volumeDb;
-            }
+            _bgmPlayer?.VolumeDb = volumeDb;
+        }
+        public override void _ExitTree()
+        {
+            _isStopping = true;
+
+            _bgmPlayer?.Finished -= OnBgmFinishedLambda;
+        }
+
+        private void OnBgmFinishedLambda()
+        {
+            _ = OnBgmFinished();
         }
     }
 }
