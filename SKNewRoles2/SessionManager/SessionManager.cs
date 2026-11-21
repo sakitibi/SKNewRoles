@@ -64,9 +64,15 @@ namespace SKNewRoles2.SessionManagerSystem
             }
         }
 
-        public override void _Ready()
+        public override async void _Ready()
         {
-            _ = LoadSessionFromDisk();
+            CurrentSession = DiskIO.LoadSessionFromDisk();
+            if (CurrentSession != null)
+            {
+                string email = CurrentSession.User?.Email ?? $"ID: {CurrentSession.User?.Id ?? "Unknown"}";
+                GD.Print($"✨ セッションファイルの読み込みに成功！自動ログインしました: {email}");
+                await UserInfoService.StartUserInfoSync();
+            }
         }
 
         public override void _ExitTree()
@@ -96,14 +102,14 @@ namespace SKNewRoles2.SessionManagerSystem
             string email = session.User?.Email ?? $"ID: {session.User?.Id ?? "Unknown"}";
             GD.Print($"👤 [MOD] セッションがセットされました: {email}");
             
-            SaveSessionToDisk();
+            DiskIO.SaveSessionToDisk(CurrentSession);
             _ = UserInfoService.StartUserInfoSync();
         }
 
         public void ClearSession()
         {
             CurrentSession = null;
-            DeleteSessionFile();
+            DiskIO.DeleteSessionFile();
             GD.Print("🚪 [MOD] セッションがクリアされました。");
             UserInfoUpdated?.Invoke();
         }

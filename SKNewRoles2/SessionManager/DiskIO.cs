@@ -1,49 +1,47 @@
-using Godot;
 using System;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using SKNewRoles2.SessionManagerSystem.Services;
-using System.Threading.Tasks;
 
 namespace SKNewRoles2.SessionManagerSystem
 {
-    public partial class SessionManager : Node
+    public static class DiskIO
     {
         private static string TokenFilePath => Path.Combine(
-            System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile), 
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), 
             ".askreditor_token.json"
         );
+
         private static readonly JsonSerializerOptions DefaultJsonOptions = new()
         {
             WriteIndented = true,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
-        public void SaveSessionToDisk()
+        public static void SaveSessionToDisk(SessionData session)
         {
-            if (CurrentSession == null) return;
+            if (session == null) return;
 
             try
             {
-                EnsureUserObjectInitialized();
+                session.User ??= new();
 
-                string jsonText = JsonSerializer.Serialize(CurrentSession, DefaultJsonOptions);
+                string jsonText = JsonSerializer.Serialize(session, DefaultJsonOptions);
                 File.WriteAllText(TokenFilePath, jsonText);
-                GD.Print($"💾 セッションファイルを保存しました: {TokenFilePath}");
+                Godot.GD.Print($"💾 セッションファイルを保存しました: {TokenFilePath}");
             }
             catch (Exception ex)
             {
-                GD.PrintErr($"❌ セッションファイルの保存に失敗: {ex.Message}");
+                Godot.GD.PrintErr($"❌ セッションファイルの保存に失敗: {ex.Message}");
             }
         }
 
-        private async Task LoadSessionFromDisk()
+        public static SessionData LoadSessionFromDisk()
         {
             if (!File.Exists(TokenFilePath))
             {
-                GD.Print("ℹ️ セッションファイルが見つかりません（初回起動またはログアウト状態）");
-                return;
+                Godot.GD.Print("ℹ️ セッションファイルが見つかりません（初回起動またはログアウト状態）");
+                return null;
             }
 
             try
@@ -53,40 +51,32 @@ namespace SKNewRoles2.SessionManagerSystem
 
                 if (session != null && !string.IsNullOrEmpty(session.AccessToken))
                 {
-                    CurrentSession = session;
                     string email = session.User?.Email ?? $"ID: {session.User?.Id ?? "Unknown"}";
-                    GD.Print($"✨ セッションファイルの読み込みに成功！自動ログインしました: {email}");
-                    
-                    await UserInfoService.StartUserInfoSync();
+                    Godot.GD.Print($"✨ セッションファイルの読み込みに成功！自動ログインしました: {email}");
+                    return session;
                 }
             }
             catch (Exception ex)
             {
-                GD.PrintErr($"❌ セッションファイルの読み込み・解析に失敗: {ex.Message}");
+                Godot.GD.PrintErr($"❌ セッションファイルの読み込み・解析に失敗: {ex.Message}");
             }
+
+            return null;
         }
 
-        private static void DeleteSessionFile()
+        public static void DeleteSessionFile()
         {
             try
             {
                 if (File.Exists(TokenFilePath))
                 {
                     File.Delete(TokenFilePath);
-                    GD.Print("🗑️ セッションファイルを削除しました");
+                    Godot.GD.Print("🗑️ セッションファイルを削除しました");
                 }
             }
             catch (Exception ex)
             {
-                GD.PrintErr($"❌ セッションファイルの削除に失敗: {ex.Message}");
-            }
-        }
-
-        private void EnsureUserObjectInitialized()
-        {
-            if (CurrentSession != null && CurrentSession.User == null)
-            {
-                CurrentSession.User = new();
+                Godot.GD.PrintErr($"❌ セッションファイルの削除に失敗: {ex.Message}");
             }
         }
     }
