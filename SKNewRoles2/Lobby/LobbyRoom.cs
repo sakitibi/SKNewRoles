@@ -85,7 +85,7 @@ namespace SKNewRoles2.Lobby
 			if (_isTransitioning || !IsInstanceValid(this) || !IsInsideTree()) return;
 			_isTransitioning = true;
 
-			_menuManager.DestroyMenu();
+			_menuManager.DestroyMenu(_roomUIInstance);
 
 			await LobbyCountdownManager.StartCountdownAndTransitionAsync(
 				this, 
