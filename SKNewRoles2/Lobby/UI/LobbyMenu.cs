@@ -12,6 +12,7 @@ namespace SKNewRoles2.Lobby.UI
         public Button PrivacyToggleButton;
         public Button LeaveButton;
         public Button StartGameButton;
+        internal static bool isLobby = false;
 
         private RoomUI _roomUI;
 
@@ -23,6 +24,11 @@ namespace SKNewRoles2.Lobby.UI
             StartGameButton = GetNode<Button>("CanvasLayer/StartGameButton");
             
             Input.MouseMode = Input.MouseModeEnum.Visible;
+            if (!isLobby)
+            {
+                PrivacyToggleButton.Disabled = true;
+                StartGameButton.Disabled = true;
+            }
         }
 
         public override void _Process(double delta)

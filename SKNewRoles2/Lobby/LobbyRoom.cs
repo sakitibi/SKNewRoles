@@ -49,7 +49,9 @@ namespace SKNewRoles2.Lobby
 
 			_roomUIInstance = new(this);
 			_menuManager = new(this, _lobbyMenuScene, _myPlayerManager);
-
+			
+			LobbyMenu.isLobby = true;
+			
 			RealtimeEvents.OnGameStartReceived += HandleGameStartReceived;
 			RealtimeEvents.OnPlayerLeaveReceived += OnRemotePlayerLeaveReceived;
 			RealtimeEvents.OnPlayerSkinReceived += _skinSyncHandler.OnRemotePlayerSkinReceived;
