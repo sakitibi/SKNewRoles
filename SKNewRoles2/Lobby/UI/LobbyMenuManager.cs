@@ -46,6 +46,7 @@ namespace SKNewRoles2.Lobby.UI
             {
                 _activeMenuInstance.Visible = true;
                 Input.MouseMode = Input.MouseModeEnum.Visible;
+                lobbyRoom.playerPrefab.Call("set_movement_enabled", false);
                 GD.Print("✅ [LobbyMenuManager] メニューを表示状態にしました。");
             }
         }
@@ -55,6 +56,7 @@ namespace SKNewRoles2.Lobby.UI
             GD.Print("📁 [LobbyMenuManager] CloseMenu 実行。メニューを完全に破棄して閉じます。");
             DestroyMenu();
             Input.MouseMode = Input.MouseModeEnum.Captured;
+            lobbyRoom.playerPrefab.Call("set_movement_enabled", true);
         }
 
         public void DestroyMenu()

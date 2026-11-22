@@ -16,7 +16,7 @@ namespace SKNewRoles2.Lobby
 		internal Dictionary<string, Node3D> _otherPlayers = [];
 		private readonly Dictionary<string, Dictionary<string, string>> _remotePlayerSkins = [];
 
-		private PackedScene _playerPrefab;
+		public PackedScene playerPrefab;
 		private PackedScene _dummyPlayerPrefab;
 		private LobbyMyPlayerManager _myPlayerManager;
 		private LobbyRemotePlayerManager _remotePlayerManager;
@@ -33,19 +33,19 @@ namespace SKNewRoles2.Lobby
 		{
 			GD.Print("🏠 [LobbyRoom] LobbyRoom が _Ready になりました。");
 			RoomInfoLabel = GetNodeOrNull<Label>("%RoomInfoLabel");
-			_roomUIInstance = new RoomUI(this);
-			_menuManager = new LobbyMenuManager(this, _lobbyMenuScene);
+			_roomUIInstance = new(this);
+			_menuManager = new(this, _lobbyMenuScene);
 
 			if (ResourceLoader.Exists("res://Scenes/Prefabs/Player.tscn"))
 			{
-				_playerPrefab = GD.Load<PackedScene>("res://Scenes/Prefabs/Player.tscn");
+				playerPrefab = GD.Load<PackedScene>("res://Scenes/Prefabs/Player.tscn");
 			}
 
 			_dummyPlayerPrefab = ResourceLoader.Exists("res://Scenes/Prefabs/LobbyPlayerDummy.tscn")
 				? GD.Load<PackedScene>("res://Scenes/Prefabs/LobbyPlayerDummy.tscn")
-				: _playerPrefab;
+				: playerPrefab;
 
-			_myPlayerManager = new LobbyMyPlayerManager(this, _playerPrefab);
+			_myPlayerManager = new LobbyMyPlayerManager(this, playerPrefab);
 			_remotePlayerManager = new LobbyRemotePlayerManager(this, _dummyPlayerPrefab, _otherPlayers);
 			_skinSyncHandler = new LobbyPlayerSkinSyncHandler(_remotePlayerSkins, _otherPlayers);
 

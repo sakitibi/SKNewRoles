@@ -145,7 +145,9 @@ void SNR2Player::_physics_process(double delta) {
 void SNR2Player::_input(const Ref<InputEvent> &event) {
     if (!input) return;
 
-    player_camera.handle_input(this, event, input);
+    if (is_movement_enabled) {
+        player_camera.handle_input(this, event, input);
+    }
 
     Ref<InputEventMouseButton> mouse_button = event;
     if (mouse_button.is_valid() && mouse_button->is_pressed() && mouse_button->get_button_index() == MouseButton::MOUSE_BUTTON_LEFT) {
