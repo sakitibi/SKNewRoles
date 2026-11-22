@@ -1,7 +1,10 @@
+using Godot;
 using System;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+
+using Environment = System.Environment;
 
 namespace SKNewRoles2.SessionManagerSystem
 {
@@ -28,11 +31,11 @@ namespace SKNewRoles2.SessionManagerSystem
 
                 string jsonText = JsonSerializer.Serialize(session, DefaultJsonOptions);
                 File.WriteAllText(TokenFilePath, jsonText);
-                Godot.GD.Print($"💾 セッションファイルを保存しました: {TokenFilePath}");
+                GD.Print($"セッションファイルを保存しました: {TokenFilePath}");
             }
             catch (Exception ex)
             {
-                Godot.GD.PrintErr($"❌ セッションファイルの保存に失敗: {ex.Message}");
+                GD.PrintErr($"セッションファイルの保存に失敗: {ex.Message}");
             }
         }
 
@@ -40,7 +43,7 @@ namespace SKNewRoles2.SessionManagerSystem
         {
             if (!File.Exists(TokenFilePath))
             {
-                Godot.GD.Print("ℹ️ セッションファイルが見つかりません（初回起動またはログアウト状態）");
+                GD.Print("セッションファイルが見つかりません（初回起動またはログアウト状態）");
                 return null;
             }
 
@@ -52,13 +55,13 @@ namespace SKNewRoles2.SessionManagerSystem
                 if (session != null && !string.IsNullOrEmpty(session.AccessToken))
                 {
                     string email = session.User?.Email ?? $"ID: {session.User?.Id ?? "Unknown"}";
-                    Godot.GD.Print($"✨ セッションファイルの読み込みに成功！自動ログインしました: {email}");
+                    GD.Print($"セッションファイルの読み込みに成功！自動ログインしました: {email}");
                     return session;
                 }
             }
             catch (Exception ex)
             {
-                Godot.GD.PrintErr($"❌ セッションファイルの読み込み・解析に失敗: {ex.Message}");
+                GD.PrintErr($"セッションファイルの読み込み・解析に失敗: {ex.Message}");
             }
 
             return null;
@@ -71,12 +74,12 @@ namespace SKNewRoles2.SessionManagerSystem
                 if (File.Exists(TokenFilePath))
                 {
                     File.Delete(TokenFilePath);
-                    Godot.GD.Print("🗑️ セッションファイルを削除しました");
+                    GD.Print("セッションファイルを削除しました");
                 }
             }
             catch (Exception ex)
             {
-                Godot.GD.PrintErr($"❌ セッションファイルの削除に失敗: {ex.Message}");
+                GD.PrintErr($"セッションファイルの削除に失敗: {ex.Message}");
             }
         }
     }
