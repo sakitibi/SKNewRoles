@@ -67,7 +67,7 @@ namespace SKNewRoles2.Lobby
         {
             if (@event.IsActionPressed("ui_cancel"))
             {
-                _menuManager.ToggleMenu(_roomUIInstance); // 💡 メニューマネージャーに処理を委譲
+                _menuManager.ToggleMenu(_roomUIInstance);
                 GetViewport().SetInputAsHandled();
             }
         }
