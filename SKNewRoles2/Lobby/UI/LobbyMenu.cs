@@ -18,9 +18,9 @@ namespace SKNewRoles2.Lobby.UI
         public override void _Ready()
         {
             GD.Print("🖥️ [LobbyMenu] メニューシーンが _Ready になりました。");
-            PrivacyToggleButton = GetNode<Button>("CanvasLayer/PrivacyToggleButton");
-            LeaveButton = GetNode<Button>("CanvasLayer/LeaveButton");
-            StartGameButton = GetNode<Button>("CanvasLayer/StartGameButton");
+            PrivacyToggleButton = GetNodeOrNull<Button>("CanvasLayer/PrivacyToggleButton");
+            LeaveButton = GetNodeOrNull<Button>("CanvasLayer/LeaveButton");
+            StartGameButton = GetNodeOrNull<Button>("CanvasLayer/StartGameButton");
         }
 
         public void InitMenu(RoomUI roomUI, LobbyRoom lobbyRoom)

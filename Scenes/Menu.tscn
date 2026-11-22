@@ -52,7 +52,6 @@ offset_right = 40.0
 offset_bottom = 40.0
 
 [node name="PrivacyToggleButton" type="Button" parent="CanvasLayer" unique_id=1467959453]
-unique_name_in_owner = true
 offset_left = 124.0
 offset_top = 34.0
 offset_right = 404.0
@@ -62,7 +61,6 @@ theme_override_font_sizes/font_size = 60
 text = "非公開"
 
 [node name="LeaveButton" type="Button" parent="CanvasLayer" unique_id=1013003684]
-unique_name_in_owner = true
 offset_left = 123.0
 offset_top = 146.0
 offset_right = 403.0
@@ -72,7 +70,6 @@ theme_override_font_sizes/font_size = 60
 text = "退出する"
 
 [node name="StartGameButton" type="Button" parent="CanvasLayer" unique_id=1780747048]
-unique_name_in_owner = true
 offset_left = 121.0
 offset_top = 267.0
 offset_right = 400.0
