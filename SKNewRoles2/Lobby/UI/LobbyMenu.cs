@@ -54,5 +54,14 @@ namespace SKNewRoles2.Lobby.UI
 
             _roomUI.UpdatePrivacyButtonVisual(SessionManager.Instance.IsPublic);
         }
+
+        public override void _UnhandledInput(InputEvent @event)
+        {
+            if (@event.IsActionPressed("ui_cancel"))
+            {
+                ResumeRequested?.Invoke();
+                GetViewport().SetInputAsHandled();
+            }
+        }
     }
 }
