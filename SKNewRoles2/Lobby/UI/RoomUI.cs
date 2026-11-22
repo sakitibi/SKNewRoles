@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Godot;
 using SKNewRoles2.Lobby.JOIN.Services;
 using SKNewRoles2.SessionManagerSystem;
@@ -56,7 +57,7 @@ namespace SKNewRoles2.Lobby.UI
             if (lobbyStatus == 0)
             {
                 UpdateRoomInfoUI();
-                UpdatePrivacyButtonVisual(SessionManager.Instance.IsPublic);
+                await UpdatePrivacyButtonVisual(SessionManager.Instance.IsPublic);
             }
             else if (lobbyStatus == 1)
             {
@@ -68,8 +69,9 @@ namespace SKNewRoles2.Lobby.UI
             }
         }
 
-        public void UpdatePrivacyButtonVisual(bool isPublic)
+        public async Task UpdatePrivacyButtonVisual(bool isPublic)
         {
+            await Task.Delay(200);
             Button privacyBtn = _lobbyMenu?.PrivacyToggleButton;
             if (privacyBtn == null)
             {
@@ -111,11 +113,11 @@ namespace SKNewRoles2.Lobby.UI
             if (success)
             {
                 UpdateRoomInfoUI();
-                UpdatePrivacyButtonVisual(targetPublicState);
+                await UpdatePrivacyButtonVisual(targetPublicState);
             }
             else
             {
-                UpdatePrivacyButtonVisual(SessionManager.Instance.IsPublic);
+                await UpdatePrivacyButtonVisual(SessionManager.Instance.IsPublic);
             }
 
             privacyBtn.Disabled = false;

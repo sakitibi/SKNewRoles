@@ -72,7 +72,7 @@ namespace SKNewRoles2.Lobby.UI
                 };
             }
 
-            _roomUI.UpdatePrivacyButtonVisual(SessionManager.Instance.IsPublic);
+            _ = _roomUI.UpdatePrivacyButtonVisual(SessionManager.Instance.IsPublic);
         }
 
         public override void _UnhandledInput(InputEvent @event)
