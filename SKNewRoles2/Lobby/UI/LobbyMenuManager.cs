@@ -5,24 +5,21 @@ namespace SKNewRoles2.Lobby.UI
     public class LobbyMenuManager(LobbyRoom lobbyRoom, PackedScene menuScene)
     {
         private Control _activeMenuInstance;
-        private bool _isMenuOpen = false;
-
-        public bool IsMenuOpen => _isMenuOpen;
+        public bool IsMenuOpen => _activeMenuInstance != null && _activeMenuInstance.Visible;
 
         public void ToggleMenu(RoomUI roomUI)
         {
-            _isMenuOpen = !_isMenuOpen;
-            if (_isMenuOpen)
-            {
-                OpenMenu(roomUI);
-            }
-            else
+            if (IsMenuOpen)
             {
                 CloseMenu();
             }
+            else
+            {
+                OpenMenu(roomUI);
+            }
         }
 
-        private void OpenMenu(RoomUI roomUI)
+        public void OpenMenu(RoomUI roomUI)
         {
             if (_activeMenuInstance == null && menuScene != null)
             {
@@ -43,15 +40,14 @@ namespace SKNewRoles2.Lobby.UI
                 _activeMenuInstance.Visible = true;
                 Input.MouseMode = Input.MouseModeEnum.Visible;
             }
-            _isMenuOpen = true;
         }
 
         public void CloseMenu()
         {
-            _isMenuOpen = false;
             if (_activeMenuInstance != null)
             {
-                _activeMenuInstance?.Visible = false;
+                _activeMenuInstance.Visible = false;
+                Input.MouseMode = Input.MouseModeEnum.Captured;
             }
         }
 
