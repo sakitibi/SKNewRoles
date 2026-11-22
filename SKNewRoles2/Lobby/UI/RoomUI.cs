@@ -11,6 +11,7 @@ namespace SKNewRoles2.Lobby.UI
         public void SetMenu(LobbyMenu menu)
         {
             _lobbyMenu = menu;
+            GD.Print("🔗 [RoomUI] LobbyMenu の参照が RoomUI にセットされました。");
         }
 
         public void UpdateRoomInfoUI()
@@ -70,7 +71,11 @@ namespace SKNewRoles2.Lobby.UI
         public void UpdatePrivacyButtonVisual(bool isPublic)
         {
             Button privacyBtn = _lobbyMenu?.PrivacyToggleButton;
-            if (privacyBtn == null) return;
+            if (privacyBtn == null)
+            {
+                GD.PrintErr("⚠️ [RoomUI] UpdatePrivacyButtonVisual: privacyBtn が null です。");
+                return;
+            }
 
             Color normalColor = isPublic ? RoomColorData.PublicNormalColor : RoomColorData.PrivateNormalColor;
             Color hoverColor = isPublic ? RoomColorData.PublicHoverColor : RoomColorData.PrivateHoverColor;

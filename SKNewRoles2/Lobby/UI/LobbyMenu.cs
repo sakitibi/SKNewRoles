@@ -17,6 +17,7 @@ namespace SKNewRoles2.Lobby.UI
 
         public override void _Ready()
         {
+            GD.Print("🖥️ [LobbyMenu] メニューシーンが _Ready になりました。");
             PrivacyToggleButton = GetNode<Button>("CanvasLayer/PrivacyToggleButton");
             LeaveButton = GetNode<Button>("CanvasLayer/LeaveButton");
             StartGameButton = GetNode<Button>("CanvasLayer/StartGameButton");
@@ -25,6 +26,7 @@ namespace SKNewRoles2.Lobby.UI
         public void InitMenu(RoomUI roomUI, LobbyRoom lobbyRoom)
         {
             _roomUI = roomUI;
+            GD.Print("🖥️ [LobbyMenu] InitMenu が呼び出されました。");
 
             if (PrivacyToggleButton != null)
             {
@@ -35,6 +37,7 @@ namespace SKNewRoles2.Lobby.UI
             if (StartGameButton != null)
             {
                 StartGameButton.Pressed += () => {
+                    GD.Print("🖱️ [LobbyMenu] スタートボタンが押されました。");
                     if (SessionManager.Instance.IsHost && !lobbyRoom._isTransitioning)
                     {
                         RealtimeLobbySender.LobbySendStartGame();
@@ -47,6 +50,7 @@ namespace SKNewRoles2.Lobby.UI
             if (LeaveButton != null)
             {
                 LeaveButton?.Pressed += async () => {
+                    GD.Print("🖱️ [LobbyMenu] 退出ボタンが押されました。");
                     RealtimeLobbySender.LobbySendLeave();
                     await LobbyNavigation.LeaveLobbyAsync(GetTree(), LeaveButton, lobbyRoom.CleanupEventsPublic);
                 };
@@ -59,6 +63,7 @@ namespace SKNewRoles2.Lobby.UI
         {
             if (@event.IsActionPressed("ui_cancel"))
             {
+                GD.Print("🔑 [LobbyMenu] メニュー内でESCキー（ui_cancel）を検知しました。ResumeRequested を発火します。");
                 ResumeRequested?.Invoke();
                 GetViewport().SetInputAsHandled();
             }

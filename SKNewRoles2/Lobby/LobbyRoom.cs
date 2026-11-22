@@ -31,6 +31,7 @@ namespace SKNewRoles2.Lobby
 
 		public override async void _Ready()
 		{
+			GD.Print("🏠 [LobbyRoom] LobbyRoom が _Ready になりました。");
 			RoomInfoLabel = GetNodeOrNull<Label>("%RoomInfoLabel");
 			_roomUIInstance = new RoomUI(this);
 			_menuManager = new LobbyMenuManager(this, _lobbyMenuScene);
@@ -65,6 +66,7 @@ namespace SKNewRoles2.Lobby
 		{
 			if (@event.IsActionPressed("ui_cancel"))
 			{
+				GD.Print("🔑 [LobbyRoom] ESCキー（ui_cancel）を検出しました。ToggleMenuを呼び出します。");
 				_menuManager.ToggleMenu(_roomUIInstance);
 				GetViewport().SetInputAsHandled();
 			}

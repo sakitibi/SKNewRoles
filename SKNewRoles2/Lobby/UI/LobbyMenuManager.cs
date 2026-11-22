@@ -9,6 +9,7 @@ namespace SKNewRoles2.Lobby.UI
 
         public void ToggleMenu(RoomUI roomUI)
         {
+            GD.Print($"🔄 [LobbyMenuManager] ToggleMenu 呼び出し. 現在のメニュー状態(IsMenuOpen): {IsMenuOpen}");
             if (IsMenuOpen)
             {
                 CloseMenu();
@@ -21,8 +22,10 @@ namespace SKNewRoles2.Lobby.UI
 
         public void OpenMenu(RoomUI roomUI)
         {
+            GD.Print("📂 [LobbyMenuManager] OpenMenu 実行開始...");
             if (_activeMenuInstance == null && menuScene != null)
             {
+                GD.Print("📂 [LobbyMenuManager] メニューを新規インスタンス化します。");
                 _activeMenuInstance = (Control)menuScene.Instantiate();
                 
                 if (_activeMenuInstance is LobbyMenu menu)
@@ -34,16 +37,22 @@ namespace SKNewRoles2.Lobby.UI
 
                 lobbyRoom.GetNode<CanvasLayer>("CanvasLayer").AddChild(_activeMenuInstance);
             }
+            else if (_activeMenuInstance == null && menuScene == null)
+            {
+                GD.PrintErr("❌ [LobbyMenuManager] 致命的エラー: _lobbyMenuScene (menuScene) が null です！インスペクターを確認してください。");
+            }
 
             if (_activeMenuInstance != null)
             {
                 _activeMenuInstance.Visible = true;
                 Input.MouseMode = Input.MouseModeEnum.Visible;
+                GD.Print("✅ [LobbyMenuManager] メニューを表示状態にしました。");
             }
         }
 
         public void CloseMenu()
         {
+            GD.Print("📁 [LobbyMenuManager] CloseMenu 実行。メニューを非表示にします。");
             if (_activeMenuInstance != null)
             {
                 _activeMenuInstance.Visible = false;
@@ -53,6 +62,7 @@ namespace SKNewRoles2.Lobby.UI
 
         public void DestroyMenu()
         {
+            GD.Print("🗑️ [LobbyMenuManager] DestroyMenu 実行。メニューを完全に破棄します。");
             _activeMenuInstance?.QueueFree();
             _activeMenuInstance = null;
         }
