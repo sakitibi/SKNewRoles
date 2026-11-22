@@ -3,7 +3,7 @@ using System;
 using SKNewRoles2.Lobby.JOIN.Services.Realtime;
 using SKNewRoles2.SessionManagerSystem;
 
-namespace SKNewRoles2.Lobby
+namespace SKNewRoles2.Lobby.UI
 {
     public partial class LobbyMenu : Control
     {

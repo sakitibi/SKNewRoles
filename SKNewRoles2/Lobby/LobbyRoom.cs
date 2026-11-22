@@ -2,217 +2,172 @@ using Godot;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using SKNewRoles2.Lobby.JOIN.Services.Realtime;
+using SKNewRoles2.Lobby.UI;
 using SKNewRoles2.Game.BGM;
 
 namespace SKNewRoles2.Lobby
 {
-	public partial class LobbyRoom : Node3D
-	{
-		internal Label RoomInfoLabel;
-		
-		[Export] private PackedScene _lobbyMenuScene;
+    public partial class LobbyRoom : Node3D
+    {
+        internal Label RoomInfoLabel;
+        
+        [Export] private PackedScene _lobbyMenuScene;
 
-		internal Dictionary<string, Node3D> _otherPlayers = [];
-		private readonly Dictionary<string, Dictionary<string, string>> _remotePlayerSkins = [];
+        internal Dictionary<string, Node3D> _otherPlayers = [];
+        private readonly Dictionary<string, Dictionary<string, string>> _remotePlayerSkins = [];
 
-		private PackedScene _playerPrefab;
-		private PackedScene _dummyPlayerPrefab;
-		private LobbyMyPlayerManager _myPlayerManager;
-		private LobbyRemotePlayerManager _remotePlayerManager;
-		private LobbyPlayerSkinSyncHandler _skinSyncHandler;
+        private PackedScene _playerPrefab;
+        private PackedScene _dummyPlayerPrefab;
+        private LobbyMyPlayerManager _myPlayerManager;
+        private LobbyRemotePlayerManager _remotePlayerManager;
+        private LobbyPlayerSkinSyncHandler _skinSyncHandler;
+        private LobbyMenuManager _menuManager;
 
-		private RoomUI _roomUIInstance;
-		private Control _activeMenuInstance;
-		private bool _isMenuOpen = false;
-		
-		internal bool _isTransitioning = false;
-		private readonly BGMManager _bgmManager = new();
+        private RoomUI _roomUIInstance;
+        internal bool _isTransitioning = false;
+        private readonly BGMManager _bgmManager = new();
 
-		public Color GrassBlockColor { get; set; } = new Color(0.3f, 0.85f, 0.15f, 1.0f);
+        public Color GrassBlockColor { get; set; } = new Color(0.3f, 0.85f, 0.15f, 1.0f);
 
-		public override async void _Ready()
-		{
-			RoomInfoLabel = GetNodeOrNull<Label>("%RoomInfoLabel");
-			_roomUIInstance = new RoomUI(this);
+        public override async void _Ready()
+        {
+            RoomInfoLabel = GetNodeOrNull<Label>("%RoomInfoLabel");
+            _roomUIInstance = new RoomUI(this);
+            _menuManager = new LobbyMenuManager(this, _lobbyMenuScene);
 
-			// プレハブのロード
-			if (ResourceLoader.Exists("res://Scenes/Prefabs/Player.tscn"))
-			{
-				_playerPrefab = GD.Load<PackedScene>("res://Scenes/Prefabs/Player.tscn");
-			}
+            // プレハブのロード
+            if (ResourceLoader.Exists("res://Scenes/Prefabs/Player.tscn"))
+            {
+                _playerPrefab = GD.Load<PackedScene>("res://Scenes/Prefabs/Player.tscn");
+            }
 
-			_dummyPlayerPrefab = ResourceLoader.Exists("res://Scenes/Prefabs/LobbyPlayerDummy.tscn")
-				? GD.Load<PackedScene>("res://Scenes/Prefabs/LobbyPlayerDummy.tscn")
-				: _playerPrefab;
+            _dummyPlayerPrefab = ResourceLoader.Exists("res://Scenes/Prefabs/LobbyPlayerDummy.tscn")
+                ? GD.Load<PackedScene>("res://Scenes/Prefabs/LobbyPlayerDummy.tscn")
+                : _playerPrefab;
 
-			_myPlayerManager = new LobbyMyPlayerManager(this, _playerPrefab);
-			_remotePlayerManager = new LobbyRemotePlayerManager(this, _dummyPlayerPrefab, _otherPlayers);
-			_skinSyncHandler = new LobbyPlayerSkinSyncHandler(_remotePlayerSkins, _otherPlayers);
+            _myPlayerManager = new LobbyMyPlayerManager(this, _playerPrefab);
+            _remotePlayerManager = new LobbyRemotePlayerManager(this, _dummyPlayerPrefab, _otherPlayers);
+            _skinSyncHandler = new LobbyPlayerSkinSyncHandler(_remotePlayerSkins, _otherPlayers);
 
-			// イベントの購読登録
-			RealtimeEvents.OnGameStartReceived += HandleGameStartReceived;
-			RealtimeEvents.OnPlayerLeaveReceived += OnRemotePlayerLeaveReceived;
-			RealtimeEvents.OnPlayerSkinReceived += _skinSyncHandler.OnRemotePlayerSkinReceived;
+            // イベントの購読登録
+            RealtimeEvents.OnGameStartReceived += HandleGameStartReceived;
+            RealtimeEvents.OnPlayerLeaveReceived += OnRemotePlayerLeaveReceived;
+            RealtimeEvents.OnPlayerSkinReceived += _skinSyncHandler.OnRemotePlayerSkinReceived;
 
-			await LobbyRealtimeHelper.RegisterListeners(OnRoomSettingsChangedFromServer, OnRemotePlayerTransformReceived);
+            await LobbyRealtimeHelper.RegisterListeners(OnRoomSettingsChangedFromServer, OnRemotePlayerTransformReceived);
 
-			_roomUIInstance.UpdateRoomInfoUI();
+            _roomUIInstance.UpdateRoomInfoUI();
+            LobbyMeshUtility.ApplyTriplanarToAllMeshes(this);
 
-			// マテリアルの Triplanar 自動適用
-			LobbyMeshUtility.ApplyTriplanarToAllMeshes(this);
+            await _myPlayerManager.SpawnAndSetupPlayerAsync(GrassBlockColor);
+            _bgmManager?.StopBgm();
+        }
 
-			await _myPlayerManager.SpawnAndSetupPlayerAsync(GrassBlockColor);
+        public override void _UnhandledInput(InputEvent @event)
+        {
+            if (@event.IsActionPressed("ui_cancel"))
+            {
+                _menuManager.ToggleMenu(_roomUIInstance); // 💡 メニューマネージャーに処理を委譲
+                GetViewport().SetInputAsHandled();
+            }
+        }
 
-			_bgmManager?.StopBgm();
-		}
+        private void HandleGameStartReceived()
+        {
+            _ = TriggerCountdownAndTransition();
+        }
 
-		public override void _UnhandledInput(InputEvent @event)
-		{
-			// ESCキーが押されたらポーズメニューの開閉を切り替える
-			if (@event.IsActionPressed("ui_cancel"))
-			{
-				ToggleMenu();
-				GetViewport().SetInputAsHandled();
-			}
-		}
+        public async Task TriggerCountdownAndTransition()
+        {
+            if (_isTransitioning || !IsInstanceValid(this) || !IsInsideTree()) return;
+            _isTransitioning = true;
 
-		private void ToggleMenu()
-		{
-			_isMenuOpen = !_isMenuOpen;
-			if (_isMenuOpen)
-			{
-				OpenMenu();
-			}
-			else
-			{
-				CloseMenu();
-			}
-		}
+            _menuManager.DestroyMenu(); // 遷移時にメニューを破棄
 
-		private void OpenMenu()
-		{
-			if (_lobbyMenuScene != null && _activeMenuInstance == null)
-			{
-				_activeMenuInstance = (Control)_lobbyMenuScene.Instantiate();
-				
-				if (_activeMenuInstance is LobbyMenu menu)
-				{
-					menu.ResumeRequested += CloseMenu;
-					menu.InitMenu(_roomUIInstance, this);
-					_roomUIInstance.SetMenu(menu);
-				}
+            await LobbyCountdownManager.StartCountdownAndTransitionAsync(
+                this, 
+                null,
+                null, 
+                _otherPlayers.Keys, 
+                CleanupEvents
+            );
+        }
 
-				GetNode<CanvasLayer>("CanvasLayer").AddChild(_activeMenuInstance);
-			}
-			
-			_activeMenuInstance?.Visible = true;
-		}
+        private void OnRoomSettingsChangedFromServer()
+        {
+            if (_isTransitioning || !IsInstanceValid(this) || !IsInsideTree()) return;
+            _roomUIInstance.OnRoomSettingsChangedFromServer();
+        }
 
-		private void CloseMenu()
-		{
-			_isMenuOpen = false;
-			if (_activeMenuInstance != null)
-			{
-				_activeMenuInstance?.Visible = false;
-			}
-		}
+        private void OnRemotePlayerTransformReceived(string playerId, float px, float py, float pz, float rx, float ry, float rz)
+        {
+            _remotePlayerManager.HandleTransformReceived(
+                playerId, px, py, pz, rx, ry, rz, 
+                async (id, x, y, z, rxVal, ryVal, rzVal) =>
+                {
+                    await _remotePlayerManager.SpawnRemotePlayerAsync(
+                        id, x, y, z, rxVal, ryVal, rzVal, 
+                        _remotePlayerSkins, 
+                        _myPlayerManager?.MyPlayerInstance
+                    );
+                    _ = LobbyPlayerSkinSyncHandler.SendMySkinResyncAsync(_myPlayerManager?.MyPlayerInstance);
+                }
+            );
+        }
 
-		private void HandleGameStartReceived()
-		{
-			_ = TriggerCountdownAndTransition();
-		}
+        private void OnRemotePlayerLeaveReceived(string playerId)
+        {
+            if (_otherPlayers.TryGetValue(playerId, out Node3D playerNode))
+            {
+                if (IsInstanceValid(playerNode))
+                {
+                    playerNode.QueueFree();
+                }
+                _otherPlayers.Remove(playerId);
+            }
+        }
 
-		public async Task TriggerCountdownAndTransition()
-		{
-			if (_isTransitioning || !IsInstanceValid(this) || !IsInsideTree()) return;
-			_isTransitioning = true;
+        public void LeaveLobbyForced()
+        {
+            RealtimeLobbySender.LobbySendLeave();
+            LobbyNavigation.LeaveLobbyCleanup(GetTree(), CleanupEvents);
+        }
 
-			_activeMenuInstance?.QueueFree();
+        public void CleanupEventsPublic() => CleanupEvents();
 
-			await LobbyCountdownManager.StartCountdownAndTransitionAsync(
-				this, 
-				null,
-				null, 
-				_otherPlayers.Keys, 
-				CleanupEvents
-			);
-		}
+        private async void CleanupEvents()
+        {
+            RealtimeEvents.OnGameStartReceived -= HandleGameStartReceived;
+            RealtimeEvents.OnPlayerLeaveReceived -= OnRemotePlayerLeaveReceived;
+            
+            if (_skinSyncHandler != null)
+            {
+                RealtimeEvents.OnPlayerSkinReceived -= _skinSyncHandler.OnRemotePlayerSkinReceived;
+            }
 
-		private void OnRoomSettingsChangedFromServer()
-		{
-			if (_isTransitioning || !IsInstanceValid(this) || !IsInsideTree()) return;
-			_roomUIInstance.OnRoomSettingsChangedFromServer();
-		}
+            await LobbyRealtimeHelper.UnregisterListeners(OnRoomSettingsChangedFromServer, OnRemotePlayerTransformReceived);
+            _otherPlayers.Clear();
+            _remotePlayerSkins.Clear();
+        }
 
-		private void OnRemotePlayerTransformReceived(string playerId, float px, float py, float pz, float rx, float ry, float rz)
-		{
-			_remotePlayerManager.HandleTransformReceived(
-				playerId, px, py, pz, rx, ry, rz, 
-				async (id, x, y, z, rxVal, ryVal, rzVal) =>
-				{
-					await _remotePlayerManager.SpawnRemotePlayerAsync(
-						id, x, y, z, rxVal, ryVal, rzVal, 
-						_remotePlayerSkins, 
-						_myPlayerManager?.MyPlayerInstance
-					);
-					_ = LobbyPlayerSkinSyncHandler.SendMySkinResyncAsync(_myPlayerManager?.MyPlayerInstance);
-				}
-			);
-		}
+        public override void _ExitTree()
+        {
+            try
+            {
+                RealtimeLobbySender.LobbySendLeave();
+            }
+            catch {}
+            CleanupEvents();
+            base._ExitTree();
+        }
 
-		private void OnRemotePlayerLeaveReceived(string playerId)
-		{
-			if (_otherPlayers.TryGetValue(playerId, out Node3D playerNode))
-			{
-				if (IsInstanceValid(playerNode))
-				{
-					playerNode.QueueFree();
-				}
-				_otherPlayers.Remove(playerId);
-			}
-		}
-
-		public void LeaveLobbyForced()
-		{
-			RealtimeLobbySender.LobbySendLeave();
-			LobbyNavigation.LeaveLobbyCleanup(GetTree(), CleanupEvents);
-		}
-
-		public void CleanupEventsPublic() => CleanupEvents();
-
-		private async void CleanupEvents()
-		{
-			RealtimeEvents.OnGameStartReceived -= HandleGameStartReceived;
-			RealtimeEvents.OnPlayerLeaveReceived -= OnRemotePlayerLeaveReceived;
-			
-			if (_skinSyncHandler != null)
-			{
-				RealtimeEvents.OnPlayerSkinReceived -= _skinSyncHandler.OnRemotePlayerSkinReceived;
-			}
-
-			await LobbyRealtimeHelper.UnregisterListeners(OnRoomSettingsChangedFromServer, OnRemotePlayerTransformReceived);
-			_otherPlayers.Clear();
-			_remotePlayerSkins.Clear();
-		}
-
-		public override void _ExitTree()
-		{
-			try
-			{
-				RealtimeLobbySender.LobbySendLeave();
-			}
-			catch {}
-			CleanupEvents();
-			base._ExitTree();
-		}
-
-		protected override void Dispose(bool disposing)
-		{
-			if (disposing)
-			{
-				CleanupEvents();
-			}
-			base.Dispose(disposing);
-		}
-	}
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                CleanupEvents();
+            }
+            base.Dispose(disposing);
+        }
+    }
 }
