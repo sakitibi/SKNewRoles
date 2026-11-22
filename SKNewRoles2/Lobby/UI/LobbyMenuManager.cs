@@ -28,14 +28,14 @@ namespace SKNewRoles2.Lobby.UI
                 GD.Print("📂 [LobbyMenuManager] メニューを新規インスタンス化します。");
                 _activeMenuInstance = (Control)menuScene.Instantiate();
                 
+                lobbyRoom.GetNode<CanvasLayer>("CanvasLayer").AddChild(_activeMenuInstance);
+
                 if (_activeMenuInstance is LobbyMenu menu)
                 {
                     menu.ResumeRequested += CloseMenu;
                     menu.InitMenu(roomUI, lobbyRoom);
                     roomUI.SetMenu(menu);
                 }
-
-                lobbyRoom.GetNode<CanvasLayer>("CanvasLayer").AddChild(_activeMenuInstance);
             }
             else if (_activeMenuInstance == null && menuScene == null)
             {
