@@ -33,8 +33,8 @@ namespace SKNewRoles2.Lobby.UI
                 if (_activeMenuInstance is LobbyMenu menu)
                 {
                     menu.ResumeRequested += () => CloseMenu(roomUI);
-                    menu.InitMenu(roomUI, lobbyRoom);
                     roomUI.SetMenu(menu);
+                    menu.InitMenu(roomUI, lobbyRoom);
                 }
             }
             else if (_activeMenuInstance == null && menuScene == null)

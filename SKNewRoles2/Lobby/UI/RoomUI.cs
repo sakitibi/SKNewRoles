@@ -71,7 +71,6 @@ namespace SKNewRoles2.Lobby.UI
 
         public async Task UpdatePrivacyButtonVisual(bool isPublic)
         {
-            await Task.Delay(200);
             Button privacyBtn = _lobbyMenu?.PrivacyToggleButton;
             if (privacyBtn == null)
             {
@@ -84,14 +83,16 @@ namespace SKNewRoles2.Lobby.UI
             Color pressedColor = isPublic ? RoomColorData.PublicPressedColor : RoomColorData.PrivatePressedColor;
 
             privacyBtn.Text = isPublic ? "公開中" : "非公開";
-            privacyBtn.SelfModulate = new Color(1, 1, 1, 1);
+            privacyBtn.SelfModulate = new(1, 1, 1, 1);
 
             string[] states = ["normal", "hover", "pressed"];
             Color[] colors = [normalColor, hoverColor, pressedColor];
 
             for (int i = 0; i < states.Length; i++)
             {
-                StyleBoxFlat styleBox = new() { BgColor = colors[i] };
+                StyleBoxFlat styleBox = new() {
+                    BgColor = colors[i]
+                };
                 styleBox.SetCornerRadiusAll(5);
                 privacyBtn.AddThemeStyleboxOverride(states[i], styleBox);
             }
