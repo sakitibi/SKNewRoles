@@ -35,7 +35,6 @@ namespace SKNewRoles2.Lobby
 			_roomUIInstance = new RoomUI(this);
 			_menuManager = new LobbyMenuManager(this, _lobbyMenuScene);
 
-			// プレハブのロード
 			if (ResourceLoader.Exists("res://Scenes/Prefabs/Player.tscn"))
 			{
 				_playerPrefab = GD.Load<PackedScene>("res://Scenes/Prefabs/Player.tscn");
@@ -49,7 +48,6 @@ namespace SKNewRoles2.Lobby
 			_remotePlayerManager = new LobbyRemotePlayerManager(this, _dummyPlayerPrefab, _otherPlayers);
 			_skinSyncHandler = new LobbyPlayerSkinSyncHandler(_remotePlayerSkins, _otherPlayers);
 
-			// イベントの購読登録
 			RealtimeEvents.OnGameStartReceived += HandleGameStartReceived;
 			RealtimeEvents.OnPlayerLeaveReceived += OnRemotePlayerLeaveReceived;
 			RealtimeEvents.OnPlayerSkinReceived += _skinSyncHandler.OnRemotePlayerSkinReceived;
@@ -82,7 +80,7 @@ namespace SKNewRoles2.Lobby
 			if (_isTransitioning || !IsInstanceValid(this) || !IsInsideTree()) return;
 			_isTransitioning = true;
 
-			_menuManager.DestroyMenu(); // 遷移時にメニューを破棄
+			_menuManager.DestroyMenu();
 
 			await LobbyCountdownManager.StartCountdownAndTransitionAsync(
 				this, 

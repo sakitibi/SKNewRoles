@@ -51,8 +51,7 @@ namespace SKNewRoles2.Lobby.UI
             _isMenuOpen = false;
             if (_activeMenuInstance != null)
             {
-                _activeMenuInstance.Visible = false;
-                Input.MouseMode = Input.MouseModeEnum.Captured;
+                _activeMenuInstance?.Visible = false;
             }
         }
 
