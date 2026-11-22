@@ -5,7 +5,7 @@ namespace SKNewRoles2.Lobby.UI
     public class LobbyMenuManager(LobbyRoom lobbyRoom, PackedScene menuScene)
     {
         private Control _activeMenuInstance;
-        public bool IsMenuOpen => _activeMenuInstance != null && _activeMenuInstance.Visible;
+        public bool IsMenuOpen => _activeMenuInstance != null && GodotObject.IsInstanceValid(_activeMenuInstance);
 
         public void ToggleMenu(RoomUI roomUI)
         {
@@ -52,18 +52,18 @@ namespace SKNewRoles2.Lobby.UI
 
         public void CloseMenu()
         {
-            GD.Print("📁 [LobbyMenuManager] CloseMenu 実行。メニューを非表示にします。");
-            if (_activeMenuInstance != null)
-            {
-                _activeMenuInstance.Visible = false;
-                Input.MouseMode = Input.MouseModeEnum.Captured;
-            }
+            GD.Print("📁 [LobbyMenuManager] CloseMenu 実行。メニューを完全に破棄して閉じます。");
+            DestroyMenu();
+            Input.MouseMode = Input.MouseModeEnum.Captured;
         }
 
         public void DestroyMenu()
         {
-            GD.Print("🗑️ [LobbyMenuManager] DestroyMenu 実行。メニューを完全に破棄します。");
-            _activeMenuInstance?.QueueFree();
+            if (_activeMenuInstance != null && GodotObject.IsInstanceValid(_activeMenuInstance))
+            {
+                GD.Print("🗑️ [LobbyMenuManager] DestroyMenu 実行。メニューをキューフリーします。");
+                _activeMenuInstance.QueueFree();
+            }
             _activeMenuInstance = null;
         }
     }
