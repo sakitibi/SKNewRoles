@@ -6,27 +6,25 @@ namespace SKNewRoles2.Lobby
 {
     public partial class RoomUI(LobbyRoom lobbyRoom)
     {
-        private readonly LobbyRoom _lobbyRoom = lobbyRoom;
+        private LobbyMenu _lobbyMenu;
 
-        /// <summary>
-        /// 現在のルーム名と部屋コードをUIラベルに即座に反映します。
-        /// </summary>
-        public void UpdateRoomInfoUI()
+        public void SetMenu(LobbyMenu menu)
         {
-            if (_lobbyRoom?.RoomInfoLabel == null) return;
-
-            string roomCode = SessionManager.Instance.CurrentRoomCode;
-            _lobbyRoom.RoomInfoLabel.Text = $"部屋コード: {roomCode}";
+            _lobbyMenu = menu;
         }
 
-        /// <summary>
-        /// ホストが「ゲーム開始」ボタンを押したときの処理
-        /// </summary>
+        public void UpdateRoomInfoUI()
+        {
+            if (lobbyRoom?.RoomInfoLabel == null) return;
+            string roomCode = SessionManager.Instance.CurrentRoomCode;
+            lobbyRoom.RoomInfoLabel.Text = $"部屋コード: {roomCode}";
+        }
+
         public async void OnStartGameButtonPressed()
         {
-            if (_lobbyRoom.StartGameButton != null)
+            if (_lobbyMenu?.StartGameButton != null)
             {
-                _lobbyRoom.StartGameButton.Disabled = true;
+                _lobbyMenu.StartGameButton.Disabled = true;
             }
 
             GD.Print("🎬 ホストがゲームを開始しました。Supabaseのロビーを非アクティブ化して全員の画面を一斉遷移させます...");
@@ -35,27 +33,23 @@ namespace SKNewRoles2.Lobby
             if (success)
             {
                 GD.Print("✅ ホスト側のロビー非アクティブ化に成功しました。ホスト自身もメインステージへ遷移します。");
-                _ = _lobbyRoom.TriggerCountdownAndTransition();
+                _ = lobbyRoom.TriggerCountdownAndTransition();
             }
             else
             {
                 GD.PrintErr("❌ ロビーの非アクティブ化（ゲーム開始処理）に失敗しました。");
-                if (_lobbyRoom.StartGameButton != null)
+                if (_lobbyMenu?.StartGameButton != null)
                 {
-                    _lobbyRoom.StartGameButton.Disabled = false;
+                    _lobbyMenu.StartGameButton.Disabled = false;
                 }
             }
         }
 
-        /// <summary>
-        /// サーバー上のロビーテーブルの変更通知をリアルタイムに検知した時の処理
-        /// </summary>
         public async void OnRoomSettingsChangedFromServer()
         {
             string currentCode = SessionManager.Instance.CurrentRoomCode;
             if (string.IsNullOrEmpty(currentCode)) return;
 
-            GD.Print("🔄 サーバー上のロビーデータ更新をリアルタイム検知。ステータスを検証中...");
             int lobbyStatus = await LobbyQueryService.CheckLobbyStatusAsync(currentCode);
             
             if (lobbyStatus == 0)
@@ -65,66 +59,44 @@ namespace SKNewRoles2.Lobby
             }
             else if (lobbyStatus == 1)
             {
-                GD.Print("🚀 【ゲーム開始フラグ検知】全員同時にメインステージ「MainGameScene」に遷移します！");
-                _ = _lobbyRoom.TriggerCountdownAndTransition();
+                _ = lobbyRoom.TriggerCountdownAndTransition();
             }
             else
             {
-                GD.PrintErr("❌ 部屋データが削除されたか、ロビーが解散されました。タイトルセレクトに戻ります。");
-                _lobbyRoom.LeaveLobbyForced();
+                lobbyRoom.LeaveLobbyForced();
             }
         }
 
         public void UpdatePrivacyButtonVisual(bool isPublic)
         {
-            if (_lobbyRoom.PrivacyToggleButton == null) return;
+            Button privacyBtn = _lobbyMenu?.PrivacyToggleButton;
+            if (privacyBtn == null) return;
 
-            Color normalColor;
-            Color hoverColor;
-            Color pressedColor;
+            Color normalColor = isPublic ? RoomColorData.PublicNormalColor : RoomColorData.PrivateNormalColor;
+            Color hoverColor = isPublic ? RoomColorData.PublicHoverColor : RoomColorData.PrivateHoverColor;
+            Color pressedColor = isPublic ? RoomColorData.PublicPressedColor : RoomColorData.PrivatePressedColor;
 
-            if (isPublic)
-            {
-                _lobbyRoom.PrivacyToggleButton.Text = "公開中";
-                normalColor  = RoomColorData.PublicNormalColor;
-                hoverColor   = RoomColorData.PublicHoverColor;
-                pressedColor = RoomColorData.PublicPressedColor;
-            }
-            else
-            {
-                _lobbyRoom.PrivacyToggleButton.Text = "非公開";
-                normalColor  = RoomColorData.PrivateNormalColor;
-                hoverColor   = RoomColorData.PrivateHoverColor;
-                pressedColor = RoomColorData.PrivatePressedColor;
-            }
-
-            _lobbyRoom.PrivacyToggleButton.SelfModulate = new Color(1, 1, 1, 1);
+            privacyBtn.Text = isPublic ? "公開中" : "非公開";
+            privacyBtn.SelfModulate = new Color(1, 1, 1, 1);
 
             string[] states = ["normal", "hover", "pressed"];
             Color[] colors = [normalColor, hoverColor, pressedColor];
 
             for (int i = 0; i < states.Length; i++)
             {
-                StyleBoxFlat styleBox = new()
-                {
-                    BgColor = colors[i],
-                };
-
+                StyleBoxFlat styleBox = new() { BgColor = colors[i] };
                 styleBox.SetCornerRadiusAll(5);
-                _lobbyRoom.PrivacyToggleButton.AddThemeStyleboxOverride(states[i], styleBox);
+                privacyBtn.AddThemeStyleboxOverride(states[i], styleBox);
             }
         }
 
-        /// <summary>
-        /// 公開/非公開ボタンを押した際、サーバー側のデータベースに変更パッチを送信します。
-        /// </summary>
         public async void OnPrivacyToggleButtonPressed()
         {
-            if (_lobbyRoom.PrivacyToggleButton == null) return;
+            Button privacyBtn = _lobbyMenu?.PrivacyToggleButton;
+            if (privacyBtn == null) return;
 
             bool targetPublicState = !SessionManager.Instance.IsPublic;
-            GD.Print($"🌐 部屋の公開設定をボタンからリクエスト中... 変更先: {targetPublicState}");
-            _lobbyRoom.PrivacyToggleButton.Disabled = true;
+            privacyBtn.Disabled = true;
 
             bool success = await LobbyManagementService.UpdateLobbyPrivacyAsync(
                 SessionManager.Instance.CurrentRoomCode,
@@ -133,17 +105,15 @@ namespace SKNewRoles2.Lobby
 
             if (success)
             {
-                GD.Print($"✅ 部屋の公開設定を正常に更新しました：{(targetPublicState ? "公開" : "非公開")}");
                 UpdateRoomInfoUI();
                 UpdatePrivacyButtonVisual(targetPublicState);
             }
             else
             {
-                GD.PrintErr("❌ 部屋の公開設定更新に失敗しました。以前のビジュアルに戻します。");
                 UpdatePrivacyButtonVisual(SessionManager.Instance.IsPublic);
             }
 
-            _lobbyRoom.PrivacyToggleButton.Disabled = false;
+            privacyBtn.Disabled = false;
         }
     }
 }

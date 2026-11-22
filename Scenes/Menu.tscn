@@ -1,0 +1,85 @@
+[gd_scene format=3 uid="uid://cxksvslgxwdtw"]
+
+[ext_resource type="FontFile" uid="uid://br5t7n57fruc7" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="1_6pedr"]
+[ext_resource type="Script" uid="uid://dv6ihgpme67ab" path="res://SKNewRoles2/Lobby/LobbyMenu.cs" id="1_syfuq"]
+[ext_resource type="FontFile" uid="uid://bcuxsq3rxn1b4" path="res://Fonts/UDDigiKyokashoProN-Bold.ttf" id="2_syfuq"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_s2c3o"]
+bg_color = Color(0, 0.6666667, 0.5921569, 1)
+corner_radius_top_left = 30
+corner_radius_top_right = 30
+corner_radius_bottom_right = 30
+corner_radius_bottom_left = 30
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ma218"]
+bg_color = Color(0, 0.5254902, 0.34901962, 1)
+corner_radius_top_left = 30
+corner_radius_top_right = 30
+corner_radius_bottom_right = 30
+corner_radius_bottom_left = 30
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_idohh"]
+bg_color = Color(0, 1, 1, 1)
+corner_radius_top_left = 30
+corner_radius_top_right = 30
+corner_radius_bottom_right = 30
+corner_radius_bottom_left = 30
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0iane"]
+corner_radius_top_left = 30
+corner_radius_top_right = 30
+corner_radius_bottom_right = 30
+corner_radius_bottom_left = 30
+
+[node name="Menu" type="Control" unique_id=715646872]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_syfuq")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=941802121]
+
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer" unique_id=1962959972]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.5019608)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer" unique_id=1739704357]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="PrivacyToggleButton" type="Button" parent="CanvasLayer" unique_id=1467959453]
+unique_name_in_owner = true
+offset_left = 124.0
+offset_top = 34.0
+offset_right = 404.0
+offset_bottom = 128.0
+theme_override_fonts/font = ExtResource("1_6pedr")
+theme_override_font_sizes/font_size = 60
+text = "非公開"
+
+[node name="LeaveButton" type="Button" parent="CanvasLayer" unique_id=1013003684]
+unique_name_in_owner = true
+offset_left = 123.0
+offset_top = 146.0
+offset_right = 403.0
+offset_bottom = 240.0
+theme_override_fonts/font = ExtResource("1_6pedr")
+theme_override_font_sizes/font_size = 60
+text = "退出する"
+
+[node name="StartGameButton" type="Button" parent="CanvasLayer" unique_id=1780747048]
+unique_name_in_owner = true
+offset_left = 121.0
+offset_top = 267.0
+offset_right = 400.0
+offset_bottom = 367.0
+theme_override_fonts/font = ExtResource("2_syfuq")
+theme_override_font_sizes/font_size = 80
+theme_override_styles/normal = SubResource("StyleBoxFlat_s2c3o")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_ma218")
+theme_override_styles/hover = SubResource("StyleBoxFlat_idohh")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_0iane")
+text = "開始"
