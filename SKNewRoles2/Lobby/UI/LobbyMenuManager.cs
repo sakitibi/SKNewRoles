@@ -2,7 +2,7 @@ using Godot;
 
 namespace SKNewRoles2.Lobby.UI
 {
-    public class LobbyMenuManager(LobbyRoom lobbyRoom, PackedScene menuScene)
+    public class LobbyMenuManager(LobbyRoom lobbyRoom, PackedScene menuScene, LobbyMyPlayerManager lobbyMyPlayerManager)
     {
         private Control _activeMenuInstance;
         public bool IsMenuOpen => _activeMenuInstance != null && GodotObject.IsInstanceValid(_activeMenuInstance);
@@ -26,7 +26,7 @@ namespace SKNewRoles2.Lobby.UI
             if (_activeMenuInstance == null && menuScene != null)
             {
                 GD.Print("📂 [LobbyMenuManager] メニューを新規インスタンス化します。");
-                _activeMenuInstance = (Control)menuScene.Instantiate();
+                _activeMenuInstance = menuScene.Instantiate<Control>();
                 
                 lobbyRoom.GetNode<CanvasLayer>("CanvasLayer").AddChild(_activeMenuInstance);
 
@@ -46,7 +46,7 @@ namespace SKNewRoles2.Lobby.UI
             {
                 _activeMenuInstance.Visible = true;
                 Input.MouseMode = Input.MouseModeEnum.Visible;
-                lobbyRoom.playerPrefab.Call("set_movement_enabled", false);
+                lobbyMyPlayerManager.MyPlayerInstance.Call("set_movement_enabled", false);
                 GD.Print("✅ [LobbyMenuManager] メニューを表示状態にしました。");
             }
         }
@@ -56,7 +56,7 @@ namespace SKNewRoles2.Lobby.UI
             GD.Print("📁 [LobbyMenuManager] CloseMenu 実行。メニューを完全に破棄して閉じます。");
             DestroyMenu();
             Input.MouseMode = Input.MouseModeEnum.Captured;
-            lobbyRoom.playerPrefab.Call("set_movement_enabled", true);
+            lobbyMyPlayerManager.MyPlayerInstance.Call("set_movement_enabled", true);
         }
 
         public void DestroyMenu()

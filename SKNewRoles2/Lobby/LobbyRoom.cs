@@ -16,7 +16,7 @@ namespace SKNewRoles2.Lobby
 		internal Dictionary<string, Node3D> _otherPlayers = [];
 		private readonly Dictionary<string, Dictionary<string, string>> _remotePlayerSkins = [];
 
-		public PackedScene playerPrefab;
+		private PackedScene playerPrefab;
 		private PackedScene _dummyPlayerPrefab;
 		private LobbyMyPlayerManager _myPlayerManager;
 		private LobbyRemotePlayerManager _remotePlayerManager;
@@ -33,8 +33,6 @@ namespace SKNewRoles2.Lobby
 		{
 			GD.Print("🏠 [LobbyRoom] LobbyRoom が _Ready になりました。");
 			RoomInfoLabel = GetNodeOrNull<Label>("%RoomInfoLabel");
-			_roomUIInstance = new(this);
-			_menuManager = new(this, _lobbyMenuScene);
 
 			if (ResourceLoader.Exists("res://Scenes/Prefabs/Player.tscn"))
 			{
@@ -45,9 +43,12 @@ namespace SKNewRoles2.Lobby
 				? GD.Load<PackedScene>("res://Scenes/Prefabs/LobbyPlayerDummy.tscn")
 				: playerPrefab;
 
-			_myPlayerManager = new LobbyMyPlayerManager(this, playerPrefab);
-			_remotePlayerManager = new LobbyRemotePlayerManager(this, _dummyPlayerPrefab, _otherPlayers);
-			_skinSyncHandler = new LobbyPlayerSkinSyncHandler(_remotePlayerSkins, _otherPlayers);
+			_myPlayerManager = new(this, playerPrefab);
+			_remotePlayerManager = new(this, _dummyPlayerPrefab, _otherPlayers);
+			_skinSyncHandler = new(_remotePlayerSkins, _otherPlayers);
+
+			_roomUIInstance = new(this);
+			_menuManager = new(this, _lobbyMenuScene, _myPlayerManager);
 
 			RealtimeEvents.OnGameStartReceived += HandleGameStartReceived;
 			RealtimeEvents.OnPlayerLeaveReceived += OnRemotePlayerLeaveReceived;
@@ -60,6 +61,8 @@ namespace SKNewRoles2.Lobby
 
 			await _myPlayerManager.SpawnAndSetupPlayerAsync(GrassBlockColor);
 			_bgmManager?.StopBgm();
+
+			Input.MouseMode = Input.MouseModeEnum.Captured;
 		}
 
 		public override void _UnhandledInput(InputEvent @event)
