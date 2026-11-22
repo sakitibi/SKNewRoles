@@ -20,7 +20,17 @@ namespace SKNewRoles2.Lobby.UI
             GD.Print("🖥️ [LobbyMenu] メニューシーンが _Ready になりました。");
             PrivacyToggleButton = GetNodeOrNull<Button>("CanvasLayer/PrivacyToggleButton");
             LeaveButton = GetNodeOrNull<Button>("CanvasLayer/LeaveButton");
-            StartGameButton = GetNodeOrNull<Button>("CanvasLayer/StartGameButton");
+            StartGameButton = GetNode<Button>("CanvasLayer/StartGameButton");
+            
+            Input.MouseMode = Input.MouseModeEnum.Visible;
+        }
+
+        public override void _Process(double delta)
+        {
+            if (Input.MouseMode != Input.MouseModeEnum.Visible)
+            {
+                Input.MouseMode = Input.MouseModeEnum.Visible;
+            }
         }
 
         public void InitMenu(RoomUI roomUI, LobbyRoom lobbyRoom)
