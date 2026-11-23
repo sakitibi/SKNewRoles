@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://be7xwu4g7ofnl" path="res://SKNewRoles2/Game/Inventory/Item/ItemDatabase.cs" id="2_247uh"]
 [ext_resource type="Script" uid="uid://rx1afui2atp8" path="res://SKNewRoles2/Game/Inventory/HotbarManager.cs" id="2_r7ao7"]
 [ext_resource type="PackedScene" uid="uid://b42xncvhtc3l5" path="res://Scenes/Gamemaps/StartupScene.tscn" id="2_vg2oi"]
+[ext_resource type="PackedScene" uid="uid://cxksvslgxwdtw" path="res://Scenes/Menu.tscn" id="2_xogyc"]
 [ext_resource type="Script" uid="uid://b1km8kcf1rbr6" path="res://SKNewRoles2/Game/Inventory/Item/ItemData.cs" id="3_pspun"]
 [ext_resource type="PackedScene" uid="uid://bgybqu4t6omyp" path="res://Scenes/Gamemaps/RoleRevealScene.tscn" id="3_pswr4"]
 [ext_resource type="FontFile" uid="uid://br5t7n57fruc7" path="res://Fonts/UDDigiKyokashoProN-Regular.ttf" id="4_pswr4"]
@@ -62,7 +63,7 @@ Icon = ExtResource("9_f3uto")
 MaxStack = 1
 metadata/_custom_type_script = "uid://b1km8kcf1rbr6"
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0iane"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hvat2"]
 bg_color = Color(0, 0, 0, 0)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1fclr"]
@@ -103,6 +104,7 @@ volumetric_fog_density = 0.0309
 
 [node name="MainGameScene" type="Node3D" unique_id=1746155919]
 script = ExtResource("1_cakpg")
+_menuScene = ExtResource("2_xogyc")
 
 [node name="RoleManager" type="RoleManager" parent="." unique_id=1195971431]
 
@@ -135,7 +137,7 @@ offset_bottom = 653.0
 theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("4_pswr4")
 theme_override_font_sizes/font_size = 28
-theme_override_styles/background = SubResource("StyleBoxFlat_0iane")
+theme_override_styles/background = SubResource("StyleBoxFlat_hvat2")
 theme_override_styles/fill = SubResource("StyleBoxFlat_1fclr")
 max_value = 20.0
 value = 20.0
@@ -166,7 +168,7 @@ offset_bottom = 653.0
 theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("4_pswr4")
 theme_override_font_sizes/font_size = 28
-theme_override_styles/background = SubResource("StyleBoxFlat_0iane")
+theme_override_styles/background = SubResource("StyleBoxFlat_hvat2")
 theme_override_styles/fill = SubResource("StyleBoxFlat_hunger_fill")
 max_value = 20.0
 value = 20.0
