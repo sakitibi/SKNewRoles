@@ -8,9 +8,9 @@ using SKNewRoles2.Game.BGM;
 using System.Collections.Generic;
 using SKNewRoles2.Game.Player.Handler;
 using SKNewRoles2.Game.Inventory.Item;
-
 using SKNewRoles2.Game.Skill;
 using SKNewRoles2.Game.Skill.Witch.Witch;
+using SKNewRoles2.Lobby.UI; // 💡 追加: メニュー用namespace
 
 namespace SKNewRoles2.Game
 {
@@ -18,6 +18,11 @@ namespace SKNewRoles2.Game
     {
         private Node3D _chunkManagerCpp;
         private readonly PackedScene _opponentScene = GD.Load<PackedScene>("res://Scenes/Prefabs/LobbyPlayerDummy.tscn");
+        
+        // 💡 追加: メニューシーンのプレハブ（ロビーと同じものをロード、またはエクスポート設定）
+        private readonly PackedScene _menuScene = GD.Load<PackedScene>("res://Scenes/UI/Menu_2.tscn");
+        private Control _activeMenuInstance; // 💡 追加: 本番用メニューのインスタンス
+
         private MainGamePlayerHandler _playerHandler;
         private MainGameCombatHandler _combatHandler;
         private MainGameUIHandler _uiHandler;
@@ -50,9 +55,7 @@ namespace SKNewRoles2.Game
         public uint MyFaction => _roleManager?.MyFaction ?? 0;
         public int CurrentHunger { get; set; } = 20;
         public int MaxHunger { get; set; } = 20;
-        /// <summary>
-        /// <b>ゲーム開始時に全員に配布されるアイテム一覧</b>
-        /// </summary>
+        
         public Dictionary<string, ushort> GrantItemDic { get; set; } = new() {
             {"iron_axe", 1},
             {"iron_pickaxe", 1},
@@ -142,9 +145,72 @@ namespace SKNewRoles2.Game
                 PlayerSpawner.SetPlayerPhysicsEnabled(_playerHandler.MyPlayerInstance, true);
             }
         }
+
         public override void _Input(InputEvent @event)
         {
+            if (@event.IsActionPressed("ui_cancel"))
+            {
+                ToggleGameMenu();
+                GetViewport().SetInputAsHandled();
+                return;
+            }
+
             _combatHandler?.HandleInput(@event);
+        }
+
+        private void ToggleGameMenu()
+        {
+            bool isOpen = _activeMenuInstance != null && IsInstanceValid(_activeMenuInstance);
+            if (isOpen)
+            {
+                CloseGameMenu();
+            }
+            else
+            {
+                OpenGameMenu();
+            }
+        }
+
+        private void OpenGameMenu()
+        {
+            if (_activeMenuInstance == null && _menuScene != null)
+            {
+                LobbyMenu.isLobby = false;
+                _activeMenuInstance = _menuScene.Instantiate<Control>();
+                
+                AddChild(_activeMenuInstance);
+
+                if (_activeMenuInstance is LobbyMenu menu)
+                {
+                    menu.ResumeRequested += CloseGameMenu;
+                    menu.InitMenuForGame();
+                }
+            }
+
+            if (_activeMenuInstance != null)
+            {
+                _activeMenuInstance.Visible = true;
+                Input.MouseMode = Input.MouseModeEnum.Visible;
+                if (_playerHandler?.MyPlayerInstance != null)
+                {
+                    _playerHandler.MyPlayerInstance.Call("set_movement_enabled", false);
+                }
+            }
+        }
+
+        private void CloseGameMenu()
+        {
+            if (_activeMenuInstance != null && GodotObject.IsInstanceValid(_activeMenuInstance))
+            {
+                _activeMenuInstance.QueueFree();
+            }
+            _activeMenuInstance = null;
+
+            Input.MouseMode = Input.MouseModeEnum.Captured;
+            if (_playerHandler?.MyPlayerInstance != null)
+            {
+                _playerHandler.MyPlayerInstance.Call("set_movement_enabled", true);
+            }
         }
 
         public override void _Process(double delta)

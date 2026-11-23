@@ -21,7 +21,7 @@ namespace SKNewRoles2.Lobby.UI
             GD.Print("🖥️ [LobbyMenu] メニューシーンが _Ready になりました。");
             PrivacyToggleButton = GetNodeOrNull<Button>("CanvasLayer/PrivacyToggleButton");
             LeaveButton = GetNodeOrNull<Button>("CanvasLayer/LeaveButton");
-            StartGameButton = GetNode<Button>("CanvasLayer/StartGameButton");
+            StartGameButton = GetNodeOrNull<Button>("CanvasLayer/StartGameButton");
             
             Input.MouseMode = Input.MouseModeEnum.Visible;
             if (!isLobby)
@@ -42,7 +42,7 @@ namespace SKNewRoles2.Lobby.UI
         public void InitMenu(RoomUI roomUI, LobbyRoom lobbyRoom)
         {
             _roomUI = roomUI;
-            GD.Print("🖥️ [LobbyMenu] InitMenu が呼び出されました。");
+            GD.Print("🖥️ [LobbyMenu] InitMenu (Lobby) が呼び出されました。");
 
             if (PrivacyToggleButton != null)
             {
@@ -73,6 +73,23 @@ namespace SKNewRoles2.Lobby.UI
             }
 
             _ = _roomUI.UpdatePrivacyButtonVisual(SessionManager.Instance.IsPublic);
+        }
+
+        public void InitMenuForGame()
+        {
+            GD.Print("🖥️ [LobbyMenu] InitMenuForGame (MainGame) が呼び出されました。");
+
+            if (PrivacyToggleButton != null) PrivacyToggleButton?.Visible = false;
+            if (StartGameButton != null) StartGameButton?.Visible = false;
+
+            if (LeaveButton != null)
+            {
+                LeaveButton?.Pressed += () => {
+                    GD.Print("🖱️ [LobbyMenu] ゲーム本番から退出してロビー選択画面に戻ります。");
+                    RealtimeLobbySender.LobbySendLeave();
+                    LobbyNavigation.LeaveLobbyCleanup(GetTree(), () => {}, "res://Scenes/LobbySelect.tscn");
+                };
+            }
         }
 
         public override void _UnhandledInput(InputEvent @event)
