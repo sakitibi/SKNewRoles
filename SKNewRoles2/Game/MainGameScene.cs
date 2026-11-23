@@ -10,7 +10,7 @@ using SKNewRoles2.Game.Player.Handler;
 using SKNewRoles2.Game.Inventory.Item;
 using SKNewRoles2.Game.Skill;
 using SKNewRoles2.Game.Skill.Witch.Witch;
-using SKNewRoles2.Lobby.UI; // 💡 追加: メニュー用namespace
+using SKNewRoles2.Lobby.UI;
 
 namespace SKNewRoles2.Game
 {
@@ -19,9 +19,8 @@ namespace SKNewRoles2.Game
         private Node3D _chunkManagerCpp;
         private readonly PackedScene _opponentScene = GD.Load<PackedScene>("res://Scenes/Prefabs/LobbyPlayerDummy.tscn");
         
-        // 💡 追加: メニューシーンのプレハブ（ロビーと同じものをロード、またはエクスポート設定）
-        private readonly PackedScene _menuScene = GD.Load<PackedScene>("res://Scenes/UI/Menu_2.tscn");
-        private Control _activeMenuInstance; // 💡 追加: 本番用メニューのインスタンス
+        [Export] private PackedScene _menuScene;
+        private Control _activeMenuInstance;
 
         private MainGamePlayerHandler _playerHandler;
         private MainGameCombatHandler _combatHandler;
@@ -146,12 +145,21 @@ namespace SKNewRoles2.Game
             }
         }
 
-        public override void _Input(InputEvent @event)
+        public override void _UnhandledInput(InputEvent @event)
         {
             if (@event.IsActionPressed("ui_cancel"))
             {
+                GD.Print("🔑 [MainGameScene] _UnhandledInput で ESCキー（ui_cancel）を検知しました。ゲームメニューをトグルします。");
                 ToggleGameMenu();
                 GetViewport().SetInputAsHandled();
+            }
+        }
+
+        public override void _Input(InputEvent @event)
+        {
+            bool isMenuOpen = _activeMenuInstance != null && IsInstanceValid(_activeMenuInstance) && _activeMenuInstance.Visible;
+            if (isMenuOpen)
+            {
                 return;
             }
 
@@ -161,6 +169,7 @@ namespace SKNewRoles2.Game
         private void ToggleGameMenu()
         {
             bool isOpen = _activeMenuInstance != null && IsInstanceValid(_activeMenuInstance);
+            GD.Print($"🔄 [MainGameScene] ToggleGameMenu 呼び出し. 現在のメニュー状態: {isOpen}");
             if (isOpen)
             {
                 CloseGameMenu();
@@ -173,18 +182,32 @@ namespace SKNewRoles2.Game
 
         private void OpenGameMenu()
         {
+            GD.Print("📂 [MainGameScene] OpenGameMenu 実行開始...");
             if (_activeMenuInstance == null && _menuScene != null)
             {
                 LobbyMenu.isLobby = false;
                 _activeMenuInstance = _menuScene.Instantiate<Control>();
                 
-                AddChild(_activeMenuInstance);
+                CanvasLayer canvasLayer = GetNodeOrNull<CanvasLayer>("MenuCanvasLayer");
+                if (canvasLayer == null)
+                {
+                    canvasLayer = new()
+                    {
+                        Name = "MenuCanvasLayer"
+                    };
+                    AddChild(canvasLayer);
+                }
+                canvasLayer.AddChild(_activeMenuInstance);
 
                 if (_activeMenuInstance is LobbyMenu menu)
                 {
                     menu.ResumeRequested += CloseGameMenu;
                     menu.InitMenuForGame();
                 }
+            }
+            else if (_activeMenuInstance == null && _menuScene == null)
+            {
+                GD.PrintErr("❌ [MainGameScene] _menuScene (Menu_2.tscn) のロードに失敗しています！パスを確認してください。");
             }
 
             if (_activeMenuInstance != null)
@@ -195,12 +218,14 @@ namespace SKNewRoles2.Game
                 {
                     _playerHandler.MyPlayerInstance.Call("set_movement_enabled", false);
                 }
+                GD.Print("✅ [MainGameScene] ゲームメニューを表示しました。");
             }
         }
 
         private void CloseGameMenu()
         {
-            if (_activeMenuInstance != null && GodotObject.IsInstanceValid(_activeMenuInstance))
+            GD.Print("📁 [MainGameScene] CloseGameMenu 実行。メニューを破棄します。");
+            if (_activeMenuInstance != null && IsInstanceValid(_activeMenuInstance))
             {
                 _activeMenuInstance.QueueFree();
             }
