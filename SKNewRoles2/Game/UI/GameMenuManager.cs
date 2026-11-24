@@ -1,10 +1,11 @@
 using Godot;
+using SKNewRoles2.Game.Network;
 using SKNewRoles2.Game.Player;
 using SKNewRoles2.Lobby.UI;
 
 namespace SKNewRoles2.Game.UI
 {
-    public class GameMenuManager(MainGameScene gameScene, PackedScene menuScene, MainGamePlayerHandler playerHandler)
+    public class GameMenuManager(MainGameScene gameScene, PackedScene menuScene, MainGamePlayerHandler playerHandler, RealtimeConnection connection, string myUserId)
     {
         private Control _activeMenuInstance;
 
@@ -45,7 +46,8 @@ namespace SKNewRoles2.Game.UI
                 if (_activeMenuInstance is LobbyMenu menu)
                 {
                     menu.ResumeRequested += CloseMenu;
-                    menu.InitMenuForGame();
+                    
+                    menu.InitMenuForGame(connection, myUserId);
                 }
             }
             else if (_activeMenuInstance == null && menuScene == null)

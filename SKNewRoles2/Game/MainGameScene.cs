@@ -10,7 +10,6 @@ using SKNewRoles2.Game.Player.Handler;
 using SKNewRoles2.Game.Inventory.Item;
 using SKNewRoles2.Game.Skill;
 using SKNewRoles2.Game.Skill.Witch.Witch;
-using SKNewRoles2.Lobby.UI;
 using SKNewRoles2.Game.UI;
 
 namespace SKNewRoles2.Game
@@ -20,8 +19,8 @@ namespace SKNewRoles2.Game
 		private Node3D _chunkManagerCpp;
 		private readonly PackedScene _opponentScene = GD.Load<PackedScene>("res://Scenes/Prefabs/LobbyPlayerDummy.tscn");
 		[Export] private PackedScene _menuScene;
-		private Control _activeMenuInstance;
 
+		private GameMenuManager _menuManager;
 		private MainGamePlayerHandler _playerHandler;
 		private MainGameCombatHandler _combatHandler;
 		private MainGameUIHandler _uiHandler;
@@ -101,6 +100,9 @@ namespace SKNewRoles2.Game
 			await _playerHandler.SpawnPlayerAsync();
 			_playerHandler.SetupHungerSignal(_playerStatusSyncHandler);
 
+			string myId = GetMyUserId();
+			_menuManager = new(this, _menuScene, _playerHandler, _connection, myId);
+
 			await GameInitializer.InitializeAsync(
 				this,
 				_connection,
@@ -149,80 +151,20 @@ namespace SKNewRoles2.Game
 		{
 			if (@event.IsActionPressed("ui_cancel"))
 			{
-				GD.Print("🔑 [MainGameScene] _UnhandledInput で ESCキー（ui_cancel）を検知しました。ゲームメニューをトグルします。");
-				ToggleGameMenu();
+				GD.Print("🔑 [MainGameScene] _UnhandledInput で ESCキー（ui_cancel）を検知しました。");
+				_menuManager?.ToggleMenu();
 				GetViewport().SetInputAsHandled();
 			}
 		}
 
 		public override void _Input(InputEvent @event)
 		{
-			bool isMenuOpen = _activeMenuInstance != null && IsInstanceValid(_activeMenuInstance) && _activeMenuInstance.Visible;
-			if (isMenuOpen)
+			if (_menuManager != null && _menuManager.IsMenuOpen)
 			{
 				return;
 			}
 
 			_combatHandler?.HandleInput(@event);
-		}
-
-		private void ToggleGameMenu()
-		{
-			bool isOpen = _activeMenuInstance != null && IsInstanceValid(_activeMenuInstance);
-			GD.Print($"🔄 [MainGameScene] ToggleGameMenu 呼び出し. 現在のメニュー状態: {isOpen}");
-			if (isOpen)
-			{
-				CloseGameMenu();
-			}
-			else
-			{
-				OpenGameMenu();
-			}
-		}
-
-		private void OpenGameMenu()
-		{
-			GD.Print("📂 [MainGameScene] OpenGameMenu 実行開始...");
-			if (_activeMenuInstance == null && _menuScene != null)
-			{
-				LobbyMenu.isLobby = false;
-				_activeMenuInstance = _menuScene.Instantiate<Control>();
-				
-				CanvasLayer canvasLayer = GetNodeOrNull<CanvasLayer>("MenuCanvasLayer");
-				if (canvasLayer == null)
-				{
-					canvasLayer = new()
-					{
-						Name = "MenuCanvasLayer"
-					};
-					AddChild(canvasLayer);
-				}
-				canvasLayer.AddChild(_activeMenuInstance);
-
-				if (_activeMenuInstance is LobbyMenu menu)
-				{
-					menu.ResumeRequested += CloseGameMenu;
-					
-					string myId = GetMyUserId();
-					menu.InitMenuForGame(_connection, myId);
-				}
-			}
-		}
-
-		private void CloseGameMenu()
-		{
-			GD.Print("📁 [MainGameScene] CloseGameMenu 実行。メニューを破棄します。");
-			if (_activeMenuInstance != null && IsInstanceValid(_activeMenuInstance))
-			{
-				_activeMenuInstance.QueueFree();
-			}
-			_activeMenuInstance = null;
-
-			Input.MouseMode = Input.MouseModeEnum.Captured;
-			if (_playerHandler?.MyPlayerInstance != null)
-			{
-				_playerHandler.MyPlayerInstance.Call("set_movement_enabled", true);
-			}
 		}
 
 		public override void _Process(double delta)
