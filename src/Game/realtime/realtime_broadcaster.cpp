@@ -17,12 +17,14 @@ void RealtimeBroadcaster::_bind_methods() {
     ClassDB::bind_method(D_METHOD("send_hotbar_item", "connection", "topic", "player_id", "slot_index", "item_id", "count"), &RealtimeBroadcaster::send_hotbar_item);
     ClassDB::bind_method(D_METHOD("send_attack", "connection", "topic", "attacker_id", "target_id", "damage"), &RealtimeBroadcaster::send_attack);
     ClassDB::bind_method(D_METHOD("send_skin", "connection", "topic", "player_id", "skin_presets"), &RealtimeBroadcaster::send_skin);
+    ClassDB::bind_method(D_METHOD("send_player_leave", "connection", "topic", "player_id"), &RealtimeBroadcaster::send_player_leave);
 }
 
 RealtimeBroadcaster::RealtimeBroadcaster() {
     _last_sent_position = Vector3(0, 0, 0);
     _last_sent_rotation = Vector3(0, 0, 0);
     _last_send_tick = 0;
+    _next_ref = 1;
 }
 
 bool RealtimeBroadcaster::is_ready(Object* p_connection) {
@@ -55,8 +57,9 @@ void RealtimeBroadcaster::send_transform(Object* p_connection, const String& top
     _last_sent_rotation = current_rot;
     _last_send_tick = current_tick;
 
+    std::string ref_str = std::to_string(_next_ref++);
     std::string json_str = RealtimePacketBuilder::build_transform_payload(
-        topic.utf8().get_data(), sender_id.utf8().get_data(), px, py, pz, rx, ry, rz
+        topic.utf8().get_data(), sender_id.utf8().get_data(), px, py, pz, rx, ry, rz, ref_str
     );
 
     connection->send_text(String(json_str.c_str()));
@@ -69,8 +72,9 @@ void RealtimeBroadcaster::send_role(Object* p_connection, const String& topic, c
     }
     RealtimeConnection* connection = Object::cast_to<RealtimeConnection>(p_connection);
 
+    std::string ref_str = std::to_string(_next_ref++);
     std::string json_str = RealtimePacketBuilder::build_role_payload(
-        topic.utf8().get_data(), target_player_id.utf8().get_data(), role, faction
+        topic.utf8().get_data(), target_player_id.utf8().get_data(), role, faction, ref_str
     );
 
     connection->send_text(String(json_str.c_str()));
@@ -81,8 +85,9 @@ void RealtimeBroadcaster::send_hp(Object* p_connection, const String& topic, con
     if (!is_ready(p_connection)) return;
     RealtimeConnection* connection = Object::cast_to<RealtimeConnection>(p_connection);
 
+    std::string ref_str = std::to_string(_next_ref++);
     std::string json_str = RealtimePacketBuilder::build_hp_payload(
-        topic.utf8().get_data(), player_id.utf8().get_data(), current_hp, max_hp
+        topic.utf8().get_data(), player_id.utf8().get_data(), current_hp, max_hp, ref_str
     );
 
     connection->send_text(String(json_str.c_str()));
@@ -92,8 +97,9 @@ void RealtimeBroadcaster::send_hunger(Object* p_connection, const String& topic,
     if (!is_ready(p_connection)) return;
     RealtimeConnection* connection = Object::cast_to<RealtimeConnection>(p_connection);
 
+    std::string ref_str = std::to_string(_next_ref++);
     std::string json_str = RealtimePacketBuilder::build_hunger_payload(
-        topic.utf8().get_data(), player_id.utf8().get_data(), current_hunger, max_hunger
+        topic.utf8().get_data(), player_id.utf8().get_data(), current_hunger, max_hunger, ref_str
     );
 
     connection->send_text(String(json_str.c_str()));
@@ -103,8 +109,9 @@ void RealtimeBroadcaster::send_hotbar_slot(Object* p_connection, const String& t
     if (!is_ready(p_connection)) return;
     RealtimeConnection* connection = Object::cast_to<RealtimeConnection>(p_connection);
 
+    std::string ref_str = std::to_string(_next_ref++);
     std::string json_str = RealtimePacketBuilder::build_hotbar_slot_payload(
-        topic.utf8().get_data(), player_id.utf8().get_data(), slot_index
+        topic.utf8().get_data(), player_id.utf8().get_data(), slot_index, ref_str
     );
 
     connection->send_text(String(json_str.c_str()));
@@ -114,8 +121,9 @@ void RealtimeBroadcaster::send_hotbar_item(Object* p_connection, const String& t
     if (!is_ready(p_connection)) return;
     RealtimeConnection* connection = Object::cast_to<RealtimeConnection>(p_connection);
 
+    std::string ref_str = std::to_string(_next_ref++);
     std::string json_str = RealtimePacketBuilder::build_hotbar_item_payload(
-        topic.utf8().get_data(), player_id.utf8().get_data(), slot_index, item_id.utf8().get_data(), count
+        topic.utf8().get_data(), player_id.utf8().get_data(), slot_index, item_id.utf8().get_data(), count, ref_str
     );
 
     connection->send_text(String(json_str.c_str()));
@@ -125,8 +133,9 @@ void RealtimeBroadcaster::send_attack(Object* p_connection, const String& topic,
     if (!is_ready(p_connection)) return;
     RealtimeConnection* connection = Object::cast_to<RealtimeConnection>(p_connection);
 
+    std::string ref_str = std::to_string(_next_ref++);
     std::string json_str = RealtimePacketBuilder::build_attack_payload(
-        topic.utf8().get_data(), attacker_id.utf8().get_data(), target_id.utf8().get_data(), damage
+        topic.utf8().get_data(), attacker_id.utf8().get_data(), target_id.utf8().get_data(), damage, ref_str
     );
 
     connection->send_text(String(json_str.c_str()));
@@ -154,8 +163,9 @@ void RealtimeBroadcaster::send_skin(Object* p_connection, const String& topic, c
     String skin_json_godot = json_instance->stringify(skin_presets);
     std::string skin_json_str = skin_json_godot.utf8().get_data();
 
+    std::string ref_str = std::to_string(_next_ref++);
     std::string json_str = RealtimePacketBuilder::build_skin_payload(
-        topic.utf8().get_data(), player_id.utf8().get_data(), skin_json_str
+        topic.utf8().get_data(), player_id.utf8().get_data(), skin_json_str, ref_str
     );
 
     connection->send_text(String(json_str.c_str()));
@@ -166,8 +176,9 @@ void RealtimeBroadcaster::send_player_leave(Object* p_connection, const String& 
     if (!is_ready(p_connection)) return;
     RealtimeConnection* connection = Object::cast_to<RealtimeConnection>(p_connection);
 
+    std::string ref_str = std::to_string(_next_ref++);
     std::string json_str = RealtimePacketBuilder::build_player_leave_payload(
-        topic.utf8().get_data(), player_id.utf8().get_data()
+        topic.utf8().get_data(), player_id.utf8().get_data(), ref_str
     );
 
     connection->send_text(String(json_str.c_str()));

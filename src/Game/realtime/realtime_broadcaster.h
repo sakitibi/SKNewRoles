@@ -14,6 +14,7 @@ namespace godot {
             Vector3 _last_sent_position;
             Vector3 _last_sent_rotation;
             uint64_t _last_send_tick;
+            uint32_t _next_ref;
             static constexpr uint64_t SEND_INTERVAL_MS = 300;
             static constexpr float POS_THRESHOLD = 0.02f;
             static constexpr float ROT_THRESHOLD = 0.02f;
