@@ -11,6 +11,7 @@ using SKNewRoles2.Game.Inventory.Item;
 using SKNewRoles2.Game.Skill;
 using SKNewRoles2.Game.Skill.Witch.Witch;
 using SKNewRoles2.Lobby.UI;
+using SKNewRoles2.Game.UI;
 
 namespace SKNewRoles2.Game
 {

@@ -1,9 +1,8 @@
 using Godot;
 using System.Threading.Tasks;
-using SKNewRoles2.Game.Player;
 using SKNewRoles2.Game.Player.Handler;
 
-namespace SKNewRoles2.Game
+namespace SKNewRoles2.Game.Player
 {
     public class MainGamePlayerHandler(MainGameScene scene)
     {

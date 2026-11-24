@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Godot;
 
-namespace SKNewRoles2.Game
+namespace SKNewRoles2.Game.UI
 {
 	public class MainGameUIHandler(MainGameScene scene)
 	{
