@@ -92,6 +92,17 @@ std::string RealtimePacketBuilder::build_attack_payload(const std::string& topic
     return ss.str();
 }
 
+std::string RealtimePacketBuilder::build_player_leave_payload(const std::string& topic, const std::string& player_id) {
+    std::ostringstream ss;
+    std::string safe_topic = topic.empty() ? "realtime:public:lobbies" : topic;
+
+    ss << "{\"topic\":\"" << safe_topic << "\",\"event\":\"broadcast\",\"payload\":{"
+       << "\"type\":\"player_leave\","
+       << "\"player_id\":\"" << player_id << "\""
+       << "}}";
+    return ss.str();
+}
+
 std::string RealtimePacketBuilder::build_join_payload(const std::string& topic, const std::string& p_ref) {
     std::ostringstream ss;
     std::string safe_topic = topic.empty() ? "realtime:public:lobbies" : topic;

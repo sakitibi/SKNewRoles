@@ -124,5 +124,19 @@ namespace SKNewRoles2.Game.Network
 
 			await Task.CompletedTask;
 		}
+
+		/// <summary>
+		/// プレイヤーの退出を送信します
+		/// </summary>
+		public static Task SendLeaveAsync(RealtimeConnection connection, string playerId)
+		{
+			if (connection == null || !connection.IsJoinedChannel) return Task.CompletedTask;
+
+			string topic = GetTopicName();
+			Node node = GetBroadcasterNode();
+			node?.Call("send_player_leave", connection.CppObject, topic, playerId);
+
+			return Task.CompletedTask;
+		}
 	}
 }

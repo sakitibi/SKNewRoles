@@ -161,3 +161,15 @@ void RealtimeBroadcaster::send_skin(Object* p_connection, const String& topic, c
     connection->send_text(String(json_str.c_str()));
     UtilityFunctions::print("[RealtimeBroadcaster] Info: Skin data sent successfully for player: ", player_id);
 }
+
+void RealtimeBroadcaster::send_player_leave(Object* p_connection, const String& topic, const String& player_id) {
+    if (!is_ready(p_connection)) return;
+    RealtimeConnection* connection = Object::cast_to<RealtimeConnection>(p_connection);
+
+    std::string json_str = RealtimePacketBuilder::build_player_leave_payload(
+        topic.utf8().get_data(), player_id.utf8().get_data()
+    );
+
+    connection->send_text(String(json_str.c_str()));
+    UtilityFunctions::print("[RealtimeBroadcaster] Info: Player leave broadcast sent for player: ", player_id);
+}

@@ -12,7 +12,7 @@ class RealtimePacketBuilder {
         static std::string build_hotbar_slot_payload(const std::string& topic, const std::string& player_id, int32_t slot_index);
         static std::string build_hotbar_item_payload(const std::string& topic, const std::string& player_id, int32_t slot_index, const std::string& item_id, uint16_t count);
         static std::string build_attack_payload(const std::string& topic, const std::string& attacker_id, const std::string& target_id, uint32_t damage);
-        
+        static std::string build_player_leave_payload(const std::string& topic, const std::string& player_id);
         static std::string build_join_payload(const std::string& topic, const std::string& p_ref = "1");
         static std::string build_skin_payload(const std::string& topic, const std::string& player_id, const std::string& skin_json_str);
 };

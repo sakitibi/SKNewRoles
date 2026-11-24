@@ -2,6 +2,8 @@ using Godot;
 using System;
 using SKNewRoles2.Lobby.JOIN.Services.Realtime;
 using SKNewRoles2.SessionManagerSystem;
+using SKNewRoles2.Game.Network;
+using System.Threading.Tasks;
 
 namespace SKNewRoles2.Lobby.UI
 {
@@ -75,7 +77,7 @@ namespace SKNewRoles2.Lobby.UI
             _ = _roomUI.UpdatePrivacyButtonVisual(SessionManager.Instance.IsPublic);
         }
 
-        public void InitMenuForGame()
+        public void InitMenuForGame(RealtimeConnection connection, string myPlayerId)
         {
             GD.Print("🖥️ [LobbyMenu] InitMenuForGame (MainGame) が呼び出されました。");
 
@@ -84,14 +86,19 @@ namespace SKNewRoles2.Lobby.UI
 
             if (LeaveButton != null)
             {
-                LeaveButton?.Pressed += () => {
-                    GD.Print("🖱️ [LobbyMenu] ゲーム本番から退出してロビー選択画面に戻ります。");
-                    RealtimeLobbySender.LobbySendLeave();
+                LeaveButton?.Pressed += async () => {
+                    GD.Print("🖱️ [LobbyMenu] ゲーム本番から退出します。退出ブロードキャストを送信します。");
+                    
+                    if (connection != null && !string.IsNullOrEmpty(myPlayerId))
+                    {
+                        await RealtimeBroadcaster.SendLeaveAsync(connection, myPlayerId);
+                        await Task.Delay(100); 
+                    }
+
                     LobbyNavigation.LeaveLobbyCleanup(GetTree(), () => {}, "res://Scenes/LobbySelect.tscn");
                 };
             }
         }
-
         public override void _UnhandledInput(InputEvent @event)
         {
             if (@event.IsActionPressed("ui_cancel"))

@@ -40,6 +40,8 @@ namespace SKNewRoles2.Game.Player
                 _connection.OnHotbarSlotReceived += OnOtherPlayerHotbarSlotReceived;
                 _connection.OnHotbarItemReceived += OnOtherPlayerHotbarItemReceived;
                 _connection.OnSkinReceived += OnOtherPlayerSkinReceived;
+                
+                _connection.OnPlayerLeaveReceived += OnOtherPlayerLeaveReceived;
             }
             _playerSkinSyncHandler = new(mainGameScene);
 
@@ -47,6 +49,23 @@ namespace SKNewRoles2.Game.Player
             {
                 await _playerSkinSyncHandler.SendMySkinAsync(playerSpawner.MySkins);
                 await Task.Delay(2000);
+            }
+        }
+
+        private void OnOtherPlayerLeaveReceived(string playerId)
+        {
+            if (_otherPlayers.TryGetValue(playerId, out Node3D remotePlayer))
+            {
+                if (IsInstanceValid(remotePlayer))
+                {
+                    remotePlayer.QueueFree();
+                    GD.Print($"🗑️ [RemotePlayerManager] リモートプレイヤー ({playerId}) が退出したため、プレハブを削除しました。");
+                }
+                _otherPlayers.Remove(playerId);
+                _otherPlayerHps.Remove(playerId);
+                _otherPlayerSelectedSlots.Remove(playerId);
+                _otherPlayerInventories.Remove(playerId);
+                _otherPlayerSkins.Remove(playerId);
             }
         }
 
@@ -187,6 +206,7 @@ namespace SKNewRoles2.Game.Player
                 _connection.OnHotbarSlotReceived -= OnOtherPlayerHotbarSlotReceived;
                 _connection.OnHotbarItemReceived -= OnOtherPlayerHotbarItemReceived;
                 _connection.OnSkinReceived -= OnOtherPlayerSkinReceived;
+                _connection.OnPlayerLeaveReceived -= OnOtherPlayerLeaveReceived;
             }
         }
     }

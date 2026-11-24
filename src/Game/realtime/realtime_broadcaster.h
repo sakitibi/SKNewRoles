@@ -35,5 +35,6 @@ namespace godot {
             void send_hotbar_item(Object* p_connection, const String& topic, const String& player_id, int32_t slot_index, const String& item_id, uint16_t count);
             void send_attack(Object* p_connection, const String& topic, const String& attacker_id, const String& target_id, uint32_t damage);
             void send_skin(Object* p_connection, const String& topic, const String& player_id, const Dictionary& skin_presets);
+            void send_player_leave(Object* p_connection, const String& topic, const String& player_id);
     };
 }

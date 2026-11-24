@@ -75,6 +75,12 @@ namespace SKNewRoles2.Game.Network
             remove => _messageRouter.OnSkinReceived -= value;
         }
 
+        public event Action<string> OnPlayerLeaveReceived
+        {
+            add => _messageRouter.OnPlayerLeaveReceived += value;
+            remove => _messageRouter.OnPlayerLeaveReceived -= value;
+        }
+
         public RealtimeConnection()
         {
             try

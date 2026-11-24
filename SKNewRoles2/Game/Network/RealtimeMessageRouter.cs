@@ -15,6 +15,7 @@ namespace SKNewRoles2.Game.Network
 		public event Action<string, int, string, int> OnHotbarItemReceived;
 		public event Action<string, uint, uint> OnRoleAssignedReceived;
 		public event Action<string, Dictionary<string, string>> OnSkinReceived;
+		public event Action<string> OnPlayerLeaveReceived;
 
 		public void RouteMessage(string message)
 		{
@@ -107,6 +108,13 @@ namespace SKNewRoles2.Game.Network
 									}
 								}
 								OnSkinReceived?.Invoke(playerId, skinsDict);
+								break;
+							}
+							case "player_leave":
+							{
+								string playerId = payload.GetProperty("player_id").GetString();
+								GD.Print($"🚪 [Router] プレイヤー退出イベントを検知しました: PlayerId={playerId}");
+								OnPlayerLeaveReceived?.Invoke(playerId);
 								break;
 							}
 						}

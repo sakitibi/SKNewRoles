@@ -202,23 +202,10 @@ namespace SKNewRoles2.Game
 				if (_activeMenuInstance is LobbyMenu menu)
 				{
 					menu.ResumeRequested += CloseGameMenu;
-					menu.InitMenuForGame();
+					
+					string myId = GetMyUserId();
+					menu.InitMenuForGame(_connection, myId);
 				}
-			}
-			else if (_activeMenuInstance == null && _menuScene == null)
-			{
-				GD.PrintErr("❌ [MainGameScene] _menuScene (Menu_2.tscn) のロードに失敗しています！パスを確認してください。");
-			}
-
-			if (_activeMenuInstance != null)
-			{
-				_activeMenuInstance.Visible = true;
-				Input.MouseMode = Input.MouseModeEnum.Visible;
-				if (_playerHandler?.MyPlayerInstance != null)
-				{
-					_playerHandler.MyPlayerInstance.Call("set_movement_enabled", false);
-				}
-				GD.Print("✅ [MainGameScene] ゲームメニューを表示しました。");
 			}
 		}
 
