@@ -11,6 +11,7 @@ using SKNewRoles2.Game.Inventory.Item;
 using SKNewRoles2.Game.Skill;
 using SKNewRoles2.Game.Skill.Witch.Witch;
 using SKNewRoles2.Game.UI;
+using System.Threading.Tasks;
 
 namespace SKNewRoles2.Game
 {
@@ -60,6 +61,8 @@ namespace SKNewRoles2.Game
 		};
 
 		private readonly uint[] BGMList = [0, 1];
+
+		public List<Func<Task>> CustomModLogicAsyncs;
 
 		public override async void _Ready()
 		{
@@ -144,6 +147,21 @@ namespace SKNewRoles2.Game
 			{
 				await _uiController.ShowRoleRevealAsync(_roleManager?.MyRole ?? 0, _roleManager?.MyFaction ?? 0, 5000);
 				PlayerSpawner.SetPlayerPhysicsEnabled(_playerHandler.MyPlayerInstance, true);
+			}
+
+			if (CustomModLogicAsyncs.Count >= 1)
+			{
+				for (int i = 0; i < CustomModLogicAsyncs.Count; i++)
+				{
+					try
+					{
+						await CustomModLogicAsyncs[i].Invoke();
+					}
+					catch (Exception ex)
+					{
+						GD.PrintErr($"⚠️ [ModLoader] カスタムMOD処理の実行中に例外が発生しました: {ex.Message}");
+					}
+				}
 			}
 		}
 
