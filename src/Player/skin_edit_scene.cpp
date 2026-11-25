@@ -10,17 +10,7 @@
 
 using namespace godot;
 
-SkinEditScene::SkinEditScene() {
-    available_presets.push_back("preset_1");
-
-    equipped_presets["Head"] = "preset_1";
-    equipped_presets["Body"] = "preset_1";
-    equipped_presets["RightArm"] = "preset_1";
-    equipped_presets["LeftArm"] = "preset_1";
-    equipped_presets["RightLeg"] = "preset_1";
-    equipped_presets["LeftLeg"] = "preset_1";
-}
-
+SkinEditScene::SkinEditScene() {}
 SkinEditScene::~SkinEditScene() {}
 
 void SkinEditScene::_bind_methods() {
@@ -82,48 +72,29 @@ void SkinEditScene::_ready() {
     load_player_preview();
 }
 
-void SkinEditScene::_on_head_button_pressed() { cycle_part_preset("Head"); }
-void SkinEditScene::_on_body_button_pressed() { cycle_part_preset("Body"); }
-void SkinEditScene::_on_right_arm_button_pressed() { cycle_part_preset("RightArm"); }
-void SkinEditScene::_on_left_arm_button_pressed() { cycle_part_preset("LeftArm"); }
-void SkinEditScene::_on_right_leg_button_pressed() { cycle_part_preset("RightLeg"); }
-void SkinEditScene::_on_left_leg_button_pressed() { cycle_part_preset("LeftLeg"); }
+void SkinEditScene::_on_head_button_pressed() { handle_part_cycle("Head"); }
+void SkinEditScene::_on_body_button_pressed() { handle_part_cycle("Body"); }
+void SkinEditScene::_on_right_arm_button_pressed() { handle_part_cycle("RightArm"); }
+void SkinEditScene::_on_left_arm_button_pressed() { handle_part_cycle("LeftArm"); }
+void SkinEditScene::_on_right_leg_button_pressed() { handle_part_cycle("RightLeg"); }
+void SkinEditScene::_on_left_leg_button_pressed() { handle_part_cycle("LeftLeg"); }
 
 void SkinEditScene::select_preset_for_all(const String &preset_id) {
-    Array keys = equipped_presets.keys();
-    for (int i = 0; i < keys.size(); i++) {
-        equipped_presets[keys[i]] = preset_id;
-    }
+    logic.select_preset_for_all(preset_id.utf8().get_data());
 
     SkinPainter *painter = Object::cast_to<SkinPainter>(get_node_or_null("SkinPainter"));
     if (painter) {
-        painter->apply_preset_to_all_parts(equipped_presets);
+        painter->apply_preset_to_all_parts(get_equipped_presets());
     }
     UtilityFunctions::print(vformat("[SkinEdit] Switched presets for all parts: %s", preset_id));
 }
 
-void SkinEditScene::cycle_part_preset(const String &part_name) {
-    String current = "preset_1";
-    if (equipped_presets.has(part_name)) {
-        current = equipped_presets[part_name];
-    }
-
-    int current_index = -1;
-    for (int i = 0; i < available_presets.size(); i++) {
-        if (available_presets[i] == current) {
-            current_index = i;
-            break;
-        }
-    }
-
-    int next_index = (current_index + 1) % available_presets.size();
-    String next_preset = available_presets[next_index];
-    equipped_presets[part_name] = next_preset;
-
-    apply_part_preset(part_name, next_preset);
+void SkinEditScene::handle_part_cycle(const String &part_name) {
+    std::string next_preset = logic.cycle_part_preset(part_name.utf8().get_data());
+    apply_part_preset_to_painter(part_name, String(next_preset.c_str()));
 }
 
-void SkinEditScene::apply_part_preset(const String &part_name, const String &preset_id) {
+void SkinEditScene::apply_part_preset_to_painter(const String &part_name, const String &preset_id) {
     String res_path = vformat("res://Resources/Skins/%s/%s.png", preset_id, part_name.to_lower());
     SkinPainter *painter = Object::cast_to<SkinPainter>(get_node_or_null("SkinPainter"));
     if (painter) {
@@ -140,7 +111,7 @@ void SkinEditScene::_unhandled_input(const Ref<InputEvent> &event) {
     if (is_dragging) {
         Ref<InputEventMouseMotion> mouse_motion = event;
         if (mouse_motion.is_valid() && skin_model_container) {
-            skin_model_container->rotate_y(mouse_motion->get_relative().x * rotate_sensitivity);
+            skin_model_container->rotate_y(mouse_motion->get_relative().x * logic.get_rotate_sensitivity());
         }
     }
 }
@@ -161,7 +132,7 @@ void SkinEditScene::load_player_preview() {
             SkinPainter *painter = Object::cast_to<SkinPainter>(get_node_or_null("SkinPainter"));
             if (painter) {
                 painter->initialize(dummy_instance);
-                painter->apply_preset_to_all_parts(equipped_presets);
+                painter->apply_preset_to_all_parts(get_equipped_presets());
             }
         }
     } else {
@@ -175,10 +146,10 @@ void SkinEditScene::on_save_button_pressed() {
     Ref<ConfigFile> config;
     config.instantiate();
 
-    Array keys = equipped_presets.keys();
-    for (int i = 0; i < keys.size(); i++) {
-        String part = keys[i];
-        String preset = equipped_presets[part];
+    const auto &presets = logic.get_equipped_presets();
+    for (const auto &pair : presets) {
+        String part = pair.first.c_str();
+        String preset = pair.second.c_str();
         config->set_value("PlayerSkin", part, preset);
         UtilityFunctions::print(vformat("  - %s: %s", part, preset));
     }
@@ -198,8 +169,37 @@ void SkinEditScene::on_back_button_pressed() {
     }
 }
 
-Dictionary SkinEditScene::get_equipped_presets() const { return equipped_presets; }
-void SkinEditScene::set_equipped_presets(const Dictionary &p_presets) { equipped_presets = p_presets; }
+Dictionary SkinEditScene::get_equipped_presets() const {
+    return convert_cpp_map_to_dictionary(logic.get_equipped_presets());
+}
 
-void SkinEditScene::set_rotate_sensitivity(float p_val) { rotate_sensitivity = p_val; }
-float SkinEditScene::get_rotate_sensitivity() const { return rotate_sensitivity; }
+void SkinEditScene::set_equipped_presets(const Dictionary &p_presets) {
+    logic.set_equipped_presets(convert_dictionary_to_cpp_map(p_presets));
+}
+
+void SkinEditScene::set_rotate_sensitivity(float p_val) {
+    logic.set_rotate_sensitivity(p_val);
+}
+
+float SkinEditScene::get_rotate_sensitivity() const {
+    return logic.get_rotate_sensitivity();
+}
+
+Dictionary SkinEditScene::convert_cpp_map_to_dictionary(const std::map<std::string, std::string> &map) const {
+    Dictionary dict;
+    for (const auto &pair : map) {
+        dict[String(pair.first.c_str())] = String(pair.second.c_str());
+    }
+    return dict;
+}
+
+std::map<std::string, std::string> SkinEditScene::convert_dictionary_to_cpp_map(const Dictionary &dict) const {
+    std::map<std::string, std::string> map;
+    Array keys = dict.keys();
+    for (int i = 0; i < keys.size(); i++) {
+        String key = keys[i];
+        String val = dict[key];
+        map[key.utf8().get_data()] = val.utf8().get_data();
+    }
+    return map;
+}

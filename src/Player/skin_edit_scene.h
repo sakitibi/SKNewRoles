@@ -4,56 +4,57 @@
 #include <godot_cpp/classes/button.hpp>
 #include <godot_cpp/classes/input_event.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
-#include <godot_cpp/variant/array.hpp>
 #include <godot_cpp/variant/string.hpp>
+#include "skin_edit_logic.h"
 
 namespace godot {
     class SkinEditScene : public Node3D {
         GDCLASS(SkinEditScene, Node3D)
 
-    private:
-        Button *back_button = nullptr;
-        Button *save_button = nullptr;
-        Node3D *skin_model_container = nullptr;
+        private:
+            Button *back_button = nullptr;
+            Button *save_button = nullptr;
+            Node3D *skin_model_container = nullptr;
 
-        Array available_presets;
-        Dictionary equipped_presets;
+            SkinEditLogic logic;
 
-        const String dummy_scene_path = "res://Scenes/Prefabs/LobbyPlayerDummy.tscn";
-        const String lobby_select_scene_path = "res://Scenes/LobbySelect.tscn";
+            const String dummy_scene_path = "res://Scenes/Prefabs/LobbyPlayerDummy.tscn";
+            const String lobby_select_scene_path = "res://Scenes/LobbySelect.tscn";
 
-        bool is_dragging = false;
-        float rotate_sensitivity = 0.005f;
+            bool is_dragging = false;
 
-        void on_back_button_pressed();
-        void on_save_button_pressed();
-        void cycle_part_preset(const String &part_name);
-        void apply_part_preset(const String &part_name, const String &preset_id);
-        void load_player_preview();
+            void on_back_button_pressed();
+            void on_save_button_pressed();
+            void handle_part_cycle(const String &part_name);
+            void apply_part_preset_to_painter(const String &part_name, const String &preset_id);
+            void load_player_preview();
 
-        void _on_head_button_pressed();
-        void _on_body_button_pressed();
-        void _on_right_arm_button_pressed();
-        void _on_left_arm_button_pressed();
-        void _on_right_leg_button_pressed();
-        void _on_left_leg_button_pressed();
+            void _on_head_button_pressed();
+            void _on_body_button_pressed();
+            void _on_right_arm_button_pressed();
+            void _on_left_arm_button_pressed();
+            void _on_right_leg_button_pressed();
+            void _on_left_leg_button_pressed();
 
-    protected:
-        static void _bind_methods();
+            Dictionary convert_cpp_map_to_dictionary(const std::map<std::string, std::string> &map) const;
+            std::map<std::string, std::string> convert_dictionary_to_cpp_map(const Dictionary &dict) const;
 
-    public:
-        SkinEditScene();
-        ~SkinEditScene();
+        protected:
+            static void _bind_methods();
 
-        void _ready() override;
-        void _unhandled_input(const Ref<InputEvent> &event) override;
+        public:
+            SkinEditScene();
+            ~SkinEditScene();
 
-        void select_preset_for_all(const String &preset_id);
+            void _ready() override;
+            void _unhandled_input(const Ref<InputEvent> &event) override;
 
-        Dictionary get_equipped_presets() const;
-        void set_equipped_presets(const Dictionary &p_presets);
+            void select_preset_for_all(const String &preset_id);
 
-        void set_rotate_sensitivity(float p_val);
-        float get_rotate_sensitivity() const;
-    };
+            Dictionary get_equipped_presets() const;
+            void set_equipped_presets(const Dictionary &p_presets);
+
+            void set_rotate_sensitivity(float p_val);
+            float get_rotate_sensitivity() const;
+        };
 }
