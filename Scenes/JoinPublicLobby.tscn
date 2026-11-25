@@ -24,14 +24,32 @@ corner_radius_top_right = 30
 corner_radius_bottom_right = 30
 corner_radius_bottom_left = 30
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_v1uak"]
+corner_radius_top_left = 30
+corner_radius_top_right = 30
+corner_radius_bottom_right = 30
+corner_radius_bottom_left = 30
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yjsn2"]
 bg_color = Color(1, 0, 0, 1)
+corner_radius_top_left = 30
+corner_radius_top_right = 30
+corner_radius_bottom_right = 30
+corner_radius_bottom_left = 30
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7t4nk"]
 bg_color = Color(0.6156863, 0, 0, 1)
+corner_radius_top_left = 30
+corner_radius_top_right = 30
+corner_radius_bottom_right = 30
+corner_radius_bottom_left = 30
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7lc51"]
 bg_color = Color(1, 0.31764707, 0.31764707, 1)
+corner_radius_top_left = 30
+corner_radius_top_right = 30
+corner_radius_bottom_right = 30
+corner_radius_bottom_left = 30
 
 [node name="JoinPublicLobby" type="Control" unique_id=748822483]
 layout_mode = 3
@@ -75,6 +93,7 @@ theme_override_font_sizes/font_size = 100
 theme_override_styles/normal = SubResource("StyleBoxFlat_4klwk")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_gmvms")
 theme_override_styles/hover = SubResource("StyleBoxFlat_37hc7")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_v1uak")
 text = "更新"
 
 [node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer/LobbyBasePanel" unique_id=1805888803]
